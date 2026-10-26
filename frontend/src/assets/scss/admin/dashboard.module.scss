@@ -1,0 +1,346 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.dashboard {
+  @include flex-col;
+  gap: 1.5rem;
+  animation: slideInUp 0.4s ease;
+}
+
+// ── KPI Grid ──
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.kpiCard {
+  @include uupm-card;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle gradient shimmer on left edge
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: $gradient-primary;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+.kpiIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-lg;
+  @include flex-center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+
+  .kpiCard:hover & {
+    transform: scale(1.08);
+  }
+}
+
+.kpiDetails {
+  flex: 1;
+  @include flex-col;
+  gap: 0.25rem;
+}
+
+.kpiLabel {
+  font-size: $fs-xs;
+  font-weight: $fw-semibold;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.kpiValue {
+  font-size: $fs-2xl;
+  font-weight: $fw-bold;
+  color: $text-heading;
+  letter-spacing: -0.5px;
+}
+
+.trendBadge {
+  font-size: 0.75rem;
+  font-weight: $fw-semibold;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: $radius-pill;
+
+  &.up {
+    color: $success;
+    background: $success-subtle;
+  }
+
+  &.down {
+    color: $danger;
+    background: $danger-subtle;
+  }
+}
+
+// ── Charts Row ──
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 1.25rem;
+
+  @media (max-width: $bp-xl) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  @include uupm-card;
+  padding: 1.25rem 1.5rem;
+  @include flex-col;
+
+  .cardHeader {
+    @include flex-between;
+    margin-bottom: 1rem;
+
+    h3 {
+      font-size: $fs-md;
+      font-weight: $fw-semibold;
+      color: $text-heading;
+    }
+
+    .cardAction {
+      font-size: $fs-xs;
+      color: $text-muted;
+      background-color: $surface-2;
+      padding: 0.25rem 0.6rem;
+      border-radius: $radius-md;
+      border: 1px solid $border-color;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: $primary;
+        color: $primary;
+      }
+    }
+  }
+
+  .chartWrapper {
+    width: 100%;
+    min-height: 260px;
+    flex: 1;
+  }
+}
+
+.chartStatsRow {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.85rem;
+
+  .statItem {
+    @include flex-col;
+    .statNum {
+      font-size: $fs-lg;
+      font-weight: $fw-bold;
+      color: $text-heading;
+    }
+    .statTitle {
+      font-size: $fs-xs;
+      color: $text-muted;
+    }
+  }
+}
+
+// ── Bottom Row ──
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tableCard {
+  @include uupm-card;
+  padding: 1.25rem 1.5rem;
+
+  .cardHeader {
+    @include flex-between;
+    margin-bottom: 1rem;
+
+    h3 {
+      font-size: $fs-md;
+      font-weight: $fw-semibold;
+      color: $text-heading;
+    }
+  }
+}
+
+.velzonTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $fs-sm;
+
+  th {
+    text-align: left;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.6875rem;
+    font-weight: $fw-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: $text-muted;
+    background-color: rgba(39, 39, 42, 0.4);
+    border-bottom: 1px solid $border-color;
+  }
+
+  td {
+    padding: 0.85rem 0.85rem;
+    border-bottom: 1px solid rgba(39, 39, 42, 0.4);
+    color: $text-body;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr {
+    transition: background-color 0.15s ease;
+  }
+
+  tr:hover td {
+    background-color: rgba(39, 39, 42, 0.3);
+  }
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  .miniAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: $radius-lg;
+    background: $primary-subtle;
+    color: $primary;
+    @include flex-center;
+    font-weight: $fw-bold;
+    font-size: 0.75rem;
+  }
+
+  .userNameText {
+    font-weight: $fw-medium;
+    color: $text-heading;
+  }
+}
+
+.pillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: $radius-pill;
+  font-size: 0.6875rem;
+  font-weight: $fw-semibold;
+
+  &.success {
+    background-color: $success-subtle;
+    color: $success;
+  }
+
+  &.warning {
+    background-color: $warning-subtle;
+    color: $warning;
+  }
+
+  &.danger {
+    background-color: $danger-subtle;
+    color: $danger;
+  }
+
+  &.info {
+    background-color: $info-subtle;
+    color: $info;
+  }
+
+  &.active {
+    background-color: $success-subtle;
+    color: $success;
+  }
+}
+
+// ── Pool Health List ──
+.poolHealthList {
+  @include flex-col;
+  gap: 0.75rem;
+}
+
+.poolHealthItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.85rem;
+  border-radius: $radius-lg;
+  border: 1px solid $border-color;
+  background-color: $surface-2;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    background-color: rgba(99, 102, 241, 0.05);
+    transform: translateX(4px);
+  }
+
+  .poolLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    .poolDot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      box-shadow: 0 0 6px currentColor;
+      &.active { background-color: $success; color: $success; }
+      &.warning { background-color: $warning; color: $warning; }
+      &.danger { background-color: $danger; color: $danger; }
+    }
+
+    .poolName {
+      font-weight: $fw-medium;
+      color: $text-heading;
+      font-size: $fs-sm;
+    }
+  }
+
+  .poolMeta {
+    font-size: $fs-xs;
+    color: $text-muted;
+  }
+}

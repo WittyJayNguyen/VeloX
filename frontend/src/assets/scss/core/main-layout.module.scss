@@ -1,0 +1,111 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.layout {
+  min-height: 100vh;
+  @include flex-col;
+  background-color: $body-bg;
+}
+
+.header {
+  @include flex-between;
+  padding: 0.85rem 2rem;
+  @include glass-surface;
+  border-bottom: 1px solid $border-color;
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+
+  @media (max-width: $bp-md) {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.logoBadge {
+  width: 34px;
+  height: 34px;
+  background: $gradient-primary;
+  border-radius: $radius-md;
+  @include flex-center;
+  font-weight: $fw-bold;
+  color: #fff;
+  font-size: $fs-lg;
+  box-shadow: 0 4px 10px $primary-glow;
+}
+
+.brand {
+  font-size: $fs-xl;
+  font-weight: $fw-bold;
+  color: $text-heading;
+  letter-spacing: -0.5px;
+  @include text-gradient($gradient-primary);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+
+  @media (max-width: $bp-md) {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+.navLink {
+  color: $text-body;
+  font-size: $fs-sm;
+  font-weight: $fw-medium;
+  transition: all 0.2s ease;
+  &:hover { color: $primary; }
+}
+
+.userMenu, .authBtns {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.userName {
+  font-size: $fs-sm;
+  color: $text-heading;
+  font-weight: $fw-semibold;
+}
+
+.main {
+  flex: 1;
+}
+
+.footer {
+  @include flex-between;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid $border-color;
+  background-color: $surface-1;
+  font-size: $fs-sm;
+  color: $text-muted;
+
+  @media (max-width: $bp-md) {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
+
+.footerLinks {
+  display: flex;
+  gap: 1.5rem;
+  a {
+    color: $text-muted;
+    transition: all 0.2s ease;
+    &:hover { color: $primary; }
+  }
+}

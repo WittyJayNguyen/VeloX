@@ -1,23 +1,23 @@
-# Tài Liệu Quy Chuẩn Quản Lý Mã Nguồn VeloX (Source Code Management)
+# VeloX AI Gateway - Trung Tâm Tài Liệu Dự Án (Project Documentation)
 
-Chào mừng bạn đến với tài liệu quy chuẩn kỹ thuật và quy trình quản trị mã nguồn (SCM) của dự án **VeloX**. Tài liệu này được thiết kế theo tiêu chuẩn công nghiệp nhằm đảm bảo chất lượng phần mềm, tính nhất quán khi làm việc nhóm và an toàn trong quá trình triển khai sản phẩm.
-
----
-
-## 📑 Danh Mục Tài Liệu
-
-| Tài liệu | Mô tả | Đối tượng |
-| :--- | :--- | :--- |
-| [01. Git Cơ Bản & Quy Chuẩn Commit](./git/01-git-fundamentals.md) | Các lệnh Git nền tảng, khái niệm branch, định dạng Commit Message chuẩn Conventional Commits kèm Issue ID. | Tất cả Developer |
-| [02. Quy Trình Phân Phối Nhánh (Gitflow Workflow)](./git/02-gitflow-workflow.md) | Kiến trúc 3 nhánh chính (`prod`, `staging`, `dev`), luồng phát triển tính năng (`feat/*`), và quy trình xử lý sự cố khẩn cấp (`hotfix/*`). | Dev, Tech Lead, DevOps |
-| [03. Chính Sách Bảo Vệ Nhánh (Branch Protection)](./git/03-branch-protection-rules.md) | Thiết lập bảo vệ nhánh `prod` và `staging`, quy định Pull Request, Code Review và tự động hoá CI/CD. | Repository Admin, Lead |
-| [04. Kịch Bản & Bài Tập Thực Hành](./git/04-practice-and-scenarios.md) | Kịch bản thao tác thực tế từng bước: tạo nhánh, mở PR, merge code, deploy staging, và mô phỏng xử lý hotfix production. | Toàn bộ thành viên |
+Chào mừng bạn đến với kho tài liệu chuẩn doanh nghiệp của hệ thống **VeloX AI Gateway** — Nền tảng trung gian kết nối, tối ưu chi phí và điều phối mô hình AI thông minh (AI Reverse Proxy & Aggregator).
 
 ---
 
-## 🎯 Mục Tiêu Chuẩn Nghiệp Vụ
+## 📑 Danh Mục Toàn Bộ Hệ Thống Tài Liệu
 
-1. **Minh bạch và Truy vết (Traceability):** 100% commit và Pull Request đều phải gắn kèm mã định danh công việc (Issue ID / Ticket ID).
-2. **An toàn Môi trường (Environment Isolation):** Mã nguồn được tách biệt nghiêm ngặt qua 3 tầng: `dev` (phát triển), `staging` (kiểm thử chất lượng - QA/UAT), `prod` (vận hành thực tế).
-3. **Chất lượng Mã nguồn (Code Quality):** Không ai được phép push code trực tiếp lên `prod` và `staging`. Mọi thay đổi bắt buộc phải thông qua Pull Request được review và phê duyệt.
-4. **Khắc phục Sự cố Nhanh chóng (Rapid Hotfix):** Cơ chế xử lý lỗi khẩn cấp trên Production độc lập, có quy trình đồng bộ ngược bảo đảm tính toàn vẹn của nhánh dev và staging.
+### 1. Phân Tầng Nghiệp Vụ & Mô Hình Kinh Doanh (`docs/business/`)
+- [x] [01. Tổng Quan Hệ Thống & Phân Quyền](./business/01-system-overview.md): Cơ chế Gateway, 2 nguồn cấp (API Key chính thức & Token tài khoản mua sỉ), quy tắc phân quyền (User chỉ ở Home/Portal, Admin cấp sẵn mới vào Dashboard).
+- [x] [02. Đặc Tả Chi Tiết Các Phân Hệ Quản Trị](./business/02-core-modules-specs.md): Phân tích chi tiết bản vẽ thiết kế (Dashboard KPI, Service Pool, API Key/Token, Bảng giá & Biên lợi nhuận, Quản lý nguồn hàng & Nhật ký Logs).
+- [x] [03. Chuẩn Hóa Đa Ngôn Ngữ (i18n)](./business/03-i18n-multilingual.md): Cơ chế hỗ trợ 5 ngôn ngữ: Tiếng Việt (`vi`), Tiếng Anh (`en`), Tiếng Nhật (`ja`), Tiếng Hàn (`ko`), Tiếng Trung (`zh`).
+
+### 2. Kiến Trúc Kỹ Thuật & Thiết Kế Hệ Thống (`docs/architecture/`)
+- [x] [01. Kiến Trúc Front-End ReactJS Module-Based](./architecture/01-frontend-architecture.md): Tổ chức module chuẩn theo sơ đồ (`components/common`, `layouts`, `features/<module>/{components, hooks, services, types}`, `routes`, `store`, `assets`, `styles`).
+- [x] [02. Kiến Trúc Back-End Python FastAPI](./architecture/02-backend-architecture.md): Kiến trúc Async High-Concurrency, cơ chế AI Proxy Streaming, xoay vòng Pool Key, tính tiền tức thì.
+- [x] [03. Thiết Kế Cơ Sở Dữ Liệu PostgreSQL](./architecture/03-database-schema-pgsql.md): Sơ đồ ERD, định nghĩa bảng 3NF, ràng buộc khóa ngoại, chỉ mục (Index) tối ưu cho hàng triệu bản ghi logs.
+
+### 3. Quy Trình Quản Trị Mã Nguồn & Gitflow (`docs/git/`)
+- [x] [01. Git Cơ Bản & Quy Chuẩn Commit](./git/01-git-fundamentals.md): Conventional Commits bắt buộc đi kèm `#id_issue`.
+- [x] [02. Quy Trình Phân Phối Nhánh (Gitflow)](./git/02-gitflow-workflow.md): Phân tầng 3 nhánh `prod`, `staging`, `dev` và nhánh `hotfix/*`.
+- [x] [03. Chính Sách Bảo Vệ Nhánh](./git/03-branch-protection-rules.md): Chặn push trực tiếp vào `prod`/`staging`.
+- [x] [04. Kịch Bản & Thực Hành Thực Tế](./git/04-practice-and-scenarios.md): Bài tập mô phỏng từ tạo nhánh tính năng đến hotfix production.

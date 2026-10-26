@@ -1,0 +1,111 @@
+{
+  "app_name": "VeloX AI Gateway",
+  "nav": {
+    "home": "ホーム",
+    "features": "機能一覧",
+    "pricing": "料金プラン",
+    "docs": "ドキュメント",
+    "login": "ログイン",
+    "register": "新規登録",
+    "dashboard": "ダッシュボード",
+    "logout": "ログアウト",
+    "workspace": "ワークスペース"
+  },
+  "hero": {
+    "badge": "次世代 AI ゲートウェイ プラットフォーム",
+    "title_1": "統合 AI ルーティング &",
+    "title_highlight": "オーケストレーション",
+    "subtitle": "OpenAI、Claude、Gemini、Midjourney、Runway など 100 以上の AI モデルを最適なコストで統合接続。1 つの API キーで全て利用可能。",
+    "cta_start": "無料で始める",
+    "cta_docs": "ドキュメントを見る",
+    "providers_label": "100 以上の主要 AI モデルとプロバイダーをサポート"
+  },
+  "features": {
+    "title": "VeloX AI Gateway が選ばれる理由",
+    "multi_model": "マルチモデル統合",
+    "multi_model_desc": "単一のエンドポイントから、チャット、画像、動画、コード生成 AI にアクセス。",
+    "pool_system": "スマートプールバランシング",
+    "pool_system_desc": "API キーとトークンアカウントを自動ローテーションし、99.9% の稼働率と低コストを実現。",
+    "security": "エンタープライズセキュリティ",
+    "security_desc": "エンドツーエンドのトークン暗号化、RBAC アクセス制御、包括的な監査ログ。",
+    "i18n": "多言語対応",
+    "i18n_desc": "日本語、英語、ベトナム語、韓国語、中国語をネイティブサポート。",
+    "realtime": "リアルタイム処理",
+    "realtime_desc": "WebSocketとSSEによる超高速ストリームレスポンス。すべてのAIチャットモデルに対応。",
+    "analytics": "分析 & レポート",
+    "analytics_desc": "売上、利用指標、利益率をリアルタイムで追跡する詳細ダッシュボード。"
+  },
+  "stats": {
+    "models": "AI モデル数",
+    "users": "アクティブユーザー",
+    "requests": "日次リクエスト",
+    "uptime": "稼働率 SLA"
+  },
+  "footer": {
+    "rights": "© 2026 VeloX AI Gateway. All rights reserved.",
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー"
+  },
+  "auth": {
+    "login_title": "管理者ログイン",
+    "register_title": "アカウント作成",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "full_name": "氏名",
+    "confirm_password": "パスワード確認",
+    "login_btn": "ログイン",
+    "register_btn": "アカウント登録",
+    "no_account": "アカウントをお持ちでないですか？",
+    "has_account": "既にアカウントをお持ちですか？",
+    "login_link": "こちらからログイン",
+    "register_link": "こちらから新規登録",
+    "or": "または",
+    "login_error": "メールアドレスまたはパスワードが正しくありません",
+    "register_error": "登録に失敗しました。もう一度お試しください。"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "search": "検索...",
+    "actions": "操作",
+    "status": "ステータス",
+    "active": "有効",
+    "inactive": "停止中",
+    "confirm_delete": "本当に削除しますか？",
+    "no_data": "データがありません"
+  },
+  "admin": {
+    "search_placeholder": "すべてを検索...",
+    "sidebar": {
+      "dashboard": "システム概要",
+      "models": "AIモデル性能",
+      "logs": "SLA障害ログ",
+      "billing": "チャージ履歴",
+      "banking": "銀行 & QR",
+      "wallet": "ウォレット & キャッシュフロー",
+      "services": "プール管理",
+      "keys": "APIキー",
+      "packages": "サービス & パッケージ設定",
+      "users": "ユーザー管理",
+      "roles": "ロール & 権限",
+      "notifications": "通知管理",
+      "settings": "設定"
+    },
+    "dashboard": {
+      "title": "CRM 管理ダッシュボード",
+      "total_users": "総ユーザー数",
+      "total_revenue": "チャージ売上",
+      "lead_conversion": "成功率",
+      "daily_income": "日次平均売上",
+      "total_requests": "総 API リクエスト数",
+      "sales_forecast": "プラン別売上予測",
+      "model_types": "4 つのモデル分類統計",
+      "balance_overview": "売上とトークン原価バランス",
+      "deals_status": "最新の決済取引",
+      "pool_alerts": "プールの状態と枯渇警告"
+    }
+  }
+}

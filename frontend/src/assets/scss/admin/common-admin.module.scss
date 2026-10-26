@@ -1,0 +1,476 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.moduleContainer {
+  @include flex-col;
+  gap: 1.25rem;
+  animation: fadeIn 0.3s ease;
+}
+
+// ── Toolbar Card ──
+.toolbarCard {
+  @include uupm-card;
+  padding: 1rem 1.25rem;
+  @include flex-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.searchFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: $surface-2;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  padding: 0.5rem 0.85rem;
+  width: 280px;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px $primary-subtle;
+  }
+
+  input {
+    border: none;
+    background: transparent;
+    font-size: $fs-sm;
+    color: $text-heading;
+    width: 100%;
+    &::placeholder { color: $text-muted; }
+  }
+
+  svg { color: $text-muted; }
+}
+
+.selectFilter {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  background-color: $surface-2;
+  color: $text-body;
+  font-size: $fs-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $border-light;
+  }
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px $primary-subtle;
+  }
+
+  option {
+    background-color: $surface-1;
+    color: $text-heading;
+  }
+}
+
+.actionButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// ── Button Variants ──
+.btnPrimary {
+  @include gradient-btn;
+}
+
+.btnOutline {
+  @include outline-btn;
+}
+
+.btnDanger {
+  background: $danger-subtle;
+  color: $danger;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: $radius-md;
+  padding: 0.55rem 1.25rem;
+  font-weight: $fw-medium;
+  font-size: $fs-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $danger;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+  }
+}
+
+.btnSuccess {
+  background: $success-subtle;
+  color: $success;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: $radius-md;
+  padding: 0.55rem 1.25rem;
+  font-weight: $fw-medium;
+  font-size: $fs-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $success;
+    color: #fff;
+    box-shadow: 0 4px 12px $success-glow;
+  }
+}
+
+// ── Table Container ──
+.tableContainer {
+  @include uupm-card;
+  overflow: hidden;
+}
+
+.tableHeaderBar {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid $border-color;
+  @include flex-between;
+
+  h3 {
+    font-size: $fs-md;
+    font-weight: $fw-semibold;
+    color: $text-heading;
+  }
+
+  .countBadge {
+    font-size: $fs-xs;
+    background: $primary-subtle;
+    color: $primary;
+    padding: 0.2rem 0.6rem;
+    border-radius: $radius-pill;
+    font-weight: $fw-semibold;
+  }
+}
+
+// ── UUPM Table ──
+.velzonTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $fs-sm;
+
+  thead th {
+    background-color: rgba(39, 39, 42, 0.5);
+    color: $text-muted;
+    font-weight: $fw-semibold;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border-color;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(39, 39, 42, 0.4);
+    color: $text-body;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s ease;
+  }
+
+  tbody tr:hover td {
+    background-color: rgba(39, 39, 42, 0.35);
+  }
+}
+
+// ── Action Cell ──
+.actionCell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.iconActionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-md;
+  @include flex-center;
+  color: $text-muted;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: $primary-subtle;
+    color: $primary;
+  }
+
+  &.actionDelete:hover {
+    background-color: $danger-subtle;
+    color: $danger;
+  }
+
+  &.actionEdit:hover {
+    background-color: rgba(245, 158, 11, 0.12);
+    color: $warning;
+  }
+}
+
+// ── Modal Dialog (UUPM Dark Glass) ──
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: $z-modal;
+  @include flex-center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modalCard {
+  background-color: $surface-1;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-xl, $shadow-glow-primary;
+  width: 100%;
+  max-width: 560px;
+  overflow: hidden;
+  animation: scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modalHeader {
+  @include flex-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $border-color;
+
+  h2 {
+    font-size: $fs-lg;
+    font-weight: $fw-bold;
+    color: $text-heading;
+  }
+
+  .closeBtn {
+    color: $text-muted;
+    font-size: 1.25rem;
+    padding: 0.3rem;
+    border-radius: $radius-md;
+    transition: all 0.15s ease;
+    &:hover { 
+      color: $danger; 
+      background-color: $danger-subtle; 
+    }
+  }
+}
+
+.modalBody {
+  padding: 1.5rem;
+  @include flex-col;
+  gap: 1rem;
+  max-height: 75vh;
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+.modalFooter {
+  @include flex-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid $border-color;
+  background-color: rgba(24, 24, 27, 0.6);
+}
+
+// ── Form Field ──
+.formField {
+  @include flex-col;
+  gap: 0.4rem;
+
+  label {
+    font-size: $fs-sm;
+    font-weight: $fw-medium;
+    color: $text-heading;
+  }
+
+  input, select, textarea {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $fs-sm;
+    color: $text-heading;
+    background-color: $surface-2;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px $primary-subtle;
+    }
+
+    &::placeholder {
+      color: $text-muted;
+    }
+  }
+
+  .hint {
+    font-size: $fs-xs;
+    color: $text-muted;
+  }
+}
+
+// ── Alert Banner ──
+.alertBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: $radius-lg;
+  font-size: $fs-sm;
+  font-weight: $fw-medium;
+
+  &.warning {
+    background-color: $warning-subtle;
+    color: $warning;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  &.danger {
+    background-color: $danger-subtle;
+    color: $danger;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+  }
+
+  &.success {
+    background-color: $success-subtle;
+    color: $success;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  &.info {
+    background-color: $info-subtle;
+    color: $info;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+  }
+}
+
+// ── Status Badge / Pill ──
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: $radius-pill;
+  font-size: 0.6875rem;
+  font-weight: $fw-semibold;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  &.active, &.success {
+    background: $success-subtle;
+    color: $success;
+    &::before { background: $success; }
+  }
+
+  &.warning {
+    background: $warning-subtle;
+    color: $warning;
+    &::before { background: $warning; }
+  }
+
+  &.danger {
+    background: $danger-subtle;
+    color: $danger;
+    &::before { background: $danger; }
+  }
+
+  &.info {
+    background: $info-subtle;
+    color: $info;
+    &::before { background: $info; }
+  }
+}
+
+// ── Empty State ──
+.emptyState {
+  @include flex-center;
+  @include flex-col;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  color: $text-muted;
+  text-align: center;
+
+  .emptyIcon {
+    font-size: 2.5rem;
+    opacity: 0.4;
+  }
+
+  .emptyText {
+    font-size: $fs-sm;
+  }
+}
+
+// ── Pagination ──
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 1rem;
+
+  .pageBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-md;
+    @include flex-center;
+    color: $text-muted;
+    font-size: $fs-sm;
+    font-weight: $fw-medium;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $surface-2;
+      color: $text-heading;
+    }
+
+    &.active {
+      background: $gradient-primary;
+      color: #fff;
+      box-shadow: 0 2px 8px $primary-glow;
+    }
+  }
+}
+
+// ── Empty State ──
+.emptyState {
+  @include flex-col;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 0.75rem;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  opacity: 0.6;
+}
+
+.emptyText {
+  font-size: $fs-sm;
+  color: $text-muted;
+  text-align: center;
+}

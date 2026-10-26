@@ -1,0 +1,34 @@
+"""VeloX AI Gateway — Billing Models (Wallet, Packages, Transactions)"""
+from sqlalchemy import Column, String, Boolean, Integer, Numeric, ForeignKey
+from sqlalchemy.orm import relationship
+from app.common.base_model import Base, UUIDMixin, TimestampMixin
+
+
+class UserWallet(Base, TimestampMixin):
+    __tablename__ = "user_wallets"
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    balance_credits = Column(Numeric(14, 4), default=0, nullable=False)
+    total_deposited = Column(Numeric(14, 4), default=0, nullable=False)
+    total_spent = Column(Numeric(14, 4), default=0, nullable=False)
+    user = relationship("User", back_populates="wallet")
+
+
+class CreditPackage(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "credit_packages"
+    name = Column(String(128), nullable=False)
+    price_vnd = Column(Numeric(12, 0), nullable=False)
+    credits_given = Column(Numeric(14, 4), nullable=False)
+    bonus_percentage = Column(Integer, default=0)
+    is_popular = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+
+
+class PaymentTransaction(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "payment_transactions"
+    transaction_code = Column(String(64), unique=True, nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    package_id = Column(String(36), ForeignKey("credit_packages.id", ondelete="SET NULL"))
+    amount_vnd = Column(Numeric(12, 0), nullable=False)
+    credits_credited = Column(Numeric(14, 4), nullable=False)
+    payment_gateway = Column(String(32), nullable=False)   # BANK_TRANSFER, MOMO, STRIPE
+    status = Column(String(32), default="PENDING", nullable=False)
