@@ -1,12 +1,12 @@
 @use './variables' as *;
 
-// Breakpoints
+// ── Breakpoints ──
 @mixin sm { @media (min-width: $bp-sm) { @content; } }
 @mixin md { @media (min-width: $bp-md) { @content; } }
 @mixin lg { @media (min-width: $bp-lg) { @content; } }
 @mixin xl { @media (min-width: $bp-xl) { @content; } }
 
-// Flex utilities
+// ── Flex utilities ──
 @mixin flex-center {
   display: flex;
   align-items: center;
@@ -24,25 +24,82 @@
   flex-direction: column;
 }
 
-// Card styling (Velzon style)
-@mixin velzon-card {
-  background: $card-bg;
+// ── Card styling (UUPM Dark Glass style) ──
+@mixin uupm-card {
+  background: $surface-1;
   border: 1px solid $border-color;
-  border-radius: $radius-lg;
+  border-radius: $radius-xl;
   box-shadow: $shadow-xs;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    box-shadow: $shadow-sm;
+    box-shadow: $shadow-md, $shadow-glow-primary;
+    border-color: rgba(99, 102, 241, 0.2);
   }
 }
 
-// Badge pill
+// Legacy compat alias
+@mixin velzon-card {
+  @include uupm-card;
+}
+
+// ── Glass Surface ──
+@mixin glass-surface {
+  background: rgba(24, 24, 27, 0.80);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(39, 39, 42, 0.6);
+}
+
+// ── Gradient Button ──
+@mixin gradient-btn {
+  background: $gradient-primary;
+  color: #ffffff;
+  border: none;
+  border-radius: $radius-md;
+  padding: 0.55rem 1.25rem;
+  font-weight: $fw-semibold;
+  font-size: $fs-sm;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px $primary-glow;
+
+  &:hover {
+    box-shadow: 0 4px 16px $primary-glow;
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ── Outline Button ──
+@mixin outline-btn {
+  background: transparent;
+  color: $text-body;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 0.55rem 1.25rem;
+  font-weight: $fw-medium;
+  font-size: $fs-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $surface-2;
+    border-color: $border-light;
+    color: $text-heading;
+  }
+}
+
+// ── Badge pill ──
 @mixin badge-pill($bg, $color) {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.6rem;
+  padding: 0.25rem 0.65rem;
   border-radius: $radius-pill;
   font-size: $fs-xs;
   font-weight: $fw-semibold;
@@ -50,7 +107,7 @@
   color: $color;
 }
 
-// Scrollbars
+// ── Custom Scrollbar (Dark) ──
 @mixin custom-scrollbar {
   &::-webkit-scrollbar {
     width: 5px;
@@ -60,8 +117,34 @@
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: #d4d7dc;
+    background: $surface-3;
     border-radius: $radius-pill;
-    &:hover { background: #b0b4bb; }
+    &:hover { background: $border-light; }
   }
+}
+
+// ── Input Focus Ring ──
+@mixin focus-ring {
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px $primary-subtle;
+    outline: none;
+  }
+}
+
+// ── Shimmer / Pulse animation ──
+@mixin pulse-glow($color: $primary-glow) {
+  animation: pulseGlow 2s ease-in-out infinite;
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 $color; }
+    50%      { box-shadow: 0 0 12px 4px $color; }
+  }
+}
+
+// ── Text Gradient ──
+@mixin text-gradient($gradient: $gradient-primary) {
+  background: $gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
