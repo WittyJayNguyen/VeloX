@@ -29,7 +29,11 @@
     "security": "Enterprise Security",
     "security_desc": "End-to-end token encryption, RBAC access control, and full audit logs.",
     "i18n": "Multilingual Ready",
-    "i18n_desc": "Native support for English, Vietnamese, Japanese, Korean, and Chinese."
+    "i18n_desc": "Native support for English, Vietnamese, Japanese, Korean, and Chinese.",
+    "realtime": "Real-Time Processing",
+    "realtime_desc": "Lightning-fast stream responses via WebSocket and SSE for all AI chat models.",
+    "analytics": "Analytics & Reports",
+    "analytics_desc": "Detailed dashboards for revenue, usage metrics, and profit margins in real-time."
   },
   "stats": {
     "models": "AI Models",
@@ -76,12 +80,18 @@
   "admin": {
     "search_placeholder": "Search everything...",
     "sidebar": {
-      "dashboard": "Dashboard",
-      "services": "Services & Pools",
-      "models": "Models Catalog",
-      "billing": "Billing & Packages",
-      "users": "Users & Roles",
-      "logs": "Gateway Logs",
+      "dashboard": "System Overview",
+      "models": "AI Model Performance",
+      "logs": "SLA Incident Logs",
+      "billing": "Top-Up History",
+      "banking": "Bank & QR",
+      "wallet": "Wallet & Cash Flow",
+      "services": "Pool Management",
+      "keys": "API Key",
+      "packages": "Service & Package Config",
+      "users": "User Management",
+      "roles": "Roles & Permissions",
+      "notifications": "Notification Center",
       "settings": "Settings"
     },
     "dashboard": {

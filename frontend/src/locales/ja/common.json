@@ -29,7 +29,11 @@
     "security": "エンタープライズセキュリティ",
     "security_desc": "エンドツーエンドのトークン暗号化、RBAC アクセス制御、包括的な監査ログ。",
     "i18n": "多言語対応",
-    "i18n_desc": "日本語、英語、ベトナム語、韓国語、中国語をネイティブサポート。"
+    "i18n_desc": "日本語、英語、ベトナム語、韓国語、中国語をネイティブサポート。",
+    "realtime": "リアルタイム処理",
+    "realtime_desc": "WebSocketとSSEによる超高速ストリームレスポンス。すべてのAIチャットモデルに対応。",
+    "analytics": "分析 & レポート",
+    "analytics_desc": "売上、利用指標、利益率をリアルタイムで追跡する詳細ダッシュボード。"
   },
   "stats": {
     "models": "AI モデル数",
@@ -76,13 +80,19 @@
   "admin": {
     "search_placeholder": "すべてを検索...",
     "sidebar": {
-      "dashboard": "ダッシュボード",
-      "services": "サービス & プール管理",
-      "models": "モデルカタログ & 価格設定",
-      "billing": "チャージプラン & 決済",
-      "users": "ユーザー & 権限管理",
-      "logs": "ゲートウェイログ",
-      "settings": "システム設定"
+      "dashboard": "システム概要",
+      "models": "AIモデル性能",
+      "logs": "SLA障害ログ",
+      "billing": "チャージ履歴",
+      "banking": "銀行 & QR",
+      "wallet": "ウォレット & キャッシュフロー",
+      "services": "プール管理",
+      "keys": "APIキー",
+      "packages": "サービス & パッケージ設定",
+      "users": "ユーザー管理",
+      "roles": "ロール & 権限",
+      "notifications": "通知管理",
+      "settings": "設定"
     },
     "dashboard": {
       "title": "CRM 管理ダッシュボード",
