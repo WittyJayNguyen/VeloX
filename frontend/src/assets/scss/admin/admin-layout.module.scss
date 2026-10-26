@@ -1,0 +1,375 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: $body-bg;
+}
+
+// ── Sidebar ──
+.sidebar {
+  width: $sidebar-width;
+  background-color: $sidebar-bg;
+  border-right: 1px solid $border-color;
+  @include flex-col;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: $z-sticky;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
+  @include custom-scrollbar;
+
+  .collapsed & {
+    width: $sidebar-collapsed;
+  }
+
+  @media (max-width: $bp-md) {
+    transform: translateX(-100%);
+    .collapsed & {
+      transform: translateX(0);
+      width: $sidebar-collapsed;
+    }
+  }
+}
+
+.sidebarTop {
+  @include flex-between;
+  height: $topbar-height;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid $border-color;
+  background-color: #ffffff;
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+}
+
+.logoBadge {
+  min-width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, $accent, $primary);
+  border-radius: $radius-md;
+  @include flex-center;
+  font-weight: $fw-bold;
+  color: #fff;
+  font-size: $fs-base;
+  box-shadow: 0 2px 6px rgba($accent, 0.35);
+}
+
+.brand {
+  font-weight: $fw-bold;
+  font-size: $fs-lg;
+  color: $text-dark;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.toggleBtn {
+  color: $text-muted;
+  transition: all 0.15s ease-in-out;
+  padding: 0.35rem;
+  border-radius: $radius-sm;
+
+  &:hover {
+    color: $primary;
+    background-color: $primary-subtle;
+  }
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  @include flex-col;
+  gap: 0.2rem;
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+.menuHeader {
+  padding: 0.75rem 0.85rem 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: $fw-bold;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $text-muted;
+
+  .collapsed & {
+    display: none;
+  }
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: $radius-md;
+  color: $text-body;
+  font-size: $fs-sm;
+  font-weight: $fw-medium;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: $primary-subtle;
+    color: $primary;
+  }
+
+  &.active {
+    background-color: $primary-subtle;
+    color: $primary;
+    font-weight: $fw-semibold;
+  }
+
+  .navIcon {
+    font-size: 1.15rem;
+    min-width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .badgePill {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: $radius-pill;
+    background-color: $danger;
+    color: #fff;
+    font-weight: $fw-semibold;
+  }
+
+  .collapsed & {
+    justify-content: center;
+    padding: 0.65rem;
+    span { display: none; }
+    .badgePill { display: none; }
+  }
+}
+
+.sidebarBottom {
+  padding: 0.75rem;
+  border-top: 1px solid $border-color;
+  background-color: #ffffff;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: $radius-md;
+  color: $text-muted;
+  font-size: $fs-sm;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    color: $danger;
+    background-color: $danger-subtle;
+  }
+
+  .collapsed & {
+    justify-content: center;
+    span { display: none; }
+  }
+}
+
+// ── Content Area ──
+.content {
+  flex: 1;
+  margin-left: $sidebar-width;
+  @include flex-col;
+  min-height: 100vh;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .collapsed & {
+    margin-left: $sidebar-collapsed;
+  }
+
+  @media (max-width: $bp-md) {
+    margin-left: 0;
+  }
+}
+
+// ── Topbar (Velzon style) ──
+.topbar {
+  @include flex-between;
+  height: $topbar-height;
+  padding: 0 1.5rem;
+  background-color: $topbar-bg;
+  border-bottom: 1px solid $border-color;
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky - 1;
+}
+
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  background-color: $body-bg;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 0.35rem 0.75rem;
+  gap: 0.5rem;
+  width: 240px;
+
+  @media (max-width: $bp-md) {
+    display: none;
+  }
+
+  input {
+    background: transparent;
+    border: none;
+    color: $text-dark;
+    font-size: $fs-sm;
+    width: 100%;
+    &::placeholder { color: $text-muted; }
+  }
+
+  svg {
+    color: $text-muted;
+  }
+}
+
+.mobileToggle {
+  display: none;
+  color: $text-body;
+  padding: 0.4rem;
+  border-radius: $radius-sm;
+
+  &:hover { background-color: $border-light; }
+
+  @media (max-width: $bp-md) {
+    display: flex;
+  }
+}
+
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-full;
+  @include flex-center;
+  color: $text-body;
+  transition: all 0.15s ease-in-out;
+  position: relative;
+
+  &:hover {
+    background-color: $border-light;
+    color: $primary;
+  }
+
+  .badgeCount {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: $danger;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: $fw-bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    @include flex-center;
+  }
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: $radius-md;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $border-light;
+  }
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, $accent, $primary);
+  @include flex-center;
+  font-weight: $fw-bold;
+  color: #fff;
+  font-size: $fs-sm;
+  box-shadow: 0 2px 4px rgba($accent, 0.2);
+}
+
+.userInfo {
+  @include flex-col;
+  line-height: 1.2;
+
+  @media (max-width: $bp-sm) {
+    display: none;
+  }
+}
+
+.userName {
+  font-size: $fs-sm;
+  font-weight: $fw-semibold;
+  color: $text-heading;
+}
+
+.userRole {
+  font-size: $fs-xs;
+  color: $text-muted;
+}
+
+// ── Main Page Content ──
+.main {
+  flex: 1;
+  padding: 1.5rem;
+  @include custom-scrollbar;
+}
+
+.pageHeader {
+  @include flex-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: $fs-xl;
+  font-weight: $fw-bold;
+  color: $text-heading;
+  letter-spacing: -0.3px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: $fs-xs;
+  color: $text-muted;
+
+  span.active {
+    color: $primary;
+    font-weight: $fw-medium;
+  }
+}

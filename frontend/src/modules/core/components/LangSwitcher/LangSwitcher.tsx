@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES } from '../../utils/constants';
 import { useUIStore } from '../../states/uiStore';
-import styles from './LangSwitcher.module.scss';
+import styles from '@assets/scss/core/lang-switcher.module.scss';
 
 const LangSwitcher = () => {
   const { i18n } = useTranslation();
@@ -30,8 +30,8 @@ const LangSwitcher = () => {
 
   return (
     <div className={styles.wrapper} ref={ref}>
-      <button className={styles.trigger} onClick={() => setOpen(!open)}>
-        <span>{current.flag}</span>
+      <button className={styles.trigger} onClick={() => setOpen(!open)} type="button">
+        <span className={styles.flag}>{current.flag}</span>
         <span className={styles.code}>{current.code.toUpperCase()}</span>
       </button>
       {open && (
@@ -39,10 +39,11 @@ const LangSwitcher = () => {
           {SUPPORTED_LANGUAGES.map((lang) => (
             <li key={lang.code}>
               <button
+                type="button"
                 className={`${styles.option} ${lang.code === current.code ? styles.active : ''}`}
                 onClick={() => handleSelect(lang.code)}
               >
-                <span>{lang.flag}</span>
+                <span className={styles.flag}>{lang.flag}</span>
                 <span>{lang.label}</span>
               </button>
             </li>

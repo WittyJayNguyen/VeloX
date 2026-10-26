@@ -3,7 +3,7 @@ import { authService } from '../services/authService';
 import type { LoginPayload, RegisterPayload } from '../types/auth.types';
 
 export const useAuth = () => {
-  const { user, token, isAuthenticated, isAdmin, login, logout } = useAuthStore();
+  const { user, token, isAuthenticated, isAdmin, login, loginAsAdmin, logout } = useAuthStore();
 
   const handleLogin = async (payload: LoginPayload) => {
     const res = await authService.login(payload);
@@ -23,6 +23,7 @@ export const useAuth = () => {
     isAuthenticated,
     isAdmin,
     login: handleLogin,
+    loginAsAdmin,
     register: handleRegister,
     logout,
   };

@@ -1,5 +1,5 @@
 {
-  "app_name": "VeloX AI",
+  "app_name": "VeloX AI Gateway",
   "nav": {
     "home": "Trang Chủ",
     "features": "Tính Năng",
@@ -7,85 +7,95 @@
     "docs": "Tài Liệu",
     "login": "Đăng Nhập",
     "register": "Đăng Ký",
-    "dashboard": "Bảng Điều Khiển",
+    "dashboard": "Bảng Quản Trị",
     "logout": "Đăng Xuất",
     "workspace": "Khu Làm Việc"
   },
   "hero": {
     "badge": "Nền Tảng AI Gateway Thế Hệ Mới",
     "title_1": "Trung Tâm Điều Phối",
-    "title_highlight": "Trí Tuệ Nhân Tạo",
+    "title_highlight": "Trí Tuệ Nhân Tạo VeloX",
     "subtitle": "Kết nối hơn 100+ mô hình AI từ OpenAI, Claude, Gemini, Midjourney, Runway với chi phí tối ưu nhất. Một API Key duy nhất cho tất cả.",
     "cta_start": "Bắt Đầu Miễn Phí",
-    "cta_docs": "Xem Tài Liệu"
+    "cta_docs": "Xem Tài Liệu",
+    "providers_label": "Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu"
   },
   "features": {
-    "title": "Tại Sao Chọn VeloX?",
-    "multi_model": "Đa Mô Hình AI",
+    "title": "Tại Sao Chọn VeloX AI Gateway?",
+    "multi_model": "Đa Mô Hình AI Đột Phá",
     "multi_model_desc": "Truy cập hơn 100+ model AI Chat, Tạo Ảnh, Video và Code từ một nền tảng duy nhất.",
     "pool_system": "Hệ Thống Pool Thông Minh",
     "pool_system_desc": "Tự động xoay vòng API Key và Token Account để đảm bảo uptime 99.9% và giá tốt nhất.",
     "security": "Bảo Mật Chuẩn Doanh Nghiệp",
     "security_desc": "Mã hóa đầu cuối, kiểm soát truy cập RBAC và giám sát nhật ký toàn diện.",
-    "i18n": "Đa Ngôn Ngữ",
-    "i18n_desc": "Hỗ trợ 5 ngôn ngữ: Tiếng Việt, Anh, Nhật, Hàn và Trung Quốc."
+    "i18n": "Đa Ngôn Ngữ Linh Hoạt",
+    "i18n_desc": "Hỗ trợ 5 ngôn ngữ: Tiếng Việt, Tiếng Anh, Tiếng Nhật, Hàn Quốc và Trung Quốc."
   },
   "stats": {
     "models": "Mô Hình AI",
     "users": "Người Dùng",
     "requests": "Requests / Ngày",
-    "uptime": "Uptime"
+    "uptime": "Uptime Sẵn Sàng"
   },
   "footer": {
-    "rights": "© 2026 VeloX AI. Mọi quyền được bảo lưu.",
-    "terms": "Điều Khoản",
-    "privacy": "Bảo Mật"
+    "rights": "© 2026 VeloX AI Gateway. Mọi quyền được bảo lưu.",
+    "terms": "Điều Khoản Dịch Vụ",
+    "privacy": "Chính Sách Bảo Mật"
   },
   "auth": {
-    "login_title": "Đăng Nhập Tài Khoản",
+    "login_title": "Đăng Nhập Quản Trị VeloX",
     "register_title": "Tạo Tài Khoản Mới",
     "email": "Email",
     "password": "Mật khẩu",
     "full_name": "Họ và tên",
     "confirm_password": "Xác nhận mật khẩu",
-    "login_btn": "Đăng Nhập",
-    "register_btn": "Đăng Ký",
+    "login_btn": "Đăng Nhập Ngay",
+    "register_btn": "Đăng Ký Tài Khoản",
     "no_account": "Chưa có tài khoản?",
     "has_account": "Đã có tài khoản?",
-    "or": "hoặc"
+    "login_link": "Đăng nhập tại đây",
+    "register_link": "Đăng ký tại đây",
+    "or": "hoặc",
+    "login_error": "Email hoặc mật khẩu không chính xác",
+    "register_error": "Không thể đăng ký tài khoản lúc này"
   },
   "common": {
-    "loading": "Đang tải...",
-    "save": "Lưu",
-    "cancel": "Hủy",
+    "loading": "Đang tải dữ liệu...",
+    "save": "Lưu lại",
+    "cancel": "Hủy bỏ",
     "delete": "Xóa",
     "edit": "Sửa",
     "search": "Tìm kiếm...",
     "actions": "Hành Động",
     "status": "Trạng Thái",
-    "active": "Hoạt Động",
-    "inactive": "Ngưng",
-    "confirm_delete": "Bạn chắc chắn muốn xóa?",
+    "active": "Đang Bật",
+    "inactive": "Tạm Dừng",
+    "confirm_delete": "Bạn có chắc chắn muốn xóa?",
     "no_data": "Chưa có dữ liệu"
   },
   "admin": {
+    "search_placeholder": "Tìm kiếm nhanh mọi thứ...",
     "sidebar": {
-      "dashboard": "Tổng Quan",
-      "services": "Dịch Vụ & Pool",
-      "models": "Danh Mục Model",
-      "billing": "Gói Nạp & Giá",
-      "users": "Quản Lý User",
-      "logs": "Nhật Ký Hệ Thống",
-      "settings": "Cài Đặt"
+      "dashboard": "Bảng Tổng Quan",
+      "services": "Quản Lý Dịch Vụ & Pool",
+      "models": "Danh Mục Model & Định Giá",
+      "billing": "Gói Nạp & Thanh Toán",
+      "users": "Người Dùng & Phân Quyền",
+      "logs": "Nhật Ký Yêu Cầu (Logs)",
+      "settings": "Cài Đặt Hệ Thống"
     },
     "dashboard": {
-      "title": "Tổng Quan Hệ Thống",
+      "title": "Bảng Điều Khiển Quản Trị CRM",
       "total_users": "Tổng Người Dùng",
-      "total_revenue": "Doanh Thu Hôm Nay",
-      "total_credits_used": "Credits Tiêu Thụ",
-      "pool_health": "Sức Khỏe Pool",
-      "revenue_chart": "Biểu Đồ Doanh Thu",
-      "consumption": "Phân Bổ Tiêu Thụ"
+      "total_revenue": "Doanh Thu Nạp Tiền",
+      "lead_conversion": "Tỉ Lệ Thành Công",
+      "daily_income": "Doanh Thu TB Ngày",
+      "total_requests": "Tổng Yêu Cầu API",
+      "sales_forecast": "Doanh Số Theo Gói Nạp",
+      "model_types": "Thống Kê 4 Nhóm Model",
+      "balance_overview": "Cân Bằng Doanh Thu & Chi Phí Token",
+      "deals_status": "Giao Dịch Nạp Tiền Gần Nhất",
+      "pool_alerts": "Giám Sát Tình Trạng Pool"
     }
   }
 }

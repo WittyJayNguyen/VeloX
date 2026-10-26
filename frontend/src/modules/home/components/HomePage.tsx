@@ -7,7 +7,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineLanguage,
 } from 'react-icons/hi2';
-import styles from './HomePage.module.scss';
+import styles from '@assets/scss/home/home.module.scss';
 
 const stats = [
   { value: '100+', key: 'stats.models' },
@@ -30,7 +30,6 @@ const HomePage = () => {
     <div className={styles.page}>
       {/* Hero Section */}
       <section className={styles.hero}>
-        <div className={styles.heroGlow} />
         <span className={styles.badge}>{t('hero.badge')}</span>
         <h1 className={styles.title}>
           {t('hero.title_1')} <br />
@@ -64,7 +63,7 @@ const HomePage = () => {
           {features.map((f) => (
             <div key={f.titleKey} className={styles.card}>
               <div className={styles.cardIcon}>
-                <f.icon size={28} />
+                <f.icon size={26} />
               </div>
               <h3>{t(f.titleKey)}</h3>
               <p>{t(f.descKey)}</p>
@@ -75,7 +74,7 @@ const HomePage = () => {
 
       {/* Providers Section */}
       <section className={styles.providers}>
-        <p className={styles.providerLabel}>Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu</p>
+        <p className={styles.providerLabel}>{t('hero.providers_label') || 'Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu'}</p>
         <div className={styles.providerLogos}>
           {['OpenAI', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'DeepSeek', 'Groq', 'Qwen'].map((p) => (
             <div key={p} className={styles.providerChip}>{p}</div>

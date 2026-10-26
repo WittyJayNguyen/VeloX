@@ -1,0 +1,295 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.dashboard {
+  @include flex-col;
+  gap: 1.25rem;
+}
+
+// ── KPI Grid ──
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.kpiCard {
+  @include velzon-card;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.kpiIconWrap {
+  width: 46px;
+  height: 46px;
+  border-radius: $radius-lg;
+  @include flex-center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.kpiDetails {
+  flex: 1;
+  @include flex-col;
+  gap: 0.2rem;
+}
+
+.kpiLabel {
+  font-size: $fs-xs;
+  font-weight: $fw-semibold;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.kpiValue {
+  font-size: $fs-2xl;
+  font-weight: $fw-bold;
+  color: $text-heading;
+}
+
+.trendBadge {
+  font-size: 0.75rem;
+  font-weight: $fw-semibold;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+
+  &.up {
+    color: $success;
+  }
+
+  &.down {
+    color: $danger;
+  }
+}
+
+// ── Charts Row ──
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 1.25rem;
+
+  @media (max-width: $bp-xl) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  @include velzon-card;
+  padding: 1.25rem 1.5rem;
+  @include flex-col;
+
+  .cardHeader {
+    @include flex-between;
+    margin-bottom: 1rem;
+
+    h3 {
+      font-size: $fs-md;
+      font-weight: $fw-semibold;
+      color: $text-heading;
+    }
+
+    .cardAction {
+      font-size: $fs-xs;
+      color: $text-muted;
+      background-color: $border-light;
+      padding: 0.2rem 0.5rem;
+      border-radius: $radius-sm;
+    }
+  }
+
+  .chartWrapper {
+    width: 100%;
+    min-height: 260px;
+    flex: 1;
+  }
+}
+
+.chartStatsRow {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+
+  .statItem {
+    @include flex-col;
+    .statNum {
+      font-size: $fs-lg;
+      font-weight: $fw-bold;
+      color: $text-heading;
+    }
+    .statTitle {
+      font-size: $fs-xs;
+      color: $text-muted;
+    }
+  }
+}
+
+// ── Bottom Row (Table + Pools Alert) ──
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tableCard {
+  @include velzon-card;
+  padding: 1.25rem 1.5rem;
+
+  .cardHeader {
+    @include flex-between;
+    margin-bottom: 1rem;
+
+    h3 {
+      font-size: $fs-md;
+      font-weight: $fw-semibold;
+      color: $text-heading;
+    }
+  }
+}
+
+.velzonTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $fs-sm;
+
+  th {
+    text-align: left;
+    padding: 0.75rem 0.85rem;
+    font-size: $fs-xs;
+    font-weight: $fw-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $text-muted;
+    background-color: $body-bg;
+    border-bottom: 1px solid $border-color;
+  }
+
+  td {
+    padding: 0.85rem 0.85rem;
+    border-bottom: 1px solid $border-color;
+    color: $text-body;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background-color: #fafbfe;
+  }
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  .miniAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: $primary-subtle;
+    color: $primary;
+    @include flex-center;
+    font-weight: $fw-bold;
+    font-size: 0.75rem;
+  }
+
+  .userNameText {
+    font-weight: $fw-medium;
+    color: $text-heading;
+  }
+}
+
+.pillBadge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: $radius-pill;
+  font-size: 0.6875rem;
+  font-weight: $fw-semibold;
+
+  &.success {
+    background-color: $success-subtle;
+    color: $success;
+  }
+
+  &.warning {
+    background-color: $warning-subtle;
+    color: $warning;
+  }
+
+  &.danger {
+    background-color: $danger-subtle;
+    color: $danger;
+  }
+
+  &.info {
+    background-color: $info-subtle;
+    color: $info;
+  }
+}
+
+.poolHealthList {
+  @include flex-col;
+  gap: 0.85rem;
+}
+
+.poolHealthItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+  background-color: #fff;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $primary;
+    background-color: $primary-subtle;
+  }
+
+  .poolLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    .poolDot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      &.active { background-color: $success; }
+      &.warning { background-color: $warning; }
+      &.danger { background-color: $danger; }
+    }
+
+    .poolName {
+      font-weight: $fw-medium;
+      color: $text-heading;
+      font-size: $fs-sm;
+    }
+  }
+
+  .poolMeta {
+    font-size: $fs-xs;
+    color: $text-muted;
+  }
+}

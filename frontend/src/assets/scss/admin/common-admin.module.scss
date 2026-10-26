@@ -1,0 +1,275 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.moduleContainer {
+  @include flex-col;
+  gap: 1.25rem;
+}
+
+.toolbarCard {
+  @include velzon-card;
+  padding: 1rem 1.25rem;
+  @include flex-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.searchFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: $body-bg;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 0.45rem 0.75rem;
+  width: 260px;
+
+  input {
+    border: none;
+    background: transparent;
+    font-size: $fs-sm;
+    color: $text-dark;
+    width: 100%;
+    &::placeholder { color: $text-muted; }
+  }
+
+  svg { color: $text-muted; }
+}
+
+.selectFilter {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  background-color: #fff;
+  color: $text-body;
+  font-size: $fs-sm;
+  cursor: pointer;
+
+  &:focus {
+    border-color: $primary;
+  }
+}
+
+.actionButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tableContainer {
+  @include velzon-card;
+  overflow: hidden;
+}
+
+.tableHeaderBar {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid $border-color;
+  @include flex-between;
+
+  h3 {
+    font-size: $fs-md;
+    font-weight: $fw-semibold;
+    color: $text-heading;
+  }
+
+  .countBadge {
+    font-size: $fs-xs;
+    background-color: $primary-subtle;
+    color: $primary;
+    padding: 0.15rem 0.5rem;
+    border-radius: $radius-pill;
+    font-weight: $fw-semibold;
+  }
+}
+
+.velzonTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $fs-sm;
+
+  thead th {
+    background-color: #f8f9fa;
+    color: $text-muted;
+    font-weight: $fw-semibold;
+    font-size: $fs-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border-color;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid $border-color;
+    color: $text-body;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover td {
+    background-color: #fbfbfe;
+  }
+}
+
+.actionCell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.iconActionBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-md;
+  @include flex-center;
+  color: $text-muted;
+  transition: all 0.15s ease;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: $primary-subtle;
+    color: $primary;
+  }
+
+  &.actionDelete:hover {
+    background-color: $danger-subtle;
+    color: $danger;
+  }
+
+  &.actionEdit:hover {
+    background-color: $warning-subtle;
+    color: $warning;
+  }
+}
+
+// ── Modal Dialog ──
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: $z-modal;
+  @include flex-center;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.modalCard {
+  background-color: #fff;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  width: 100%;
+  max-width: 540px;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease;
+}
+
+.modalHeader {
+  @include flex-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $border-color;
+
+  h2 {
+    font-size: $fs-lg;
+    font-weight: $fw-bold;
+    color: $text-heading;
+  }
+
+  .closeBtn {
+    color: $text-muted;
+    font-size: 1.25rem;
+    padding: 0.25rem;
+    border-radius: $radius-sm;
+    &:hover { color: $danger; background-color: $danger-subtle; }
+  }
+}
+
+.modalBody {
+  padding: 1.5rem;
+  @include flex-col;
+  gap: 1rem;
+  max-height: 75vh;
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+.modalFooter {
+  @include flex-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid $border-color;
+  background-color: #fafbfe;
+}
+
+.formField {
+  @include flex-col;
+  gap: 0.35rem;
+
+  label {
+    font-size: $fs-sm;
+    font-weight: $fw-medium;
+    color: $text-heading;
+  }
+
+  input, select, textarea {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $fs-sm;
+    color: $text-dark;
+    background-color: #fff;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px $primary-subtle;
+    }
+  }
+
+  .hint {
+    font-size: $fs-xs;
+    color: $text-muted;
+  }
+}
+
+.alertBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: $radius-md;
+  font-size: $fs-sm;
+  font-weight: $fw-medium;
+
+  &.warning {
+    background-color: $warning-subtle;
+    color: #b78119;
+    border: 1px solid rgba($warning, 0.3);
+  }
+
+  &.danger {
+    background-color: $danger-subtle;
+    color: $danger;
+    border: 1px solid rgba($danger, 0.3);
+  }
+
+  &.success {
+    background-color: $success-subtle;
+    color: #087969;
+    border: 1px solid rgba($success, 0.3);
+  }
+}

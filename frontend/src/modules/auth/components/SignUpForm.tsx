@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Button from '@modules/core/design-system/Button';
 import { useAuth } from '../hooks/useAuth';
-import styles from './AuthPage.module.scss';
+import styles from '@assets/scss/auth/auth.module.scss';
 
 export const SignUpForm = () => {
   const { t } = useTranslation();
@@ -23,9 +23,8 @@ export const SignUpForm = () => {
     try {
       await register({ full_name: fullName, email, password });
       navigate('/');
-    } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setError(axiosErr.response?.data?.detail || t('auth.register_error'));
+    } catch {
+      setError(t('auth.register_error'));
     } finally {
       setLoading(false);
     }
@@ -37,6 +36,7 @@ export const SignUpForm = () => {
         <div className={styles.cardHeader}>
           <div className={styles.logoBadge}>V</div>
           <h1>{t('auth.register_title')}</h1>
+          <p>Tạo tài khoản để bắt đầu kết nối AI Gateway</p>
         </div>
 
         {error && <div className={styles.error}>{error}</div>}

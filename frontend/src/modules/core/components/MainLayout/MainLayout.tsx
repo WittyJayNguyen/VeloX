@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import LangSwitcher from '../LangSwitcher/LangSwitcher';
 import Button from '../../design-system/Button';
-import styles from './MainLayout.module.scss';
+import styles from '@assets/scss/core/main-layout.module.scss';
 
 const MainLayout = () => {
   const { t } = useTranslation();
@@ -33,7 +33,7 @@ const MainLayout = () => {
             <div className={styles.userMenu}>
               {isAdmin && (
                 <Link to="/admin">
-                  <Button variant="ghost" size="sm">{t('nav.dashboard')}</Button>
+                  <Button variant="primary" size="sm">{t('nav.dashboard')}</Button>
                 </Link>
               )}
               <span className={styles.userName}>{user?.full_name}</span>

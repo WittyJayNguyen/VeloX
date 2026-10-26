@@ -1,5 +1,5 @@
-@use '../../../assets/scss/variables' as *;
-@use '../../../assets/scss/mixins' as *;
+@use '../variables' as *;
+@use '../mixins' as *;
 
 .page { @include flex-col; }
 
@@ -9,53 +9,39 @@
   @include flex-col;
   align-items: center;
   text-align: center;
-  padding: 6rem 1.5rem 4rem;
+  padding: 5rem 1.5rem 3.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, $body-bg 100%);
+  border-bottom: 1px solid $border-color;
   overflow: hidden;
-}
-
-.heroGlow {
-  position: absolute;
-  top: -120px;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba($accent, 0.15) 0%, transparent 70%);
-  pointer-events: none;
-  animation: pulse 6s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50%      { transform: scale(1.15); opacity: 1; }
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: $accent-soft;
+  background-color: $accent-soft;
   color: $accent;
   border: 1px solid rgba($accent, 0.25);
-  padding: 0.4rem 1rem;
-  border-radius: $radius-full;
-  font-size: $fs-sm;
+  padding: 0.35rem 0.9rem;
+  border-radius: $radius-pill;
+  font-size: $fs-xs;
   font-weight: $fw-semibold;
-  margin-bottom: 1.5rem;
-  animation: fadeDown 0.6s ease;
+  margin-bottom: 1.25rem;
 }
 
 .title {
   font-size: $fs-hero;
-  font-weight: $fw-black;
-  line-height: 1.15;
-  letter-spacing: -1.5px;
+  font-weight: $fw-bold;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  color: $text-heading;
   margin-bottom: 1.25rem;
-  animation: fadeDown 0.7s ease;
 
-  @media (max-width: $bp-md) { font-size: $fs-3xl; }
+  @media (max-width: $bp-md) { font-size: $fs-2xl; }
 }
 
 .gradient {
-  background: $gradient-brand;
+  background: linear-gradient(135deg, $accent, $primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -63,11 +49,10 @@
 
 .subtitle {
   font-size: $fs-lg;
-  color: $text-secondary;
-  max-width: 680px;
-  line-height: 1.7;
-  margin-bottom: 2.5rem;
-  animation: fadeDown 0.8s ease;
+  color: $text-muted;
+  max-width: 660px;
+  line-height: 1.6;
+  margin-bottom: 2rem;
 }
 
 .ctas {
@@ -75,23 +60,18 @@
   gap: 1rem;
   flex-wrap: wrap;
   justify-content: center;
-  animation: fadeDown 0.9s ease;
-}
-
-@keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-16px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Stats Strip ── */
 .statsStrip {
   display: flex;
   gap: 2.5rem;
-  margin-top: 4rem;
-  padding: 1.5rem 2.5rem;
-  background: $gradient-glow;
-  border: 1px solid $border;
+  margin-top: 3.5rem;
+  padding: 1.25rem 2.5rem;
+  background-color: #ffffff;
+  border: 1px solid $border-color;
   border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
 
   @media (max-width: $bp-md) {
     flex-wrap: wrap;
@@ -109,14 +89,14 @@
 .statValue {
   font-size: $fs-2xl;
   font-weight: $fw-bold;
-  color: $text-primary;
+  color: $text-heading;
 }
 
 .statLabel {
   font-size: $fs-xs;
   color: $text-muted;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 /* ── Features ── */
@@ -131,6 +111,7 @@
   text-align: center;
   font-size: $fs-3xl;
   font-weight: $fw-bold;
+  color: $text-heading;
   margin-bottom: 3rem;
   letter-spacing: -0.5px;
 }
@@ -142,27 +123,25 @@
 }
 
 .card {
-  background: $bg-card;
-  border: 1px solid $border;
-  border-radius: $radius-lg;
+  @include velzon-card;
   padding: 2rem;
-  transition: $transition-normal;
 
   &:hover {
-    transform: translateY(-6px);
-    border-color: $accent;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+    border-color: #c9d2de;
   }
 
   h3 {
     font-size: $fs-lg;
     font-weight: $fw-semibold;
+    color: $text-heading;
     margin-bottom: 0.5rem;
   }
 
   p {
     font-size: $fs-sm;
-    color: $text-secondary;
+    color: $text-muted;
     line-height: 1.6;
   }
 }
@@ -170,9 +149,9 @@
 .cardIcon {
   width: 48px;
   height: 48px;
-  border-radius: $radius-md;
-  background: $accent-soft;
-  color: $accent;
+  border-radius: $radius-lg;
+  background-color: $primary-subtle;
+  color: $primary;
   @include flex-center;
   margin-bottom: 1.25rem;
 }
@@ -184,10 +163,10 @@
 }
 
 .providerLabel {
-  font-size: $fs-sm;
+  font-size: $fs-xs;
   color: $text-muted;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   margin-bottom: 1.5rem;
 }
 
@@ -199,18 +178,19 @@
 }
 
 .providerChip {
-  padding: 0.5rem 1.25rem;
-  background: $bg-tertiary;
-  border: 1px solid $border;
-  border-radius: $radius-full;
+  padding: 0.45rem 1.25rem;
+  background-color: #fff;
+  border: 1px solid $border-color;
+  border-radius: $radius-pill;
   font-size: $fs-sm;
-  color: $text-secondary;
+  color: $text-body;
   font-weight: $fw-medium;
-  transition: $transition-fast;
+  box-shadow: $shadow-xs;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: $accent;
-    color: $text-primary;
-    background: $accent-soft;
+    border-color: $primary;
+    color: $primary;
+    background-color: $primary-subtle;
   }
 }
