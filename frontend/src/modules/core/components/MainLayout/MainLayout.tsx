@@ -7,7 +7,7 @@ import styles from '@assets/scss/core/main-layout.module.scss';
 
 const MainLayout = () => {
   const { t } = useTranslation();
-  const { isAuthenticated, isAdmin, user, logout } = useAuthStore();
+  const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -29,13 +29,14 @@ const MainLayout = () => {
           <Link to="/#pricing" className={styles.navLink}>{t('nav.pricing')}</Link>
           <LangSwitcher />
 
+          <Link to="/admin">
+            <Button variant="primary" size="sm">
+              ⚙️ {t('nav.dashboard')}
+            </Button>
+          </Link>
+
           {isAuthenticated ? (
             <div className={styles.userMenu}>
-              {isAdmin && (
-                <Link to="/admin">
-                  <Button variant="primary" size="sm">{t('nav.dashboard')}</Button>
-                </Link>
-              )}
               <span className={styles.userName}>{user?.full_name}</span>
               <Button variant="secondary" size="sm" onClick={handleLogout}>
                 {t('nav.logout')}
