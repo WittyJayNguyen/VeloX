@@ -7,5 +7,5 @@
   "footer": { "rights": "© 2026 VeloX AI. 版权所有。", "terms": "条款", "privacy": "隐私" },
   "auth": { "login_title": "登录账户", "register_title": "创建账户", "email": "邮箱", "password": "密码", "full_name": "姓名", "confirm_password": "确认密码", "login_btn": "登录", "register_btn": "注册", "no_account": "还没有账户？", "has_account": "已有账户？", "or": "或" },
   "common": { "loading": "加载中...", "save": "保存", "cancel": "取消", "delete": "删除", "edit": "编辑", "search": "搜索...", "actions": "操作", "status": "状态", "active": "活跃", "inactive": "停用", "confirm_delete": "确定要删除吗？", "no_data": "暂无数据" },
-  "admin": { "sidebar": { "dashboard": "概览", "services": "服务与池", "models": "模型目录", "billing": "计费与定价", "users": "用户管理", "logs": "系统日志", "settings": "设置" }, "dashboard": { "title": "系统概览", "total_users": "总用户数", "total_revenue": "今日收入", "total_credits_used": "已消耗积分", "pool_health": "池健康度", "revenue_chart": "收入图表", "consumption": "消耗明细" } }
+  "admin": { "sidebar": { "dashboard": "系统概览", "models": "AI模型性能", "logs": "SLA事故日志", "billing": "充值记录", "banking": "银行与QR", "wallet": "钱包与现金流", "services": "池管理", "keys": "API密钥", "packages": "服务与套餐配置", "users": "用户管理", "roles": "角色与权限", "notifications": "通知管理", "settings": "设置" }, "dashboard": { "title": "系统概览", "total_users": "总用户数", "total_revenue": "今日收入", "total_credits_used": "已消耗积分", "pool_health": "池健康度", "revenue_chart": "收入图表", "consumption": "消耗明细" } }
 }

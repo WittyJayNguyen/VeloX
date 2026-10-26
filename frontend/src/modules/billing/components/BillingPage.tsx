@@ -165,7 +165,7 @@ const BillingPage = () => {
             key={pkg.id}
             style={{
               backgroundColor: '#fff',
-              border: pkg.isPopular ? '2px solid #3577f1' : '1px solid #e9ebec',
+              border: pkg.isPopular ? '2px solid #6366f1' : '1px solid #27272a',
               borderRadius: 8,
               padding: '1.25rem',
               boxShadow: '0 1px 2px rgba(56,65,74,0.1)',
@@ -178,7 +178,7 @@ const BillingPage = () => {
                   position: 'absolute',
                   top: -10,
                   right: 15,
-                  backgroundColor: '#3577f1',
+                  backgroundColor: '#6366f1',
                   color: '#fff',
                   fontSize: '0.65rem',
                   fontWeight: 700,
@@ -189,16 +189,16 @@ const BillingPage = () => {
                 PHỔ BIẾN NHẤT
               </span>
             )}
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#343a40', marginBottom: '0.35rem' }}>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fafafa', marginBottom: '0.35rem' }}>
               {pkg.name}
             </h4>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0ab39c', marginBottom: '0.25rem' }}>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981', marginBottom: '0.25rem' }}>
               {pkg.priceVnd.toLocaleString()} ₫
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#495057', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.8rem', color: '#a1a1aa', marginBottom: '0.75rem' }}>
               Nhận: <strong>{pkg.credits.toLocaleString()} Credits</strong>
               {pkg.bonusPercent > 0 && (
-                <span style={{ color: '#f7b84b', marginLeft: 4, fontWeight: 700 }}>
+                <span style={{ color: '#f59e0b', marginLeft: 4, fontWeight: 700 }}>
                   (+{pkg.bonusPercent}% Thưởng)
                 </span>
               )}
@@ -208,7 +208,7 @@ const BillingPage = () => {
               onClick={() => handleDeletePackage(pkg.id)}
               style={{
                 fontSize: '0.75rem',
-                color: '#f06548',
+                color: '#f43f5e',
                 border: 'none',
                 background: 'none',
                 cursor: 'pointer',
@@ -261,7 +261,7 @@ const BillingPage = () => {
         <div className={styles.tableHeaderBar}>
           <div>
             <h3>Lịch Sử Giao Dịch & Nạp Tiền Theo Ngày</h3>
-            <span style={{ fontSize: '0.75rem', color: '#878a99' }}>
+            <span style={{ fontSize: '0.75rem', color: '#71717a' }}>
               Quản lý thanh toán tự động qua VietQR, MoMo và thẻ VCC
             </span>
           </div>
@@ -285,11 +285,11 @@ const BillingPage = () => {
             {filteredTx.map((tx) => (
               <tr key={tx.id}>
                 <td>
-                  <strong style={{ color: '#3577f1' }}>{tx.id}</strong>
+                  <strong style={{ color: '#6366f1' }}>{tx.id}</strong>
                 </td>
                 <td>{tx.userEmail}</td>
                 <td style={{ fontWeight: 700 }}>{tx.amountVnd.toLocaleString()} ₫</td>
-                <td style={{ color: '#0ab39c', fontWeight: 700 }}>
+                <td style={{ color: '#10b981', fontWeight: 700 }}>
                   +{tx.creditsGiven.toLocaleString()} cr
                 </td>
                 <td>
@@ -300,13 +300,13 @@ const BillingPage = () => {
                       gap: 4,
                       fontSize: '0.75rem',
                       fontWeight: 600,
-                      color: '#405189',
+                      color: '#6366f1',
                     }}
                   >
                     <HiOutlineCreditCard size={15} /> {tx.method}
                   </span>
                 </td>
-                <td style={{ fontSize: '0.75rem', color: '#878a99' }}>{tx.createdAt}</td>
+                <td style={{ fontSize: '0.75rem', color: '#71717a' }}>{tx.createdAt}</td>
                 <td>
                   <span
                     style={{
@@ -316,16 +316,16 @@ const BillingPage = () => {
                       fontWeight: 700,
                       backgroundColor:
                         tx.status === 'SUCCESS'
-                          ? '#e6f7f5'
+                          ? 'rgba(16,185,129,0.12)'
                           : tx.status === 'PENDING'
-                          ? '#fef8ee'
-                          : '#fef0ed',
+                          ? 'rgba(245,158,11,0.12)'
+                          : 'rgba(244,63,94,0.12)',
                       color:
                         tx.status === 'SUCCESS'
-                          ? '#0ab39c'
+                          ? '#10b981'
                           : tx.status === 'PENDING'
-                          ? '#f7b84b'
-                          : '#f06548',
+                          ? '#f59e0b'
+                          : '#f43f5e',
                     }}
                   >
                     {tx.status}

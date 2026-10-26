@@ -264,9 +264,9 @@ const ModelsPage = () => {
               fontSize: '0.85rem',
               fontWeight: 600,
               cursor: 'pointer',
-              border: activeTab === tab.key ? '1px solid #3577f1' : '1px solid #e9ebec',
-              backgroundColor: activeTab === tab.key ? '#eef3fd' : '#ffffff',
-              color: activeTab === tab.key ? '#3577f1' : '#495057',
+              border: activeTab === tab.key ? '1px solid #6366f1' : '1px solid #27272a',
+              backgroundColor: activeTab === tab.key ? 'rgba(99,102,241,0.12)' : '#18181b',
+              color: activeTab === tab.key ? '#6366f1' : '#a1a1aa',
               transition: 'all 0.15s ease',
             }}
           >
@@ -301,7 +301,7 @@ const ModelsPage = () => {
         <div className={styles.tableHeaderBar}>
           <div>
             <h3>Bảng Định Giá & Cân Bằng Biên Lợi Nhuận Model</h3>
-            <span style={{ fontSize: '0.75rem', color: '#878a99' }}>
+            <span style={{ fontSize: '0.75rem', color: '#71717a' }}>
               Quy đổi chi phí token gốc nhà cung cấp vs giá bán credit thu từ user
             </span>
           </div>
@@ -328,8 +328,8 @@ const ModelsPage = () => {
                 <tr key={m.id}>
                   <td>
                     <div>
-                      <strong style={{ color: '#212529', display: 'block' }}>{m.name}</strong>
-                      <code style={{ fontSize: '0.75rem', color: '#3577f1' }}>{m.modelCode}</code>
+                      <strong style={{ color: '#fafafa', display: 'block' }}>{m.name}</strong>
+                      <code style={{ fontSize: '0.75rem', color: '#6366f1' }}>{m.modelCode}</code>
                     </div>
                   </td>
                   <td>
@@ -341,19 +341,19 @@ const ModelsPage = () => {
                         fontWeight: 600,
                         backgroundColor:
                           m.category === 'CHAT'
-                            ? '#eef3fd'
+                            ? 'rgba(99,102,241,0.12)'
                             : m.category === 'IMAGE'
-                            ? '#e6f7f5'
+                            ? 'rgba(16,185,129,0.12)'
                             : m.category === 'VIDEO'
-                            ? '#fef8ee'
-                            : '#f3effe',
+                            ? 'rgba(245,158,11,0.12)'
+                            : 'rgba(139,92,246,0.12)',
                         color:
                           m.category === 'CHAT'
-                            ? '#3577f1'
+                            ? '#6366f1'
                             : m.category === 'IMAGE'
-                            ? '#0ab39c'
+                            ? '#10b981'
                             : m.category === 'VIDEO'
-                            ? '#f7b84b'
+                            ? '#f59e0b'
                             : '#8b5cf6',
                       }}
                     >
@@ -362,12 +362,12 @@ const ModelsPage = () => {
                   </td>
                   <td>{m.provider}</td>
                   <td>
-                    <span style={{ color: '#878a99' }}>
+                    <span style={{ color: '#71717a' }}>
                       ~{Math.round(m.costPerReqOr1kTok * 250)} ₫ ({m.costPerReqOr1kTok}¢)
                     </span>
                   </td>
                   <td>
-                    <strong style={{ color: '#0ab39c' }}>{m.sellingCreditPrice.toLocaleString()} Credits</strong>
+                    <strong style={{ color: '#10b981' }}>{m.sellingCreditPrice.toLocaleString()} Credits</strong>
                   </td>
                   <td>
                     <span
@@ -376,7 +376,7 @@ const ModelsPage = () => {
                         alignItems: 'center',
                         gap: 3,
                         fontWeight: 700,
-                        color: margin > 50 ? '#0ab39c' : margin > 30 ? '#f7b84b' : '#f06548',
+                        color: margin > 50 ? '#10b981' : margin > 30 ? '#f59e0b' : '#f43f5e',
                       }}
                     >
                       <HiOutlineCalculator size={14} /> +{margin}% Lãi
@@ -393,8 +393,8 @@ const ModelsPage = () => {
                         fontWeight: 600,
                         border: 'none',
                         cursor: 'pointer',
-                        backgroundColor: m.isActive ? '#e6f7f5' : '#fef0ed',
-                        color: m.isActive ? '#0ab39c' : '#f06548',
+                        backgroundColor: m.isActive ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)',
+                        color: m.isActive ? '#10b981' : '#f43f5e',
                       }}
                     >
                       {m.isActive ? 'Active' : 'Disabled'}
@@ -513,8 +513,8 @@ const ModelsPage = () => {
 
                 <div
                   style={{
-                    backgroundColor: '#e6f7f5',
-                    color: '#0ab39c',
+                    backgroundColor: 'rgba(16,185,129,0.12)',
+                    color: '#10b981',
                     padding: '0.75rem',
                     borderRadius: 6,
                     fontSize: '0.8rem',

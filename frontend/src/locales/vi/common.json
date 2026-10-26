@@ -29,7 +29,11 @@
     "security": "Bảo Mật Chuẩn Doanh Nghiệp",
     "security_desc": "Mã hóa đầu cuối, kiểm soát truy cập RBAC và giám sát nhật ký toàn diện.",
     "i18n": "Đa Ngôn Ngữ Linh Hoạt",
-    "i18n_desc": "Hỗ trợ 5 ngôn ngữ: Tiếng Việt, Tiếng Anh, Tiếng Nhật, Hàn Quốc và Trung Quốc."
+    "i18n_desc": "Hỗ trợ 5 ngôn ngữ: Tiếng Việt, Tiếng Anh, Tiếng Nhật, Hàn Quốc và Trung Quốc.",
+    "realtime": "Xử Lý Thời Gian Thực",
+    "realtime_desc": "Stream response nhanh chóng với WebSocket, hỗ trợ SSE cho tất cả model chat AI.",
+    "analytics": "Phân Tích & Báo Cáo",
+    "analytics_desc": "Dashboard thống kê chi tiết doanh thu, lượt sử dụng, biên lợi nhuận theo thời gian thực."
   },
   "stats": {
     "models": "Mô Hình AI",
@@ -76,13 +80,19 @@
   "admin": {
     "search_placeholder": "Tìm kiếm nhanh mọi thứ...",
     "sidebar": {
-      "dashboard": "Bảng Tổng Quan",
-      "services": "Quản Lý Dịch Vụ & Pool",
-      "models": "Danh Mục Model & Định Giá",
-      "billing": "Gói Nạp & Thanh Toán",
-      "users": "Người Dùng & Phân Quyền",
-      "logs": "Nhật Ký Yêu Cầu (Logs)",
-      "settings": "Cài Đặt Hệ Thống"
+      "dashboard": "Tổng Quan Hệ Thống",
+      "models": "Hiệu Năng Model AI",
+      "logs": "Nhật Ký Sự Cố SLA",
+      "billing": "Lịch Sử Nạp Tiền",
+      "banking": "Ngân Hàng & QR",
+      "wallet": "Ví & Dòng Tiền",
+      "services": "Quản Lý Pool",
+      "keys": "API Key",
+      "packages": "Cấu Hình Dịch Vụ & Gói",
+      "users": "Quản Lý Người Dùng",
+      "roles": "Phân Quyền",
+      "notifications": "Quản Lý Thông Báo",
+      "settings": "Cài Đặt"
     },
     "dashboard": {
       "title": "Bảng Điều Khiển Quản Trị CRM",

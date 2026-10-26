@@ -4,12 +4,12 @@ import {
   HiOutlineTrash,
   HiOutlinePencilSquare,
   HiOutlineKey,
-  HiOutlineShieldCheck,
-  HiOutlineSparkles,
   HiOutlineExclamationTriangle,
   HiOutlineMagnifyingGlass,
   HiOutlineXMark,
+  HiOutlineSignal,
 } from 'react-icons/hi2';
+import { useNavigate } from 'react-router-dom';
 import Button from '@modules/core/design-system/Button';
 import styles from '@assets/scss/admin/common-admin.module.scss';
 
@@ -63,6 +63,25 @@ const initialPools: PoolItem[] = [
     ],
   },
   {
+    id: 'pool_anthropic_01',
+    name: 'Anthropic Claude Sonnet Pool',
+    provider: 'Anthropic',
+    authType: 'API_KEY',
+    routingStrategy: 'LEAST_USED',
+    isActive: true,
+    rateLimitPerMin: 800,
+    keys: [
+      {
+        id: 'k_ant_1',
+        name: 'Claude Key #1',
+        keyVal: 'sk-ant-api03...x2f',
+        isActive: true,
+        requestsCount: 8750,
+        detectedModels: ['claude-3-5-sonnet', 'claude-3-haiku'],
+      },
+    ],
+  },
+  {
     id: 'pool_midjourney_01',
     name: 'Midjourney Account Token Pool',
     provider: 'Midjourney',
@@ -110,40 +129,38 @@ const initialPools: PoolItem[] = [
     routingStrategy: 'ROUND_ROBIN',
     isActive: false,
     rateLimitPerMin: 50,
-    keys: [], // Empty pool -> Alert!
+    keys: [],
   },
 ];
 
-const ServicePoolPage = () => {
-  const [pools, setPools] = useState<PoolItem[]>(() => {
-    const saved = localStorage.getItem('velox_pools');
-    return saved ? JSON.parse(saved) : initialPools;
-  });
+// Export helper so KeysPage can share the same data
+export const getPoolsFromStorage = (): PoolItem[] => {
+  const saved = localStorage.getItem('velox_pools');
+  return saved ? JSON.parse(saved) : initialPools;
+};
 
+export const savePoolsToStorage = (pools: PoolItem[]) => {
+  localStorage.setItem('velox_pools', JSON.stringify(pools));
+};
+
+const ServicePoolPage = () => {
+  const navigate = useNavigate();
+  const [pools, setPools] = useState<PoolItem[]>(getPoolsFromStorage);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterProvider, setFilterProvider] = useState('ALL');
 
-  // Modal State
+  // Pool Modal
   const [showPoolModal, setShowPoolModal] = useState(false);
   const [editingPool, setEditingPool] = useState<PoolItem | null>(null);
-
-  // Key Modal State
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
-  const [newKeyName, setNewKeyName] = useState('');
-  const [newKeyVal, setNewKeyVal] = useState('');
-  const [newRecapToken, setNewRecapToken] = useState('');
-  const [autoDetecting, setAutoDetecting] = useState(false);
-
-  // Form State for Pool
   const [formName, setFormName] = useState('');
   const [formProvider, setFormProvider] = useState<PoolItem['provider']>('OpenAI');
   const [formAuthType, setFormAuthType] = useState<PoolItem['authType']>('API_KEY');
   const [formRouting, setFormRouting] = useState<PoolItem['routingStrategy']>('ROUND_ROBIN');
+  const [formRateLimit, setFormRateLimit] = useState(500);
 
   const savePools = (updated: PoolItem[]) => {
     setPools(updated);
-    localStorage.setItem('velox_pools', JSON.stringify(updated));
+    savePoolsToStorage(updated);
   };
 
   const handleOpenAddPool = () => {
@@ -152,6 +169,7 @@ const ServicePoolPage = () => {
     setFormProvider('OpenAI');
     setFormAuthType('API_KEY');
     setFormRouting('ROUND_ROBIN');
+    setFormRateLimit(500);
     setShowPoolModal(true);
   };
 
@@ -161,6 +179,7 @@ const ServicePoolPage = () => {
     setFormProvider(p.provider);
     setFormAuthType(p.authType);
     setFormRouting(p.routingStrategy);
+    setFormRateLimit(p.rateLimitPerMin);
     setShowPoolModal(true);
   };
 
@@ -171,13 +190,7 @@ const ServicePoolPage = () => {
     if (editingPool) {
       const updated = pools.map((p) =>
         p.id === editingPool.id
-          ? {
-              ...p,
-              name: formName,
-              provider: formProvider,
-              authType: formAuthType,
-              routingStrategy: formRouting,
-            }
+          ? { ...p, name: formName, provider: formProvider, authType: formAuthType, routingStrategy: formRouting, rateLimitPerMin: formRateLimit }
           : p
       );
       savePools(updated);
@@ -189,7 +202,7 @@ const ServicePoolPage = () => {
         authType: formAuthType,
         routingStrategy: formRouting,
         isActive: true,
-        rateLimitPerMin: 500,
+        rateLimitPerMin: formRateLimit,
         keys: [],
       };
       savePools([...pools, newPool]);
@@ -204,80 +217,53 @@ const ServicePoolPage = () => {
   };
 
   const handleTogglePool = (id: string) => {
-    const updated = pools.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p));
-    savePools(updated);
+    savePools(pools.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)));
   };
 
-  // Keys Management
-  const handleOpenAddKey = (poolId: string) => {
-    setSelectedPoolId(poolId);
-    setNewKeyName('');
-    setNewKeyVal('');
-    setNewRecapToken('');
-    setShowKeyModal(true);
-  };
-
-  const handleAutoDetectModels = () => {
-    setAutoDetecting(true);
-    setTimeout(() => {
-      setAutoDetecting(false);
-      alert('Đã tự động nhận diện models từ nhà cung cấp: GPT-4o, GPT-4o-mini, DALL-E-3');
-    }, 800);
-  };
-
-  const handleSaveKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedPoolId || !newKeyVal.trim()) return;
-
-    const newKey: PoolKeyItem = {
-      id: `key_${Date.now()}`,
-      name: newKeyName || 'Khóa ' + (pools.find((p) => p.id === selectedPoolId)?.keys.length ?? 0 + 1),
-      keyVal: newKeyVal,
-      recapToken: newRecapToken || undefined,
-      isActive: true,
-      requestsCount: 0,
-      detectedModels: ['gpt-4o', 'claude-3.5', 'auto-detected'],
-    };
-
-    const updated = pools.map((p) => {
-      if (p.id === selectedPoolId) {
-        return { ...p, keys: [...p.keys, newKey] };
-      }
-      return p;
-    });
-
-    savePools(updated);
-    setShowKeyModal(false);
-  };
-
-  const handleDeleteKey = (poolId: string, keyId: string) => {
-    const updated = pools.map((p) => {
-      if (p.id === poolId) {
-        return { ...p, keys: p.keys.filter((k) => k.id !== keyId) };
-      }
-      return p;
-    });
-    savePools(updated);
-  };
-
-  // Filtered pools
   const filtered = pools.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesProvider = filterProvider === 'ALL' || p.provider === filterProvider;
     return matchesSearch && matchesProvider;
   });
 
+  const totalKeys = pools.reduce((acc, p) => acc + p.keys.length, 0);
+  const activePools = pools.filter((p) => p.isActive).length;
+  const depletedPools = pools.filter((p) => p.keys.length === 0).length;
+
   return (
     <div className={styles.moduleContainer}>
-      {/* Alert Banner if any pool has 0 keys */}
-      {pools.some((p) => p.keys.length === 0) && (
+      {/* Alert */}
+      {depletedPools > 0 && (
         <div className={`${styles.alertBanner} ${styles.danger}`}>
           <HiOutlineExclamationTriangle size={20} />
           <span>
-            <strong>CẢNH BÁO QUAN TRỌNG:</strong> Có Pool đang cạn/hết API Key hoặc Token! Hãy bổ sung key ngay để tránh lỗi 503 cho người dùng.
+            <strong>CẢNH BÁO:</strong> Có {depletedPools} Pool đang cạn/hết API Key! Hãy bổ sung key ngay.
           </span>
         </div>
       )}
+
+      {/* KPI Summary Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+        {[
+          { label: 'Tổng Pool', value: pools.length, color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
+          { label: 'Đang Hoạt Động', value: activePools, color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+          { label: 'Tổng API Keys', value: totalKeys, color: '#06b6d4', bg: 'rgba(6,182,212,0.12)' },
+          { label: 'Pool Hết Key', value: depletedPools, color: '#f43f5e', bg: 'rgba(244,63,94,0.12)' },
+        ].map((s, i) => (
+          <div key={i} style={{
+            background: '#18181b', border: '1px solid #27272a', borderRadius: 12,
+            padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem',
+          }}>
+            <div style={{ width: 42, height: 42, borderRadius: 10, backgroundColor: s.bg, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+              <HiOutlineSignal />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#fafafa' }}>{s.value}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Toolbar */}
       <div className={styles.toolbarCard}>
@@ -286,48 +272,46 @@ const ServicePoolPage = () => {
             <HiOutlineMagnifyingGlass size={16} />
             <input
               type="text"
-              placeholder="Tìm kiếm pool theo tên..."
+              placeholder="Tìm kiếm pool..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
-          <select
-            className={styles.selectFilter}
-            value={filterProvider}
-            onChange={(e) => setFilterProvider(e.target.value)}
-          >
-            <option value="ALL">Tất cả Nhà Cung Cấp</option>
+          <select className={styles.selectFilter} value={filterProvider} onChange={(e) => setFilterProvider(e.target.value)}>
+            <option value="ALL">Tất cả NCC</option>
             <option value="OpenAI">OpenAI</option>
-            <option value="Anthropic">Anthropic (Claude)</option>
+            <option value="Anthropic">Anthropic</option>
             <option value="Midjourney">Midjourney</option>
             <option value="Runway">Runway</option>
             <option value="DeepSeek">DeepSeek</option>
+            <option value="Google">Google</option>
           </select>
         </div>
-
         <div className={styles.actionButtonGroup}>
+          <Button variant="outline" size="md" onClick={() => navigate('/admin/keys')}>
+            <HiOutlineKey size={16} /> Quản Lý Keys
+          </Button>
           <Button variant="primary" size="md" onClick={handleOpenAddPool}>
-            <HiOutlinePlus size={16} /> Thêm Pool Mới
+            <HiOutlinePlus size={16} /> Thêm Pool
           </Button>
         </div>
       </div>
 
-      {/* Pools Table & Key Management */}
+      {/* Pools Table */}
       <div className={styles.tableContainer}>
         <div className={styles.tableHeaderBar}>
-          <h3>Danh Sách Pool Dịch Vụ & Nhóm Khóa NCC</h3>
-          <span className={styles.countBadge}>{filtered.length} Pools Hoạt Động</span>
+          <h3>Danh Sách Service Pool</h3>
+          <span className={styles.countBadge}>{filtered.length} Pools</span>
         </div>
-
         <table className={styles.velzonTable}>
           <thead>
             <tr>
               <th>Tên Pool</th>
               <th>Nhà Cung Cấp</th>
               <th>Loại Xác Thực</th>
-              <th>Thuật Toán Điều Phối</th>
-              <th>Số Lượng Khóa / Token</th>
+              <th>Điều Phối</th>
+              <th>Rate Limit</th>
+              <th>Keys</th>
               <th>Trạng Thái</th>
               <th>Thao Tác</th>
             </tr>
@@ -339,83 +323,55 @@ const ServicePoolPage = () => {
                 <tr key={pool.id}>
                   <td>
                     <div>
-                      <strong style={{ color: '#212529', display: 'block' }}>{pool.name}</strong>
-                      <span style={{ fontSize: '0.75rem', color: '#878a99' }}>{pool.id}</span>
+                      <strong style={{ color: '#fafafa', display: 'block' }}>{pool.name}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#71717a' }}>{pool.id}</span>
                     </div>
                   </td>
                   <td>
-                    <span style={{ fontWeight: 600, color: '#405189' }}>{pool.provider}</span>
-                  </td>
-                  <td>
-                    <span
-                      style={{
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: 4,
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        backgroundColor: pool.authType === 'API_KEY' ? '#eef3fd' : '#fef8ee',
-                        color: pool.authType === 'API_KEY' ? '#3577f1' : '#f7b84b',
-                      }}
-                    >
-                      {pool.authType === 'API_KEY' ? 'API Key NCC' : 'Account Token + Recap'}
+                    <span style={{
+                      padding: '0.2rem 0.55rem', borderRadius: 8, fontSize: '0.75rem', fontWeight: 600,
+                      backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1',
+                    }}>
+                      {pool.provider}
                     </span>
                   </td>
                   <td>
-                    <span style={{ fontSize: '0.8rem', color: '#495057' }}>{pool.routingStrategy}</span>
+                    <span style={{
+                      padding: '0.2rem 0.5rem', borderRadius: 8, fontSize: '0.75rem', fontWeight: 600,
+                      backgroundColor: pool.authType === 'API_KEY' ? 'rgba(6,182,212,0.12)' : 'rgba(245,158,11,0.12)',
+                      color: pool.authType === 'API_KEY' ? '#06b6d4' : '#f59e0b',
+                    }}>
+                      {pool.authType === 'API_KEY' ? 'API Key' : 'Token + Recap'}
+                    </span>
                   </td>
+                  <td style={{ fontSize: '0.8rem', color: '#a1a1aa' }}>{pool.routingStrategy}</td>
+                  <td style={{ fontWeight: 600, color: '#a1a1aa' }}>{pool.rateLimitPerMin}/min</td>
                   <td>
                     {isDepleted ? (
-                      <span style={{ color: '#f06548', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <HiOutlineExclamationTriangle size={14} /> 0 Key (Hết Pool!)
+                      <span style={{ color: '#f43f5e', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.8rem' }}>
+                        <HiOutlineExclamationTriangle size={14} /> 0 Key
                       </span>
                     ) : (
-                      <span style={{ color: '#0ab39c', fontWeight: 600 }}>
-                        {pool.keys.length} Khóa / Tokens
+                      <span style={{ color: '#10b981', fontWeight: 600, fontSize: '0.85rem' }}>
+                        {pool.keys.length} Keys
                       </span>
                     )}
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePool(pool.id)}
-                      style={{
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: 9999,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        border: 'none',
-                        cursor: 'pointer',
-                        backgroundColor: pool.isActive ? '#e6f7f5' : '#fef0ed',
-                        color: pool.isActive ? '#0ab39c' : '#f06548',
-                      }}
-                    >
-                      {pool.isActive ? 'Đang Bật' : 'Tạm Dừng'}
+                    <button type="button" onClick={() => handleTogglePool(pool.id)} style={{
+                      padding: '0.2rem 0.6rem', borderRadius: 9999, fontSize: '0.7rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+                      backgroundColor: pool.isActive ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)',
+                      color: pool.isActive ? '#10b981' : '#f43f5e',
+                    }}>
+                      {pool.isActive ? '● Active' : '○ Paused'}
                     </button>
                   </td>
                   <td>
                     <div className={styles.actionCell}>
-                      <button
-                        type="button"
-                        className={styles.iconActionBtn}
-                        onClick={() => handleOpenAddKey(pool.id)}
-                        title="Quản lý Key/Token"
-                      >
-                        <HiOutlineKey size={17} />
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.iconActionBtn} ${styles.actionEdit}`}
-                        onClick={() => handleOpenEditPool(pool)}
-                        title="Chỉnh sửa Pool"
-                      >
+                      <button type="button" className={`${styles.iconActionBtn} ${styles.actionEdit}`} onClick={() => handleOpenEditPool(pool)} title="Edit">
                         <HiOutlinePencilSquare size={17} />
                       </button>
-                      <button
-                        type="button"
-                        className={`${styles.iconActionBtn} ${styles.actionDelete}`}
-                        onClick={() => handleDeletePool(pool.id)}
-                        title="Xoá Pool"
-                      >
+                      <button type="button" className={`${styles.iconActionBtn} ${styles.actionDelete}`} onClick={() => handleDeletePool(pool.id)} title="Delete">
                         <HiOutlineTrash size={17} />
                       </button>
                     </div>
@@ -427,93 +383,13 @@ const ServicePoolPage = () => {
         </table>
       </div>
 
-      {/* Sub-table: Keys Inside Selected Pool */}
-      <div className={styles.tableContainer} style={{ marginTop: '0.5rem' }}>
-        <div className={styles.tableHeaderBar}>
-          <h3>Chi Tiết Các Khóa / Account Token Trong Các Pool</h3>
-          <span style={{ fontSize: '0.8rem', color: '#878a99' }}>Bao gồm cấu hình mã Recap và Auto nhận diện model</span>
-        </div>
-
-        <table className={styles.velzonTable}>
-          <thead>
-            <tr>
-              <th>Tên Khóa / Account</th>
-              <th>Thuộc Pool</th>
-              <th>Giá Trị Khóa / Token</th>
-              <th>Mã Recap Token (Bypass)</th>
-              <th>Models Tự Nhận Diện</th>
-              <th>Lượt Req</th>
-              <th>Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pools.flatMap((p) =>
-              p.keys.map((k) => (
-                <tr key={k.id}>
-                  <td style={{ fontWeight: 600 }}>{k.name}</td>
-                  <td>{p.name}</td>
-                  <td>
-                    <code style={{ background: '#f3f6f9', padding: '0.15rem 0.4rem', borderRadius: 4, fontSize: '0.75rem' }}>
-                      {k.keyVal}
-                    </code>
-                  </td>
-                  <td>
-                    {k.recapToken ? (
-                      <span style={{ color: '#0ab39c', fontSize: '0.75rem', fontWeight: 600 }}>
-                        <HiOutlineShieldCheck size={14} style={{ verticalAlign: 'middle', marginRight: 2 }} />
-                        Đã nạp Recap Token
-                      </span>
-                    ) : (
-                      <span style={{ color: '#878a99', fontSize: '0.75rem' }}>Không áp dụng</span>
-                    )}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                      {k.detectedModels.map((m, idx) => (
-                        <span
-                          key={idx}
-                          style={{
-                            backgroundColor: '#eef3fd',
-                            color: '#3577f1',
-                            fontSize: '0.6875rem',
-                            padding: '0.1rem 0.35rem',
-                            borderRadius: 3,
-                          }}
-                        >
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td style={{ fontWeight: 600 }}>{k.requestsCount.toLocaleString()}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className={`${styles.iconActionBtn} ${styles.actionDelete}`}
-                      onClick={() => handleDeleteKey(p.id, k.id)}
-                      title="Xoá Key"
-                    >
-                      <HiOutlineTrash size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal: Thêm / Sửa Pool */}
+      {/* Modal: Add/Edit Pool */}
       {showPoolModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalCard}>
             <div className={styles.modalHeader}>
               <h2>{editingPool ? 'Chỉnh Sửa Pool' : 'Thêm Pool Dịch Vụ Mới'}</h2>
-              <button
-                type="button"
-                className={styles.closeBtn}
-                onClick={() => setShowPoolModal(false)}
-              >
+              <button type="button" className={styles.closeBtn} onClick={() => setShowPoolModal(false)}>
                 <HiOutlineXMark />
               </button>
             </div>
@@ -521,21 +397,11 @@ const ServicePoolPage = () => {
               <div className={styles.modalBody}>
                 <div className={styles.formField}>
                   <label>Tên Pool</label>
-                  <input
-                    type="text"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    placeholder="VD: OpenAI GPT-4o Key Pool"
-                    required
-                  />
+                  <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="VD: OpenAI GPT-4o Key Pool" required />
                 </div>
-
                 <div className={styles.formField}>
-                  <label>Nhà Cung Cấp (Provider)</label>
-                  <select
-                    value={formProvider}
-                    onChange={(e) => setFormProvider(e.target.value as PoolItem['provider'])}
-                  >
+                  <label>Nhà Cung Cấp</label>
+                  <select value={formProvider} onChange={(e) => setFormProvider(e.target.value as PoolItem['provider'])}>
                     <option value="OpenAI">OpenAI</option>
                     <option value="Anthropic">Anthropic (Claude)</option>
                     <option value="Midjourney">Midjourney</option>
@@ -544,115 +410,30 @@ const ServicePoolPage = () => {
                     <option value="Google">Google Gemini</option>
                   </select>
                 </div>
-
                 <div className={styles.formField}>
-                  <label>Hình Thức Xác Thực (Auth Type)</label>
-                  <select
-                    value={formAuthType}
-                    onChange={(e) => setFormAuthType(e.target.value as PoolItem['authType'])}
-                  >
-                    <option value="API_KEY">API Key Chính Thức từ NCC</option>
-                    <option value="TOKEN_ACCOUNT">Token từ Account (Session/Recap)</option>
+                  <label>Hình Thức Xác Thực</label>
+                  <select value={formAuthType} onChange={(e) => setFormAuthType(e.target.value as PoolItem['authType'])}>
+                    <option value="API_KEY">API Key Chính Thức</option>
+                    <option value="TOKEN_ACCOUNT">Token Account + Recap</option>
                   </select>
-                  <span className={styles.hint}>
-                    Token từ account hỗ trợ nạp mã recap captcha để tự động lấy model.
-                  </span>
+                  <span className={styles.hint}>Token từ account hỗ trợ nạp mã recap captcha.</span>
                 </div>
-
                 <div className={styles.formField}>
-                  <label>Thuật Toán Điều Phối (Routing Strategy)</label>
-                  <select
-                    value={formRouting}
-                    onChange={(e) => setFormRouting(e.target.value as PoolItem['routingStrategy'])}
-                  >
-                    <option value="ROUND_ROBIN">Round Robin (Xoay vòng đều)</option>
-                    <option value="LEAST_USED">Least Used (Ưu tiên key ít dùng nhất)</option>
-                    <option value="WEIGHTED">Weighted (Trọng số định mức)</option>
+                  <label>Thuật Toán Điều Phối</label>
+                  <select value={formRouting} onChange={(e) => setFormRouting(e.target.value as PoolItem['routingStrategy'])}>
+                    <option value="ROUND_ROBIN">Round Robin</option>
+                    <option value="LEAST_USED">Least Used</option>
+                    <option value="WEIGHTED">Weighted</option>
                   </select>
+                </div>
+                <div className={styles.formField}>
+                  <label>Rate Limit (req/min)</label>
+                  <input type="number" value={formRateLimit} onChange={(e) => setFormRateLimit(Number(e.target.value))} min={1} />
                 </div>
               </div>
               <div className={styles.modalFooter}>
-                <Button variant="secondary" onClick={() => setShowPoolModal(false)}>
-                  Hủy Bỏ
-                </Button>
-                <Button variant="primary" type="submit">
-                  Lưu Pool
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Thêm API Key / Token vào Pool */}
-      {showKeyModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalCard}>
-            <div className={styles.modalHeader}>
-              <h2>Thêm Khóa / Account Token Vào Pool</h2>
-              <button
-                type="button"
-                className={styles.closeBtn}
-                onClick={() => setShowKeyModal(false)}
-              >
-                <HiOutlineXMark />
-              </button>
-            </div>
-            <form onSubmit={handleSaveKey}>
-              <div className={styles.modalBody}>
-                <div className={styles.formField}>
-                  <label>Tên Gợi Nhớ Cho Khóa</label>
-                  <input
-                    type="text"
-                    value={newKeyName}
-                    onChange={(e) => setNewKeyName(e.target.value)}
-                    placeholder="VD: OpenAI Key Dự Phòng #3"
-                  />
-                </div>
-
-                <div className={styles.formField}>
-                  <label>Giá Trị API Key / Account Token</label>
-                  <textarea
-                    rows={3}
-                    value={newKeyVal}
-                    onChange={(e) => setNewKeyVal(e.target.value)}
-                    placeholder="Dán API Key hoặc session token tại đây..."
-                    required
-                  />
-                </div>
-
-                <div className={styles.formField}>
-                  <label>Khẩu Mã Recap (Dành cho Account Token)</label>
-                  <input
-                    type="text"
-                    value={newRecapToken}
-                    onChange={(e) => setNewRecapToken(e.target.value)}
-                    placeholder="VD: cf_turnstile_token / recaptcha_token..."
-                  />
-                  <span className={styles.hint}>
-                    Cần thiết để bypass captcha lấy danh sách modal tự động theo tài khoản.
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    type="button"
-                    onClick={handleAutoDetectModels}
-                    loading={autoDetecting}
-                  >
-                    <HiOutlineSparkles size={16} /> Auto Nhận Diện Model NCC
-                  </Button>
-                </div>
-              </div>
-              <div className={styles.modalFooter}>
-                <Button variant="secondary" onClick={() => setShowKeyModal(false)}>
-                  Hủy Bỏ
-                </Button>
-                <Button variant="primary" type="submit">
-                  Thêm Khóa Vào Pool
-                </Button>
+                <Button variant="secondary" onClick={() => setShowPoolModal(false)}>Hủy</Button>
+                <Button variant="primary" type="submit">Lưu Pool</Button>
               </div>
             </form>
           </div>
