@@ -1,0 +1,111 @@
+{
+  "app_name": "VeloX AI Gateway",
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "pricing": "Pricing",
+    "docs": "Docs",
+    "login": "Sign In",
+    "register": "Sign Up",
+    "dashboard": "Dashboard",
+    "logout": "Sign Out",
+    "workspace": "Workspace"
+  },
+  "hero": {
+    "badge": "Next-Gen AI Gateway Platform",
+    "title_1": "Unified AI Gateway &",
+    "title_highlight": "Model Orchestration",
+    "subtitle": "Seamlessly connect 100+ AI models from OpenAI, Claude, Gemini, Midjourney, and Runway with optimized costs. One unified API key for everything.",
+    "cta_start": "Get Started Free",
+    "cta_docs": "Documentation",
+    "providers_label": "Supporting 100+ Leading AI Models & Providers"
+  },
+  "features": {
+    "title": "Why Choose VeloX AI Gateway?",
+    "multi_model": "Multi-Model Ecosystem",
+    "multi_model_desc": "Access 100+ Chat, Image, Video, and Code AI models from a single unified endpoint.",
+    "pool_system": "Smart Pool Balancing",
+    "pool_system_desc": "Automatic rotation of provider API keys and account tokens for 99.9% uptime and lowest cost.",
+    "security": "Enterprise Security",
+    "security_desc": "End-to-end token encryption, RBAC access control, and full audit logs.",
+    "i18n": "Multilingual Ready",
+    "i18n_desc": "Native support for English, Vietnamese, Japanese, Korean, and Chinese.",
+    "realtime": "Real-Time Processing",
+    "realtime_desc": "Lightning-fast stream responses via WebSocket and SSE for all AI chat models.",
+    "analytics": "Analytics & Reports",
+    "analytics_desc": "Detailed dashboards for revenue, usage metrics, and profit margins in real-time."
+  },
+  "stats": {
+    "models": "AI Models",
+    "users": "Active Users",
+    "requests": "Daily Requests",
+    "uptime": "Uptime SLA"
+  },
+  "footer": {
+    "rights": "© 2026 VeloX AI Gateway. All rights reserved.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  },
+  "auth": {
+    "login_title": "Sign In to VeloX",
+    "register_title": "Create Your Account",
+    "email": "Email Address",
+    "password": "Password",
+    "full_name": "Full Name",
+    "confirm_password": "Confirm Password",
+    "login_btn": "Sign In",
+    "register_btn": "Create Account",
+    "no_account": "Don't have an account?",
+    "has_account": "Already have an account?",
+    "login_link": "Sign In here",
+    "register_link": "Sign Up here",
+    "or": "or",
+    "login_error": "Invalid email or password",
+    "register_error": "Registration failed. Please try again."
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search...",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "confirm_delete": "Are you sure you want to delete this?",
+    "no_data": "No data available"
+  },
+  "admin": {
+    "search_placeholder": "Search everything...",
+    "sidebar": {
+      "dashboard": "System Overview",
+      "models": "AI Model Performance",
+      "logs": "SLA Incident Logs",
+      "billing": "Top-Up History",
+      "banking": "Bank & QR",
+      "wallet": "Wallet & Cash Flow",
+      "services": "Pool Management",
+      "keys": "API Key",
+      "packages": "Service & Package Config",
+      "users": "User Management",
+      "roles": "Roles & Permissions",
+      "notifications": "Notification Center",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "CRM Dashboard Overview",
+      "total_users": "Total Users",
+      "total_revenue": "Top-Up Revenue",
+      "lead_conversion": "Success Rate",
+      "daily_income": "Daily Avg Income",
+      "total_requests": "Total API Requests",
+      "sales_forecast": "Package Sales Forecast",
+      "model_types": "4 Model Categories Distribution",
+      "balance_overview": "Revenue vs Token Cost Balance",
+      "deals_status": "Recent Transactions",
+      "pool_alerts": "Pool Health & Depletion Alerts"
+    }
+  }
+}

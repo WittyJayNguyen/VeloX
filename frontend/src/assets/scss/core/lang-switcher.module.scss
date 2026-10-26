@@ -1,0 +1,77 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.wrapper {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: $radius-md;
+  background-color: $surface-2;
+  color: $text-body;
+  font-size: $fs-sm;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid $border-color;
+
+  &:hover {
+    background-color: $surface-3;
+    color: $text-heading;
+    border-color: $border-light;
+  }
+}
+
+.flag {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.code {
+  font-weight: $fw-semibold;
+  letter-spacing: 0.5px;
+  font-size: $fs-xs;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 155px;
+  background-color: $surface-1;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  padding: 0.35rem;
+  z-index: $z-dropdown;
+  box-shadow: $shadow-lg;
+  animation: fadeIn 0.15s ease;
+  list-style: none;
+  backdrop-filter: blur(12px);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border-radius: $radius-md;
+  font-size: $fs-sm;
+  color: $text-body;
+  transition: all 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $primary-subtle;
+    color: $primary;
+  }
+
+  &.active {
+    background-color: $primary-subtle;
+    color: $primary;
+    font-weight: $fw-semibold;
+  }
+}
