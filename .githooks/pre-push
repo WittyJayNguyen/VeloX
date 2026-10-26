@@ -1,0 +1,28 @@
+#!/bin/sh
+# ==============================================================================
+# VeloX Git Pre-Push Hook
+# Tác dụng: Ngăn chặn push trực tiếp vào các nhánh được bảo vệ (prod, staging, main)
+# Bắt buộc lập trình viên phải sử dụng quy trình Pull Request (PR)
+# ==============================================================================
+
+protected_branches="prod staging main"
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+for branch in $protected_branches; do
+    if [ "$current_branch" = "$branch" ]; then
+        echo ""
+        echo "======================================================================"
+        echo "[SECURITY WARNING] BẠN ĐANG CỐ GẮNG PUSH TRỰC TIẾP VÀO NHÁNH BẢO VỆ: '$current_branch'!"
+        echo "Quy chuẩn VeloX nghiêm cấm push trực tiếp vào prod/staging/main."
+        echo ""
+        echo "Vui lòng tuân thủ quy trình Gitflow:"
+        echo "  1. Tạo nhánh tính năng: git checkout -b feat/<ten_tinh_nang>"
+        echo "  2. Commit & Push code:  git push origin feat/<ten_tinh_nang>"
+        echo "  3. Tạo Pull Request (PR) để được review trước khi merge."
+        echo "======================================================================"
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0
