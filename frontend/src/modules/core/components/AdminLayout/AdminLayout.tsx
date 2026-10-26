@@ -6,6 +6,7 @@ import LangSwitcher from '../LangSwitcher/LangSwitcher';
 import {
   HiOutlineChartBarSquare,
   HiOutlineServerStack,
+  HiOutlineKey,
   HiOutlineCpuChip,
   HiOutlineCreditCard,
   HiOutlineUsers,
@@ -15,6 +16,15 @@ import {
   HiOutlineMagnifyingGlass,
   HiOutlineBell,
   HiOutlineMoon,
+  HiOutlineBuildingLibrary,
+  HiOutlineWallet,
+  HiOutlineWrenchScrewdriver,
+  HiOutlineShieldCheck,
+  HiOutlineBellAlert,
+  HiOutlineCog6Tooth,
+  HiOutlineRocketLaunch,
+  HiOutlineSignal,
+  HiOutlineExclamationTriangle,
 } from 'react-icons/hi2';
 import styles from '@assets/scss/admin/admin-layout.module.scss';
 
@@ -33,29 +43,46 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    header: 'MENU',
+    header: 'TỔNG QUAN',
     items: [
       { path: '/admin', icon: HiOutlineChartBarSquare, key: 'dashboard', end: true },
     ],
   },
   {
-    header: 'QUẢN LÝ DỊCH VỤ & GATEWAY',
+    header: 'VẬN HÀNH',
     items: [
-      { path: '/admin/services', icon: HiOutlineServerStack, key: 'services', badge: '6' },
       { path: '/admin/models', icon: HiOutlineCpuChip, key: 'models', badge: '100+' },
+      { path: '/admin/logs', icon: HiOutlineExclamationTriangle, key: 'logs' },
     ],
   },
   {
-    header: 'TÀI CHÍNH & NGƯỜI DÙNG',
+    header: 'THANH TOÁN',
     items: [
       { path: '/admin/billing', icon: HiOutlineCreditCard, key: 'billing' },
-      { path: '/admin/users', icon: HiOutlineUsers, key: 'users' },
+      { path: '/admin/banking', icon: HiOutlineBuildingLibrary, key: 'banking' },
+      { path: '/admin/wallet', icon: HiOutlineWallet, key: 'wallet' },
     ],
   },
   {
-    header: 'GIÁM SÁT HỆ THỐNG',
+    header: 'DỊCH VỤ',
     items: [
-      { path: '/admin/logs', icon: HiOutlineDocumentText, key: 'logs' },
+      { path: '/admin/services', icon: HiOutlineServerStack, key: 'services' },
+      { path: '/admin/keys', icon: HiOutlineKey, key: 'keys' },
+      { path: '/admin/packages', icon: HiOutlineWrenchScrewdriver, key: 'packages' },
+    ],
+  },
+  {
+    header: 'QUẢN LÝ NGƯỜI DÙNG',
+    items: [
+      { path: '/admin/users', icon: HiOutlineUsers, key: 'users' },
+      { path: '/admin/roles', icon: HiOutlineShieldCheck, key: 'roles' },
+    ],
+  },
+  {
+    header: 'CÀI ĐẶT & TIỆN ÍCH',
+    items: [
+      { path: '/admin/notifications', icon: HiOutlineBellAlert, key: 'notifications' },
+      { path: '/admin/settings', icon: HiOutlineCog6Tooth, key: 'settings' },
     ],
   },
 ];
@@ -75,12 +102,9 @@ const AdminLayout = () => {
   const getPageTitle = () => {
     const p = location.pathname;
     if (p === '/admin') return t('admin.dashboard.title');
-    if (p.includes('/services')) return t('admin.sidebar.services');
-    if (p.includes('/models')) return t('admin.sidebar.models');
-    if (p.includes('/billing')) return t('admin.sidebar.billing');
-    if (p.includes('/users')) return t('admin.sidebar.users');
-    if (p.includes('/logs')) return t('admin.sidebar.logs');
-    return t('nav.dashboard');
+    // Extract last segment → look up in sidebar translations
+    const seg = p.split('/').pop() || '';
+    return t(`admin.sidebar.${seg}`, seg);
   };
 
   return (
@@ -90,17 +114,28 @@ const AdminLayout = () => {
         <div className={styles.sidebarTop}>
           <NavLink to="/admin" className={styles.logoWrap}>
             <div className={styles.logoBadge}>V</div>
-            {!sidebarCollapsed && <span className={styles.brand}>VeloX Gateway</span>}
+            {!sidebarCollapsed && (
+              <div className={styles.brandWrap}>
+                <span className={styles.brand}>VeloX</span>
+                <span className={styles.brandSub}>BUSINESS SUITE</span>
+              </div>
+            )}
           </NavLink>
           <button className={styles.toggleBtn} onClick={toggleSidebar} type="button" title="Toggle Sidebar">
             <HiOutlineBars3 size={20} />
           </button>
         </div>
 
+        {!sidebarCollapsed && (
+          <div className={styles.workspaceLabel}>KHÔNG GIAN LÀM VIỆC</div>
+        )}
+
         <nav className={styles.sidebarNav}>
           {navSections.map((sec, idx) => (
-            <div key={idx}>
-              <div className={styles.menuHeader}>{sec.header}</div>
+            <div key={idx} className={styles.navGroup}>
+              {!sidebarCollapsed && (
+                <div className={styles.menuHeader}>{sec.header}</div>
+              )}
               {sec.items.map((item) => (
                 <NavLink
                   key={item.key}
@@ -113,7 +148,7 @@ const AdminLayout = () => {
                   <span className={styles.navIcon}>
                     <item.icon size={19} />
                   </span>
-                  {!sidebarCollapsed && <span>{t(`admin.sidebar.${item.key}`)}</span>}
+                  {!sidebarCollapsed && <span className={styles.navLabel}>{t(`admin.sidebar.${item.key}`)}</span>}
                   {!sidebarCollapsed && item.badge && (
                     <span className={styles.badgePill}>{item.badge}</span>
                   )}
@@ -122,6 +157,18 @@ const AdminLayout = () => {
             </div>
           ))}
         </nav>
+
+        {/* Upgrade Card */}
+        {!sidebarCollapsed && (
+          <div className={styles.upgradeCard}>
+            <div className={styles.upgradeIcon}>
+              <HiOutlineRocketLaunch size={20} />
+            </div>
+            <div className={styles.upgradeTitle}>Nâng cấp Enterprise</div>
+            <div className={styles.upgradeDesc}>Mở khóa báo cáo nâng cao và tự động hóa</div>
+            <button className={styles.upgradeBtn} type="button">Tìm hiểu thêm</button>
+          </div>
+        )}
 
         <div className={styles.sidebarBottom}>
           <button className={styles.logoutBtn} onClick={handleLogout} type="button">
@@ -147,7 +194,7 @@ const AdminLayout = () => {
 
           <div className={styles.topRight}>
             <LangSwitcher />
-            
+
             <button className={styles.iconBtn} type="button" title="Theme">
               <HiOutlineMoon size={18} />
             </button>

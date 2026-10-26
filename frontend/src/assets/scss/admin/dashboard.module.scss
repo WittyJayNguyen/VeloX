@@ -3,7 +3,8 @@
 
 .dashboard {
   @include flex-col;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  animation: slideInUp 0.4s ease;
 }
 
 // ── KPI Grid ──
@@ -14,26 +15,50 @@
 }
 
 .kpiCard {
-  @include velzon-card;
+  @include uupm-card;
   padding: 1.25rem 1.4rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle gradient shimmer on left edge
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: $gradient-primary;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
 }
 
 .kpiIconWrap {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: $radius-lg;
   @include flex-center;
   font-size: 1.35rem;
   flex-shrink: 0;
+  transition: transform 0.3s ease;
+
+  .kpiCard:hover & {
+    transform: scale(1.08);
+  }
 }
 
 .kpiDetails {
   flex: 1;
   @include flex-col;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .kpiLabel {
@@ -41,7 +66,7 @@
   font-weight: $fw-semibold;
   color: $text-muted;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 .kpiValueRow {
@@ -54,6 +79,7 @@
   font-size: $fs-2xl;
   font-weight: $fw-bold;
   color: $text-heading;
+  letter-spacing: -0.5px;
 }
 
 .trendBadge {
@@ -62,13 +88,17 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: $radius-pill;
 
   &.up {
     color: $success;
+    background: $success-subtle;
   }
 
   &.down {
     color: $danger;
+    background: $danger-subtle;
   }
 }
 
@@ -88,7 +118,7 @@
 }
 
 .chartCard {
-  @include velzon-card;
+  @include uupm-card;
   padding: 1.25rem 1.5rem;
   @include flex-col;
 
@@ -105,9 +135,16 @@
     .cardAction {
       font-size: $fs-xs;
       color: $text-muted;
-      background-color: $border-light;
-      padding: 0.2rem 0.5rem;
-      border-radius: $radius-sm;
+      background-color: $surface-2;
+      padding: 0.25rem 0.6rem;
+      border-radius: $radius-md;
+      border: 1px solid $border-color;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: $primary;
+        color: $primary;
+      }
     }
   }
 
@@ -121,7 +158,7 @@
 .chartStatsRow {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 
   .statItem {
     @include flex-col;
@@ -137,7 +174,7 @@
   }
 }
 
-// ── Bottom Row (Table + Pools Alert) ──
+// ── Bottom Row ──
 .bottomGrid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -149,7 +186,7 @@
 }
 
 .tableCard {
-  @include velzon-card;
+  @include uupm-card;
   padding: 1.25rem 1.5rem;
 
   .cardHeader {
@@ -172,18 +209,18 @@
   th {
     text-align: left;
     padding: 0.75rem 0.85rem;
-    font-size: $fs-xs;
+    font-size: 0.6875rem;
     font-weight: $fw-semibold;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     color: $text-muted;
-    background-color: $body-bg;
+    background-color: rgba(39, 39, 42, 0.4);
     border-bottom: 1px solid $border-color;
   }
 
   td {
     padding: 0.85rem 0.85rem;
-    border-bottom: 1px solid $border-color;
+    border-bottom: 1px solid rgba(39, 39, 42, 0.4);
     color: $text-body;
     vertical-align: middle;
   }
@@ -192,8 +229,12 @@
     border-bottom: none;
   }
 
+  tr {
+    transition: background-color 0.15s ease;
+  }
+
   tr:hover td {
-    background-color: #fafbfe;
+    background-color: rgba(39, 39, 42, 0.3);
   }
 }
 
@@ -203,10 +244,10 @@
   gap: 0.65rem;
 
   .miniAvatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background-color: $primary-subtle;
+    width: 30px;
+    height: 30px;
+    border-radius: $radius-lg;
+    background: $primary-subtle;
     color: $primary;
     @include flex-center;
     font-weight: $fw-bold;
@@ -220,8 +261,10 @@
 }
 
 .pillBadge {
-  display: inline-block;
-  padding: 0.2rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
   border-radius: $radius-pill;
   font-size: 0.6875rem;
   font-weight: $fw-semibold;
@@ -245,26 +288,33 @@
     background-color: $info-subtle;
     color: $info;
   }
+
+  &.active {
+    background-color: $success-subtle;
+    color: $success;
+  }
 }
 
+// ── Pool Health List ──
 .poolHealthList {
   @include flex-col;
-  gap: 0.85rem;
+  gap: 0.75rem;
 }
 
 .poolHealthItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem;
-  border-radius: $radius-md;
+  padding: 0.75rem 0.85rem;
+  border-radius: $radius-lg;
   border: 1px solid $border-color;
-  background-color: #fff;
-  transition: all 0.15s ease;
+  background-color: $surface-2;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    border-color: $primary;
-    background-color: $primary-subtle;
+    border-color: rgba(99, 102, 241, 0.3);
+    background-color: rgba(99, 102, 241, 0.05);
+    transform: translateX(4px);
   }
 
   .poolLeft {
@@ -276,9 +326,10 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      &.active { background-color: $success; }
-      &.warning { background-color: $warning; }
-      &.danger { background-color: $danger; }
+      box-shadow: 0 0 6px currentColor;
+      &.active { background-color: $success; color: $success; }
+      &.warning { background-color: $warning; color: $warning; }
+      &.danger { background-color: $danger; color: $danger; }
     }
 
     .poolName {
