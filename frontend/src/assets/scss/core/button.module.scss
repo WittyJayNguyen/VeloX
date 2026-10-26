@@ -10,13 +10,13 @@
   font-weight: $fw-medium;
   border-radius: $radius-md;
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
   white-space: nowrap;
   user-select: none;
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
@@ -43,36 +43,44 @@
 
 // Variants
 .primary {
-  background-color: $accent;
+  background: $gradient-primary;
   color: #fff;
-  border-color: $accent;
-  box-shadow: 0 2px 4px rgba($accent, 0.25);
+  border-color: transparent;
+  box-shadow: 0 2px 8px $primary-glow;
 
   &:hover:not(:disabled) {
-    background-color: $accent-hover;
-    border-color: $accent-hover;
-    box-shadow: 0 4px 8px rgba($accent, 0.35);
+    box-shadow: 0 4px 16px $primary-glow;
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 }
 
 .secondary {
-  background-color: #fff;
+  background-color: $surface-2;
   color: $text-body;
   border-color: $border-color;
 
   &:hover:not(:disabled) {
-    background-color: $border-light;
-    border-color: #d8dde3;
+    background-color: $surface-3;
+    border-color: $border-light;
+    color: $text-heading;
   }
 }
 
 .success {
-  background-color: $success;
+  background: $success;
   color: #fff;
   border-color: $success;
+  box-shadow: 0 2px 8px $success-glow;
 
   &:hover:not(:disabled) {
-    background-color: #089380;
+    filter: brightness(1.15);
+    box-shadow: 0 4px 16px $success-glow;
+    transform: translateY(-1px);
   }
 }
 
@@ -81,18 +89,21 @@
   color: $text-body;
 
   &:hover:not(:disabled) {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: $text-dark;
+    background-color: $surface-2;
+    color: $text-heading;
   }
 }
 
 .danger {
-  background-color: $danger;
+  background: $danger;
   color: #fff;
   border-color: $danger;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.25);
 
   &:hover:not(:disabled) {
-    background-color: #dc3545;
+    filter: brightness(1.15);
+    box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35);
+    transform: translateY(-1px);
   }
 }
 
@@ -110,7 +121,7 @@
 .spinner {
   width: 1rem;
   height: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;

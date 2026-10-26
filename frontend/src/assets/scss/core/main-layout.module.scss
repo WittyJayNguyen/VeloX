@@ -4,13 +4,13 @@
 .layout {
   min-height: 100vh;
   @include flex-col;
-  background-color: #ffffff;
+  background-color: $body-bg;
 }
 
 .header {
   @include flex-between;
   padding: 0.85rem 2rem;
-  background-color: #ffffff;
+  @include glass-surface;
   border-bottom: 1px solid $border-color;
   position: sticky;
   top: 0;
@@ -33,20 +33,21 @@
 .logoBadge {
   width: 34px;
   height: 34px;
-  background: linear-gradient(135deg, $accent, $primary);
+  background: $gradient-primary;
   border-radius: $radius-md;
   @include flex-center;
   font-weight: $fw-bold;
   color: #fff;
   font-size: $fs-lg;
-  box-shadow: 0 2px 6px rgba($accent, 0.35);
+  box-shadow: 0 4px 10px $primary-glow;
 }
 
 .brand {
   font-size: $fs-xl;
   font-weight: $fw-bold;
-  color: $text-dark;
+  color: $text-heading;
   letter-spacing: -0.5px;
+  @include text-gradient($gradient-primary);
 }
 
 .nav {
@@ -64,7 +65,7 @@
   color: $text-body;
   font-size: $fs-sm;
   font-weight: $fw-medium;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.2s ease;
   &:hover { color: $primary; }
 }
 
@@ -88,7 +89,7 @@
   @include flex-between;
   padding: 1.5rem 2rem;
   border-top: 1px solid $border-color;
-  background-color: #fafbfe;
+  background-color: $surface-1;
   font-size: $fs-sm;
   color: $text-muted;
 
@@ -104,7 +105,7 @@
   gap: 1.5rem;
   a {
     color: $text-muted;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.2s ease;
     &:hover { color: $primary; }
   }
 }
