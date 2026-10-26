@@ -215,7 +215,7 @@ const UsersPage = () => {
         <div className={styles.tableHeaderBar}>
           <div>
             <h3>Quản Lý Thành Viên & Cấp Phân Quyền</h3>
-            <span style={{ fontSize: '0.75rem', color: '#878a99' }}>
+            <span style={{ fontSize: '0.75rem', color: '#71717a' }}>
               Theo dõi lịch sử mua hàng, nạp từ VCC và số dư credits
             </span>
           </div>
@@ -244,8 +244,8 @@ const UsersPage = () => {
                         width: 34,
                         height: 34,
                         borderRadius: '50%',
-                        backgroundColor: '#eef3fd',
-                        color: '#3577f1',
+                        backgroundColor: 'rgba(99,102,241,0.12)',
+                        color: '#6366f1',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -256,8 +256,8 @@ const UsersPage = () => {
                       {user.fullName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <strong style={{ color: '#212529', display: 'block' }}>{user.fullName}</strong>
-                      <span style={{ fontSize: '0.75rem', color: '#878a99' }}>{user.email}</span>
+                      <strong style={{ color: '#fafafa', display: 'block' }}>{user.fullName}</strong>
+                      <span style={{ fontSize: '0.75rem', color: '#71717a' }}>{user.email}</span>
                     </div>
                   </div>
                 </td>
@@ -270,20 +270,20 @@ const UsersPage = () => {
                       fontWeight: 700,
                       backgroundColor:
                         user.role === 'ROLE_SUPER_ADMIN'
-                          ? '#f3effe'
+                          ? 'rgba(139,92,246,0.12)'
                           : user.role === 'ROLE_ADMIN'
-                          ? '#eef3fd'
+                          ? 'rgba(99,102,241,0.12)'
                           : user.role === 'ROLE_OPERATOR'
-                          ? '#e6f7f5'
-                          : '#f3f6f9',
+                          ? 'rgba(16,185,129,0.12)'
+                          : '#27272a',
                       color:
                         user.role === 'ROLE_SUPER_ADMIN'
                           ? '#8b5cf6'
                           : user.role === 'ROLE_ADMIN'
-                          ? '#3577f1'
+                          ? '#6366f1'
                           : user.role === 'ROLE_OPERATOR'
-                          ? '#0ab39c'
-                          : '#495057',
+                          ? '#10b981'
+                          : '#a1a1aa',
                     }}
                   >
                     <HiOutlineShieldCheck size={13} style={{ verticalAlign: 'middle', marginRight: 3 }} />
@@ -291,16 +291,16 @@ const UsersPage = () => {
                   </span>
                 </td>
                 <td>
-                  <strong style={{ color: '#0ab39c', fontSize: '0.95rem' }}>
+                  <strong style={{ color: '#10b981', fontSize: '0.95rem' }}>
                     {user.creditBalance.toLocaleString()} cr
                   </strong>
                 </td>
                 <td>
-                  <span style={{ fontWeight: 600, color: '#405189' }}>
+                  <span style={{ fontWeight: 600, color: '#6366f1' }}>
                     {user.vccTopupTotal.toLocaleString()} ₫
                   </span>
                 </td>
-                <td style={{ fontSize: '0.75rem', color: '#878a99' }}>{user.registeredDate}</td>
+                <td style={{ fontSize: '0.75rem', color: '#71717a' }}>{user.registeredDate}</td>
                 <td>
                   <button
                     type="button"
@@ -312,8 +312,8 @@ const UsersPage = () => {
                       fontWeight: 600,
                       border: 'none',
                       cursor: 'pointer',
-                      backgroundColor: user.isActive ? '#e6f7f5' : '#fef0ed',
-                      color: user.isActive ? '#0ab39c' : '#f06548',
+                      backgroundColor: user.isActive ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)',
+                      color: user.isActive ? '#10b981' : '#f43f5e',
                     }}
                   >
                     {user.isActive ? 'Đang Hoạt Động' : 'Đã Khóa'}
@@ -430,9 +430,9 @@ const UsersPage = () => {
             </div>
             <form onSubmit={handleApplyCredit}>
               <div className={styles.modalBody}>
-                <div style={{ backgroundColor: '#fafbfe', padding: '0.85rem', borderRadius: 6, fontSize: '0.85rem' }}>
+                <div style={{ backgroundColor: '#18181b', padding: '0.85rem', borderRadius: 6, fontSize: '0.85rem' }}>
                   Số dư hiện tại:{' '}
-                  <strong style={{ color: '#0ab39c', fontSize: '1rem' }}>
+                  <strong style={{ color: '#10b981', fontSize: '1rem' }}>
                     {targetUser.creditBalance.toLocaleString()} Credits
                   </strong>
                 </div>

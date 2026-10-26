@@ -33,8 +33,8 @@ const kpiCards = [
     value: '12,458',
     trend: '+8.2%',
     trendUp: true,
-    bg: '#eef3fd',
-    color: '#3577f1',
+    bg: 'rgba(99, 102, 241, 0.12)',
+    color: '#6366f1',
   },
   {
     icon: HiOutlineBanknotes,
@@ -42,8 +42,8 @@ const kpiCards = [
     value: '489.4M ₫',
     trend: '+12.5%',
     trendUp: true,
-    bg: '#e6f7f5',
-    color: '#0ab39c',
+    bg: 'rgba(16, 185, 129, 0.12)',
+    color: '#10b981',
   },
   {
     icon: HiOutlineCheckBadge,
@@ -51,8 +51,8 @@ const kpiCards = [
     value: '99.85%',
     trend: '+0.1%',
     trendUp: true,
-    bg: '#fef8ee',
-    color: '#f7b84b',
+    bg: 'rgba(245, 158, 11, 0.12)',
+    color: '#f59e0b',
   },
   {
     icon: HiOutlineCurrencyDollar,
@@ -60,8 +60,8 @@ const kpiCards = [
     value: '15.8M ₫',
     trend: '+5.4%',
     trendUp: true,
-    bg: '#eaf5fb',
-    color: '#299cdb',
+    bg: 'rgba(6, 182, 212, 0.12)',
+    color: '#06b6d4',
   },
   {
     icon: HiOutlineBolt,
@@ -69,8 +69,8 @@ const kpiCards = [
     value: '2.85M',
     trend: '+18.4%',
     trendUp: true,
-    bg: '#fef0ed',
-    color: '#f06548',
+    bg: 'rgba(244, 63, 94, 0.12)',
+    color: '#f43f5e',
   },
 ];
 
@@ -84,9 +84,9 @@ const packageSalesData = [
 
 // 4 Nhóm Model trong Note tay: Chat, Ảnh, Video, Dev Request
 const modelCategoryData = [
-  { name: 'Modal Chat', value: 48, color: '#3577f1', reqs: '1.36M' },
-  { name: 'Modal Tạo Ảnh', value: 24, color: '#0ab39c', reqs: '680K' },
-  { name: 'Modal Tạo Video', value: 16, color: '#f7b84b', reqs: '450K' },
+  { name: 'Modal Chat', value: 48, color: '#6366f1', reqs: '1.36M' },
+  { name: 'Modal Tạo Ảnh', value: 24, color: '#10b981', reqs: '680K' },
+  { name: 'Modal Tạo Video', value: 16, color: '#f59e0b', reqs: '450K' },
   { name: 'Modal Req Dev', value: 12, color: '#8b5cf6', reqs: '360K' },
 ];
 
@@ -206,18 +206,28 @@ const DashboardPage = () => {
           <div className={styles.chartWrapper}>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={packageSalesData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
-                <XAxis dataKey="name" stroke="#878a99" fontSize={11} />
-                <YAxis stroke="#878a99" fontSize={11} />
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.7} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis dataKey="name" stroke="#71717a" fontSize={11} tick={{ fill: '#a1a1aa' }} />
+                <YAxis stroke="#71717a" fontSize={11} tick={{ fill: '#a1a1aa' }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e9ebec',
-                    borderRadius: 6,
+                    backgroundColor: '#18181b',
+                    border: '1px solid #27272a',
+                    borderRadius: 12,
                     fontSize: 12,
+                    color: '#fafafa',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                   }}
+                  itemStyle={{ color: '#a1a1aa' }}
+                  labelStyle={{ color: '#fafafa', fontWeight: 600 }}
                 />
-                <Bar dataKey="revenue" fill="#3577f1" radius={[4, 4, 0, 0]} name="Doanh thu (Tr.₫)" />
+                <Bar dataKey="revenue" fill="url(#barGradient)" radius={[6, 6, 0, 0]} name="Doanh thu (Tr.₫)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -247,11 +257,15 @@ const DashboardPage = () => {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e9ebec',
-                    borderRadius: 6,
+                    backgroundColor: '#18181b',
+                    border: '1px solid #27272a',
+                    borderRadius: 12,
                     fontSize: 12,
+                    color: '#fafafa',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                   }}
+                  itemStyle={{ color: '#a1a1aa' }}
+                  labelStyle={{ color: '#fafafa', fontWeight: 600 }}
                   formatter={(val: unknown) => [`${val}%`, 'Chiếm']}
                 />
               </PieChart>
@@ -259,8 +273,8 @@ const DashboardPage = () => {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', justifyContent: 'center', marginTop: '0.5rem' }}>
             {modelCategoryData.map((m) => (
-              <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#495057' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: m.color }} />
+              <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#a1a1aa' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: m.color, boxShadow: `0 0 6px ${m.color}` }} />
                 <span>{m.name} ({m.value}%)</span>
               </div>
             ))}
@@ -275,15 +289,15 @@ const DashboardPage = () => {
           </div>
           <div className={styles.chartStatsRow}>
             <div className={styles.statItem}>
-              <span className={styles.statNum} style={{ color: '#3577f1' }}>489.4M ₫</span>
+              <span className={styles.statNum} style={{ color: '#6366f1' }}>489.4M ₫</span>
               <span className={styles.statTitle}>Tổng Thu Nạp</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statNum} style={{ color: '#0ab39c' }}>182.1M ₫</span>
+              <span className={styles.statNum} style={{ color: '#10b981' }}>182.1M ₫</span>
               <span className={styles.statTitle}>Chi Phí API Gốc</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statNum} style={{ color: '#f7b84b' }}>62.8%</span>
+              <span className={styles.statNum} style={{ color: '#f59e0b' }}>62.8%</span>
               <span className={styles.statTitle}>Biên Lợi Nhuận Gộp</span>
             </div>
           </div>
@@ -292,27 +306,31 @@ const DashboardPage = () => {
               <AreaChart data={balanceOverviewData}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3577f1" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#3577f1" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0ab39c" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#0ab39c" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
-                <XAxis dataKey="month" stroke="#878a99" fontSize={11} />
-                <YAxis stroke="#878a99" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis dataKey="month" stroke="#71717a" fontSize={11} tick={{ fill: '#a1a1aa' }} />
+                <YAxis stroke="#71717a" fontSize={11} tick={{ fill: '#a1a1aa' }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e9ebec',
-                    borderRadius: 6,
+                    backgroundColor: '#18181b',
+                    border: '1px solid #27272a',
+                    borderRadius: 12,
                     fontSize: 12,
+                    color: '#fafafa',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                   }}
+                  itemStyle={{ color: '#a1a1aa' }}
+                  labelStyle={{ color: '#fafafa', fontWeight: 600 }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#3577f1" fill="url(#colorRev)" strokeWidth={2} name="Nạp Tiền (Tr.₫)" />
-                <Area type="monotone" dataKey="cost" stroke="#0ab39c" fill="url(#colorCost)" strokeWidth={2} name="Chi Phí API (Tr.₫)" />
+                <Area type="monotone" dataKey="revenue" stroke="#6366f1" fill="url(#colorRev)" strokeWidth={2.5} name="Nạp Tiền (Tr.₫)" />
+                <Area type="monotone" dataKey="cost" stroke="#10b981" fill="url(#colorCost)" strokeWidth={2.5} name="Chi Phí API (Tr.₫)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -325,7 +343,7 @@ const DashboardPage = () => {
         <div className={styles.tableCard}>
           <div className={styles.cardHeader}>
             <h3>{t('admin.dashboard.deals_status') || 'Giao Dịch Nạp Tiền Gần Nhất'}</h3>
-            <span style={{ fontSize: '0.8rem', color: '#878a99' }}>Real-time Gateway Sync</span>
+            <span style={{ fontSize: '0.75rem', color: '#71717a' }}>Real-time Gateway Sync</span>
           </div>
           <table className={styles.velzonTable}>
             <thead>
@@ -341,7 +359,7 @@ const DashboardPage = () => {
             <tbody>
               {recentDeals.map((deal) => (
                 <tr key={deal.id}>
-                  <td style={{ fontWeight: 600, color: '#3577f1' }}>{deal.id}</td>
+                  <td style={{ fontWeight: 600, color: '#6366f1' }}>{deal.id}</td>
                   <td>
                     <div className={styles.userCell}>
                       <div className={styles.miniAvatar}>{deal.avatar}</div>
@@ -354,8 +372,8 @@ const DashboardPage = () => {
                       {deal.status}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 600 }}>{deal.amount}</td>
-                  <td style={{ color: '#878a99', fontSize: '0.75rem' }}>{deal.date}</td>
+                  <td style={{ fontWeight: 600, color: '#fafafa' }}>{deal.amount}</td>
+                  <td style={{ color: '#71717a', fontSize: '0.75rem' }}>{deal.date}</td>
                 </tr>
               ))}
             </tbody>
@@ -366,7 +384,7 @@ const DashboardPage = () => {
         <div className={styles.tableCard}>
           <div className={styles.cardHeader}>
             <h3>{t('admin.dashboard.pool_alerts') || 'Giám Sát Tình Trạng Pool'}</h3>
-            <span style={{ fontSize: '0.75rem', color: '#f06548', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.75rem', color: '#f43f5e', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <HiOutlineExclamationTriangle size={14} /> 1 Cảnh Báo
             </span>
           </div>
@@ -377,7 +395,7 @@ const DashboardPage = () => {
                   <span className={`${styles.poolDot} ${styles[pool.status]}`} />
                   <div>
                     <div className={styles.poolName}>{pool.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#878a99' }}>{pool.keys}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#71717a' }}>{pool.keys}</div>
                   </div>
                 </div>
                 <span className={`${styles.pillBadge} ${styles[pool.status]}`}>
