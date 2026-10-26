@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '@modules/auth/states/authStore';
 
 /** Requires authentication — redirects to /login */
 export const ProtectedRoute = () => {

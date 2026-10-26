@@ -1,0 +1,70 @@
+@use '../../../../assets/scss/variables' as *;
+
+.wrapper {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: $radius-md;
+  background: rgba(255,255,255,0.05);
+  color: $text-secondary;
+  font-size: $fs-sm;
+  transition: $transition-fast;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: $bg-hover;
+    border-color: $border-light;
+    color: $text-primary;
+  }
+}
+
+.code { font-weight: $fw-semibold; letter-spacing: 0.5px; }
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 160px;
+  background: $bg-secondary;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 0.35rem;
+  z-index: $z-dropdown;
+  box-shadow: $shadow-lg;
+  animation: fadeIn 0.15s ease;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: $radius-md;
+  font-size: $fs-sm;
+  color: $text-secondary;
+  transition: $transition-fast;
+  cursor: pointer;
+
+  &:hover {
+    background: $bg-hover;
+    color: $text-primary;
+  }
+
+  &.active {
+    background: $accent-soft;
+    color: $accent;
+    font-weight: $fw-semibold;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

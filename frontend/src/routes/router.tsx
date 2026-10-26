@@ -1,19 +1,19 @@
 import { createBrowserRouter } from 'react-router-dom';
-import MainLayout from '../components/layouts/MainLayout/MainLayout';
-import AdminLayout from '../components/layouts/AdminLayout/AdminLayout';
-import { ProtectedRoute, AdminRoute } from './guards';
-
-// Lazy-loaded pages
 import { lazy } from 'react';
-const HomePage = lazy(() => import('../pages/HomePage'));
-const LoginPage = lazy(() => import('../pages/LoginPage'));
-const RegisterPage = lazy(() => import('../pages/RegisterPage'));
-const DashboardPage = lazy(() => import('../pages/admin/DashboardPage'));
-const ServicePoolPage = lazy(() => import('../pages/admin/ServicePoolPage'));
-const ModelsPage = lazy(() => import('../pages/admin/ModelsPage'));
-const BillingPage = lazy(() => import('../pages/admin/BillingPage'));
-const UsersPage = lazy(() => import('../pages/admin/UsersPage'));
-const LogsPage = lazy(() => import('../pages/admin/LogsPage'));
+import MainLayout from '@modules/core/components/MainLayout/MainLayout';
+import AdminLayout from '@modules/core/components/AdminLayout/AdminLayout';
+import { AdminRoute } from './guards';
+
+// Lazy-loaded pages directly from their feature modules
+const HomePage = lazy(() => import('@modules/home/components/HomePage'));
+const LoginPage = lazy(() => import('@modules/auth/components/LoginPage'));
+const RegisterPage = lazy(() => import('@modules/auth/components/RegisterPage'));
+const DashboardPage = lazy(() => import('@modules/admin/components/DashboardPage'));
+const ServicePoolPage = lazy(() => import('@modules/pools/components/ServicePoolPage'));
+const ModelsPage = lazy(() => import('@modules/models/components/ModelsPage'));
+const BillingPage = lazy(() => import('@modules/billing/components/BillingPage'));
+const UsersPage = lazy(() => import('@modules/users/components/UsersPage'));
+const LogsPage = lazy(() => import('@modules/logs/components/LogsPage'));
 
 const router = createBrowserRouter([
   {
