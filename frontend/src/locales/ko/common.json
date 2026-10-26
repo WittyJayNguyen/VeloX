@@ -1,0 +1,11 @@
+{
+  "app_name": "VeloX AI",
+  "nav": { "home": "홈", "features": "기능", "pricing": "요금제", "docs": "문서", "login": "로그인", "register": "회원가입", "dashboard": "대시보드", "logout": "로그아웃", "workspace": "워크스페이스" },
+  "hero": { "badge": "차세대 AI 게이트웨이 플랫폼", "title_1": "통합 AI 허브", "title_highlight": "인공지능", "subtitle": "OpenAI, Claude, Gemini, Midjourney 등 100개 이상의 AI 모델을 최저 비용으로 연결합니다. 하나의 API 키로 모든 것을.", "cta_start": "무료로 시작", "cta_docs": "문서 보기" },
+  "features": { "title": "VeloX를 선택하는 이유", "multi_model": "멀티모델 AI", "multi_model_desc": "채팅, 이미지, 비디오, 코드용 100개 이상의 AI 모델을 단일 플랫폼에서 액세스합니다.", "pool_system": "스마트 풀 시스템", "pool_system_desc": "API 키와 계정 토큰을 자동 로테이션하여 99.9% 가동률과 최적의 가격을 보장합니다.", "security": "엔터프라이즈 보안", "security_desc": "종단간 암호화, RBAC 접근 제어, 포괄적인 감사 로깅.", "i18n": "다국어 지원", "i18n_desc": "베트남어, 영어, 일본어, 한국어, 중국어 5개 언어를 지원합니다." },
+  "stats": { "models": "AI 모델", "users": "사용자", "requests": "요청/일", "uptime": "가동률" },
+  "footer": { "rights": "© 2026 VeloX AI. 모든 권리 보유.", "terms": "이용약관", "privacy": "개인정보" },
+  "auth": { "login_title": "로그인", "register_title": "계정 만들기", "email": "이메일", "password": "비밀번호", "full_name": "이름", "confirm_password": "비밀번호 확인", "login_btn": "로그인", "register_btn": "가입하기", "no_account": "계정이 없으신가요?", "has_account": "이미 계정이 있으신가요?", "or": "또는" },
+  "common": { "loading": "로딩 중...", "save": "저장", "cancel": "취소", "delete": "삭제", "edit": "편집", "search": "검색...", "actions": "작업", "status": "상태", "active": "활성", "inactive": "비활성", "confirm_delete": "정말 삭제하시겠습니까?", "no_data": "데이터가 없습니다" },
+  "admin": { "sidebar": { "dashboard": "개요", "services": "서비스 & 풀", "models": "모델 카탈로그", "billing": "과금 & 요금", "users": "사용자 관리", "logs": "시스템 로그", "settings": "설정" }, "dashboard": { "title": "시스템 개요", "total_users": "총 사용자", "total_revenue": "오늘 수익", "total_credits_used": "사용 크레딧", "pool_health": "풀 상태", "revenue_chart": "수익 차트", "consumption": "소비 내역" } }
+}

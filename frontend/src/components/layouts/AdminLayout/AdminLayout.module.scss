@@ -1,0 +1,167 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  background: $bg-secondary;
+  border-right: 1px solid $border;
+  @include flex-col;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: $z-sticky;
+  transition: width 0.25s ease;
+  @include custom-scrollbar;
+
+  .collapsed & { width: $sidebar-collapsed; }
+
+  @media (max-width: $bp-md) {
+    transform: translateX(-100%);
+    .collapsed & { transform: translateX(0); width: $sidebar-collapsed; }
+  }
+}
+
+.sidebarTop {
+  @include flex-between;
+  padding: 1.25rem;
+  border-bottom: 1px solid $border;
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logoBadge {
+  min-width: 32px;
+  height: 32px;
+  background: $gradient-brand;
+  border-radius: $radius-md;
+  @include flex-center;
+  font-weight: $fw-bold;
+  color: #fff;
+  font-size: $fs-lg;
+  box-shadow: 0 0 12px $accent-glow;
+}
+
+.brand {
+  font-weight: $fw-bold;
+  font-size: $fs-base;
+  white-space: nowrap;
+}
+
+.toggleBtn {
+  color: $text-secondary;
+  transition: $transition-fast;
+  padding: 0.3rem;
+  border-radius: $radius-sm;
+  &:hover { color: $text-primary; background: $bg-hover; }
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: 0.75rem;
+  @include flex-col;
+  gap: 0.25rem;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: $radius-md;
+  color: $text-secondary;
+  font-size: $fs-sm;
+  font-weight: $fw-medium;
+  transition: $transition-fast;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { background: $bg-hover; color: $text-primary; }
+
+  &.active {
+    background: $accent-soft;
+    color: $accent;
+    font-weight: $fw-semibold;
+    box-shadow: inset 3px 0 0 $accent;
+  }
+
+  .collapsed & {
+    justify-content: center;
+    padding: 0.65rem;
+    span { display: none; }
+  }
+}
+
+.sidebarBottom {
+  padding: 0.75rem;
+  border-top: 1px solid $border;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: $radius-md;
+  color: $text-muted;
+  font-size: $fs-sm;
+  transition: $transition-fast;
+  cursor: pointer;
+  &:hover { color: $red; background: rgba($red, 0.08); }
+  .collapsed & { justify-content: center; span { display: none; } }
+}
+
+.content {
+  flex: 1;
+  margin-left: $sidebar-width;
+  @include flex-col;
+  transition: margin-left 0.25s ease;
+  .collapsed & { margin-left: $sidebar-collapsed; }
+}
+
+.topbar {
+  @include flex-between;
+  height: $topbar-height;
+  padding: 0 1.5rem;
+  @include glass;
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky - 1;
+}
+
+.topLeft { display: flex; align-items: center; gap: 0.75rem; }
+.topRight { display: flex; align-items: center; gap: 1rem; }
+
+.mobileToggle {
+  display: none;
+  color: $text-secondary;
+  @media (max-width: $bp-md) { display: flex; }
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-full;
+  background: $gradient-brand;
+  @include flex-center;
+  font-weight: $fw-bold;
+  color: #fff;
+  font-size: $fs-sm;
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem;
+  @include custom-scrollbar;
+}
