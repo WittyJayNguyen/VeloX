@@ -67,9 +67,8 @@ const navSections: NavSection[] = [
   {
     header: 'THANH TOÁN',
     items: [
-      { path: '/admin/billing', icon: HiOutlineCreditCard, key: 'billing' },
-      { path: '/admin/banking', icon: HiOutlineBuildingLibrary, key: 'banking' },
       { path: '/admin/wallet', icon: HiOutlineWallet, key: 'wallet' },
+      { path: '/admin/banking', icon: HiOutlineBuildingLibrary, key: 'banking' },
     ],
   },
   {
