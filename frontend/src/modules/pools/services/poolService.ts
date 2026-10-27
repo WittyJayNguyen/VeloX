@@ -39,6 +39,8 @@ export interface AddKeyPayload {
   recap_token?: string;
 }
 
+export type ServicePoolItem = ServicePoolDto;
+
 // ── Offline fallback using localStorage ──
 const STORAGE_KEY = 'velox_pools';
 
@@ -52,6 +54,10 @@ const saveLocal = (data: ServicePoolDto[]) => {
 
 // ── Service (tries API first, falls back to localStorage) ──
 export const poolService = {
+  getPools: async (): Promise<ServicePoolDto[]> => {
+    return poolService.getAll();
+  },
+
   // ─── Pool CRUD ───
   getAll: async (): Promise<ServicePoolDto[]> => {
     try {

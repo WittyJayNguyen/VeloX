@@ -10,7 +10,7 @@ export const useUsers = () => {
     setLoading(true);
     userService
       .getUsers()
-      .then((data) => {
+      .then((data: UserItem[]) => {
         if (mounted) setUsers(data);
       })
       .catch(() => {})

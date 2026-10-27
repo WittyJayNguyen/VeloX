@@ -30,8 +30,14 @@ export interface PoolHealthDto {
   quota: string;
 }
 
+export type AdminStats = DashboardStatsDto;
+
 // ── Service ──
 export const adminService = {
+  getStats: async (): Promise<DashboardStatsDto> => {
+    return adminService.getDashboardStats();
+  },
+
   getDashboardStats: async (): Promise<DashboardStatsDto> => {
     try {
       const res = await apiClient.get<DashboardStatsDto>('/admin/dashboard/stats');

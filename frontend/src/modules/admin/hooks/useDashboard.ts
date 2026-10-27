@@ -10,7 +10,7 @@ export const useDashboard = () => {
     setLoading(true);
     adminService
       .getStats()
-      .then((data) => {
+      .then((data: AdminStats) => {
         if (mounted) setStats(data);
       })
       .catch(() => {})

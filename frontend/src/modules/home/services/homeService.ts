@@ -1,4 +1,4 @@
-import { apiClient } from '@modules/core/lib/apiClient';
+import apiClient from '@modules/core/lib/apiClient';
 
 export const homeService = {
   getPublicStats: async () => {

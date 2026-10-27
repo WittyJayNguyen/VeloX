@@ -41,7 +41,6 @@ const roleBadgeVariant = (r: string) => {
 const UsersPage = () => {
   const [users, setUsers] = useState<UserDto[]>([]);
   const [roles, setRoles] = useState<RoleDto[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('ALL');
@@ -62,7 +61,6 @@ const UsersPage = () => {
 
   // Load Data
   const loadData = async () => {
-    setLoading(true);
     try {
       const [fetchedUsers, fetchedRoles] = await Promise.all([
         userManagementService.getUsers(),
@@ -73,8 +71,6 @@ const UsersPage = () => {
       setIsBackendConnected(true);
     } catch {
       setIsBackendConnected(false);
-    } finally {
-      setLoading(false);
     }
   };
 

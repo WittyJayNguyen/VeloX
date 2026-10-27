@@ -9,7 +9,6 @@ import {
   HiOutlineKey,
   HiOutlineBolt,
   HiOutlineCpuChip,
-  HiOutlineCheckCircle,
   HiOutlineDocumentText,
   HiOutlineExclamationTriangle,
   HiOutlineEye,

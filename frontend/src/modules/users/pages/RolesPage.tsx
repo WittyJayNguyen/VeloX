@@ -8,11 +8,7 @@ import {
   HiOutlineChevronRight,
   HiOutlineKey,
   HiOutlineUsers,
-  HiOutlineCpuChip,
   HiOutlineServerStack,
-  HiOutlineCreditCard,
-  HiOutlineDocumentText,
-  HiOutlineCheck,
 } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';
@@ -32,7 +28,6 @@ import treeStyles from '@assets/scss/admin/roles-tree.module.scss';
 const RolesPage = () => {
   const [roles, setRoles] = useState<RoleDto[]>([]);
   const [permissionTree, setPermissionTree] = useState<PermissionNode[]>(FALLBACK_PERMISSION_TREE);
-  const [loading, setLoading] = useState(true);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
@@ -44,18 +39,13 @@ const RolesPage = () => {
   const [formCode, setFormCode] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  // Accordion Mode: Mở cái này thì đóng cái kia (mặc định mở module đầu tiên)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     gateway: true,
-    models: true,
-    packages: true,
-    finance: true,
-    users_system: true,
-    monitoring: true,
   });
 
   // Load Data from Backend
   const loadData = async () => {
-    setLoading(true);
     try {
       const [fetchedRoles, fetchedTree] = await Promise.all([
         userManagementService.getRoles(),
@@ -66,8 +56,6 @@ const RolesPage = () => {
       setIsBackendConnected(true);
     } catch {
       setIsBackendConnected(false);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -98,6 +86,7 @@ const RolesPage = () => {
     setFormCode('');
     setFormDescription('');
     setSelectedPermissions([]);
+    setExpandedCategories({ [permissionTree[0]?.id || 'gateway']: true });
     setShowModal(true);
   };
 
@@ -107,11 +96,20 @@ const RolesPage = () => {
     setFormCode(r.code || r.id);
     setFormDescription(r.description || '');
     setSelectedPermissions(r.permissions.includes('ALL') ? allPermissionIds : r.permissions);
+    setExpandedCategories({ [permissionTree[0]?.id || 'gateway']: true });
     setShowModal(true);
   };
 
+  // Accordion mode: mở cái này thì đóng cái kia
   const toggleCategoryExpand = (catId: string) => {
-    setExpandedCategories((prev) => ({ ...prev, [catId]: !prev[catId] }));
+    setExpandedCategories((prev) => {
+      if (prev[catId]) {
+        // Nếu đang mở mà nhấn vào thì thu gọn lại
+        return {};
+      }
+      // Mở mục vừa bấm, đóng tất cả các mục còn lại
+      return { [catId]: true };
+    });
   };
 
   const handleExpandAll = () => {
@@ -123,11 +121,7 @@ const RolesPage = () => {
   };
 
   const handleCollapseAll = () => {
-    const map: Record<string, boolean> = {};
-    permissionTree.forEach((n) => {
-      map[n.id] = false;
-    });
-    setExpandedCategories(map);
+    setExpandedCategories({});
   };
 
   // Toggle single permission
@@ -380,7 +374,7 @@ const RolesPage = () => {
         open={showModal}
         onClose={() => setShowModal(false)}
         title={editingRole ? `Cấu Hình Cây Phân Quyền: ${editingRole.name}` : 'Tạo Vai Trò & Thiết Lập Cây Phân Quyền'}
-        size="lg"
+        size="xl"
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowModal(false)}>
@@ -392,7 +386,7 @@ const RolesPage = () => {
           </>
         }
       >
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: 'fit-content' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <Input
               label="Tên Vai Trò"

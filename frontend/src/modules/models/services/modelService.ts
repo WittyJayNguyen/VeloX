@@ -24,6 +24,8 @@ export interface CreateModelPayload {
   pool_id: string;
 }
 
+export type ModelItem = ModelCatalogDto;
+
 // ── Offline fallback ──
 const STORAGE_KEY = 'velox_models';
 const getLocal = (): ModelCatalogDto[] => {
@@ -33,6 +35,10 @@ const saveLocal = (data: ModelCatalogDto[]) => localStorage.setItem(STORAGE_KEY,
 
 // ── Service ──
 export const modelService = {
+  getModels: async (): Promise<ModelCatalogDto[]> => {
+    return modelService.getAll();
+  },
+
   getAll: async (): Promise<ModelCatalogDto[]> => {
     try {
       const res = await apiClient.get<ModelCatalogDto[]>('/models');

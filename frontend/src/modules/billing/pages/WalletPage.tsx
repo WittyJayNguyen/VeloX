@@ -3,15 +3,10 @@ import {
   HiOutlineWallet,
   HiOutlineArrowTrendingUp,
   HiOutlineArrowTrendingDown,
-  HiOutlineQrCode,
   HiOutlineCreditCard,
   HiOutlineCheckCircle,
-  HiOutlineClock,
   HiOutlineBanknotes,
-  HiOutlineArrowPath,
   HiOutlinePlus,
-  HiOutlineMagnifyingGlass,
-  HiOutlineDocumentText,
 } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';

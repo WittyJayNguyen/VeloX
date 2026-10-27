@@ -10,7 +10,6 @@ import {
   HiOutlineCpuChip,
   HiOutlineCreditCard,
   HiOutlineUsers,
-  HiOutlineDocumentText,
   HiOutlineArrowLeftOnRectangle,
   HiOutlineBars3,
   HiOutlineMagnifyingGlass,
@@ -18,12 +17,10 @@ import {
   HiOutlineMoon,
   HiOutlineBuildingLibrary,
   HiOutlineWallet,
-  HiOutlineWrenchScrewdriver,
   HiOutlineShieldCheck,
   HiOutlineBellAlert,
   HiOutlineCog6Tooth,
   HiOutlineRocketLaunch,
-  HiOutlineSignal,
   HiOutlineExclamationTriangle,
 } from 'react-icons/hi2';
 import styles from '@assets/scss/admin/admin-layout.module.scss';

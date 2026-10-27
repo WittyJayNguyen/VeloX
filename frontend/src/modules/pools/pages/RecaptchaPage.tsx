@@ -6,7 +6,6 @@ import {
   HiOutlineShieldCheck,
   HiOutlineSparkles,
   HiOutlineCpuChip,
-  HiOutlineArrowPath,
   HiOutlineBolt,
   HiOutlineEye,
   HiOutlineEyeSlash,
