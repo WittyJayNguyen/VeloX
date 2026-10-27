@@ -391,7 +391,21 @@
     "cat_video": "视频生成",
     "open_full_studio": "进入完整工作台",
     "available_models_for": "可用模型列表",
-    "view_all_models": "查看 100+ 模型及定价"
+    "view_all_models": "查看 100+ 模型及定价",
+    "ref_image": "参考图",
+    "upload_or_paste": "上传或粘贴参考图",
+    "aspect_ratio": "宽高比",
+    "output_count": "生成数量",
+    "quality": "画质",
+    "duration": "时长",
+    "generating_job": "正在处理 AI 任务",
+    "queued": "排队中...",
+    "rendering": "正在渲染...",
+    "upscaling": "超分辨率处理...",
+    "completed": "已完成！",
+    "standard": "标准",
+    "hd": "高清 2K",
+    "ultra_4k": "超清 4K"
   },
   "models_page": {
     "subtitle": "探索 100+ 新一代前沿 AI 模型，覆盖聊天、图像与视频领域，高性价比极速调用"
