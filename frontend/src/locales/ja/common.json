@@ -467,7 +467,21 @@
     "cat_video": "動画生成",
     "open_full_studio": "フルスタジオを開く",
     "available_models_for": "利用可能なモデル",
-    "view_all_models": "100以上のモデルと料金を確認"
+    "view_all_models": "100以上のモデルと料金を確認",
+    "ref_image": "参照画像",
+    "upload_or_paste": "参照画像のアップロードまたは貼り付け",
+    "aspect_ratio": "アスペクト比",
+    "output_count": "生成数",
+    "quality": "品質",
+    "duration": "動画の長さ",
+    "generating_job": "AIジョブ処理中",
+    "queued": "待機中...",
+    "rendering": "生成中...",
+    "upscaling": "高解像度化中...",
+    "completed": "完了！",
+    "standard": "標準",
+    "hd": "高画質 2K",
+    "ultra_4k": "ウルトラ 4K"
   },
   "models_page": {
     "subtitle": "チャット、画像、動画向け100以上の次世代AIモデルを最適価格で探索"
