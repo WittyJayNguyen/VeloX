@@ -13,16 +13,24 @@ interface BankAccount {
   qr_enabled: boolean;
 }
 
-const initialBanks: BankAccount[] = [
-  { id: 'b1', bank_name: 'Vietcombank', account_number: '0071000****89', account_holder: 'NGUYEN LE HAI', branch: 'CN TP.HCM', is_default: true, qr_enabled: true },
-  { id: 'b2', bank_name: 'MB Bank', account_number: '0388****1234', account_holder: 'NGUYEN LE HAI', branch: 'PGD Tan Binh', is_default: false, qr_enabled: true },
-  { id: 'b3', bank_name: 'Techcombank', account_number: '1902****5678', account_holder: 'VELOX TECH JSC', branch: 'CN Ha Noi', is_default: false, qr_enabled: false },
-];
+const initialBanks: BankAccount[] = [];
 
 const BankingPage = () => {
   const [banks, setBanks] = useState<BankAccount[]>(() => {
     const s = localStorage.getItem('velox_banks');
-    return s ? JSON.parse(s) : initialBanks;
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.some((b: any) => b.id === 'b1')) {
+          localStorage.removeItem('velox_banks');
+          return [];
+        }
+        return parsed;
+      } catch {
+        return [];
+      }
+    }
+    return initialBanks;
   });
   const [showModal, setShowModal] = useState(false);
   const [formName, setFormName] = useState('');
@@ -68,27 +76,35 @@ const BankingPage = () => {
         <table className={styles.velzonTable}>
           <thead><tr><th>Ngân Hàng</th><th>Số Tài Khoản</th><th>Chủ Tài Khoản</th><th>Chi Nhánh</th><th>Mặc Định</th><th>QR</th><th>Thao Tác</th></tr></thead>
           <tbody>
-            {banks.map((b) => (
-              <tr key={b.id}>
-                <td style={{ fontWeight: 600, color: '#fafafa' }}><HiOutlineBuildingLibrary size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />{b.bank_name}</td>
-                <td><code style={{ background: '#27272a', padding: '0.15rem 0.4rem', borderRadius: 6, fontSize: '0.78rem', color: '#a1a1aa' }}>{b.account_number}</code></td>
-                <td style={{ color: '#a1a1aa' }}>{b.account_holder}</td>
-                <td style={{ color: '#71717a', fontSize: '0.8rem' }}>{b.branch}</td>
-                <td>
-                  <button type="button" onClick={() => handleSetDefault(b.id)} style={{ padding: '0.2rem 0.5rem', borderRadius: 9999, fontSize: '0.65rem', fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: b.is_default ? 'rgba(16,185,129,0.12)' : 'rgba(113,113,122,0.12)', color: b.is_default ? '#10b981' : '#71717a' }}>
-                    {b.is_default ? '★ Mặc định' : 'Đặt mặc định'}
-                  </button>
-                </td>
-                <td>
-                  <button type="button" onClick={() => handleToggleQR(b.id)} style={{ padding: '0.2rem 0.5rem', borderRadius: 9999, fontSize: '0.65rem', fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: b.qr_enabled ? 'rgba(99,102,241,0.12)' : 'rgba(113,113,122,0.12)', color: b.qr_enabled ? '#6366f1' : '#71717a' }}>
-                    <HiOutlineQrCode size={12} style={{ marginRight: 3, verticalAlign: 'middle' }} />{b.qr_enabled ? 'Bật' : 'Tắt'}
-                  </button>
-                </td>
-                <td>
-                  <button type="button" className={`${styles.iconActionBtn} ${styles.actionDelete}`} onClick={() => handleDelete(b.id)}>✕</button>
+            {banks.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#71717a' }}>
+                  Chưa có tài khoản ngân hàng nào. Nhấn "+ Thêm Tài Khoản" để bắt đầu cấu hình.
                 </td>
               </tr>
-            ))}
+            ) : (
+              banks.map((b) => (
+                <tr key={b.id}>
+                  <td style={{ fontWeight: 600, color: '#fafafa' }}><HiOutlineBuildingLibrary size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />{b.bank_name}</td>
+                  <td><code style={{ background: '#27272a', padding: '0.15rem 0.4rem', borderRadius: 6, fontSize: '0.78rem', color: '#a1a1aa' }}>{b.account_number}</code></td>
+                  <td style={{ color: '#a1a1aa' }}>{b.account_holder}</td>
+                  <td style={{ color: '#71717a', fontSize: '0.8rem' }}>{b.branch}</td>
+                  <td>
+                    <button type="button" onClick={() => handleSetDefault(b.id)} style={{ padding: '0.2rem 0.5rem', borderRadius: 9999, fontSize: '0.65rem', fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: b.is_default ? 'rgba(16,185,129,0.12)' : 'rgba(113,113,122,0.12)', color: b.is_default ? '#10b981' : '#71717a' }}>
+                      {b.is_default ? '★ Mặc định' : 'Đặt mặc định'}
+                    </button>
+                  </td>
+                  <td>
+                    <button type="button" onClick={() => handleToggleQR(b.id)} style={{ padding: '0.2rem 0.5rem', borderRadius: 9999, fontSize: '0.65rem', fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: b.qr_enabled ? 'rgba(99,102,241,0.12)' : 'rgba(113,113,122,0.12)', color: b.qr_enabled ? '#6366f1' : '#71717a' }}>
+                      <HiOutlineQrCode size={12} style={{ marginRight: 3, verticalAlign: 'middle' }} />{b.qr_enabled ? 'Bật' : 'Tắt'}
+                    </button>
+                  </td>
+                  <td>
+                    <button type="button" className={`${styles.iconActionBtn} ${styles.actionDelete}`} onClick={() => handleDelete(b.id)}>✕</button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

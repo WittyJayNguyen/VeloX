@@ -184,55 +184,33 @@ async def get_accounting_overview(db: AsyncSession) -> AccountingOverviewRespons
     gross_margin_pct = round((gross_profit / total_rev * 100.0), 2) if total_rev > 0 else 0.0
     roi_pct = round((net_profit / total_expense * 100.0), 2) if total_expense > 0 else 0.0
 
-    # 5. Customer Liabilities (Unspent Credits in Customer Wallets * 100 VND per credit)
-    wallet_stmt = select(func.sum(UserWallet.balance_credits))
-    wallet_res = await db.execute(wallet_stmt)
-    unspent_credits = float(wallet_res.scalar() or 0.0)
-    customer_liabilities = unspent_credits * 100.0  # 1 Credit ~ 100 VND
+    # 5. Customer Liabilities (Unspent Purchased Credits in Customer Wallets)
+    # Only counts actual liabilities if revenue has been collected
+    if total_rev > 0:
+        wallet_stmt = select(func.sum(UserWallet.balance_credits))
+        wallet_res = await db.execute(wallet_stmt)
+        unspent_credits = float(wallet_res.scalar() or 0.0)
+        customer_liabilities = unspent_credits * 100.0  # 1 Credit ~ 100 VND
+    else:
+        customer_liabilities = 0.0
 
-    # 6. Accounts Inventory Breakdown
-    inventory: List[AccountInventoryItem] = [
-        AccountInventoryItem(
-            provider="Meta AI Muse",
-            name="Gói 5 Acc Muse (31 Tỷ Token/Acc)",
-            account_count=5,
-            total_tokens=155_000_000_000,
-            unit_cost_vnd=30000.0,
-            total_cost_vnd=150000.0,
-            used_cost_vnd=min(150000.0, cogs_depreciated * 0.6),
-            remaining_value_vnd=max(0.0, 150000.0 - (cogs_depreciated * 0.6)),
-        ),
-        AccountInventoryItem(
-            provider="Meta AI Muse",
-            name="Gói 5 Acc Muse (1 Tỷ Token/Acc)",
-            account_count=5,
-            total_tokens=5_000_000_000,
-            unit_cost_vnd=5000.0,
-            total_cost_vnd=25000.0,
-            used_cost_vnd=min(25000.0, cogs_depreciated * 0.1),
-            remaining_value_vnd=max(0.0, 25000.0 - (cogs_depreciated * 0.1)),
-        ),
-        AccountInventoryItem(
-            provider="OpenAI",
-            name="Ví Số Dư API OpenAI ($20 Prepaid)",
-            account_count=1,
-            total_tokens=20_000_000,
-            unit_cost_vnd=500000.0,
-            total_cost_vnd=500000.0,
-            used_cost_vnd=min(500000.0, cogs_depreciated * 0.2),
-            remaining_value_vnd=max(0.0, 500000.0 - (cogs_depreciated * 0.2)),
-        ),
-        AccountInventoryItem(
-            provider="2Captcha",
-            name="Ví Giải Recaptcha V3/Enterprise ($10)",
-            account_count=1,
-            total_tokens=5000,
-            unit_cost_vnd=250000.0,
-            total_cost_vnd=250000.0,
-            used_cost_vnd=min(250000.0, cogs_depreciated * 0.1),
-            remaining_value_vnd=max(0.0, 250000.0 - (cogs_depreciated * 0.1)),
-        ),
-    ]
+    # 6. Accounts Inventory Breakdown (Calculated dynamically from real expenses)
+    inventory: List[AccountInventoryItem] = []
+    for exp in all_expenses:
+        if (exp.account_count or 0) > 0 or (exp.tokens_capacity or 0) > 0:
+            unit_cost = (exp.amount_vnd / exp.account_count) if exp.account_count else exp.amount_vnd
+            inventory.append(
+                AccountInventoryItem(
+                    provider=exp.provider or "VeloX Gateway",
+                    name=exp.title,
+                    account_count=exp.account_count or 0,
+                    total_tokens=exp.tokens_capacity or 0,
+                    unit_cost_vnd=float(unit_cost),
+                    total_cost_vnd=float(exp.amount_vnd),
+                    used_cost_vnd=float(exp.depreciated_amount_vnd or 0.0),
+                    remaining_value_vnd=float(exp.remaining_value_vnd or exp.amount_vnd),
+                )
+            )
 
     return AccountingOverviewResponse(
         total_revenue_vnd=total_rev,
