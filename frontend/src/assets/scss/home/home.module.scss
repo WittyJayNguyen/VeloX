@@ -381,6 +381,195 @@
   }
 }
 
+/* ── Pricing ── */
+.gradientOrange {
+  background: linear-gradient(135deg, #ff6b35, #f7931a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pricingSection {
+  padding: 6rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  align-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  @media (max-width: $bp-md) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.pricingCard {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  padding: 2.5rem 2rem;
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:first-child {
+    border-radius: 16px 0 0 16px;
+    @media (max-width: $bp-md) { border-radius: 16px; }
+  }
+  &:last-child {
+    border-radius: 0 16px 16px 0;
+    @media (max-width: $bp-md) { border-radius: 16px; }
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.pricingPopular {
+  background: linear-gradient(165deg, #ff6b35 0%, #f7931a 50%, #ff8c42 100%);
+  border: none;
+  border-radius: 16px;
+  padding: 3rem 2rem 2.5rem;
+  z-index: 2;
+  transform: scale(1.06);
+  box-shadow:
+    0 24px 64px rgba(247, 147, 26, 0.25),
+    0 0 40px rgba(255, 107, 53, 0.15);
+
+  @media (max-width: $bp-md) { transform: scale(1); }
+
+  &:hover {
+    transform: scale(1.08);
+    box-shadow:
+      0 30px 80px rgba(247, 147, 26, 0.35),
+      0 0 60px rgba(255, 107, 53, 0.2);
+    @media (max-width: $bp-md) { transform: scale(1.02); }
+  }
+
+  .planName { color: #fff; }
+  .planDesc { color: rgba(255, 255, 255, 0.75); }
+  .priceValue { color: #fff; }
+  .priceUnit { color: rgba(255, 255, 255, 0.7); }
+  .planFeatures li { color: rgba(255, 255, 255, 0.9); }
+  .checkIcon { color: #fff !important; }
+}
+
+.popularBadge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.35rem 1.25rem;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+}
+
+.planName {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fafafa;
+  margin-bottom: 0.3rem;
+  letter-spacing: 1px;
+}
+
+.planDesc {
+  font-size: 0.78rem;
+  color: #71717a;
+  margin-bottom: 1.75rem;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-bottom: 2rem;
+}
+
+.priceValue {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fafafa;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.priceUnit {
+  font-size: 0.85rem;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    color: #a1a1aa;
+  }
+}
+
+.checkIcon {
+  color: #10b981;
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.planCta {
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: #ff6b35;
+  color: #fff;
+  border: 2px solid #ff6b35;
+
+  &:hover {
+    background: #e55a28;
+    border-color: #e55a28;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+  }
+}
+
+.planCtaPopular {
+  background: #fff;
+  color: #ff6b35;
+  border-color: #fff;
+
+  &:hover {
+    background: #f5f5f5;
+    border-color: #f5f5f5;
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
+  }
+}
+
 /* ── CTA Section ── */
 .ctaSection {
   padding: 5rem 2rem;
