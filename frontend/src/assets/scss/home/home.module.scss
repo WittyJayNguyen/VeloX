@@ -70,15 +70,15 @@ $font-body: 'Barlow', sans-serif;
 // ════════════════════════════════════════
 .heroSection {
   position: relative;
-  min-height: 90vh;
+  min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
-  padding: 6rem 2rem 5rem;
+  padding: 3.5rem 2rem 3.5rem;
   overflow: hidden;
   background-color: $bg-dark;
 
   @media (max-width: 768px) {
-    padding: 4rem 1.25rem 3.5rem;
+    padding: 3rem 1.25rem 2.5rem;
     min-height: auto;
   }
 }
