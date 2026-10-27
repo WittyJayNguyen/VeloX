@@ -25,8 +25,9 @@ const MainLayout = () => {
 
         <nav className={styles.nav}>
           <Link to="/" className={styles.navLink}>{t('nav.home')}</Link>
-          <Link to="/#features" className={styles.navLink}>{t('nav.features')}</Link>
-          <Link to="/#pricing" className={styles.navLink}>{t('nav.pricing')}</Link>
+          <a href="/#workouts" className={styles.navLink}>{t('fitness.nav_workouts')}</a>
+          <a href="/#trainers" className={styles.navLink}>{t('fitness.nav_trainers')}</a>
+          <a href="/#pricing" className={styles.navLink}>{t('fitness.nav_pricing')}</a>
           <LangSwitcher />
 
           <Link to="/admin">
