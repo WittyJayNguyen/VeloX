@@ -219,8 +219,9 @@ const HomePage = () => {
             </div>
 
             <h1 className={styles.heroHeadline}>
-              {t('fitness.hero_title_1')}<br />
-              {t('fitness.hero_title_2')}<br />
+              <span>{t('fitness.hero_title_1')}</span>{' '}
+              <span>{t('fitness.hero_title_2')}</span>
+              <br />
               <span className={styles.highlightOrange}>{t('fitness.hero_title_hl')}</span>
             </h1>
 

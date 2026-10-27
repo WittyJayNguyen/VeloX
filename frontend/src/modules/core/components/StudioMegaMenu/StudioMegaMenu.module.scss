@@ -69,11 +69,10 @@
 
 .megaDropdown {
   position: absolute;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%) translateY(6px);
-  width: 720px;
-  max-width: 94vw;
+  top: 100%;
+  left: 0;
+  width: 780px;
+  max-width: 95vw;
   background: rgba(12, 16, 26, 0.98);
   backdrop-filter: blur(20px);
   border: 1px solid #1f2a3e;
@@ -82,18 +81,29 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
   z-index: 1000;
   overflow: hidden;
 
+  // Invisible hover bridge so mouse cursor won't lose hover
+  &::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+  }
+
   @media (max-width: 1024px) {
-    width: min(94vw, 680px);
+    width: min(94vw, 700px);
   }
 }
 
 .megaContainer {
   display: grid;
-  grid-template-columns: 210px 1fr;
+  grid-template-columns: 245px 1fr;
   min-height: 330px;
 }
 
@@ -106,7 +116,7 @@
   letter-spacing: 0.06em;
   color: #64748b;
   text-transform: uppercase;
-  padding: 0.55rem 0.85rem;
+  padding: 0.65rem 0.95rem;
   border-bottom: 1px solid #182236;
 }
 
@@ -119,26 +129,42 @@
 }
 
 .categoryList {
-  padding: 0.5rem;
+  padding: 0.6rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
   flex: 1;
 }
 
 .categoryItem {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.75rem;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
   border-radius: 10px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.18s ease;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.18s ease, border-color 0.18s ease;
+
+  // Active indicator line on the left - never causes layout shift
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3.5px;
+    background: #ff6b35;
+    border-radius: 0 4px 4px 0;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
 
   .catIconBox {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     background: #141b2b;
     border: 1px solid #222d44;
@@ -147,7 +173,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
   }
 
   .catInfo {
@@ -155,34 +181,58 @@
     min-width: 0;
 
     .catTitle {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: #f1f5f9;
-      margin-bottom: 1px;
+      margin-bottom: 2px;
+      transition: color 0.15s ease;
     }
 
     .catDesc {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       color: #64748b;
-      line-height: 1.25;
+      line-height: 1.3;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.15s ease;
     }
   }
 
   .catArrow {
-    color: #475569;
+    color: #ff6b35;
     opacity: 0;
-    transform: translateX(-4px);
-    transition: all 0.2s ease;
+    width: 14px;
     flex-shrink: 0;
+    transform: translateX(-4px);
+    transition: all 0.18s ease;
   }
 
-  &:hover,
-  &.active {
+  &:hover {
     background: #131a2a;
     border-color: #24324f;
+
+    .catTitle {
+      color: #fff;
+    }
+
+    .catDesc {
+      color: #94a3b8;
+    }
+
+    .catArrow {
+      opacity: 0.6;
+      transform: translateX(0);
+    }
+  }
+
+  &.active {
+    background: #151e32;
+    border-color: #2b3b5c;
+
+    &::before {
+      opacity: 1;
+    }
 
     .catIconBox {
       background: rgba(255, 107, 53, 0.15);
@@ -194,15 +244,14 @@
       color: #fff;
     }
 
+    .catDesc {
+      color: #cbd5e1;
+    }
+
     .catArrow {
       opacity: 1;
       transform: translateX(0);
-      color: #ff6b35;
     }
-  }
-
-  &.active {
-    border-left: 3px solid #ff6b35;
   }
 }
 
@@ -289,8 +338,7 @@
   &:hover {
     border-color: #38bdf8;
     background: #151f33;
-    transform: translateX(3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 
     .modelName {
       color: #38bdf8;
