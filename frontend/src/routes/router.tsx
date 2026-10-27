@@ -5,32 +5,32 @@ import AdminLayout from '@modules/core/components/AdminLayout/AdminLayout';
 import { AdminRoute } from './guards';
 
 // Lazy-loaded pages — grouped by module
-const HomePage = lazy(() => import('@modules/home/components/HomePage'));
-const LoginPage = lazy(() => import('@modules/auth/components/LoginPage'));
-const RegisterPage = lazy(() => import('@modules/auth/components/RegisterPage'));
+const HomePage = lazy(() => import('@modules/home/pages/HomePage'));
+const LoginPage = lazy(() => import('@modules/auth/pages/LoginPage'));
+const RegisterPage = lazy(() => import('@modules/auth/pages/RegisterPage'));
 
 // Admin
-const DashboardPage = lazy(() => import('@modules/admin/components/DashboardPage'));
-const NotificationsPage = lazy(() => import('@modules/admin/components/NotificationsPage'));
-const SettingsPage = lazy(() => import('@modules/admin/components/SettingsPage'));
+const DashboardPage = lazy(() => import('@modules/admin/pages/DashboardPage'));
+const NotificationsPage = lazy(() => import('@modules/admin/pages/NotificationsPage'));
+const SettingsPage = lazy(() => import('@modules/admin/pages/SettingsPage'));
 
 // Vận Hành
-const ModelsPage = lazy(() => import('@modules/models/components/ModelsPage'));
-const LogsPage = lazy(() => import('@modules/logs/components/LogsPage'));
+const ModelsPage = lazy(() => import('@modules/models/pages/ModelsPage'));
+const LogsPage = lazy(() => import('@modules/logs/pages/LogsPage'));
 
 // Thanh Toán
-const BillingPage = lazy(() => import('@modules/billing/components/BillingPage'));
-const BankingPage = lazy(() => import('@modules/billing/components/BankingPage'));
-const WalletPage = lazy(() => import('@modules/billing/components/WalletPage'));
-const PackagesPage = lazy(() => import('@modules/billing/components/PackagesPage'));
+const BillingPage = lazy(() => import('@modules/billing/pages/BillingPage'));
+const BankingPage = lazy(() => import('@modules/billing/pages/BankingPage'));
+const WalletPage = lazy(() => import('@modules/billing/pages/WalletPage'));
+const PackagesPage = lazy(() => import('@modules/billing/pages/PackagesPage'));
 
 // Dịch Vụ
-const ServicePoolPage = lazy(() => import('@modules/pools/components/ServicePoolPage'));
-const ApiKeysPage = lazy(() => import('@modules/pools/components/ApiKeysPage'));
+const ServicePoolPage = lazy(() => import('@modules/pools/pages/ServicePoolPage'));
+const ApiKeysPage = lazy(() => import('@modules/pools/pages/ApiKeysPage'));
 
 // Người Dùng
-const UsersPage = lazy(() => import('@modules/users/components/UsersPage'));
-const RolesPage = lazy(() => import('@modules/users/components/RolesPage'));
+const UsersPage = lazy(() => import('@modules/users/pages/UsersPage'));
+const RolesPage = lazy(() => import('@modules/users/pages/RolesPage'));
 
 const router = createBrowserRouter([
   {
