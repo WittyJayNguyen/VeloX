@@ -444,182 +444,7 @@ export const StudioPage: React.FC = () => {
         </div>
       </div>
 
-      {/* TOP STUDIO CONTROL PANEL: Ghim sát lên trên cho Image & Video & Chat */}
-      <div className={styles.topControlPanel}>
-        <div className={styles.controlContainer}>
-          {/* Main Input Box with Integrated Controls */}
-          <div className={styles.promptInputBox} onPaste={handlePasteEvent}>
-            {/* Reference Image Preview Thumbnail if attached */}
-            {refImage && (
-              <div className={styles.refImagePreviewRow}>
-                <div className={styles.refThumbnailBox}>
-                  <img src={refImage} alt="Ref preview" />
-                  <button
-                    type="button"
-                    className={styles.removeRefBtn}
-                    onClick={() => setRefImage(null)}
-                    title="Gỡ ảnh tham chiếu"
-                  >
-                    <HiOutlineXMark size={14} />
-                  </button>
-                </div>
-                <div className={styles.refLabelBox}>
-                  <span className={styles.refTitle}>{t('studio.ref_image', 'Ảnh tham chiếu')}</span>
-                  <span className={styles.refDesc}>
-                    {activeTab === 'image'
-                      ? 'AI sẽ phối màu & phong cách dựa trên ảnh này (Image-to-Image)'
-                      : 'AI sẽ tạo chuyển động sống động từ bức ảnh này (Image-to-Video)'}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Prompt Textarea */}
-            <textarea
-              className={styles.promptTextarea}
-              placeholder={
-                activeTab === 'chat'
-                  ? `Nhập câu hỏi hoặc yêu cầu cho ${currentModelObj.name}...`
-                  : activeTab === 'image'
-                  ? `Mô tả chi tiết hình ảnh muốn tạo (hoặc dán Ctrl+V ảnh tham chiếu vào đây)...`
-                  : `Mô tả cảnh quay video và chuyển động camera cho ${currentModelObj.name}...`
-              }
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleGenerate();
-                }
-              }}
-              rows={activeTab === 'chat' ? 2 : 2}
-            />
-
-            {/* Hidden File Input for Reference Image */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleImageFileChange}
-            />
-
-            {/* Bottom Actions & Parameters Bar */}
-            <div className={styles.promptActionsRow}>
-              <div className={styles.optionsGroup}>
-                {/* 1. Nút tải/dán ảnh tham chiếu (Image & Video) */}
-                {activeTab !== 'chat' && (
-                  <button
-                    type="button"
-                    className={`${styles.optChipBtn} ${refImage ? styles.chipActive : ''}`}
-                    onClick={() => fileInputRef.current?.click()}
-                    title="Chọn tệp ảnh hoặc dán trực tiếp (Ctrl+V) ảnh tham chiếu"
-                  >
-                    <HiOutlinePhoto size={16} />
-                    <span>{refImage ? 'Đã đính kèm ảnh' : t('studio.ref_image', 'Ảnh tham chiếu')}</span>
-                  </button>
-                )}
-
-                {/* 2. Chọn Tỉ lệ khung hình (Aspect Ratio) */}
-                {activeTab !== 'chat' && (
-                  <div className={styles.selectControl}>
-                    <span className={styles.selectLabel}>{t('studio.aspect_ratio', 'Tỉ lệ')}:</span>
-                    <select
-                      value={aspectRatio}
-                      onChange={(e) => setAspectRatio(e.target.value)}
-                      className={styles.compactSelect}
-                    >
-                      <option value="1:1">1:1 (Vuông)</option>
-                      <option value="16:9">16:9 (Ngang / YouTube)</option>
-                      <option value="9:16">9:16 (Dọc / TikTok)</option>
-                      <option value="4:3">4:3 (Tiêu chuẩn)</option>
-                      <option value="3:4">3:4 (Chân dung)</option>
-                      {activeTab === 'image' && <option value="21:9">21:9 (Cinematic)</option>}
-                    </select>
-                  </div>
-                )}
-
-                {/* 3. Chọn số lượng ảnh / video xuất ra */}
-                {activeTab !== 'chat' && (
-                  <div className={styles.selectControl}>
-                    <span className={styles.selectLabel}>
-                      {activeTab === 'image' ? 'Số ảnh' : 'Số video'}:
-                    </span>
-                    <select
-                      value={outputCount}
-                      onChange={(e) => setOutputCount(Number(e.target.value))}
-                      className={styles.compactSelect}
-                    >
-                      <option value={1}>1 {activeTab === 'image' ? 'ảnh' : 'video'}</option>
-                      <option value={2}>2 {activeTab === 'image' ? 'ảnh (2x)' : 'videos (2x)'}</option>
-                      {activeTab === 'image' && <option value={4}>4 ảnh (4x)</option>}
-                    </select>
-                  </div>
-                )}
-
-                {/* 4. Chọn Chất lượng ảnh hoặc Thời lượng video */}
-                {activeTab === 'image' && (
-                  <div className={styles.selectControl}>
-                    <span className={styles.selectLabel}>{t('studio.quality', 'Chất lượng')}:</span>
-                    <select
-                      value={quality}
-                      onChange={(e) => setQuality(e.target.value as any)}
-                      className={styles.compactSelect}
-                    >
-                      <option value="standard">Standard (1K)</option>
-                      <option value="hd">HD (2K)</option>
-                      <option value="ultra_4k">Ultra (4K)</option>
-                    </select>
-                  </div>
-                )}
-
-                {activeTab === 'video' && (
-                  <div className={styles.selectControl}>
-                    <span className={styles.selectLabel}>{t('studio.duration', 'Thời lượng')}:</span>
-                    <select
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value as any)}
-                      className={styles.compactSelect}
-                    >
-                      <option value="5s">5 giây</option>
-                      <option value="10s">10 giây (Pro)</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* Submit & Total Credits Cost Button */}
-              <div className={styles.submitArea}>
-                <div className={styles.costBadge}>
-                  <HiOutlineBolt size={14} />
-                  <span>{totalCreditsNeeded} cr</span>
-                </div>
-
-                <button
-                  type="button"
-                  className={styles.generateBtn}
-                  onClick={handleGenerate}
-                  disabled={isGenerating || !prompt.trim()}
-                >
-                  {isGenerating ? (
-                    <span className={styles.spinnerPulse} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      <RiReactjsFill size={16} color="#61dafb" style={{ animation: 'spin360 2s linear infinite' }} />
-                      <span>Đang tạo...</span>
-                    </span>
-                  ) : (
-                    <>
-                      <HiOutlineSparkles size={16} />
-                      <span>Tạo Ngay</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Studio Canvas Area (Gallery & History) */}
+      {/* Main Studio Canvas Area (Chứa Jobs, Gallery & Chat History) */}
       <div className={styles.canvasContainer}>
         {/* CHAT MODE */}
         {activeTab === 'chat' && (
@@ -879,6 +704,181 @@ export const StudioPage: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* BOTTOM STUDIO CONTROL PANEL: Nằm ở dưới như lúc đầu, thanh công cụ tạo và nhập prompt */}
+      <div className={styles.bottomControlPanel}>
+        <div className={styles.controlContainer}>
+          {/* Main Input Box with Integrated Controls */}
+          <div className={styles.promptInputBox} onPaste={handlePasteEvent}>
+            {/* Reference Image Preview Thumbnail if attached */}
+            {refImage && (
+              <div className={styles.refImagePreviewRow}>
+                <div className={styles.refThumbnailBox}>
+                  <img src={refImage} alt="Ref preview" />
+                  <button
+                    type="button"
+                    className={styles.removeRefBtn}
+                    onClick={() => setRefImage(null)}
+                    title="Gỡ ảnh tham chiếu"
+                  >
+                    <HiOutlineXMark size={14} />
+                  </button>
+                </div>
+                <div className={styles.refLabelBox}>
+                  <span className={styles.refTitle}>{t('studio.ref_image', 'Ảnh tham chiếu')}</span>
+                  <span className={styles.refDesc}>
+                    {activeTab === 'image'
+                      ? 'AI sẽ phối màu & phong cách dựa trên ảnh này (Image-to-Image)'
+                      : 'AI sẽ tạo chuyển động sống động từ bức ảnh này (Image-to-Video)'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Prompt Textarea */}
+            <textarea
+              className={styles.promptTextarea}
+              placeholder={
+                activeTab === 'chat'
+                  ? `Nhập câu hỏi hoặc yêu cầu cho ${currentModelObj.name}...`
+                  : activeTab === 'image'
+                  ? `Mô tả chi tiết hình ảnh muốn tạo (hoặc dán Ctrl+V ảnh tham chiếu vào đây)...`
+                  : `Mô tả cảnh quay video và chuyển động camera cho ${currentModelObj.name}...`
+              }
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleGenerate();
+                }
+              }}
+              rows={activeTab === 'chat' ? 2 : 2}
+            />
+
+            {/* Hidden File Input for Reference Image */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleImageFileChange}
+            />
+
+            {/* Bottom Actions & Parameters Bar */}
+            <div className={styles.promptActionsRow}>
+              <div className={styles.optionsGroup}>
+                {/* 1. Nút tải/dán ảnh tham chiếu (Image & Video) */}
+                {activeTab !== 'chat' && (
+                  <button
+                    type="button"
+                    className={`${styles.optChipBtn} ${refImage ? styles.chipActive : ''}`}
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Chọn tệp ảnh hoặc dán trực tiếp (Ctrl+V) ảnh tham chiếu"
+                  >
+                    <HiOutlinePhoto size={16} />
+                    <span>{refImage ? 'Đã đính kèm ảnh' : t('studio.ref_image', 'Ảnh tham chiếu')}</span>
+                  </button>
+                )}
+
+                {/* 2. Chọn Tỉ lệ khung hình (Aspect Ratio) */}
+                {activeTab !== 'chat' && (
+                  <div className={styles.selectControl}>
+                    <span className={styles.selectLabel}>{t('studio.aspect_ratio', 'Tỉ lệ')}:</span>
+                    <select
+                      value={aspectRatio}
+                      onChange={(e) => setAspectRatio(e.target.value)}
+                      className={styles.compactSelect}
+                    >
+                      <option value="1:1">1:1 (Vuông)</option>
+                      <option value="16:9">16:9 (Ngang / YouTube)</option>
+                      <option value="9:16">9:16 (Dọc / TikTok)</option>
+                      <option value="4:3">4:3 (Tiêu chuẩn)</option>
+                      <option value="3:4">3:4 (Chân dung)</option>
+                      {activeTab === 'image' && <option value="21:9">21:9 (Cinematic)</option>}
+                    </select>
+                  </div>
+                )}
+
+                {/* 3. Chọn số lượng ảnh / video xuất ra */}
+                {activeTab !== 'chat' && (
+                  <div className={styles.selectControl}>
+                    <span className={styles.selectLabel}>
+                      {activeTab === 'image' ? 'Số ảnh' : 'Số video'}:
+                    </span>
+                    <select
+                      value={outputCount}
+                      onChange={(e) => setOutputCount(Number(e.target.value))}
+                      className={styles.compactSelect}
+                    >
+                      <option value={1}>1 {activeTab === 'image' ? 'ảnh' : 'video'}</option>
+                      <option value={2}>2 {activeTab === 'image' ? 'ảnh (2x)' : 'videos (2x)'}</option>
+                      {activeTab === 'image' && <option value={4}>4 ảnh (4x)</option>}
+                    </select>
+                  </div>
+                )}
+
+                {/* 4. Chọn Chất lượng ảnh hoặc Thời lượng video */}
+                {activeTab === 'image' && (
+                  <div className={styles.selectControl}>
+                    <span className={styles.selectLabel}>{t('studio.quality', 'Chất lượng')}:</span>
+                    <select
+                      value={quality}
+                      onChange={(e) => setQuality(e.target.value as any)}
+                      className={styles.compactSelect}
+                    >
+                      <option value="standard">Standard (1K)</option>
+                      <option value="hd">HD (2K)</option>
+                      <option value="ultra_4k">Ultra (4K)</option>
+                    </select>
+                  </div>
+                )}
+
+                {activeTab === 'video' && (
+                  <div className={styles.selectControl}>
+                    <span className={styles.selectLabel}>{t('studio.duration', 'Thời lượng')}:</span>
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value as any)}
+                      className={styles.compactSelect}
+                    >
+                      <option value="5s">5 giây</option>
+                      <option value="10s">10 giây (Pro)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit & Total Credits Cost Button */}
+              <div className={styles.submitArea}>
+                <div className={styles.costBadge}>
+                  <HiOutlineBolt size={14} />
+                  <span>{totalCreditsNeeded} cr</span>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.generateBtn}
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !prompt.trim()}
+                >
+                  {isGenerating ? (
+                    <span className={styles.spinnerPulse} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <RiReactjsFill size={16} color="#61dafb" style={{ animation: 'spin360 2s linear infinite' }} />
+                      <span>Đang tạo...</span>
+                    </span>
+                  ) : (
+                    <>
+                      <HiOutlineSparkles size={16} />
+                      <span>Tạo Ngay</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Lightbox Modal */}
