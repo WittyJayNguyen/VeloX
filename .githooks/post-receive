@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+# Unset GIT_DIR so git commands in target directories use their own working trees
+unset GIT_DIR
+
+while read oldrev newrev refname; do
+    branch=$(git rev-parse --symbolic --abbrev-ref "$refname")
+    echo ""
+    echo "========================================================================"
+    echo "🚀 [VeloX CI/CD] Nhận được code mới trên nhánh: '$branch'"
+    echo "========================================================================"
+
+    if [ "$branch" = "prod" ]; then
+        echo "📦 [Prod Auto-Deploy] Bắt đầu tự động cập nhật Production (/opt/velox/prod)..."
+        cd /opt/velox/prod
+        git fetch origin prod
+        git reset --hard origin/prod
+        echo "🔨 [Prod Build] Tiến hành build và khởi động lại Docker container Production..."
+        docker compose -f docker-compose.prod.yml up -d --build
+        echo ""
+        echo "✅ [Prod Success] Production đã được tự động build và triển khai thành công!"
+        echo "🌐 URL: https://velox.nexoratech.com.vn"
+        echo "========================================================================"
+
+    elif [ "$branch" = "staging" ]; then
+        echo "🧪 [Staging Auto-Deploy] Bắt đầu tự động cập nhật Staging (/opt/velox/staging)..."
+        cd /opt/velox/staging
+        git fetch origin staging
+        git reset --hard origin/staging
+        echo "🔨 [Staging Build] Tiến hành build và khởi động lại Docker container Staging..."
+        docker compose -f docker-compose.staging.yml up -d --build
+        echo ""
+        echo "✅ [Staging Success] Staging đã được tự động build và triển khai thành công!"
+        echo "🌐 URL: https://testvelox.nexoratech.com.vn"
+        echo "========================================================================"
+    fi
+done
