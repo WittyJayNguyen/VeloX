@@ -253,5 +253,135 @@
     "start_trial": "开启免费试用",
     "cta_banner_title": "准备好迎来属于您的蜕变了吗？",
     "cta_banner_desc": "立即加入 50 万+ 活跃会员的健身队伍，7 天免费深度体验，零风险随心开启。"
+  },
+  "header": {
+    "quick_search": "快速搜索",
+    "pricing": "价格方案",
+    "notifications": "通知中心"
+  },
+  "menu": {
+    "topup_now": "充值",
+    "checkin_today": "每日签到",
+    "checkin_done": "今日已签到",
+    "checkin_success": "签到成功！+50 算力积分",
+    "already_checked_in": "您今天已经签到过了！",
+    "section_account": "个人账户",
+    "section_billing": "套餐与账单",
+    "section_earning": "创收中心",
+    "section_advanced": "高级功能",
+    "super_admin_panel": "超级管理后台",
+    "language": "语言设置"
+  },
+  "client_menu": {
+    "profile": "个人资料与设置",
+    "security": "安全与双重认证",
+    "team": "我的团队",
+    "subscription": "套餐管理",
+    "history": "使用历史记录",
+    "orders": "购买订单",
+    "workflows": "我的工作流",
+    "sales": "创作者销售看板",
+    "referral": "推荐好友",
+    "developer": "API 与 MCP 协议",
+    "downloads": "桌面端客户端"
+  },
+  "topup": {
+    "title": "充值算力积分",
+    "current_balance": "当前余额",
+    "choose_package": "1. 选择充值方案",
+    "payment_info": "2. 扫码转账支付",
+    "bank": "开户银行",
+    "account_no": "银行账号",
+    "account_name": "收款户名",
+    "amount": "转账金额",
+    "memo": "转账附言",
+    "copy": "复制",
+    "copied": "已复制",
+    "confirm_paid": "我已完成转账",
+    "checking": "系统正在验证入账...",
+    "success_title": "充值成功！",
+    "success_desc": "您的账户已成功充值",
+    "qr_hint": "使用银行或支付应用扫码"
+  },
+  "search": {
+    "placeholder": "快速搜索页面、功能、设置... (Ctrl+K)",
+    "empty": "未找到相关结果。",
+    "hint_navigate": "切换",
+    "hint_select": "打开",
+    "hint_close": "关闭"
+  },
+  "profile": {
+    "subtitle": "管理您的个人信息及 VeloX 会员权益",
+    "save_success": "个人信息已成功更新！",
+    "balance_label": "算力积分余额",
+    "tier_label": "当前会员等级",
+    "role_label": "账户权限",
+    "personal_info": "基本信息",
+    "full_name": "姓名",
+    "email": "注册邮箱（账号标识）",
+    "avatar_url": "头像图片链接",
+    "created_at": "注册时间",
+    "save_btn": "保存更改"
+  },
+  "security": {
+    "subtitle": "启用两步验证与登录会话审计，确保账户安全",
+    "2fa_title": "双重认证 (2FA Authenticator)",
+    "2fa_desc": "登录时使用 Google Authenticator 或身份验证器动态码保护账户。",
+    "status_active": "状态：已开启",
+    "status_inactive": "状态：已关闭",
+    "turn_on": "开启 2FA",
+    "turn_off": "关闭 2FA",
+    "2fa_enabled": "双重认证已成功开启！",
+    "2fa_disabled": "双重认证已关闭。",
+    "change_pass_title": "修改密码",
+    "old_pass": "当前密码",
+    "new_pass": "新密码",
+    "confirm_pass": "确认新密码",
+    "save_pass_btn": "更新密码",
+    "err_mismatch": "两次输入的密码不一致！",
+    "err_short": "密码长度不能少于 6 位！",
+    "success_pass": "密码修改成功！",
+    "sessions_title": "活跃登录会话"
+  },
+  "team": {
+    "subtitle": "协作共享算力配额，管理工作空间成员权限",
+    "total_members": "团队成员总数",
+    "pooled_credit": "团队共享算力池",
+    "invite_title": "邀请新成员",
+    "email_label": "成员邮箱",
+    "role_label": "权限角色",
+    "send_invite": "发送邀请",
+    "list_title": "成员列表",
+    "invited_success": "邀请邮件已成功发送！"
+  },
+  "subscription": {
+    "subtitle": "根据您的 AI 开发与创作需求选择最适合的服务套餐",
+    "topup_btn": "立即充值积分",
+    "current_plan": "当前生效套餐"
+  },
+  "history": {
+    "subtitle": "详细查看 AI 模型调用记录、Token 消耗与算力扣减"
+  },
+  "orders": {
+    "subtitle": "查看充值交易记录、订阅订单及电子发票",
+    "new_topup": "新充值订单"
+  },
+  "workflows": {
+    "subtitle": "通过多步骤 AI 流程管道实现复杂业务自动化",
+    "create_new": "创建新工作流"
+  },
+  "sales": {
+    "subtitle": "查看在 VeloX 市场销售 AI 工作流与提示词的收益看板",
+    "withdraw_btn": "申请提现"
+  },
+  "referral": {
+    "subtitle": "邀请好友加入 VeloX，永久享受其每笔充值 20% 算力返佣奖励",
+    "copied_notice": "邀请链接已复制到剪贴板！"
+  },
+  "developer": {
+    "subtitle": "将 VeloX AI Gateway 与主流 IDE、Claude Desktop、Cursor 及后端集成"
+  },
+  "downloads": {
+    "subtitle": "原生桌面端快捷唤醒体验，随时随地享受极速 AI 算力"
   }
 }

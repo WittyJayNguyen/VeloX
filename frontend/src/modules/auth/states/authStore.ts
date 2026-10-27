@@ -7,8 +7,10 @@ interface AuthStore {
   token: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   login: (user: User, token: string) => void;
   updateUser: (updatedFields: Partial<User>) => void;
+  addCredits: (amount: number) => void;
   logout: () => void;
   hydrate: () => void;
 }
@@ -21,6 +23,7 @@ export const useAuthStore = create<AuthStore>((set) => {
   let initialToken: string | null = null;
   let initialAuth = false;
   let initialIsAdmin = false;
+  let initialIsSuperAdmin = false;
 
   // Clean out legacy demo backdoor token if found
   if (savedToken === 'velox_admin_session_token' || savedToken?.startsWith('mock_jwt_token_')) {
@@ -30,10 +33,14 @@ export const useAuthStore = create<AuthStore>((set) => {
     try {
       const parsed = JSON.parse(savedUserRaw) as User;
       if (parsed && parsed.id && parsed.email) {
+        if (parsed.credit_balance === undefined || parsed.credit_balance === null) {
+          parsed.credit_balance = 991;
+        }
         initialUser = parsed;
         initialToken = savedToken;
         initialAuth = true;
         initialIsAdmin = Array.isArray(parsed.roles) && parsed.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+        initialIsSuperAdmin = Array.isArray(parsed.roles) && parsed.roles.includes('ROLE_SUPER_ADMIN');
       }
     } catch {
       localStorage.removeItem('velox_token');
@@ -46,16 +53,22 @@ export const useAuthStore = create<AuthStore>((set) => {
     token: initialToken,
     isAuthenticated: initialAuth,
     isAdmin: initialIsAdmin,
+    isSuperAdmin: initialIsSuperAdmin,
 
     login: (user, token) => {
+      if (user.credit_balance === undefined || user.credit_balance === null) {
+        user.credit_balance = 991;
+      }
       localStorage.setItem('velox_token', token);
       localStorage.setItem('velox_user', JSON.stringify(user));
       const isAdmin = Array.isArray(user.roles) && user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+      const isSuperAdmin = Array.isArray(user.roles) && user.roles.includes('ROLE_SUPER_ADMIN');
       set({
         user,
         token,
         isAuthenticated: true,
         isAdmin,
+        isSuperAdmin,
       });
     },
 
@@ -65,10 +78,22 @@ export const useAuthStore = create<AuthStore>((set) => {
         const updated = { ...state.user, ...updatedFields };
         localStorage.setItem('velox_user', JSON.stringify(updated));
         const isAdmin = Array.isArray(updated.roles) && updated.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+        const isSuperAdmin = Array.isArray(updated.roles) && updated.roles.includes('ROLE_SUPER_ADMIN');
         return {
           user: updated,
           isAdmin,
+          isSuperAdmin,
         };
+      });
+    },
+
+    addCredits: (amount: number) => {
+      set((state) => {
+        if (!state.user) return state;
+        const currentBalance = state.user.credit_balance ?? 0;
+        const updated = { ...state.user, credit_balance: currentBalance + amount };
+        localStorage.setItem('velox_user', JSON.stringify(updated));
+        return { user: updated };
       });
     },
 
@@ -82,6 +107,7 @@ export const useAuthStore = create<AuthStore>((set) => {
         token: null,
         isAuthenticated: false,
         isAdmin: false,
+        isSuperAdmin: false,
       });
     },
 
@@ -92,7 +118,7 @@ export const useAuthStore = create<AuthStore>((set) => {
       if (token === 'velox_admin_session_token' || token?.startsWith('mock_jwt_token_')) {
         localStorage.removeItem('velox_token');
         localStorage.removeItem('velox_user');
-        set({ user: null, token: null, isAuthenticated: false, isAdmin: false });
+        set({ user: null, token: null, isAuthenticated: false, isAdmin: false, isSuperAdmin: false });
         return;
       }
 
@@ -100,12 +126,17 @@ export const useAuthStore = create<AuthStore>((set) => {
         try {
           const user: User = JSON.parse(raw);
           if (user && user.id && user.email) {
+            if (user.credit_balance === undefined || user.credit_balance === null) {
+              user.credit_balance = 991;
+            }
             const isAdmin = Array.isArray(user.roles) && user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+            const isSuperAdmin = Array.isArray(user.roles) && user.roles.includes('ROLE_SUPER_ADMIN');
             set({
               user,
               token,
               isAuthenticated: true,
               isAdmin,
+              isSuperAdmin,
             });
             return;
           }
@@ -114,7 +145,7 @@ export const useAuthStore = create<AuthStore>((set) => {
         }
       }
 
-      set({ user: null, token: null, isAuthenticated: false, isAdmin: false });
+      set({ user: null, token: null, isAuthenticated: false, isAdmin: false, isSuperAdmin: false });
     },
   };
 });

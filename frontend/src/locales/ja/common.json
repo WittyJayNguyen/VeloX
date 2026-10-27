@@ -327,5 +327,135 @@
     "start_trial": "無料トライアルを開始",
     "cta_banner_title": "新しい自分に出会う準備はできましたか？",
     "cta_banner_desc": "今すぐ50万人以上のアクティブ会員と一緒に始めましょう。7日間無料トライアル実施中。"
+  },
+  "header": {
+    "quick_search": "クイック検索",
+    "pricing": "料金プラン",
+    "notifications": "通知"
+  },
+  "menu": {
+    "topup_now": "チャージ",
+    "checkin_today": "毎日のログインボーナス",
+    "checkin_done": "本日は受取済みです",
+    "checkin_success": "受取完了！+50クレジット",
+    "already_checked_in": "本日のクレジットは既に受け取り済みです！",
+    "section_account": "アカウント",
+    "section_billing": "プランと請求",
+    "section_earning": "収益化",
+    "section_advanced": "高度な機能",
+    "super_admin_panel": "スーパー管理者パネル",
+    "language": "言語切り替え"
+  },
+  "client_menu": {
+    "profile": "プロフィールと設定",
+    "security": "セキュリティと2段階認証",
+    "team": "マイチーム",
+    "subscription": "プラン管理",
+    "history": "利用履歴",
+    "orders": "注文履歴",
+    "workflows": "マイワークフロー",
+    "sales": "クリエイター売上ダッシュボード",
+    "referral": "友達招待プログラム",
+    "developer": "APIとMCPプロトコル",
+    "downloads": "デスクトップアプリ"
+  },
+  "topup": {
+    "title": "クレジット残高チャージ",
+    "current_balance": "現在の残高",
+    "choose_package": "1. チャージプランを選択",
+    "payment_info": "2. QRコード決済・銀行振込",
+    "bank": "受取銀行",
+    "account_no": "口座番号",
+    "account_name": "口座名義",
+    "amount": "振込金額",
+    "memo": "振込メモ",
+    "copy": "コピー",
+    "copied": "コピー完了",
+    "confirm_paid": "振込を完了しました",
+    "checking": "入金を確認中...",
+    "success_title": "チャージ完了！",
+    "success_desc": "アカウントにクレジットが付与されました",
+    "qr_hint": "スマホの銀行アプリでQRコードをスキャン"
+  },
+  "search": {
+    "placeholder": "機能、設定、ページを素早く検索... (Ctrl+K)",
+    "empty": "該当する検索結果が見つかりませんでした。",
+    "hint_navigate": "移動",
+    "hint_select": "選択",
+    "hint_close": "閉じる"
+  },
+  "profile": {
+    "subtitle": "プロフィール情報およびVeloXメンバーシップ設定を管理",
+    "save_success": "プロフィール情報を更新しました！",
+    "balance_label": "クレジット残高",
+    "tier_label": "会員ランク",
+    "role_label": "アカウント権限",
+    "personal_info": "基本情報",
+    "full_name": "氏名",
+    "email": "メールアドレス",
+    "avatar_url": "アバター画像URL",
+    "created_at": "登録日時",
+    "save_btn": "変更を保存"
+  },
+  "security": {
+    "subtitle": "2要素認証とアクティブセッション管理でセキュリティを強化",
+    "2fa_title": "2要素認証 (2FA Authenticator)",
+    "2fa_desc": "ログイン時にGoogle Authenticatorによるワンタイムパスワードを要求します。",
+    "status_active": "ステータス: 有効",
+    "status_inactive": "ステータス: 無効",
+    "turn_on": "2FAを有効化",
+    "turn_off": "2FAを無効化",
+    "2fa_enabled": "2要素認証を有効にしました！",
+    "2fa_disabled": "2要素認証を無効にしました。",
+    "change_pass_title": "パスワード変更",
+    "old_pass": "現在のパスワード",
+    "new_pass": "新しいパスワード",
+    "confirm_pass": "新しいパスワードの確認",
+    "save_pass_btn": "パスワードを更新",
+    "err_mismatch": "確認用パスワードが一致しません！",
+    "err_short": "パスワードは6文字以上で入力してください！",
+    "success_pass": "パスワードを変更しました！",
+    "sessions_title": "ログイン中のセッション"
+  },
+  "team": {
+    "subtitle": "ワークスペースメンバーとクレジット枠を共有・共同作業",
+    "total_members": "総メンバー数",
+    "pooled_credit": "共有クレジットプール",
+    "invite_title": "新しいメンバーを招待",
+    "email_label": "メンバーのメールアドレス",
+    "role_label": "権限ロール",
+    "send_invite": "招待を送信",
+    "list_title": "メンバー一覧",
+    "invited_success": "招待メールを送信しました！"
+  },
+  "subscription": {
+    "subtitle": "目的に合わせた最適なAI利用プランを選択",
+    "topup_btn": "今すぐチャージ",
+    "current_plan": "利用中のプラン"
+  },
+  "history": {
+    "subtitle": "AIリクエストの詳細、トークン数、クレジット消費の履歴"
+  },
+  "orders": {
+    "subtitle": "チャージ決済、プラン購入履歴、領収書の発行",
+    "new_topup": "新規チャージ"
+  },
+  "workflows": {
+    "subtitle": "複数のAIステップを組み合わせた自動化パイプライン",
+    "create_new": "ワークフロー新規作成"
+  },
+  "sales": {
+    "subtitle": "VeloXマーケットプレイスで販売中のワークフロー収益を確認",
+    "withdraw_btn": "出金を申請"
+  },
+  "referral": {
+    "subtitle": "友達を招待して、チャージごとに永続20%のクレジット還元を獲得",
+    "copied_notice": "招待リンクをクリップボードにコピーしました！"
+  },
+  "developer": {
+    "subtitle": "IDE、Claude Desktop、Cursor、バックエンドと連携"
+  },
+  "downloads": {
+    "subtitle": "PCデスクトップから即座にAI機能をショートカット起動"
   }
 }
