@@ -7,17 +7,26 @@ import { Badge } from '@modules/core/design-system/Badge';
 
 interface Notification { id: string; title: string; message: string; type: 'info' | 'warning' | 'success' | 'danger'; is_read: boolean; date: string; }
 
-const initialNotifs: Notification[] = [
-  { id: 'n1', title: 'Pool Cạn Key', message: 'Luma Dream Machine Pool đã hết token. Bổ sung key ngay.', type: 'danger', is_read: false, date: '2026-10-26 21:00' },
-  { id: 'n2', title: 'Nạp Tiền Thành Công', message: 'Người dùng studio.vn@gmail.com vừa nạp 500,000 ₫ qua VietQR.', type: 'success', is_read: false, date: '2026-10-26 21:40' },
-  { id: 'n3', title: 'Rate Limit Cảnh Báo', message: 'OpenAI GPT-4o Pool đạt 85% rate limit. Cân nhắc tăng key.', type: 'warning', is_read: true, date: '2026-10-26 20:30' },
-  { id: 'n4', title: 'Hệ Thống Cập Nhật', message: 'VeloX Gateway v2.3.1 đã được triển khai thành công.', type: 'info', is_read: true, date: '2026-10-26 18:00' },
-  { id: 'n5', title: 'Người Dùng Mới', message: '3 người dùng mới đăng ký trong 24h qua.', type: 'info', is_read: true, date: '2026-10-26 09:00' },
-];
+const initialNotifs: Notification[] = [];
 
 const NotificationsPage = () => {
   const { t } = useTranslation();
-  const [notifs, setNotifs] = useState<Notification[]>(() => { const s = localStorage.getItem('velox_notifs'); return s ? JSON.parse(s) : initialNotifs; });
+  const [notifs, setNotifs] = useState<Notification[]>(() => {
+    const s = localStorage.getItem('velox_notifs');
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.some((n: any) => n.id === 'n2')) {
+          localStorage.removeItem('velox_notifs');
+          return [];
+        }
+        return parsed;
+      } catch {
+        return [];
+      }
+    }
+    return initialNotifs;
+  });
   const save = (d: Notification[]) => { setNotifs(d); localStorage.setItem('velox_notifs', JSON.stringify(d)); };
 
   const markRead = (id: string) => save(notifs.map((n) => n.id === id ? { ...n, is_read: true } : n));

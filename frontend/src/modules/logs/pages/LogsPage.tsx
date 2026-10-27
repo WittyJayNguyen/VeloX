@@ -33,13 +33,7 @@ export interface MediaCdnRecord {
   created_at?: string;
 }
 
-const initialLogs: ApiLogRecord[] = [
-  { id: 'log_9011', userEmail: 'studio.vn@gmail.com', endpoint: '/v1/images/generations', model: 'midjourney-v6', type: 'IMAGE', statusCode: 200, durationMs: 2450, tokensConsumed: 1, creditsDeducted: 800, ipAddress: '113.161.42.18', timestamp: '2026-10-26 22:31:05' },
-  { id: 'log_9010', userEmail: 'dev.anh@gmail.com', endpoint: '/v1/chat/completions', model: 'gpt-4o', type: 'CHAT', statusCode: 200, durationMs: 380, tokensConsumed: 480, creditsDeducted: 120, ipAddress: '14.169.88.22', timestamp: '2026-10-26 22:30:12' },
-  { id: 'log_9009', userEmail: 'studio.vn@gmail.com', endpoint: '/v1/video/generate', model: 'runway-gen3-turbo', type: 'VIDEO', statusCode: 200, durationMs: 15200, tokensConsumed: 1, creditsDeducted: 3500, ipAddress: '113.161.42.18', timestamp: '2026-10-26 22:28:40' },
-  { id: 'log_9008', userEmail: 'dev.agency@io.vn', endpoint: '/v1/chat/completions', model: 'deepseek-chat', type: 'CHAT', statusCode: 200, durationMs: 520, tokensConsumed: 1200, creditsDeducted: 80, ipAddress: '210.245.31.110', timestamp: '2026-10-26 22:25:01' },
-  { id: 'log_9007', userEmail: 'test.user@yahoo.com', endpoint: '/v1/chat/completions', model: 'claude-3-5-sonnet', type: 'CHAT', statusCode: 429, durationMs: 45, tokensConsumed: 0, creditsDeducted: 0, ipAddress: '27.72.100.4', timestamp: '2026-10-26 22:20:18' },
-];
+const initialLogs: ApiLogRecord[] = [];
 
 const typeBadge = (t: string) => t === 'CHAT' ? 'primary' : t === 'IMAGE' ? 'success' : t === 'VIDEO' ? 'warning' : 'info' as const;
 
@@ -83,10 +77,12 @@ const LogsPage = () => {
           ipAddress: it.ip_address || '127.0.0.1',
           timestamp: it.created_at ? new Date(it.created_at).toLocaleString('vi-VN') : '',
         }));
-        setApiLogs([...mapped, ...initialLogs]);
+        setApiLogs(mapped);
+      } else {
+        setApiLogs([]);
       }
     } catch {
-      // Keep initialLogs fallback
+      setApiLogs([]);
     }
   }, []);
 
