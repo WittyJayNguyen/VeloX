@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import LangSwitcher from '../LangSwitcher/LangSwitcher';
@@ -10,11 +10,30 @@ const MainLayout = () => {
   const { t } = useTranslation();
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route or hash changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname, location.hash]);
+
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+    setMobileMenuOpen(false);
   };
 
   const closeMobileMenu = () => {
@@ -23,7 +42,7 @@ const MainLayout = () => {
 
   return (
     <div className={styles.layout}>
-      {/* ── FIXED TOP NAVIGATION (MATCHING PULSEFIT / FITNESS-GYM DEMO) ── */}
+      {/* ── FIXED TOP NAVIGATION ── */}
       <header className={styles.header}>
         <div className={styles.headerContainer}>
           {/* Logo */}
@@ -48,7 +67,7 @@ const MainLayout = () => {
             </span>
           </Link>
 
-          {/* Desktop Center Navigation */}
+          {/* Desktop Navigation Links */}
           <nav className={styles.navCenter}>
             <a href="/#workouts" className={styles.navItem}>
               {t('fitness.nav_workouts')}
@@ -64,7 +83,7 @@ const MainLayout = () => {
             </a>
           </nav>
 
-          {/* Desktop Right Actions */}
+          {/* Right Action Group */}
           <div className={styles.navRight}>
             <div className={styles.langWrapper}>
               <LangSwitcher />
@@ -74,6 +93,7 @@ const MainLayout = () => {
               ⚙️
             </Link>
 
+            {/* Desktop Auth Controls */}
             {isAuthenticated ? (
               <div className={styles.userBox}>
                 <span className={styles.userName}>{user?.full_name}</span>
@@ -92,69 +112,88 @@ const MainLayout = () => {
               </div>
             )}
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile Hamburger Toggle Button */}
             <button
               type="button"
               className={styles.mobileToggleBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle Menu"
+              aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+              aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <HiOutlineXMark size={26} /> : <HiOutlineBars3 size={26} />}
+              {mobileMenuOpen ? <HiOutlineXMark size={28} /> : <HiOutlineBars3 size={28} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Slide-down Drawer */}
+        {/* ── MOBILE MENU DRAWER & BACKDROP ── */}
         {mobileMenuOpen && (
-          <div className={styles.mobileDrawer}>
-            <a href="/#workouts" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-              {t('fitness.nav_workouts')}
-            </a>
-            <a href="/#trainers" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-              {t('fitness.nav_trainers')}
-            </a>
-            <a href="/#pricing" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-              {t('fitness.nav_pricing')}
-            </a>
-            <a href="/#features" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-              {t('fitness.nav_community')}
-            </a>
-            <div className={styles.mobileAuthDivider} />
-            {isAuthenticated ? (
-              <button
-                type="button"
-                className={styles.mobileNavItem}
-                onClick={() => {
-                  handleLogout();
-                  closeMobileMenu();
-                }}
-              >
-                {t('nav.logout')} ({user?.full_name})
-              </button>
-            ) : (
-              <div className={styles.mobileAuthRow}>
-                <Link to="/login" className={styles.loginBtn} onClick={closeMobileMenu}>
-                  {t('fitness.log_in')}
-                </Link>
-                <Link to="/register" className={styles.startTrialBtn} onClick={closeMobileMenu}>
-                  {t('fitness.start_trial')}
-                </Link>
+          <>
+            <div className={styles.mobileBackdrop} onClick={closeMobileMenu} />
+            <div className={styles.mobileDrawer}>
+              <nav className={styles.mobileNavLinks}>
+                <a href="/#workouts" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  {t('fitness.nav_workouts')}
+                </a>
+                <a href="/#trainers" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  {t('fitness.nav_trainers')}
+                </a>
+                <a href="/#pricing" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  {t('fitness.nav_pricing')}
+                </a>
+                <a href="/#features" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  {t('fitness.nav_community')}
+                </a>
+              </nav>
+
+              <div className={styles.mobileDivider} />
+
+              <div className={styles.mobileActions}>
+                {isAuthenticated ? (
+                  <div className={styles.mobileUserArea}>
+                    <div className={styles.mobileUserGreeting}>
+                      👤 {user?.full_name}
+                    </div>
+                    <Link to="/admin" className={styles.mobileAdminBtn} onClick={closeMobileMenu}>
+                      ⚙️ {t('nav.dashboard')}
+                    </Link>
+                    <button
+                      type="button"
+                      className={styles.mobileLogoutBtn}
+                      onClick={handleLogout}
+                    >
+                      {t('nav.logout')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.mobileAuthArea}>
+                    <Link to="/login" className={styles.mobileLoginBtn} onClick={closeMobileMenu}>
+                      {t('fitness.log_in')}
+                    </Link>
+                    <Link
+                      to="/register"
+                      className={styles.mobileStartTrialBtn}
+                      onClick={closeMobileMenu}
+                    >
+                      {t('fitness.start_trial')}
+                    </Link>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </>
         )}
       </header>
 
-      {/* Main Content (With top padding to compensate for 80px fixed header) */}
+      {/* Main Content View */}
       <main className={styles.main}>
         <Outlet />
       </main>
 
-      {/* ── FOOTER (MATCHING PULSEFIT THEME) ── */}
+      {/* ── FOOTER ── */}
       <footer className={styles.footer}>
         <div className={styles.footerContainer}>
           <div className={styles.footerTopRow}>
-            {/* Col 1: Brand Info */}
+            {/* Brand column */}
             <div className={styles.footerBrandCol}>
               <Link to="/" className={styles.brandLink}>
                 <div className={styles.logoSquare}>
@@ -181,7 +220,7 @@ const MainLayout = () => {
               </p>
             </div>
 
-            {/* Col 2: Workouts */}
+            {/* Workouts links */}
             <div className={styles.footerCol}>
               <h4 className={styles.footerColTitle}>{t('fitness.nav_workouts')}</h4>
               <ul className={styles.footerList}>
@@ -192,7 +231,7 @@ const MainLayout = () => {
               </ul>
             </div>
 
-            {/* Col 3: Company */}
+            {/* Company links */}
             <div className={styles.footerCol}>
               <h4 className={styles.footerColTitle}>Company</h4>
               <ul className={styles.footerList}>
@@ -203,7 +242,7 @@ const MainLayout = () => {
               </ul>
             </div>
 
-            {/* Col 4: Support */}
+            {/* Support links */}
             <div className={styles.footerCol}>
               <h4 className={styles.footerColTitle}>Support</h4>
               <ul className={styles.footerList}>
@@ -215,7 +254,7 @@ const MainLayout = () => {
             </div>
           </div>
 
-          {/* Bottom Bar */}
+          {/* Footer bottom legal bar */}
           <div className={styles.footerBottomBar}>
             <p className={styles.copyrightText}>
               © 2026 PulseFit / VeloX. All rights reserved.
