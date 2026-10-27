@@ -100,18 +100,27 @@ const MainLayout = () => {
 
           {/* Desktop Navigation Links */}
           <nav className={styles.navCenter}>
-            <Link to="/" className={styles.navItem}>
+            <Link
+              to="/"
+              className={`${styles.navItem} ${location.pathname === '/' ? styles.active : ''}`}
+            >
               {t('nav.home', 'Trang Chủ')}
             </Link>
 
             {/* Studio Mega Menu with 2-column hover flyout */}
             <StudioMegaMenu onCloseMenu={closeMobileMenu} />
 
-            <Link to="/subscription" className={styles.navItem}>
+            <Link
+              to="/subscription"
+              className={`${styles.navItem} ${location.pathname.startsWith('/subscription') ? styles.active : ''}`}
+            >
               {t('nav.pricing', 'Bảng Giá')}
             </Link>
 
-            <Link to="/models" className={styles.navItem}>
+            <Link
+              to="/models"
+              className={`${styles.navItem} ${location.pathname.startsWith('/models') ? styles.active : ''}`}
+            >
               {t('nav.models', 'Model')}
             </Link>
           </nav>
