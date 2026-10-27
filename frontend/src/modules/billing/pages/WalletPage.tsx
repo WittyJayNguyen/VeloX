@@ -265,13 +265,13 @@ const WalletPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
           <Tabs
             variant="pill"
-            tabs={[
-              { id: 'topup', label: `Lịch Sử Nạp Tiền (${topUpList.length})` },
-              { id: 'cashflow', label: `Biến Động Dòng Tiền (${cashFlowList.length})` },
+            items={[
+              { key: 'topup', label: `Lịch Sử Nạp Tiền (${topUpList.length})` },
+              { key: 'cashflow', label: `Biến Động Dòng Tiền (${cashFlowList.length})` },
             ]}
-            activeTab={activeTab}
-            onChange={(id) => {
-              setActiveTab(id as 'topup' | 'cashflow');
+            activeKey={activeTab}
+            onChange={(key) => {
+              setActiveTab(key as 'topup' | 'cashflow');
               setPage(1);
             }}
           />
