@@ -2,488 +2,828 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
-  HiOutlineBolt,
-  HiOutlineClock,
-  HiOutlineFire,
-  HiOutlineCheck,
   HiOutlineArrowRight,
   HiOutlineSparkles,
-  HiOutlineChartBar,
-  HiOutlineVideoCamera,
-  HiOutlineAcademicCap,
+  HiOutlineCpuChip,
   HiOutlineShieldCheck,
-  HiOutlinePlay,
+  HiOutlineBolt,
+  HiOutlineCheck,
+  HiOutlineCodeBracket,
+  HiOutlineDocumentDuplicate,
+  HiOutlineCommandLine,
+  HiOutlinePhoto,
+  HiOutlineFilm,
+  HiOutlineChatBubbleLeftRight,
 } from 'react-icons/hi2';
+import { RiOpenaiFill, RiSparklingFill } from 'react-icons/ri';
 import styles from '@assets/scss/home/home.module.scss';
 
-interface WorkoutProgram {
-  id: string;
-  titleKey: string;
-  levelKey: string;
-  duration: string;
-  calories: string;
-  image: string;
-}
-
-interface TrainerProfile {
+// Curated Models for Showcase Section
+interface ShowcaseModel {
   id: string;
   name: string;
-  specKey: string;
-  expKey: string;
-  image: string;
+  category: 'CHAT' | 'IMAGE' | 'VIDEO';
+  badge?: string;
+  provider: string;
+  desc: string;
+  creditPrice: string;
 }
 
-interface FeatureItem {
-  icon: typeof HiOutlineSparkles;
-  titleKey: string;
-  descKey: string;
-}
-
-const workoutPrograms: WorkoutProgram[] = [
+const showcaseModels: ShowcaseModel[] = [
   {
-    id: 'hiit',
-    titleKey: 'fitness.workout_hiit',
-    levelKey: 'fitness.level_intermediate',
-    duration: '5 sec',
-    calories: '80 cr',
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=450&fit=crop&q=80',
+    id: 'flux-1-dev',
+    name: 'FLUX.1 [dev]',
+    category: 'IMAGE',
+    badge: 'HOT',
+    provider: 'Black Forest Labs',
+    desc: 'Mô hình tạo ảnh siêu chi tiết thế hệ mới, tái hiện cấu trúc da, ánh sáng và chi tiết ngón tay chuẩn xác.',
+    creditPrice: '4 cr / ảnh',
   },
   {
-    id: 'strength',
-    titleKey: 'fitness.workout_strength',
-    levelKey: 'fitness.level_advanced',
-    duration: '8K Ultra',
-    calories: '35 cr',
-    image: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&h=450&fit=crop&q=80',
-  },
-  {
-    id: 'yoga',
-    titleKey: 'fitness.workout_yoga',
-    levelKey: 'fitness.level_beginner',
-    duration: 'Prompt Art',
-    calories: '25 cr',
-    image: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=600&h=450&fit=crop&q=80',
-  },
-  {
-    id: 'boxing',
-    titleKey: 'fitness.workout_boxing',
-    levelKey: 'fitness.level_intermediate',
-    duration: '60 FPS',
-    calories: '75 cr',
-    image: 'https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?w=600&h=450&fit=crop&q=80',
-  },
-];
-
-const trainers: TrainerProfile[] = [
-  {
-    id: 'alex',
-    name: 'OpenAI GPT-4o',
-    specKey: 'fitness.spec_hiit',
-    expKey: 'fitness.exp_8_years',
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=500&fit=crop&q=80',
-  },
-  {
-    id: 'sarah',
-    name: 'Midjourney v6.1',
-    specKey: 'fitness.spec_yoga',
-    expKey: 'fitness.exp_10_years',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&h=500&fit=crop&q=80',
-  },
-  {
-    id: 'marcus',
+    id: 'claude-3-5-sonnet-20241022',
     name: 'Claude 3.5 Sonnet',
-    specKey: 'fitness.spec_strength',
-    expKey: 'fitness.exp_12_years',
-    image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=500&h=500&fit=crop&q=80',
+    category: 'CHAT',
+    badge: 'PRO',
+    provider: 'Anthropic',
+    desc: 'Đỉnh cao tư duy lập trình và suy luận logic. Hỗ trợ ngữ cảnh 200.000 tokens và xử lý tài liệu phức tạp.',
+    creditPrice: '3.0 cr / 1M in',
   },
   {
-    id: 'emma',
+    id: 'midjourney-v6.1',
+    name: 'Midjourney v6.1',
+    category: 'IMAGE',
+    badge: 'CREATIVE',
+    provider: 'Midjourney',
+    desc: 'Tuyệt tác nghệ thuật hội họa và điện ảnh. Khả năng hiểu ngôn ngữ trừu tượng và bố cục nhiếp ảnh xuất chúng.',
+    creditPrice: '6 cr / ảnh',
+  },
+  {
+    id: 'runway-gen3',
     name: 'Runway Gen-3 Alpha',
-    specKey: 'fitness.spec_boxing',
-    expKey: 'fitness.exp_6_years',
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=500&fit=crop&q=80',
+    category: 'VIDEO',
+    badge: 'CINEMATIC',
+    provider: 'RunwayML',
+    desc: 'Sản xuất video AI độ phân giải cao 60FPS với khả năng điều khiển chuyển động camera vật lý chân thực.',
+    creditPrice: '45 cr / 5s',
+  },
+  {
+    id: 'gpt-4o',
+    name: 'OpenAI GPT-4o',
+    category: 'CHAT',
+    badge: 'FLAGSHIP',
+    provider: 'OpenAI',
+    desc: 'Mô hình đa thể thức toàn diện nhất thế giới: Phân tích ảnh, đọc bảng biểu, trò chuyện tự nhiên và giải toán.',
+    creditPrice: '2.5 cr / 1M in',
+  },
+  {
+    id: 'deepseek-chat',
+    name: 'DeepSeek V3 / R1',
+    category: 'CHAT',
+    badge: 'BEST VALUE',
+    provider: 'DeepSeek',
+    desc: 'Hiệu năng tương đương GPT-4o với chi phí siêu rẻ. Đột phá về khả năng tự suy luận và giải thích từng bước.',
+    creditPrice: '0.55 cr / 1M in',
   },
 ];
 
-const featuresList: FeatureItem[] = [
-  {
-    icon: HiOutlineSparkles,
-    titleKey: 'fitness.feat_ai_title',
-    descKey: 'fitness.feat_ai_desc',
-  },
-  {
-    icon: HiOutlineChartBar,
-    titleKey: 'fitness.feat_track_title',
-    descKey: 'fitness.feat_track_desc',
-  },
-  {
-    icon: HiOutlineVideoCamera,
-    titleKey: 'fitness.feat_live_title',
-    descKey: 'fitness.feat_live_desc',
-  },
-  {
-    icon: HiOutlineAcademicCap,
-    titleKey: 'fitness.feat_nutrition_title',
-    descKey: 'fitness.feat_nutrition_desc',
-  },
-];
-
-const pricingPlans = [
-  {
-    id: 'basic',
-    nameKey: 'fitness.plan_basic',
-    descKey: 'fitness.plan_basic_desc',
-    price: '$9.99',
-    popular: false,
-    featuresKeys: [
-      'fitness.f_workouts_100',
-      'fitness.f_basic_tracking',
-      'fitness.f_community',
-      'fitness.f_email_support',
+// Interactive Widget State Demos
+const interactiveDemos = {
+  image: {
+    model: 'FLUX.1 [dev]',
+    category: 'IMAGE',
+    previewImg: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000&h=650&fit=crop&q=85',
+    creditCost: '4.0 Credits',
+    resolution: '1024 × 1024 • 8K Textures',
+    defaultPrompt: 'Cyberpunk neon athlete sprinting in dark studio, cinematic rim lighting, 8k octane render',
+    chips: [
+      'Cyberpunk neon athlete',
+      'Studio Ghibli aesthetic village',
+      'Realistic architectural modern villa',
     ],
   },
-  {
-    id: 'pro',
-    nameKey: 'fitness.plan_pro',
-    descKey: 'fitness.plan_pro_desc',
-    price: '$19.99',
-    popular: true,
-    featuresKeys: [
-      'fitness.f_workouts_500',
-      'fitness.f_ai_trainer',
-      'fitness.f_adv_analytics',
-      'fitness.f_live_classes',
-      'fitness.f_nutrition',
-      'fitness.f_priority_support',
+  chat: {
+    model: 'Claude 3.5 Sonnet',
+    category: 'CHAT',
+    previewImg: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1000&h=650&fit=crop&q=85',
+    creditCost: '0.015 Credits',
+    resolution: '200K Context Window',
+    defaultPrompt: 'Thiết kế kiến trúc Clean Architecture & Domain-Driven Design cho dự án TypeScript',
+    chips: [
+      'Clean Architecture TypeScript',
+      'Phân tích báo cáo tài chính sang JSON',
+      'Tối ưu câu lệnh SQL query',
     ],
   },
-  {
-    id: 'elite',
-    nameKey: 'fitness.plan_elite',
-    descKey: 'fitness.plan_elite_desc',
-    price: '$39.99',
-    popular: false,
-    featuresKeys: [
-      'fitness.f_everything_pro',
-      'fitness.f_trainer_sessions',
-      'fitness.f_custom_plans',
-      'fitness.f_body_composition',
-      'fitness.f_exclusive_content',
-      'fitness.f_support_247',
+  video: {
+    model: 'Runway Gen-3 Alpha',
+    category: 'VIDEO',
+    previewImg: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1000&h=650&fit=crop&q=85',
+    creditCost: '45.0 Credits',
+    resolution: '1080p HD • 60 FPS • 5 Giây',
+    defaultPrompt: 'Cinematic camera orbiting futuristic sports car racing through neon rain city',
+    chips: [
+      'Cinematic camera orbiting sports car',
+      'Slow motion drop of water in zero gravity',
+      'Drone flyover misty emerald mountain',
     ],
   },
-];
+};
 
 const HomePage = () => {
   const { t } = useTranslation();
 
-  // Interactive Workout Demo State
-  const [tasks, setTasks] = useState([
-    { id: 1, nameKey: 'fitness.warm_up', time: '5 min', completed: true },
-    { id: 2, nameKey: 'fitness.circuit_1', time: '15 min', completed: true },
-    { id: 3, nameKey: 'fitness.circuit_2', time: '15 min', completed: false },
-    { id: 4, nameKey: 'fitness.cool_down', time: '5 min', completed: false },
-  ]);
+  // Interactive Hero Widget State
+  const [activeMode, setActiveMode] = useState<'image' | 'chat' | 'video'>('image');
+  const currentDemo = interactiveDemos[activeMode];
+  const [currentPrompt, setCurrentPrompt] = useState<string>(currentDemo.defaultPrompt);
 
-  const toggleTask = (id: number) => {
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  // Model Showcase Category Tab
+  const [activeCategory, setActiveCategory] = useState<'ALL' | 'CHAT' | 'IMAGE' | 'VIDEO'>('ALL');
+
+  // Code snippet tab state
+  const [codeSnippetTab, setCodeSnippetTab] = useState<'python' | 'curl' | 'node'>('python');
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleModeChange = (mode: 'image' | 'chat' | 'video') => {
+    setActiveMode(mode);
+    setCurrentPrompt(interactiveDemos[mode].defaultPrompt);
   };
 
-  const completedCount = tasks.filter(t => t.completed).length;
-  const progressPercent = Math.round((completedCount / tasks.length) * 100);
+  const handleCopyCode = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const filteredModels =
+    activeCategory === 'ALL'
+      ? showcaseModels
+      : showcaseModels.filter((m) => m.category === activeCategory);
+
+  const snippetCode =
+    codeSnippetTab === 'python'
+      ? `from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-velox-yourkey",
+    base_url="https://velox.nexoratech.com.vn/v1"
+)
+
+response = client.chat.completions.create(
+    model="claude-3-5-sonnet-20241022",
+    messages=[{"role": "user", "content": "Xin chào VeloX AI Gateway!"}],
+    stream=True
+)
+
+for chunk in response:
+    print(chunk.choices[0].delta.content or "", end="")`
+      : codeSnippetTab === 'curl'
+      ? `curl -X POST "https://velox.nexoratech.com.vn/v1/chat/completions" \\
+  -H "Authorization: Bearer sk-velox-yourkey" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "deepseek-chat",
+    "messages": [{"role": "user", "content": "Hello VeloX Gateway"}],
+    "stream": true
+  }'`
+      : `import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-velox-yourkey",
+  baseURL: "https://velox.nexoratech.com.vn/v1",
+});
+
+const response = await client.chat.completions.create({
+  model: "gpt-4o",
+  messages: [{ role: "user", content: "Viết hàm debounce trong TypeScript" }],
+});
+console.log(response.choices[0].message.content);`;
 
   return (
-    <div className={styles.fitnessGym}>
-      {/* ── HERO SECTION ── */}
+    <div className={styles.homePage}>
+      {/* ══════════════════════════════════════════════════════════════
+          1. HERO SECTION
+      ══════════════════════════════════════════════════════════════ */}
       <section className={styles.heroSection}>
-        {/* Background AI Digital Studio with deep contrast gradient */}
+        {/* Ambient Glows & Cyber Grid Background */}
         <div className={styles.heroBgWrapper}>
-          <img
-            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&h=1080&fit=crop&q=85"
-            alt="AI Studio Background"
-            className={styles.heroBgImg}
-          />
-          <div className={styles.heroOverlay} />
+          <div className={styles.ambientGlow1} />
+          <div className={styles.ambientGlow2} />
+          <div className={styles.cyberGrid} />
         </div>
 
         <div className={styles.heroContainer}>
-          {/* Left Content */}
+          {/* Left Column: Headline & Value Proposition */}
           <div className={styles.heroContent}>
-            <div className={styles.aiBadge}>
-              <span className={styles.pulseDot} />
-              <span className={styles.aiBadgeText}>{t('fitness.hero_badge')}</span>
+            <div className={styles.heroBadge}>
+              <span className={styles.badgePulseDot} />
+              <RiSparklingFill size={14} color="#ff6b35" />
+              <span className={styles.badgeText}>
+                {t('hero.badge', 'Nền Tảng AI Gateway & Studio Thế Hệ Mới')}
+              </span>
             </div>
 
             <h1 className={styles.heroHeadline}>
-              <span>{t('fitness.hero_title_1')}</span>{' '}
-              <span>{t('fitness.hero_title_2')}</span>
+              <span>{t('hero.title_1', 'Trung Tâm Điều Phối')}</span>
               <br />
-              <span className={styles.highlightOrange}>{t('fitness.hero_title_hl')}</span>
+              <span className={styles.highlightOrange}>
+                {t('hero.title_highlight', 'Trí Tuệ Nhân Tạo VeloX')}
+              </span>
             </h1>
 
             <p className={styles.heroSubtitle}>
-              {t('fitness.hero_subtitle')}
+              {t(
+                'hero.subtitle',
+                'Kết nối hơn 100+ mô hình AI từ OpenAI, Claude, Gemini, Midjourney, Runway với chi phí tối ưu nhất. Một API Key duy nhất cho tất cả.'
+              )}
             </p>
 
             <div className={styles.heroCtas}>
               <Link to="/studio" className={styles.btnPrimary}>
-                {t('fitness.cta_trial')}
-                <HiOutlineArrowRight className={styles.btnIcon} />
+                <RiOpenaiFill size={19} />
+                <span>Khám Phá Studio Sáng Tạo</span>
+                <HiOutlineArrowRight size={16} />
               </Link>
-              <Link to="/models" className={styles.btnSecondary}>
-                <HiOutlinePlay className={styles.btnIcon} />
-                {t('fitness.cta_demo')}
+              <Link to="/docs" className={styles.btnSecondary}>
+                <HiOutlineCodeBracket size={18} />
+                <span>{t('hero.cta_docs', 'Xem Tài Liệu API')}</span>
               </Link>
             </div>
 
+            {/* Key Trust Stats */}
             <div className={styles.heroStats}>
               <div className={styles.statCol}>
-                <div className={styles.statNumber}>100K+</div>
-                <div className={styles.statLabel}>{t('fitness.stat_members')}</div>
-              </div>
-              <div className={styles.statCol}>
                 <div className={styles.statNumber}>100+</div>
-                <div className={styles.statLabel}>{t('fitness.stat_workouts')}</div>
+                <div className={styles.statLabel}>{t('stats.models', 'Mô Hình AI')}</div>
               </div>
               <div className={styles.statCol}>
-                <div className={styles.statNumber}>99.99%</div>
-                <div className={styles.statLabel}>{t('fitness.stat_trainers')}</div>
+                <div className={styles.statNumber}>99.9%</div>
+                <div className={styles.statLabel}>{t('stats.uptime', 'Uptime Sẵn Sàng')}</div>
+              </div>
+              <div className={styles.statCol}>
+                <div className={styles.statNumber}>80%</div>
+                <div className={styles.statLabel}>Tiết Kiệm Cache</div>
+              </div>
+              <div className={styles.statCol}>
+                <div className={styles.statNumber}>&lt; 180ms</div>
+                <div className={styles.statLabel}>Độ Trễ Phản Hồi</div>
               </div>
             </div>
           </div>
 
-          {/* Right Floating Workout Widget Demo */}
+          {/* Right Column: Interactive Studio & Gateway Simulator Widget */}
           <div className={styles.heroWidgetCol}>
-            <div className={styles.workoutWidget}>
-              <div className={styles.widgetHeader}>
-                <div className={styles.widgetIconWrap}>
-                  <HiOutlineBolt className={styles.widgetBoltIcon} />
+            <div className={styles.interactiveCard}>
+              <div className={styles.widgetHeaderRow}>
+                <div className={styles.widgetBrandMark}>
+                  <div className={styles.widgetDotLive} />
+                  <span>VELOX LIVE STUDIO</span>
                 </div>
-                <div>
-                  <div className={styles.widgetTitle}>{t('fitness.today_workout')}</div>
-                  <div className={styles.widgetSubtitle}>{t('fitness.hiit_training')}</div>
+                <div className={styles.widgetCreditBadge}>
+                  <RiSparklingFill size={12} />
+                  <span>Trừ {currentDemo.creditCost}</span>
                 </div>
               </div>
 
-              <div className={styles.widgetTasks}>
-                {tasks.map(item => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={styles.taskRow}
-                    onClick={() => toggleTask(item.id)}
-                  >
-                    <div className={styles.taskLeft}>
-                      <div
-                        className={`${styles.checkbox} ${
-                          item.completed ? styles.checkboxChecked : ''
-                        }`}
-                      >
-                        {item.completed && <HiOutlineCheck className={styles.checkMark} />}
-                      </div>
-                      <span
-                        className={`${styles.taskName} ${
-                          item.completed ? styles.taskNameDone : ''
-                        }`}
-                      >
-                        {t(item.nameKey)}
-                      </span>
-                    </div>
-                    <span className={styles.taskTime}>{item.time}</span>
-                  </button>
-                ))}
+              {/* Segmented Switcher Tabs */}
+              <div className={styles.widgetTabs}>
+                <button
+                  type="button"
+                  className={`${styles.widgetTabBtn} ${activeMode === 'image' ? styles.active : ''}`}
+                  onClick={() => handleModeChange('image')}
+                >
+                  <HiOutlinePhoto size={15} />
+                  <span>Tạo Ảnh</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.widgetTabBtn} ${activeMode === 'chat' ? styles.active : ''}`}
+                  onClick={() => handleModeChange('chat')}
+                >
+                  <HiOutlineChatBubbleLeftRight size={15} />
+                  <span>Chat AI</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.widgetTabBtn} ${activeMode === 'video' ? styles.active : ''}`}
+                  onClick={() => handleModeChange('video')}
+                >
+                  <HiOutlineFilm size={15} />
+                  <span>Video AI</span>
+                </button>
               </div>
 
-              <div className={styles.progressContainer}>
-                <div
-                  className={styles.progressBarFill}
-                  style={{ width: `${progressPercent}%` }}
-                />
+              {/* Interactive Prompt Box */}
+              <div className={styles.promptBoxWrapper}>
+                <div className={styles.promptLabelRow}>
+                  <span>Prompt Trực Quan</span>
+                  <span style={{ color: '#ff6b35' }}>{currentDemo.model}</span>
+                </div>
+                <div className={styles.promptInputMock}>"{currentPrompt}"</div>
+                <div className={styles.promptSuggestions}>
+                  {currentDemo.chips.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={styles.promptChip}
+                      onClick={() => setCurrentPrompt(chip)}
+                      title="Bấm để thử prompt này"
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className={styles.progressLabel}>
-                {progressPercent}% Complete
+
+              {/* Visual Preview Frame */}
+              <div className={styles.previewFrame}>
+                <img src={currentDemo.previewImg} alt={currentDemo.model} />
+                <div className={styles.previewOverlay}>
+                  <div className={styles.modelBadgeTag}>
+                    <RiSparklingFill size={13} color="#2dd4bf" />
+                    <span>{currentDemo.model}</span>
+                  </div>
+                  <div className={styles.resolutionPill}>{currentDemo.resolution}</div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className={styles.widgetActionRow}>
+                <Link
+                  to={`/studio?category=${activeMode}`}
+                  className={styles.btnWidgetTry}
+                >
+                  <RiOpenaiFill size={16} />
+                  <span>Thử Ngay Trên Studio</span>
+                  <HiOutlineArrowRight size={14} />
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── WORKOUTS SECTION ── */}
-      <section id="workouts" className={styles.workoutsSection}>
-        <div className={styles.sectionHeaderRow}>
-          <div>
-            <span className={styles.tagOrange}>{t('fitness.workouts_tag')}</span>
-            <h2 className={styles.sectionHeading}>
-              {t('fitness.workouts_title')}{' '}
-              <span className={styles.highlightOrange}>{t('fitness.workouts_title_hl')}</span>
-            </h2>
+      {/* ══════════════════════════════════════════════════════════════
+          2. PROVIDERS & FOUNDATIONAL MODELS RIBBON
+      ══════════════════════════════════════════════════════════════ */}
+      <section className={styles.providersSection}>
+        <div className={styles.providersContainer}>
+          <div className={styles.providersLabel}>
+            {t('hero.providers_label', 'Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu')}
           </div>
-          <Link to="/studio" className={styles.btnSecondarySm}>
-            {t('fitness.btn_view_all')}
-          </Link>
-        </div>
-
-        <div className={styles.workoutsGrid}>
-          {workoutPrograms.map(workout => (
-            <div key={workout.id} className={styles.workoutCard}>
-              <div className={styles.workoutMedia}>
-                <img
-                  src={workout.image}
-                  alt={t(workout.titleKey)}
-                  className={styles.workoutImg}
-                />
-                <div className={styles.workoutImgMask} />
-                <span className={styles.levelBadge}>{t(workout.levelKey)}</span>
-              </div>
-              <div className={styles.workoutInfo}>
-                <h3 className={styles.workoutCardTitle}>{t(workout.titleKey)}</h3>
-                <div className={styles.workoutMeta}>
-                  <span className={styles.metaItem}>
-                    <HiOutlineClock className={styles.metaIcon} />
-                    {workout.duration}
-                  </span>
-                  <span className={styles.metaItem}>
-                    <HiOutlineFire className={styles.metaIconFire} />
-                    {workout.calories}
-                  </span>
-                </div>
-              </div>
+          <div className={styles.providersGrid}>
+            <div className={styles.providerItem}>
+              <RiOpenaiFill size={20} color="#10a37f" />
+              <span>OpenAI (GPT-4o)</span>
             </div>
-          ))}
+            <div className={styles.providerItem}>
+              <HiOutlineCpuChip size={20} color="#c084fc" />
+              <span>Anthropic (Claude 3.5)</span>
+            </div>
+            <div className={styles.providerItem}>
+              <HiOutlineSparkles size={20} color="#38bdf8" />
+              <span>Google (Gemini 1.5)</span>
+            </div>
+            <div className={styles.providerItem}>
+              <HiOutlineBolt size={20} color="#ff6b35" />
+              <span>DeepSeek (V3 / R1)</span>
+            </div>
+            <div className={styles.providerItem}>
+              <HiOutlinePhoto size={20} color="#e879f9" />
+              <span>Midjourney v6.1</span>
+            </div>
+            <div className={styles.providerItem}>
+              <HiOutlineSparkles size={20} color="#f59e0b" />
+              <span>FLUX.1 Dev</span>
+            </div>
+            <div className={styles.providerItem}>
+              <HiOutlineFilm size={20} color="#a855f7" />
+              <span>Runway Gen-3</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── FEATURES SECTION ── */}
+      {/* ══════════════════════════════════════════════════════════════
+          3. CORE CAPABILITIES (4 PILLARS)
+      ══════════════════════════════════════════════════════════════ */}
       <section id="features" className={styles.featuresSection}>
         <div className={styles.sectionHeaderCenter}>
-          <span className={styles.tagOrange}>{t('fitness.features_tag')}</span>
+          <span className={styles.tagBadge}>
+            <HiOutlineSparkles size={14} />
+            <span>NĂNG LỰC TOÀN DIỆN</span>
+          </span>
           <h2 className={styles.sectionHeading}>
-            {t('fitness.features_title')}{' '}
-            <span className={styles.highlightOrange}>{t('fitness.features_title_hl')}</span>
-          </h2>
-        </div>
-
-        <div className={styles.featuresGrid}>
-          {featuresList.map((feat, idx) => (
-            <div key={idx} className={styles.featureCard}>
-              <div className={styles.featureIconWrap}>
-                <feat.icon className={styles.featureIcon} />
-              </div>
-              <h3 className={styles.featureTitle}>{t(feat.titleKey)}</h3>
-              <p className={styles.featureDesc}>{t(feat.descKey)}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── EXPERT TRAINERS SECTION ── */}
-      <section id="trainers" className={styles.trainersSection}>
-        <div className={styles.sectionHeaderCenter}>
-          <span className={styles.tagOrange}>{t('fitness.trainers_tag')}</span>
-          <h2 className={styles.sectionHeading}>
-            {t('fitness.trainers_title')}{' '}
-            <span className={styles.highlightOrange}>{t('fitness.trainers_title_hl')}</span>
+            {t('features.title', 'Tại Sao Chọn VeloX AI Gateway?')}
           </h2>
           <p className={styles.sectionSubDesc}>
-            {t('fitness.trainers_desc')}
+            Hạ tầng Gateway trung gian thông minh kết hợp với Creative Studio đa thể thức, giúp cá nhân và doanh nghiệp tối đa hóa năng suất với chi phí thấp nhất.
           </p>
         </div>
 
-        <div className={styles.trainersGrid}>
-          {trainers.map(trainer => (
-            <div key={trainer.id} className={styles.trainerCard}>
-              <div className={styles.trainerAvatarWrap}>
-                <img
-                  src={trainer.image}
-                  alt={trainer.name}
-                  className={styles.trainerAvatar}
-                />
-                <div className={styles.trainerOverlay}>
-                  <Link to="/models" className={styles.btnProfile}>
-                    {t('fitness.view_profile')}
-                  </Link>
-                </div>
-              </div>
-              <h3 className={styles.trainerName}>{trainer.name}</h3>
-              <p className={styles.trainerSpec}>{t(trainer.specKey)}</p>
-              <p className={styles.trainerExp}>{t(trainer.expKey)}</p>
+        <div className={styles.featuresGrid}>
+          {/* Card 1 */}
+          <div className={styles.featureCard}>
+            <div className={`${styles.featureIconWrap} ${styles.iconWrapOrange}`}>
+              <HiOutlineChatBubbleLeftRight />
             </div>
-          ))}
+            <h3 className={styles.featureTitle}>Trò Chuyện & Lập Trình Chuyên Sâu</h3>
+            <p className={styles.featureDesc}>
+              Truy cập tức thì Claude 3.5 Sonnet, GPT-4o, DeepSeek R1. Hỗ trợ truyền dữ liệu dạng dòng (Streaming SSE), phân tích ngữ cảnh lớn tới 200.000 tokens và thực thi code.
+            </p>
+            <div className={styles.featureTagsList}>
+              <span className={styles.featureTagItem}>Streaming SSE</span>
+              <span className={styles.featureTagItem}>Function Calling</span>
+              <span className={styles.featureTagItem}>Deep Reasoning</span>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className={styles.featureCard}>
+            <div className={`${styles.featureIconWrap} ${styles.iconWrapMagenta}`}>
+              <HiOutlinePhoto />
+            </div>
+            <h3 className={styles.featureTitle}>Sinh & Biến Đổi Hình Ảnh 4K</h3>
+            <p className={styles.featureDesc}>
+              Khởi tạo hình ảnh chân thực với FLUX.1 Dev, Midjourney v6.1, DALL-E 3. Hỗ trợ chỉnh sửa ảnh Image-to-Image và ghép nhiều ảnh tham chiếu giữ đồng nhất nhân vật.
+            </p>
+            <div className={styles.featureTagsList}>
+              <span className={styles.featureTagItem}>FLUX.1 Schnell/Dev</span>
+              <span className={styles.featureTagItem}>Midjourney v6.1</span>
+              <span className={styles.featureTagItem}>Multi-Ref Consistency</span>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className={styles.featureCard}>
+            <div className={`${styles.featureIconWrap} ${styles.iconWrapCyan}`}>
+              <HiOutlineFilm />
+            </div>
+            <h3 className={styles.featureTitle}>Sản Xuất Video Điện Ảnh AI</h3>
+            <p className={styles.featureDesc}>
+              Biến ý tưởng văn bản và hình ảnh tĩnh thành video điện ảnh chuyển động 60FPS mượt mà qua Runway Gen-3 Alpha, Kling AI và Luma Dream Machine chỉ trong vài phút.
+            </p>
+            <div className={styles.featureTagsList}>
+              <span className={styles.featureTagItem}>Runway Gen-3</span>
+              <span className={styles.featureTagItem}>Kling AI Motion</span>
+              <span className={styles.featureTagItem}>Text-to-Video</span>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className={styles.featureCard}>
+            <div className={`${styles.featureIconWrap} ${styles.iconWrapEmerald}`}>
+              <HiOutlineShieldCheck />
+            </div>
+            <h3 className={styles.featureTitle}>Smart Pool Gateway & Prompt Cache</h3>
+            <p className={styles.featureDesc}>
+              Hệ thống tự động xoay vòng API Key dự phòng khi NCC gặp sự cố, tự giải mã Cloudflare Captcha và kích hoạt bộ nhớ đệm Context Caching giúp tiết kiệm tới 80% chi phí.
+            </p>
+            <div className={styles.featureTagsList}>
+              <span className={styles.featureTagItem}>Zero Downtime Failover</span>
+              <span className={styles.featureTagItem}>Giảm 80% Phí Cache</span>
+              <span className={styles.featureTagItem}>Bảo Mật Chuẩn Doanh Nghiệp</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── PRICING SECTION ── */}
+      {/* ══════════════════════════════════════════════════════════════
+          4. CURATED TOP MODELS SHOWCASE
+      ══════════════════════════════════════════════════════════════ */}
+      <section id="models" className={styles.modelsSection}>
+        <div className={styles.modelsContainer}>
+          <div className={styles.sectionHeaderCenter}>
+            <span className={styles.tagBadge}>
+              <HiOutlineCpuChip size={14} />
+              <span>DANH MỤC TIÊU BIỂU</span>
+            </span>
+            <h2 className={styles.sectionHeading}>Khám Phá Các Mô Hình Hàng Đầu</h2>
+            <p className={styles.sectionSubDesc}>
+              Bảng giá niêm yết minh bạch theo số lượng Credit thực tế bị trừ. Không phí phát sinh hay duy trì ẩn.
+            </p>
+          </div>
+
+          {/* Filter Category Tabs */}
+          <div className={styles.filterTabsRow}>
+            {(['ALL', 'CHAT', 'IMAGE', 'VIDEO'] as const).map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className={`${styles.filterTabBtn} ${activeCategory === cat ? styles.active : ''}`}
+                onClick={() => setActiveCategory(cat)}
+              >
+                {cat === 'ALL' && 'Tất Cả'}
+                {cat === 'CHAT' && 'Trò Chuyện & Code'}
+                {cat === 'IMAGE' && 'Tạo Ảnh'}
+                {cat === 'VIDEO' && 'Video AI'}
+              </button>
+            ))}
+          </div>
+
+          {/* Models Grid */}
+          <div className={styles.modelsGrid}>
+            {filteredModels.map((m) => (
+              <div key={m.id} className={styles.modelCard}>
+                <div>
+                  <div className={styles.modelTopRow}>
+                    <div className={styles.modelIdentity}>
+                      <div className={styles.modelProviderIcon}>
+                        {m.category === 'CHAT' && <RiOpenaiFill color="#10a37f" />}
+                        {m.category === 'IMAGE' && <HiOutlinePhoto color="#38bdf8" />}
+                        {m.category === 'VIDEO' && <HiOutlineFilm color="#c084fc" />}
+                      </div>
+                      <div className={styles.modelNameWrap}>
+                        <span className={styles.modelDisplayName}>{m.name}</span>
+                        <span className={styles.modelIdSlug}>{m.id}</span>
+                      </div>
+                    </div>
+                    {m.badge && <span className={styles.modelBadgeHot}>{m.badge}</span>}
+                  </div>
+                  <p className={styles.modelDesc}>{m.desc}</p>
+                </div>
+
+                <div className={styles.modelFooterRow}>
+                  <div className={styles.modelPriceBadge}>{m.creditPrice}</div>
+                  <Link
+                    to={`/studio?model=${m.id}&category=${m.category.toLowerCase()}`}
+                    className={styles.btnTryModel}
+                  >
+                    <span>Mở Studio</span>
+                    <HiOutlineArrowRight size={13} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.viewAllModelsWrap}>
+            <Link to="/models" className={styles.btnSecondary}>
+              <HiOutlineCommandLine size={17} />
+              <span>Xem Toàn Bộ 100+ Model Trên VeloX</span>
+              <HiOutlineArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          5. DEVELOPER INTEGRATION QUICK-START
+      ══════════════════════════════════════════════════════════════ */}
+      <section className={styles.devSection}>
+        <div className={styles.devGrid}>
+          {/* Left: Explanations */}
+          <div className={styles.devInfoCol}>
+            <span className={styles.tagBadge}>
+              <HiOutlineCodeBracket size={14} />
+              <span>DÀNH CHO LẬP TRÌNH VIÊN</span>
+            </span>
+            <h2 className={styles.sectionHeading}>
+              Tích Hợp Trong 30 Giây Với Chuẩn OpenAI
+            </h2>
+            <p className={styles.sectionSubDesc} style={{ margin: '1rem 0 0 0' }}>
+              Chỉ cần thay đổi <code>baseURL</code> và truyền <code>API Key</code> của VeloX, bạn có thể gọi toàn bộ mô hình Claude, DeepSeek, Gemini, Midjourney mà không phải sửa logic xử lý kết quả.
+            </p>
+
+            <ul className={styles.devCheckList}>
+              <li className={styles.devCheckItem}>
+                <HiOutlineCheck size={18} className={styles.checkIcon} />
+                <span>Base URL chuẩn quốc tế: <code>https://velox.nexoratech.com.vn/v1</code></span>
+              </li>
+              <li className={styles.devCheckItem}>
+                <HiOutlineCheck size={18} className={styles.checkIcon} />
+                <span>Hỗ trợ cả 2 header: <code>Authorization: Bearer</code> và <code>x-api-key</code></span>
+              </li>
+              <li className={styles.devCheckItem}>
+                <HiOutlineCheck size={18} className={styles.checkIcon} />
+                <span>Cấu hình 1-click cho các ứng dụng client phổ biến:</span>
+              </li>
+            </ul>
+
+            <div className={styles.clientBadgesList}>
+              <span className={styles.clientBadge}>Cursor IDE</span>
+              <span className={styles.clientBadge}>Cline (VS Code)</span>
+              <span className={styles.clientBadge}>NextChat</span>
+              <span className={styles.clientBadge}>Cherry Studio</span>
+              <span className={styles.clientBadge}>LibreChat</span>
+            </div>
+
+            <div style={{ marginTop: '2rem' }}>
+              <Link to="/docs" className={styles.btnPrimary}>
+                <HiOutlineCommandLine size={18} />
+                <span>Xem Tài Liệu Tích Hợp Kỹ Thuật</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right: Code Window */}
+          <div className={styles.codeWindowCard}>
+            <div className={styles.codeTopBar}>
+              <div className={styles.codeWindowDots}>
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className={styles.codeSnippetTabs}>
+                <button
+                  type="button"
+                  className={`${styles.snippetTab} ${codeSnippetTab === 'python' ? styles.active : ''}`}
+                  onClick={() => setCodeSnippetTab('python')}
+                >
+                  Python SDK
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.snippetTab} ${codeSnippetTab === 'curl' ? styles.active : ''}`}
+                  onClick={() => setCodeSnippetTab('curl')}
+                >
+                  cURL
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.snippetTab} ${codeSnippetTab === 'node' ? styles.active : ''}`}
+                  onClick={() => setCodeSnippetTab('node')}
+                >
+                  Node.js
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopyCode(snippetCode)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: copiedCode ? '#22c55e' : '#94a3b8',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.75rem',
+                }}
+              >
+                {copiedCode ? <HiOutlineCheck size={14} /> : <HiOutlineDocumentDuplicate size={14} />}
+                <span>{copiedCode ? 'Đã sao chép' : 'Sao chép'}</span>
+              </button>
+            </div>
+
+            <pre className={styles.codePreBlock}>
+              <code>{snippetCode}</code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          6. TRANSPARENT PRICING CARDS
+      ══════════════════════════════════════════════════════════════ */}
       <section id="pricing" className={styles.pricingSection}>
         <div className={styles.sectionHeaderCenter}>
-          <span className={styles.tagOrange}>{t('fitness.pricing_tag')}</span>
-          <h2 className={styles.sectionHeading}>
-            {t('fitness.pricing_title')}{' '}
-            <span className={styles.highlightOrange}>{t('fitness.pricing_title_hl')}</span>
-          </h2>
+          <span className={styles.tagBadge}>
+            <HiOutlineBolt size={14} />
+            <span>BẢNG GIÁ TÍN DỤNG</span>
+          </span>
+          <h2 className={styles.sectionHeading}>Nạp Bao Nhiêu, Dùng Bấy Nhiêu</h2>
           <p className={styles.sectionSubDesc}>
-            {t('fitness.pricing_desc')}
+            Không bị bó buộc vào hợp đồng cố định. Tín dụng không có ngày hết hạn và được nạp tự động qua VietQR trong 3 giây.
           </p>
         </div>
 
         <div className={styles.pricingGrid}>
-          {pricingPlans.map(plan => (
-            <div
-              key={plan.id}
-              className={`${styles.pricingCard} ${
-                plan.popular ? styles.pricingCardPopular : ''
-              }`}
-            >
-              {plan.popular && (
-                <div className={styles.popularBadge}>
-                  {t('fitness.most_popular')}
-                </div>
-              )}
-              <h3 className={styles.planName}>{t(plan.nameKey)}</h3>
-              <p className={styles.planDesc}>{t(plan.descKey)}</p>
+          {/* Plan 1 */}
+          <div className={styles.pricingCard}>
+            <div>
+              <h3 className={styles.planName}>Gói Khởi Động (Starter)</h3>
+              <p className={styles.planDesc}>Phù hợp cho cá nhân trải nghiệm và thử nghiệm các mô hình AI.</p>
               <div className={styles.priceRow}>
-                <span className={styles.priceMain}>{plan.price}</span>
-                <span className={styles.pricePeriod}>{t('fitness.per_month')}</span>
+                <span className={styles.priceNumber}>50.000đ</span>
+                <span className={styles.pricePeriod}>/ lần nạp</span>
               </div>
-              <ul className={styles.planFeatureList}>
-                {plan.featuresKeys.map(fk => (
-                  <li key={fk} className={styles.planFeatureItem}>
-                    <HiOutlineCheck className={styles.planCheckIcon} />
-                    <span>{t(fk)}</span>
-                  </li>
-                ))}
+              <div className={styles.planCreditsHighlight}>
+                <RiSparklingFill size={14} />
+                <span>Nhận ngay 50 Credits</span>
+              </div>
+
+              <ul className={styles.planFeaturesList}>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Truy cập đầy đủ 100+ mô hình AI</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Tạo ~12 ảnh FLUX.1 hoặc 16M token DeepSeek</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Tín dụng không giới hạn thời gian sử dụng</span>
+                </li>
               </ul>
-              <Link to="/register" className={plan.popular ? styles.planBtnPopular : styles.planBtn}>
-                {t('fitness.start_trial')}
-              </Link>
             </div>
-          ))}
+
+            <Link to="/subscription" className={styles.btnPlanSelect}>
+              Nạp Ngay Qua VietQR
+            </Link>
+          </div>
+
+          {/* Plan 2: Popular */}
+          <div className={`${styles.pricingCard} ${styles.popular}`}>
+            <div className={styles.popularBadge}>PHỔ BIẾN NHẤT (+10% THƯỞNG)</div>
+            <div>
+              <h3 className={styles.planName}>Gói Sáng Tạo (Pro Creator)</h3>
+              <p className={styles.planDesc}>Dành cho Creator, Designer và Developer xây dựng sản phẩm.</p>
+              <div className={styles.priceRow}>
+                <span className={styles.priceNumber}>200.000đ</span>
+                <span className={styles.pricePeriod}>/ lần nạp</span>
+              </div>
+              <div className={styles.planCreditsHighlight} style={{ background: 'rgba(255, 107, 53, 0.15)', borderColor: 'rgba(255, 107, 53, 0.35)', color: '#ffedd5' }}>
+                <RiSparklingFill size={14} color="#ff6b35" />
+                <span>Nhận 220 Credits (Tặng 10%)</span>
+              </div>
+
+              <ul className={styles.planFeaturesList}>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Ưu tiên băng thông và tốc độ xử lý hàng chờ</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Tạo ~55 ảnh FLUX.1 hoặc 5 video Runway 60FPS</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Không giới hạn số lượng API Key tạo mới</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Hỗ trợ kỹ thuật ưu tiên 24/7</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link to="/subscription" className={`${styles.btnPlanSelect} ${styles.popularBtn}`}>
+              Nạp Gói Sáng Tạo
+            </Link>
+          </div>
+
+          {/* Plan 3 */}
+          <div className={styles.pricingCard}>
+            <div>
+              <h3 className={styles.planName}>Gói Doanh Nghiệp (Studio)</h3>
+              <p className={styles.planDesc}>Giải pháp tối ưu cho doanh nghiệp và đội ngũ cần tích hợp API liên tục.</p>
+              <div className={styles.priceRow}>
+                <span className={styles.priceNumber}>1.000.000đ</span>
+                <span className={styles.pricePeriod}>/ lần nạp</span>
+              </div>
+              <div className={styles.planCreditsHighlight}>
+                <RiSparklingFill size={14} />
+                <span>Nhận 1.200 Credits (Tặng 20%)</span>
+              </div>
+
+              <ul className={styles.planFeaturesList}>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Hạ tầng Dedicated Pool & Custom Rate Limit</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Tạo ~300 ảnh FLUX.1 hoặc 26 video Runway</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Hỗ trợ xuất hóa đơn VAT và hợp đồng dịch vụ</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link to="/subscription" className={styles.btnPlanSelect}>
+              Nạp Gói Doanh Nghiệp
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* ── MOTIVATIONAL CTA BANNER ── */}
+      {/* ══════════════════════════════════════════════════════════════
+          7. FINAL ACTION CTA BANNER
+      ══════════════════════════════════════════════════════════════ */}
       <section className={styles.ctaBannerSection}>
         <div className={styles.ctaBannerCard}>
-          <div className={styles.ctaBadge}>
-            <HiOutlineShieldCheck className={styles.ctaBadgeIcon} />
-            <span>7-DAY TRIAL GUARANTEE</span>
+          <div className={styles.tagBadge} style={{ margin: '0 auto 1.5rem' }}>
+            <HiOutlineSparkles size={14} />
+            <span>TRẢI NGHIỆM MIỄN PHÍ HÔM NAY</span>
           </div>
           <h2 className={styles.ctaTitle}>
-            {t('fitness.cta_banner_title')}
+            Sẵn Sàng Tăng Tốc Cùng VeloX AI Gateway?
           </h2>
           <p className={styles.ctaSubtitle}>
-            {t('fitness.cta_banner_desc')}
+            Tạo tài khoản ngay bây giờ để nhận tín dụng trải nghiệm toàn bộ các mô hình AI đỉnh cao thế giới trong một giao diện duy nhất.
           </p>
           <div className={styles.ctaButtonsRow}>
-            <Link to="/register" className={styles.btnPrimaryLg}>
-              {t('fitness.cta_trial')}
-              <HiOutlineArrowRight className={styles.btnIcon} />
+            <Link to="/studio" className={styles.btnPrimary}>
+              <RiOpenaiFill size={18} />
+              <span>Bắt Đầu Sáng Tạo Ngay</span>
+              <HiOutlineArrowRight size={16} />
             </Link>
-            <Link to="/login" className={styles.btnSecondaryLg}>
-              {t('nav.login')}
+            <Link to="/register" className={styles.btnSecondary}>
+              <span>Đăng Ký Tài Khoản Mới</span>
             </Link>
           </div>
         </div>

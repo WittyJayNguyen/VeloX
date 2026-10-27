@@ -1,26 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-// ── Colors & Design Tokens (UUPM Fitness Gym Theme) ──
-$primary: #ff6b35;          // Energetic fiery orange
+// ── Colors & Design Tokens (VeloX AI Gateway & Studio) ──
+$primary: #ff6b35;          // Fiery energetic orange
 $primary-dark: #e55a2b;
-$secondary: #0080ff;        // Electric blue
-$bg-dark: #0a0a0a;          // Pure dark background
-$bg-card: #141414;          // Sleek card surface
-$bg-lighter: #1a1a1a;       // Elevated surface
+$secondary: #ff2ea6;        // Neon pink / magenta accent
+$accent-cyan: #38bdf8;      // Electric sky cyan
+$accent-emerald: #10a37f;   // OpenAI emerald green
+$accent-purple: #c084fc;    // Claude purple
+$bg-dark: #080a0f;          // Ultra-deep cyber black
+$bg-card: #0f131c;          // Sleek card surface
+$bg-lighter: #161b26;       // Elevated surface
 $text-light: #ffffff;
-$text-muted: #9ca3af;
-$border: #262626;
-$border-light: #333333;
-$accent-green: #22c55e;     // Vibrant pulse green
+$text-sub: #cbd5e1;
+$text-muted: #94a3b8;
+$border: rgba(255, 255, 255, 0.08);
+$border-hover: rgba(255, 107, 53, 0.35);
 
-$font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-$font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+$font-mono: 'JetBrains Mono', monospace;
 
 // ── Root Wrapper ──
-.fitnessGym {
+.homePage {
   background-color: $bg-dark;
   color: $text-light;
-  font-family: $font-body;
+  font-family: $font-heading;
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
@@ -30,97 +33,135 @@ $font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Se
   }
 }
 
-// ── Typography Helpers ──
-.highlightOrange {
-  color: $primary;
+// ── Shared Typography & Section Helpers ──
+.sectionHeaderCenter {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3rem;
 }
 
-.tagOrange {
-  display: inline-block;
-  font-family: $font-heading;
-  font-size: 0.85rem;
+.sectionHeaderRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.tagBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   color: $primary;
-  margin-bottom: 0.5rem;
+  background: rgba($primary, 0.1);
+  border: 1px solid rgba($primary, 0.25);
+  border-radius: 9999px;
+  padding: 4px 14px;
+  margin-bottom: 0.85rem;
 }
 
 .sectionHeading {
-  font-family: $font-heading;
-  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  font-size: clamp(1.85rem, 3.2vw, 2.75rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
-  color: $text-light;
+  letter-spacing: -0.03em;
+  color: #ffffff;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.22;
 }
 
 .sectionSubDesc {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: $text-muted;
-  max-width: 520px;
-  margin: 0.75rem auto 0;
+  margin-top: 0.85rem;
   line-height: 1.6;
 }
 
-// ════════════════════════════════════════
-// HERO SECTION
-// ════════════════════════════════════════
+.highlightOrange {
+  color: $primary;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff2ea6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.highlightCyan {
+  color: $accent-cyan;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 1. HERO SECTION
+// ══════════════════════════════════════════════════════════════
 .heroSection {
   position: relative;
   min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
-  padding: 3.5rem 2rem 3.5rem;
+  padding: 4.5rem 2rem 5rem;
   overflow: hidden;
   background-color: $bg-dark;
 
-  @media (max-width: 768px) {
-    padding: 3rem 1.25rem 2.5rem;
+  @media (max-width: 992px) {
+    padding: 3.5rem 1.25rem 4rem;
     min-height: auto;
   }
 }
 
+// Ambient Background Glows & Cyber Grid
 .heroBgWrapper {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
+  overflow: hidden;
 }
 
-.heroBgImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.28;
-  filter: contrast(1.1) brightness(0.9);
+.ambientGlow1 {
+  position: absolute;
+  top: -10%;
+  left: 15%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(255, 107, 53, 0.16) 0%, transparent 70%);
+  filter: blur(80px);
+  border-radius: 50%;
 }
 
-.heroOverlay {
+.ambientGlow2 {
+  position: absolute;
+  top: 30%;
+  right: 5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 46, 166, 0.12) 0%, transparent 70%);
+  filter: blur(90px);
+  border-radius: 50%;
+}
+
+.cyberGrid {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    $bg-dark 0%,
-    rgba(10, 10, 10, 0.92) 45%,
-    rgba(10, 10, 10, 0.7) 75%,
-    rgba(10, 10, 10, 0.85) 100%
-  );
-
-  @media (max-width: 992px) {
-    background: linear-gradient(
-      180deg,
-      rgba(10, 10, 10, 0.85) 0%,
-      $bg-dark 100%
-    );
-  }
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 30%, transparent 80%);
 }
 
 .heroContainer {
   position: relative;
   z-index: 2;
-  max-width: 1240px;
+  max-width: 1260px;
   margin: 0 auto;
   width: 100%;
   display: grid;
@@ -139,113 +180,83 @@ $font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Se
   flex-direction: column;
 }
 
-.aiBadge {
+.heroBadge {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 8px;
   background: rgba($primary, 0.1);
   border: 1px solid rgba($primary, 0.28);
   border-radius: 9999px;
-  padding: 0.4rem 1.05rem;
+  padding: 6px 16px;
   width: fit-content;
   margin-bottom: 1.5rem;
-}
+  box-shadow: 0 0 20px rgba($primary, 0.15);
 
-.pulseDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: $accent-green;
-  box-shadow: 0 0 10px rgba($accent-green, 0.8);
-  animation: pulseAnim 2s infinite ease-in-out;
-}
-
-@keyframes pulseAnim {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
+  .badgePulseDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $primary;
+    box-shadow: 0 0 10px $primary;
+    animation: pulse 2s infinite;
   }
-  50% {
-    transform: scale(1.35);
-    opacity: 0.6;
+
+  .badgeText {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #ffedd5;
   }
 }
 
-.aiBadgeText {
-  font-family: $font-body;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: $primary;
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
 }
 
 .heroHeadline {
-  font-family: $font-heading;
-  font-size: clamp(2.1rem, 3.8vw, 3.35rem);
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  text-transform: none;
-  color: $text-light;
-  margin: 0 0 1.25rem;
-
-  .highlightOrange {
-    color: $primary;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ffa07a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-  }
+  font-size: clamp(2.4rem, 4.4vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  margin: 0 0 1.25rem 0;
 }
 
 .heroSubtitle {
-  font-family: $font-body;
-  font-size: 1.05rem;
-  color: #94a3b8;
+  font-size: clamp(1.05rem, 1.3vw, 1.2rem);
   line-height: 1.65;
-  max-width: 540px;
-  margin: 0 0 2rem;
-  font-weight: 400;
+  color: $text-sub;
+  margin: 0 0 2rem 0;
+  max-width: 620px;
 }
 
 .heroCtas {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 3.5rem;
-
-  @media (max-width: 576px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.85rem;
-  }
+  margin-bottom: 2.75rem;
 }
 
 .btnPrimary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  background: $primary;
+  gap: 9px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ea580c 50%, #dc2626 100%);
   color: #ffffff;
-  font-family: $font-heading;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.95rem 2.2rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
   text-decoration: none;
-  transition: all 0.25s ease;
-  box-shadow: 0 6px 18px rgba($primary, 0.28);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 24px rgba(255, 107, 53, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 
   &:hover {
-    background: $primary-dark;
     transform: translateY(-2px);
-    box-shadow: 0 10px 26px rgba($primary, 0.45);
+    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
     color: #ffffff;
   }
 }
@@ -253,51 +264,36 @@ $font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Se
 .btnSecondary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  background: transparent;
-  color: $text-light;
-  font-family: $font-heading;
-  font-size: 1.05rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.95rem 2rem;
-  border-radius: 8px;
-  border: 2px solid $border;
-  cursor: pointer;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.85rem 1.65rem;
+  border-radius: 12px;
   text-decoration: none;
-  transition: all 0.25s ease;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
 
   &:hover {
-    border-color: $primary;
-    color: $primary;
-    background: rgba($primary, 0.06);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    transform: translateY(-2px);
   }
 }
 
-.btnSecondarySm {
-  composes: btnSecondary;
-  padding: 0.65rem 1.4rem;
-  font-size: 0.9rem;
-}
-
-.btnIcon {
-  font-size: 1.15rem;
-}
-
 .heroStats {
-  display: flex;
-  align-items: center;
-  gap: 3rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba($border, 0.8);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 
-  @media (max-width: 576px) {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    text-align: center;
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
   }
 }
 
@@ -307,347 +303,324 @@ $font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Se
 }
 
 .statNumber {
-  font-family: $font-heading;
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: $primary;
-  line-height: 1;
-  margin-bottom: 0.35rem;
-
-  @media (max-width: 576px) {
-    font-size: 1.65rem;
-  }
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #ffffff 30%, #ffedd5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .statLabel {
-  font-family: $font-heading;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: 0.82rem;
   color: $text-muted;
-
-  @media (max-width: 576px) {
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-  }
+  margin-top: 0.3rem;
+  font-weight: 500;
 }
 
-// ── Hero Floating Workout Widget ──
+// ── Hero Interactive Studio Simulation Card (Right Column) ──
 .heroWidgetCol {
   display: flex;
   justify-content: center;
-  align-items: center;
-  width: 100%;
 }
 
-.workoutWidget {
-  background: $bg-card;
-  border: 1px solid $border;
-  border-radius: 16px;
-  padding: 1.75rem;
+.interactiveCard {
+  background: rgba(15, 19, 28, 0.85);
+  border: 1px solid rgba(255, 107, 53, 0.25);
+  border-radius: 20px;
+  padding: 1.5rem;
   width: 100%;
-  max-width: 380px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba($primary, 0.08);
-  transition: all 0.3s ease;
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-    padding: 1.25rem;
-  }
+  max-width: 490px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 107, 53, 0.12);
+  transition: transform 0.3s ease, border-color 0.3s ease;
 
   &:hover {
-    border-color: rgba($primary, 0.4);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 45px rgba($primary, 0.14);
+    border-color: rgba(255, 107, 53, 0.45);
   }
 }
 
-.widgetHeader {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.35rem;
-  padding-bottom: 1.15rem;
-  border-bottom: 1px solid $border;
-}
-
-.widgetIconWrap {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  background: rgba($primary, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $primary;
-  flex-shrink: 0;
-}
-
-.widgetBoltIcon {
-  font-size: 1.45rem;
-}
-
-.widgetTitle {
-  font-family: $font-heading;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: $text-light;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.widgetSubtitle {
-  font-size: 0.85rem;
-  color: $primary;
-  font-weight: 600;
-}
-
-.widgetTasks {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.taskRow {
+.widgetHeaderRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: transparent;
-  border: none;
-  padding: 0.5rem 0.25rem;
-  width: 100%;
-  cursor: pointer;
-  text-align: left;
-  transition: opacity 0.2s ease;
+  margin-bottom: 1.25rem;
+}
 
-  &:hover {
-    opacity: 0.85;
+.widgetBrandMark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .widgetDotLive {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 8px #22c55e;
+  }
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 0.05em;
   }
 }
 
-.taskLeft {
-  display: flex;
+.widgetCreditBadge {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 5px;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  color: #2dd4bf;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
 }
 
-.checkbox {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid $border;
-  display: flex;
+// Mode Switcher Tabs (Image / Chat / Video)
+.widgetTabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.widgetTabBtn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.checkboxChecked {
-  background: $accent-green;
-  border-color: $accent-green;
-  box-shadow: 0 0 10px rgba($accent-green, 0.4);
-}
-
-.checkMark {
-  color: #ffffff;
-  font-size: 0.85rem;
-  stroke-width: 2.5;
-}
-
-.taskName {
-  font-size: 0.95rem;
-  color: $text-light;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.taskNameDone {
+  gap: 6px;
+  background: transparent;
+  border: none;
   color: $text-muted;
-  text-decoration: line-through;
-}
-
-.taskTime {
-  font-size: 0.82rem;
-  color: $text-muted;
-  font-weight: 600;
-}
-
-.progressContainer {
-  background: $border;
-  border-radius: 4px;
-  height: 6px;
-  overflow: hidden;
-  margin-bottom: 0.65rem;
-}
-
-.progressBarFill {
-  background: linear-gradient(90deg, $primary 0%, $secondary 100%);
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.progressLabel {
-  font-family: $font-heading;
   font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: $text-muted;
-  text-align: center;
-}
+  font-weight: 600;
+  padding: 7px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-// ════════════════════════════════════════
-// WORKOUTS SECTION
-// ════════════════════════════════════════
-.workoutsSection {
-  padding: 6.5rem 2rem;
-  max-width: 1240px;
-  margin: 0 auto;
-  width: 100%;
-
-  @media (max-width: 768px) {
-    padding: 4rem 1.25rem;
+  &.active {
+    background: $bg-lighter;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   }
 }
 
-.sectionHeaderRow {
+// Interactive Prompt Box
+.promptBoxWrapper {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.promptLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.promptInputMock {
+  font-size: 0.88rem;
+  color: #f1f5f9;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.promptSuggestions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.promptChip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: $text-sub;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba($primary, 0.15);
+    border-color: rgba($primary, 0.35);
+    color: #ffffff;
+  }
+}
+
+// Visual Preview Frame
+.previewFrame {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.03);
+  }
+}
+
+.previewOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.85) 100%);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-
-  @media (max-width: 576px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  padding: 0.85rem 1rem;
 }
 
-.sectionHeaderCenter {
-  text-align: center;
-  margin-bottom: 3.5rem;
+.modelBadgeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.workoutsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 576px) {
-    grid-template-columns: 1fr;
-  }
+.resolutionPill {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 8px;
+  border-radius: 4px;
 }
 
-.workoutCard {
-  background: $bg-card;
-  border: 1px solid $border;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+// Generate Action Button Inside Widget
+.widgetActionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btnWidgetTry {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff2ea6 0%, #ff6b35 100%);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(255, 46, 166, 0.35);
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-6px);
-    border-color: rgba($primary, 0.45);
-    box-shadow: 0 20px 45px rgba($primary, 0.16);
-
-    .workoutImg {
-      transform: scale(1.08);
-    }
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 46, 166, 0.5);
+    color: #ffffff;
   }
 }
 
-.workoutMedia {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: #000;
+// ══════════════════════════════════════════════════════════════
+// 2. PARTNERS / PROVIDERS RIBBON
+// ══════════════════════════════════════════════════════════════
+.providersSection {
+  padding: 2.5rem 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.workoutImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.55s ease;
+.providersContainer {
+  max-width: 1240px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.workoutImgMask {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(20, 20, 20, 0.95) 100%);
-}
-
-.levelBadge {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  background: rgba($bg-dark, 0.85);
-  backdrop-filter: blur(6px);
-  color: #ffffff;
-  font-family: $font-heading;
-  font-size: 0.72rem;
+.providersLabel {
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.3rem 0.65rem;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.15em;
+  color: $text-muted;
+  margin-bottom: 1.5rem;
 }
 
-.workoutInfo {
-  padding: 1.25rem;
-}
-
-.workoutCardTitle {
-  font-family: $font-heading;
-  font-size: 1.25rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: $text-light;
-  margin: 0 0 0.85rem;
-}
-
-.workoutMeta {
+.providersGrid {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.88rem;
-  color: $text-muted;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2.25rem 3rem;
+
+  @media (max-width: 640px) {
+    gap: 1.5rem 1.8rem;
+  }
 }
 
-.metaItem {
-  display: flex;
+.providerItem {
+  display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-weight: 600;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+  opacity: 0.75;
+
+  &:hover {
+    color: #ffffff;
+    opacity: 1;
+    transform: translateY(-1px);
+  }
 }
 
-.metaIcon {
-  font-size: 1rem;
-  color: $text-muted;
-}
-
-.metaIconFire {
-  font-size: 1rem;
-  color: $primary;
-}
-
-// ════════════════════════════════════════
-// FEATURES SECTION
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// 3. CORE CAPABILITIES (4 PILLARS BENTO GRID)
+// ══════════════════════════════════════════════════════════════
 .featuresSection {
-  padding: 6.5rem 2rem;
-  background-color: $bg-card;
-  border-top: 1px solid $border;
-  border-bottom: 1px solid $border;
+  padding: 6rem 2rem;
+  max-width: 1260px;
+  margin: 0 auto;
 
   @media (max-width: 768px) {
     padding: 4rem 1.25rem;
@@ -655,199 +628,426 @@ $font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Se
 }
 
 .featuresGrid {
-  max-width: 1240px;
-  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 576px) {
+  @media (max-width: 860px) {
     grid-template-columns: 1fr;
   }
 }
 
 .featureCard {
-  text-align: center;
-  padding: 2rem 1.5rem;
-  border-radius: 16px;
-  background: $bg-dark;
+  background: $bg-card;
   border: 1px solid $border;
-  transition: all 0.3s ease;
-  cursor: default;
+  border-radius: 18px;
+  padding: 2.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    border-color: rgba($primary, 0.4);
+    border-color: $border-hover;
     transform: translateY(-4px);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
-
-    .featureIconWrap {
-      background: $primary;
-      color: #ffffff;
-      transform: scale(1.08);
-      box-shadow: 0 8px 24px rgba($primary, 0.35);
-    }
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 107, 53, 0.1);
   }
 }
 
 .featureIconWrap {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background: rgba($primary, 0.12);
-  color: $primary;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1.5rem;
-  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
 }
 
-.featureIcon {
-  font-size: 1.85rem;
+.iconWrapOrange {
+  background: rgba($primary, 0.12);
+  color: $primary;
+  border: 1px solid rgba($primary, 0.25);
+}
+
+.iconWrapMagenta {
+  background: rgba($secondary, 0.12);
+  color: $secondary;
+  border: 1px solid rgba($secondary, 0.25);
+}
+
+.iconWrapCyan {
+  background: rgba($accent-cyan, 0.12);
+  color: $accent-cyan;
+  border: 1px solid rgba($accent-cyan, 0.25);
+}
+
+.iconWrapEmerald {
+  background: rgba($accent-emerald, 0.12);
+  color: $accent-emerald;
+  border: 1px solid rgba($accent-emerald, 0.25);
 }
 
 .featureTitle {
-  font-family: $font-heading;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: $text-light;
-  margin: 0 0 0.65rem;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0 0 0.85rem 0;
 }
 
 .featureDesc {
-  font-size: 0.92rem;
-  color: $text-muted;
+  font-size: 0.95rem;
+  color: $text-sub;
   line-height: 1.6;
-  margin: 0;
+  margin: 0 0 1.25rem 0;
 }
 
-// ════════════════════════════════════════
-// TRAINERS SECTION
-// ════════════════════════════════════════
-.trainersSection {
-  padding: 6.5rem 2rem;
-  max-width: 1240px;
-  margin: 0 auto;
-  width: 100%;
+.featureTagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.featureTagItem {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 4. CURATED TOP MODELS SHOWCASE
+// ══════════════════════════════════════════════════════════════
+.modelsSection {
+  padding: 6rem 2rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 
   @media (max-width: 768px) {
     padding: 4rem 1.25rem;
   }
 }
 
-.trainersGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.75rem;
+.modelsContainer {
+  max-width: 1260px;
+  margin: 0 auto;
+}
 
-  @media (max-width: 1100px) {
+.filterTabsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2.75rem;
+  flex-wrap: wrap;
+}
+
+.filterTabBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: $text-muted;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: rgba($primary, 0.15);
+    border-color: rgba($primary, 0.45);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba($primary, 0.2);
+  }
+
+  &:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+}
+
+.modelsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1024px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: 640px) {
     grid-template-columns: 1fr;
   }
 }
 
-.trainerCard {
-  cursor: pointer;
+.modelCard {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s ease;
 
   &:hover {
-    .trainerAvatar {
-      transform: scale(1.06);
-    }
-
-    .trainerOverlay {
-      opacity: 1;
-    }
+    border-color: rgba(255, 107, 53, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
   }
 }
 
-.trainerAvatarWrap {
-  aspect-ratio: 1 / 1;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  background: #000;
-  margin-bottom: 1.15rem;
-  border: 1px solid $border;
-}
-
-.trainerAvatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.45s ease;
-}
-
-.trainerOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 20%, rgba($bg-dark, 0.88) 100%);
+.modelTopRow {
   display: flex;
-  align-items: flex-end;
-  padding: 1.25rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
 }
 
-.btnProfile {
-  width: 100%;
-  background: $primary;
-  color: #ffffff;
-  border: none;
+.modelIdentity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modelProviderIcon {
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
-  padding: 0.65rem 1rem;
-  font-family: $font-heading;
-  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.modelNameWrap {
+  display: flex;
+  flex-direction: column;
+
+  .modelDisplayName {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .modelIdSlug {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: $text-muted;
+  }
+}
+
+.modelBadgeHot {
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: background 0.2s;
+  color: #ff6b35;
+  background: rgba(255, 107, 53, 0.12);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.modelDesc {
+  font-size: 0.88rem;
+  color: $text-sub;
+  line-height: 1.55;
+  margin: 0 0 1.25rem 0;
+  min-height: 40px;
+}
+
+.modelFooterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modelPriceBadge {
+  font-family: $font-mono;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.btnTryModel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: $primary;
+  text-decoration: none;
+  transition: color 0.15s ease;
 
   &:hover {
-    background: $primary-dark;
+    color: #ff8e5e;
   }
 }
 
-.trainerName {
-  font-family: $font-heading;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: $text-light;
-  text-transform: uppercase;
-  margin: 0 0 0.25rem;
-  letter-spacing: 0.02em;
+.viewAllModelsWrap {
+  text-align: center;
+  margin-top: 3rem;
 }
 
-.trainerSpec {
-  font-size: 0.88rem;
-  color: $primary;
+// ══════════════════════════════════════════════════════════════
+// 5. DEVELOPER INTEGRATION QUICK-START
+// ══════════════════════════════════════════════════════════════
+.devSection {
+  padding: 6rem 2rem;
+  max-width: 1260px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 4rem 1.25rem;
+  }
+}
+
+.devGrid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: 3.5rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+.devInfoCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.devCheckList {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.devCheckItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: $text-sub;
+
+  .checkIcon {
+    color: #22c55e;
+    flex-shrink: 0;
+  }
+}
+
+.clientBadgesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.clientBadge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 0.78rem;
   font-weight: 600;
-  margin: 0 0 0.25rem;
+  padding: 5px 12px;
+  border-radius: 8px;
 }
 
-.trainerExp {
-  font-size: 0.82rem;
+.codeWindowCard {
+  background: #030712;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+}
+
+.codeTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.codeWindowDots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+
+    &:nth-child(1) { background: #ef4444; }
+    &:nth-child(2) { background: #eab308; }
+    &:nth-child(3) { background: #22c55e; }
+  }
+}
+
+.codeSnippetTabs {
+  display: flex;
+  gap: 4px;
+}
+
+.snippetTab {
+  background: transparent;
+  border: none;
   color: $text-muted;
-  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
 }
 
-// ════════════════════════════════════════
-// PRICING SECTION
-// ════════════════════════════════════════
+.codePreBlock {
+  font-family: $font-mono;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  padding: 1.25rem;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 6. TRANSPARENT PRICING CARDS
+// ══════════════════════════════════════════════════════════════
 .pricingSection {
-  padding: 6.5rem 2rem;
-  background-color: $bg-card;
-  border-top: 1px solid $border;
-  border-bottom: 1px solid $border;
+  padding: 6rem 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 
   @media (max-width: 768px) {
     padding: 4rem 1.25rem;
@@ -855,290 +1055,206 @@ $font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Se
 }
 
 .pricingGrid {
-  max-width: 1100px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 
-  @media (max-width: 992px) {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
-    max-width: 440px;
-    gap: 2rem;
+    max-width: 480px;
   }
 }
 
 .pricingCard {
-  background: $bg-lighter;
+  background: $bg-card;
   border: 1px solid $border;
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  position: relative;
-  transition: all 0.3s ease;
+  border-radius: 20px;
+  padding: 2.25rem 2rem;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: all 0.3s ease;
 
   &:hover {
-    background: $bg-dark;
-    border-color: rgba($primary, 0.4);
+    border-color: rgba(255, 107, 53, 0.35);
     transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-  }
-}
-
-.pricingCardPopular {
-  background: $primary;
-  border: none;
-  transform: scale(1.06);
-  box-shadow: 0 24px 60px rgba($primary, 0.35);
-
-  @media (max-width: 992px) {
-    transform: scale(1);
   }
 
-  &:hover {
-    transform: scale(1.08);
-    box-shadow: 0 28px 70px rgba($primary, 0.45);
-    background: $primary;
-
-    @media (max-width: 992px) {
-      transform: scale(1.02);
-    }
-  }
-
-  .planName, .priceMain {
-    color: #ffffff;
-  }
-
-  .planDesc, .pricePeriod {
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  .planFeatureItem {
-    color: #ffffff;
-  }
-
-  .planCheckIcon {
-    color: #ffffff;
+  &.popular {
+    background: linear-gradient(180deg, rgba(255, 107, 53, 0.07) 0%, $bg-card 100%);
+    border-color: rgba(255, 107, 53, 0.45);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 107, 53, 0.15);
   }
 }
 
 .popularBadge {
   position: absolute;
-  top: -14px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: $accent-green;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff2ea6 100%);
   color: #ffffff;
-  font-family: $font-heading;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding: 0.35rem 1.25rem;
+  letter-spacing: 0.08em;
+  padding: 4px 14px;
   border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba($accent-green, 0.45);
-  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(255, 46, 166, 0.4);
 }
 
 .planName {
-  font-family: $font-heading;
-  font-size: 1.45rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: $text-light;
-  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
 }
 
 .planDesc {
   font-size: 0.88rem;
   color: $text-muted;
-  margin: 0 0 1.75rem;
+  margin: 0 0 1.5rem 0;
+  min-height: 40px;
 }
 
 .priceRow {
   display: flex;
   align-items: baseline;
-  gap: 0.35rem;
-  margin-bottom: 2rem;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+
+  .priceNumber {
+    font-size: 2.3rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+  }
+
+  .pricePeriod {
+    font-size: 0.9rem;
+    color: $text-muted;
+  }
 }
 
-.priceMain {
-  font-family: $font-heading;
-  font-size: 3rem;
-  font-weight: 900;
-  color: $text-light;
-  line-height: 1;
+.planCreditsHighlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  color: #2dd4bf;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  margin-bottom: 1.75rem;
+  width: fit-content;
 }
 
-.pricePeriod {
-  font-size: 0.95rem;
-  color: $text-muted;
-  font-weight: 600;
-}
-
-.planFeatureList {
+.planFeaturesList {
   list-style: none;
   padding: 0;
-  margin: 0 0 2.25rem;
+  margin: 0 0 2rem 0;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  flex-grow: 1;
 }
 
 .planFeatureItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
+  gap: 9px;
+  font-size: 0.88rem;
+  color: $text-sub;
+
+  .checkIcon {
+    color: #22c55e;
+    flex-shrink: 0;
+  }
 }
 
-.planCheckIcon {
-  color: $accent-green;
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  stroke-width: 2.5;
-}
-
-.planBtn {
-  width: 100%;
+.btnPlanSelect {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: $primary;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
-  font-family: $font-heading;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.95rem 1.5rem;
-  border-radius: 8px;
+  padding: 0.85rem;
+  border-radius: 12px;
   text-decoration: none;
   transition: all 0.2s ease;
 
   &:hover {
-    background: $primary-dark;
-    box-shadow: 0 8px 20px rgba($primary, 0.35);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
+
+  &.popularBtn {
+    background: linear-gradient(135deg, #ff6b35 0%, #ea580c 100%);
+    border: none;
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+
+    &:hover {
+      box-shadow: 0 8px 25px rgba(255, 107, 53, 0.5);
+      color: #ffffff;
+    }
   }
 }
 
-.planBtnPopular {
-  composes: planBtn;
-  background: #ffffff;
-  color: $primary;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.92);
-    color: $primary-dark;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  }
-}
-
-// ════════════════════════════════════════
-// CTA BANNER SECTION
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// 7. FINAL CTA BANNER
+// ══════════════════════════════════════════════════════════════
 .ctaBannerSection {
-  padding: 6.5rem 2rem;
-  max-width: 1240px;
+  padding: 6rem 2rem 7rem;
+  max-width: 1260px;
   margin: 0 auto;
-  width: 100%;
 
   @media (max-width: 768px) {
-    padding: 4rem 1.25rem;
+    padding: 4rem 1.25rem 5rem;
   }
 }
 
 .ctaBannerCard {
-  background: radial-gradient(
-      ellipse at 50% 0%,
-      rgba($primary, 0.22) 0%,
-      transparent 65%
-    ),
-    $bg-card;
-  border: 1px solid rgba($primary, 0.35);
-  border-radius: 20px;
-  padding: 4.5rem 2rem;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 107, 53, 0.15) 0%, rgba(15, 19, 28, 0.95) 75%);
+  border: 1px solid rgba(255, 107, 53, 0.35);
+  border-radius: 28px;
+  padding: 4rem 2rem;
   text-align: center;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 50px rgba($primary, 0.12);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 107, 53, 0.15);
 
   @media (max-width: 768px) {
     padding: 3rem 1.5rem;
   }
 }
 
-.ctaBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba($accent-green, 0.12);
-  border: 1px solid rgba($accent-green, 0.3);
-  border-radius: 9999px;
-  padding: 0.4rem 1rem;
-  color: $accent-green;
-  font-family: $font-heading;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  margin-bottom: 1.5rem;
-}
-
-.ctaBadgeIcon {
-  font-size: 1.1rem;
-}
-
 .ctaTitle {
-  font-family: $font-heading;
-  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: $text-light;
-  margin: 0 0 1rem;
-  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
 }
 
 .ctaSubtitle {
   font-size: 1.1rem;
-  color: $text-muted;
-  max-width: 580px;
+  color: $text-sub;
+  max-width: 620px;
   margin: 0 auto 2.5rem;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .ctaButtonsRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
+  gap: 1rem;
   flex-wrap: wrap;
-
-  @media (max-width: 576px) {
-    flex-direction: column;
-    width: 100%;
-  }
-}
-
-.btnPrimaryLg {
-  composes: btnPrimary;
-  padding: 1.1rem 2.75rem;
-  font-size: 1.15rem;
-
-  @media (max-width: 576px) {
-    width: 100%;
-  }
-}
-
-.btnSecondaryLg {
-  composes: btnSecondary;
-  padding: 1.1rem 2.5rem;
-  font-size: 1.15rem;
-
-  @media (max-width: 576px) {
-    width: 100%;
-  }
 }
