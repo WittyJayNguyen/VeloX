@@ -6,7 +6,11 @@ import {
   HiOutlineBolt,
   HiOutlineSparkles,
   HiOutlineArrowRight,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlinePhoto,
+  HiOutlineFilm,
 } from 'react-icons/hi2';
+import { RiOpenaiFill } from 'react-icons/ri';
 import { STUDIO_CATEGORIES } from '@modules/core/components/StudioMegaMenu/StudioMegaMenu';
 import styles from '@assets/scss/client/client-pages.module.scss';
 
@@ -43,7 +47,9 @@ export const ModelsExplorePage: React.FC = () => {
       <div className={styles.pageHeader}>
         <div className={styles.titleArea}>
           <h1>
-            <span className={styles.pageIcon}>🤖</span>
+            <span className={styles.pageIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <RiOpenaiFill size={30} color="#10a37f" />
+            </span>
             {t('nav.models', 'Thư Viện Mô Hình AI (AI Models)')}
           </h1>
           <p>{t('models_page.subtitle', 'Khám phá hơn 100+ mô hình AI thế hệ mới nhất cho Chat, Tạo Ảnh và Video với chi phí tối ưu')}</p>
@@ -76,26 +82,26 @@ export const ModelsExplorePage: React.FC = () => {
             <button
               type="button"
               className={filterCategory === 'chat' ? styles.primaryBtn : styles.secondaryBtn}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.84rem' }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.84rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               onClick={() => setFilterCategory('chat')}
             >
-              💬 Chat ({allModels.filter((m) => m.categoryId === 'chat').length})
+              <HiOutlineChatBubbleLeftRight size={15} color="#10a37f" /> Chat ({allModels.filter((m) => m.categoryId === 'chat').length})
             </button>
             <button
               type="button"
               className={filterCategory === 'image' ? styles.primaryBtn : styles.secondaryBtn}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.84rem' }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.84rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               onClick={() => setFilterCategory('image')}
             >
-              🎨 Hình Ảnh ({allModels.filter((m) => m.categoryId === 'image').length})
+              <HiOutlinePhoto size={15} color="#38bdf8" /> Hình Ảnh ({allModels.filter((m) => m.categoryId === 'image').length})
             </button>
             <button
               type="button"
               className={filterCategory === 'video' ? styles.primaryBtn : styles.secondaryBtn}
-              style={{ padding: '0.45rem 1rem', fontSize: '0.84rem' }}
+              style={{ padding: '0.45rem 1rem', fontSize: '0.84rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               onClick={() => setFilterCategory('video')}
             >
-              🎬 Video ({allModels.filter((m) => m.categoryId === 'video').length})
+              <HiOutlineFilm size={15} color="#c084fc" /> Video ({allModels.filter((m) => m.categoryId === 'video').length})
             </button>
           </div>
 

@@ -3,7 +3,20 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import LangSwitcher from '../LangSwitcher/LangSwitcher';
-import { HiOutlineBars3, HiOutlineXMark, HiOutlineMagnifyingGlass, HiOutlineBell } from 'react-icons/hi2';
+import {
+  HiOutlineBars3,
+  HiOutlineXMark,
+  HiOutlineMagnifyingGlass,
+  HiOutlineBell,
+  HiOutlineHome,
+  HiOutlineCreditCard,
+  HiOutlineUser,
+  HiOutlineCog6Tooth,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlinePhoto,
+  HiOutlineFilm,
+} from 'react-icons/hi2';
+import { RiOpenaiFill, RiSparklingFill } from 'react-icons/ri';
 import UserProfileDropdown from '../UserProfileDropdown/UserProfileDropdown';
 import TopupModal from '../TopupModal/TopupModal';
 import QuickSearchModal from '../QuickSearchModal/QuickSearchModal';
@@ -128,7 +141,9 @@ const MainLayout = () => {
                 {/* Credit Badge + Nạp */}
                 <div className={styles.creditBadgeBox}>
                   <div className={styles.creditPill} onClick={() => setTopupOpen(true)} title="Số dư Credit">
-                    <span className={styles.diamondIcon}>💎</span>
+                    <span className={styles.diamondIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <RiSparklingFill color="#2dd4bf" size={14} />
+                    </span>
                     <span className={styles.creditValue}>{user?.credit_balance ?? 991}</span>
                   </div>
                   <button
@@ -190,27 +205,29 @@ const MainLayout = () => {
             <div className={styles.mobileDrawer}>
               <nav className={styles.mobileNavLinks}>
                 <Link to="/" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  🏠 {t('nav.home', 'Trang Chủ')}
+                  <HiOutlineHome size={18} /> {t('nav.home', 'Trang Chủ')}
                 </Link>
 
-                <div className={styles.mobileSectionHeader}>⚡ STUDIO SÁNG TẠO</div>
+                <div className={styles.mobileSectionHeader} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <RiOpenaiFill size={16} color="#10a37f" /> STUDIO SÁNG TẠO
+                </div>
                 <Link to="/studio?category=chat" className={styles.mobileSubItem} onClick={closeMobileMenu}>
-                  💬 Chat (GPT-4o, Claude 3.5, Gemini)
+                  <HiOutlineChatBubbleLeftRight size={16} color="#10a37f" /> Chat (GPT-4o, Claude 3.5, Gemini)
                 </Link>
                 <Link to="/studio?category=image" className={styles.mobileSubItem} onClick={closeMobileMenu}>
-                  🎨 Hình Ảnh (Midjourney, FLUX.1, DALL-E)
+                  <HiOutlinePhoto size={16} color="#38bdf8" /> Hình Ảnh (Midjourney, FLUX.1, DALL-E)
                 </Link>
                 <Link to="/studio?category=video" className={styles.mobileSubItem} onClick={closeMobileMenu}>
-                  🎬 Video (Runway Gen-3, Luma, Kling)
+                  <HiOutlineFilm size={16} color="#c084fc" /> Video (Runway Gen-3, Luma, Kling)
                 </Link>
 
                 <div style={{ height: '6px' }} />
 
                 <Link to="/subscription" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  💳 {t('nav.pricing', 'Bảng Giá')}
+                  <HiOutlineCreditCard size={18} /> {t('nav.pricing', 'Bảng Giá')}
                 </Link>
                 <Link to="/models" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  🤖 {t('nav.models', 'Model')}
+                  <RiOpenaiFill size={18} color="#10a37f" /> {t('nav.models', 'Model')}
                 </Link>
               </nav>
 
@@ -219,8 +236,8 @@ const MainLayout = () => {
               <div className={styles.mobileActions}>
                 {isAuthenticated ? (
                   <div className={styles.mobileUserArea}>
-                    <div className={styles.mobileUserGreeting}>
-                      👤 {user?.full_name || 'Hải源海'} • 💎 {user?.credit_balance ?? 991} cr
+                    <div className={styles.mobileUserGreeting} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <HiOutlineUser size={16} /> {user?.full_name || 'Hải源海'} • <RiSparklingFill size={13} color="#2dd4bf" /> {user?.credit_balance ?? 991} cr
                     </div>
                     <button
                       type="button"
@@ -229,19 +246,19 @@ const MainLayout = () => {
                         closeMobileMenu();
                         setTopupOpen(true);
                       }}
-                      style={{ background: '#2dd4bf', color: '#032b28', fontWeight: 700 }}
+                      style={{ background: '#2dd4bf', color: '#032b28', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
-                      💎 {t('menu.topup_now', 'Nạp Credit')}
+                      <RiSparklingFill size={15} /> {t('menu.topup_now', 'Nạp Credit')}
                     </button>
-                    <Link to="/profile" className={styles.mobileAdminBtn} onClick={closeMobileMenu}>
-                      👤 {t('client_menu.profile', 'Hồ sơ & Cài đặt')}
+                    <Link to="/profile" className={styles.mobileAdminBtn} onClick={closeMobileMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <HiOutlineUser size={16} /> {t('client_menu.profile', 'Hồ sơ & Cài đặt')}
                     </Link>
-                    <Link to="/subscription" className={styles.mobileAdminBtn} onClick={closeMobileMenu}>
-                      💳 {t('client_menu.subscription', 'Quản lý gói')}
+                    <Link to="/subscription" className={styles.mobileAdminBtn} onClick={closeMobileMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <HiOutlineCreditCard size={16} /> {t('client_menu.subscription', 'Quản lý gói')}
                     </Link>
                     {isSuperAdmin && (
-                      <Link to="/admin" className={styles.mobileAdminBtn} onClick={closeMobileMenu}>
-                        ⚙️ {t('menu.super_admin_panel', 'Bảng Quản Trị Super Admin')}
+                      <Link to="/admin" className={styles.mobileAdminBtn} onClick={closeMobileMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <HiOutlineCog6Tooth size={16} /> {t('menu.super_admin_panel', 'Bảng Quản Trị Super Admin')}
                       </Link>
                     )}
                     <button
