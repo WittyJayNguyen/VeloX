@@ -46,13 +46,22 @@ const navSections: NavSection[] = [
     header: 'TỔNG QUAN',
     items: [
       { path: '/admin', icon: HiOutlineChartBarSquare, key: 'dashboard', end: true },
+      { path: '/admin/logs', icon: HiOutlineExclamationTriangle, key: 'logs' },
     ],
   },
   {
-    header: 'VẬN HÀNH',
+    header: 'GATEWAY',
     items: [
+      { path: '/admin/services', icon: HiOutlineServerStack, key: 'services' },
+      { path: '/admin/keys', icon: HiOutlineKey, key: 'keys' },
       { path: '/admin/models', icon: HiOutlineCpuChip, key: 'models', badge: '100+' },
-      { path: '/admin/logs', icon: HiOutlineExclamationTriangle, key: 'logs' },
+      { path: '/admin/recaptcha', icon: HiOutlineShieldCheck, key: 'recaptcha', badge: 'Auto' },
+    ],
+  },
+  {
+    header: 'DỊCH VỤ',
+    items: [
+      { path: '/admin/packages', icon: HiOutlineCreditCard, key: 'packages' },
     ],
   },
   {
@@ -61,14 +70,6 @@ const navSections: NavSection[] = [
       { path: '/admin/billing', icon: HiOutlineCreditCard, key: 'billing' },
       { path: '/admin/banking', icon: HiOutlineBuildingLibrary, key: 'banking' },
       { path: '/admin/wallet', icon: HiOutlineWallet, key: 'wallet' },
-    ],
-  },
-  {
-    header: 'DỊCH VỤ',
-    items: [
-      { path: '/admin/services', icon: HiOutlineServerStack, key: 'services' },
-      { path: '/admin/keys', icon: HiOutlineKey, key: 'keys' },
-      { path: '/admin/packages', icon: HiOutlineWrenchScrewdriver, key: 'packages' },
     ],
   },
   {

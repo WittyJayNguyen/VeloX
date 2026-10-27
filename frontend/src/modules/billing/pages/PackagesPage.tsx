@@ -1,83 +1,535 @@
 import { useState } from 'react';
-import { HiOutlinePlus, HiOutlineTrash, HiOutlinePencilSquare, HiOutlineXMark, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import {
+  HiOutlinePlus,
+  HiOutlineTrash,
+  HiOutlinePencilSquare,
+  HiOutlineCreditCard,
+  HiOutlineSparkles,
+  HiOutlineBolt,
+  HiOutlineCpuChip,
+  HiOutlineBanknotes,
+  HiOutlineCheckBadge,
+  HiOutlineCube,
+} from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
-import styles from '@assets/scss/admin/common-admin.module.scss';
+import { Input } from '@modules/core/design-system/Input';
+import { Select } from '@modules/core/design-system/Select';
+import { Modal } from '@modules/core/design-system/Modal';
+import { Table, type TableColumn } from '@modules/core/design-system/Table';
+import { Card } from '@modules/core/design-system/Card';
+import { Badge } from '@modules/core/design-system/Badge';
+import { StatCard, SearchInput } from '@modules/core/design-system/Components';
 
-interface ServicePkg { id: string; name: string; models_included: string[]; credit_limit: number; price_vnd: number; is_active: boolean; }
+export interface CreditPackageItem {
+  id: string;
+  name: string;
+  category: 'STARTER' | 'PRO' | 'ENTERPRISE' | 'DEV';
+  tagBadge?: string;
+  credits: number;
+  bonusCredits: number;
+  priceVnd: number;
+  originalPriceVnd?: number;
+  modelsIncluded: string[];
+  durationDays: number; // 0 = Không giới hạn
+  rateLimitRpm: number;
+  salesCount: number;
+  isActive: boolean;
+}
 
-const initialPkgs: ServicePkg[] = [
-  { id: 'sp1', name: 'Starter Package', models_included: ['gpt-4o-mini', 'dall-e-3'], credit_limit: 50000, price_vnd: 50000, is_active: true },
-  { id: 'sp2', name: 'Pro Package', models_included: ['gpt-4o', 'claude-3.5', 'midjourney-v6'], credit_limit: 250000, price_vnd: 200000, is_active: true },
-  { id: 'sp3', name: 'Enterprise Suite', models_included: ['gpt-4o', 'claude-3.5', 'midjourney-v6', 'gen-3-alpha', 'deepseek-chat'], credit_limit: 3000000, price_vnd: 2000000, is_active: true },
+const initialPackages: CreditPackageItem[] = [
+  {
+    id: 'pkg_starter',
+    name: 'Starter AI Credit Pack',
+    category: 'STARTER',
+    tagBadge: 'Khởi đầu tốt',
+    credits: 50000,
+    bonusCredits: 5000,
+    priceVnd: 50000,
+    originalPriceVnd: 60000,
+    modelsIncluded: ['gpt-4o-mini', 'deepseek-chat', 'dall-e-3'],
+    durationDays: 30,
+    rateLimitRpm: 120,
+    salesCount: 1420,
+    isActive: true,
+  },
+  {
+    id: 'pkg_pro',
+    name: 'Pro Creator Credit Pack',
+    category: 'PRO',
+    tagBadge: 'Bán chạy nhất',
+    credits: 250000,
+    bonusCredits: 35000,
+    priceVnd: 200000,
+    originalPriceVnd: 250000,
+    modelsIncluded: ['gpt-4o', 'claude-3-5-sonnet', 'deepseek-reasoner', 'midjourney-v6'],
+    durationDays: 60,
+    rateLimitRpm: 300,
+    salesCount: 3890,
+    isActive: true,
+  },
+  {
+    id: 'pkg_enterprise',
+    name: 'Enterprise Scale Suite',
+    category: 'ENTERPRISE',
+    tagBadge: 'Tiết kiệm 25%',
+    credits: 3000000,
+    bonusCredits: 600000,
+    priceVnd: 2000000,
+    originalPriceVnd: 2600000,
+    modelsIncluded: ['gpt-4o', 'o1-preview', 'claude-3-5-sonnet', 'gen-3-alpha', 'midjourney-v6'],
+    durationDays: 365,
+    rateLimitRpm: 1200,
+    salesCount: 420,
+    isActive: true,
+  },
+  {
+    id: 'pkg_dev',
+    name: 'Developer High-Concurrency API',
+    category: 'DEV',
+    tagBadge: 'Dev API',
+    credits: 1000000,
+    bonusCredits: 150000,
+    priceVnd: 850000,
+    originalPriceVnd: 1000000,
+    modelsIncluded: ['gpt-4o', 'gpt-4o-mini', 'deepseek-chat', 'text-embedding-3-large'],
+    durationDays: 0,
+    rateLimitRpm: 2500,
+    salesCount: 810,
+    isActive: true,
+  },
+];
+
+const CATEGORY_OPTIONS = [
+  { value: 'ALL', label: 'Tất cả phân loại' },
+  { value: 'STARTER', label: 'Gói Cơ Bản (Starter)' },
+  { value: 'PRO', label: 'Gói Chuyên Nghiệp (Pro)' },
+  { value: 'ENTERPRISE', label: 'Gói Doanh Nghiệp (Enterprise)' },
+  { value: 'DEV', label: 'Gói API Developer' },
 ];
 
 const PackagesPage = () => {
-  const [pkgs, setPkgs] = useState<ServicePkg[]>(() => { const s = localStorage.getItem('velox_svc_pkgs'); return s ? JSON.parse(s) : initialPkgs; });
+  const [packages, setPackages] = useState<CreditPackageItem[]>(() => {
+    const s = localStorage.getItem('velox_credit_packages');
+    return s ? JSON.parse(s) : initialPackages;
+  });
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('ALL');
+  const [page, setPage] = useState(1);
+
+  // Modal State
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState<ServicePkg | null>(null);
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState(100000);
-  const [limit, setLimit] = useState(100000);
-  const [models, setModels] = useState('');
+  const [editingPkg, setEditingPkg] = useState<CreditPackageItem | null>(null);
 
-  const save = (d: ServicePkg[]) => { setPkgs(d); localStorage.setItem('velox_svc_pkgs', JSON.stringify(d)); };
+  // Form Fields
+  const [formName, setFormName] = useState('');
+  const [formCategory, setFormCategory] = useState<CreditPackageItem['category']>('PRO');
+  const [formTagBadge, setFormTagBadge] = useState('');
+  const [formCredits, setFormCredits] = useState(250000);
+  const [formBonusCredits, setFormBonusCredits] = useState(35000);
+  const [formPriceVnd, setFormPriceVnd] = useState(200000);
+  const [formOriginalPriceVnd, setFormOriginalPriceVnd] = useState(250000);
+  const [formModels, setFormModels] = useState('gpt-4o, claude-3-5-sonnet, midjourney-v6');
+  const [formDurationDays, setFormDurationDays] = useState(60);
+  const [formRateLimitRpm, setFormRateLimitRpm] = useState(300);
 
-  const openAdd = () => { setEditing(null); setName(''); setPrice(100000); setLimit(100000); setModels(''); setShowModal(true); };
-  const openEdit = (p: ServicePkg) => { setEditing(p); setName(p.name); setPrice(p.price_vnd); setLimit(p.credit_limit); setModels(p.models_included.join(', ')); setShowModal(true); };
+  const savePackages = (items: CreditPackageItem[]) => {
+    setPackages(items);
+    localStorage.setItem('velox_credit_packages', JSON.stringify(items));
+  };
+
+  const handleOpenAdd = () => {
+    setEditingPkg(null);
+    setFormName('');
+    setFormCategory('PRO');
+    setFormTagBadge('Bán chạy nhất');
+    setFormCredits(250000);
+    setFormBonusCredits(35000);
+    setFormPriceVnd(200000);
+    setFormOriginalPriceVnd(250000);
+    setFormModels('gpt-4o, claude-3-5-sonnet, midjourney-v6');
+    setFormDurationDays(60);
+    setFormRateLimitRpm(300);
+    setShowModal(true);
+  };
+
+  const handleOpenEdit = (p: CreditPackageItem) => {
+    setEditingPkg(p);
+    setFormName(p.name);
+    setFormCategory(p.category);
+    setFormTagBadge(p.tagBadge || '');
+    setFormCredits(p.credits);
+    setFormBonusCredits(p.bonusCredits);
+    setFormPriceVnd(p.priceVnd);
+    setFormOriginalPriceVnd(p.originalPriceVnd || p.priceVnd);
+    setFormModels(p.modelsIncluded.join(', '));
+    setFormDurationDays(p.durationDays);
+    setFormRateLimitRpm(p.rateLimitRpm);
+    setShowModal(true);
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const mList = models.split(',').map((m) => m.trim()).filter(Boolean);
-    if (editing) {
-      save(pkgs.map((p) => p.id === editing.id ? { ...p, name, price_vnd: price, credit_limit: limit, models_included: mList } : p));
+    if (!formName.trim()) return;
+
+    const modelsList = formModels
+      .split(',')
+      .map((m) => m.trim())
+      .filter(Boolean);
+
+    if (editingPkg) {
+      savePackages(
+        packages.map((p) =>
+          p.id === editingPkg.id
+            ? {
+                ...p,
+                name: formName,
+                category: formCategory,
+                tagBadge: formTagBadge || undefined,
+                credits: Number(formCredits),
+                bonusCredits: Number(formBonusCredits),
+                priceVnd: Number(formPriceVnd),
+                originalPriceVnd: Number(formOriginalPriceVnd),
+                modelsIncluded: modelsList,
+                durationDays: Number(formDurationDays),
+                rateLimitRpm: Number(formRateLimitRpm),
+              }
+            : p
+        )
+      );
     } else {
-      save([...pkgs, { id: `sp_${Date.now()}`, name, models_included: mList, credit_limit: limit, price_vnd: price, is_active: true }]);
+      const newPkg: CreditPackageItem = {
+        id: `pkg_${Date.now()}`,
+        name: formName,
+        category: formCategory,
+        tagBadge: formTagBadge || undefined,
+        credits: Number(formCredits),
+        bonusCredits: Number(formBonusCredits),
+        priceVnd: Number(formPriceVnd),
+        originalPriceVnd: Number(formOriginalPriceVnd),
+        modelsIncluded: modelsList,
+        durationDays: Number(formDurationDays),
+        rateLimitRpm: Number(formRateLimitRpm),
+        salesCount: 0,
+        isActive: true,
+      };
+      savePackages([...packages, newPkg]);
     }
     setShowModal(false);
   };
 
-  const handleDelete = (id: string) => { if (confirm('Xoá gói này?')) save(pkgs.filter((p) => p.id !== id)); };
-  const handleToggle = (id: string) => save(pkgs.map((p) => p.id === id ? { ...p, is_active: !p.is_active } : p));
+  const handleDelete = (id: string) => {
+    if (confirm('Bạn có chắc muốn xoá gói credit này?')) {
+      savePackages(packages.filter((p) => p.id !== id));
+    }
+  };
+
+  const handleToggle = (id: string) => {
+    savePackages(packages.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)));
+  };
+
+  // Stats
+  const totalSalesRevenue = packages.reduce((acc, p) => acc + p.salesCount * p.priceVnd, 0);
+  const totalSalesCount = packages.reduce((acc, p) => acc + p.salesCount, 0);
+  const activePackagesCount = packages.filter((p) => p.isActive).length;
+
+  const filtered = packages.filter((p) => {
+    const matchSearch =
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.modelsIncluded.some((m) => m.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchCat = filterCategory === 'ALL' || p.category === filterCategory;
+    return matchSearch && matchCat;
+  });
+
+  const columns: TableColumn<CreditPackageItem>[] = [
+    {
+      key: 'name',
+      header: 'Tên Gói Credit & Nhãn',
+      render: (p) => (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <strong style={{ color: '#fafafa' }}>{p.name}</strong>
+            {p.tagBadge && (
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: 9999,
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  color: '#fbbf24',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                }}
+              >
+                {p.tagBadge}
+              </span>
+            )}
+            <Badge variant="primary" size="sm">
+              {p.category}
+            </Badge>
+          </div>
+          <div style={{ fontSize: '0.72rem', color: '#71717a', marginTop: 2 }}>
+            Hạn dùng: {p.durationDays === 0 ? 'Vĩnh viễn (Không hết hạn)' : `${p.durationDays} ngày`} • Tốc độ: {p.rateLimitRpm} RPM
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'credits',
+      header: 'Điểm Credit Tín Dụng',
+      render: (p) => (
+        <div>
+          <span style={{ fontWeight: 700, color: '#fbbf24', fontSize: '0.88rem' }}>
+            {p.credits.toLocaleString()} pts
+          </span>
+          {p.bonusCredits > 0 && (
+            <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: 600 }}>
+              +{p.bonusCredits.toLocaleString()} bonus
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'priceVnd',
+      header: 'Giá Bán (VNĐ)',
+      render: (p) => (
+        <div>
+          <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.88rem' }}>
+            {p.priceVnd.toLocaleString()} ₫
+          </span>
+          {p.originalPriceVnd && p.originalPriceVnd > p.priceVnd && (
+            <div style={{ fontSize: '0.7rem', color: '#71717a', textDecoration: 'line-through' }}>
+              {p.originalPriceVnd.toLocaleString()} ₫
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'modelsIncluded',
+      header: 'Models Quyền Truy Cập',
+      render: (p) => (
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 220 }}>
+          {p.modelsIncluded.slice(0, 3).map((m) => (
+            <Badge key={m} variant="neutral" size="sm">
+              {m}
+            </Badge>
+          ))}
+          {p.modelsIncluded.length > 3 && (
+            <Badge variant="primary" size="sm">
+              +{p.modelsIncluded.length - 3}
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'salesCount',
+      header: 'Đã Bán',
+      align: 'right',
+      render: (p) => (
+        <div style={{ textAlign: 'right' }}>
+          <strong style={{ color: '#38bdf8' }}>{p.salesCount.toLocaleString()}</strong>
+          <div style={{ fontSize: '0.68rem', color: '#71717a' }}>lượt mua</div>
+        </div>
+      ),
+    },
+    {
+      key: 'isActive',
+      header: 'Trạng Thái',
+      align: 'center',
+      render: (p) => (
+        <Badge variant={p.isActive ? 'success' : 'neutral'} size="sm" dot>
+          <button
+            type="button"
+            onClick={() => handleToggle(p.id)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.72rem',
+            }}
+          >
+            {p.isActive ? 'Đang Bán' : 'Tạm Dừng'}
+          </button>
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Thao Tác',
+      align: 'center',
+      render: (p) => (
+        <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(p)}>
+            <HiOutlinePencilSquare size={16} />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}>
+            <HiOutlineTrash size={16} style={{ color: '#f43f5e' }} />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className={styles.moduleContainer}>
-      <div className={styles.toolbarCard}>
-        <div className={styles.searchFilterGroup}><div className={styles.searchInput}><HiOutlineMagnifyingGlass size={16} /><input type="text" placeholder="Tìm gói dịch vụ..." /></div></div>
-        <div className={styles.actionButtonGroup}><Button variant="primary" size="md" onClick={openAdd}><HiOutlinePlus size={16} /> Thêm Gói</Button></div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* Top StatCards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+        <StatCard title="Tổng Gói Đang Bán" value={`${activePackagesCount} / ${packages.length}`} icon={<HiOutlineCube size={22} />} change="Hoạt động ổn định" changeType="up" />
+        <StatCard title="Tổng Doanh Thu Gói" value={`${(totalSalesRevenue / 1000000).toFixed(1)}M ₫`} icon={<HiOutlineBanknotes size={22} />} change="Tự động nạp qua QR/Bank" changeType="up" />
+        <StatCard title="Lượt Bán Thành Công" value={totalSalesCount.toLocaleString()} icon={<HiOutlineCheckBadge size={22} />} change="Tăng trưởng 18%" changeType="up" />
+        <StatCard title="Tín Dụng Khả Dụng" value="Đa tầng Model" icon={<HiOutlineBolt size={22} />} change="Hạn ngạch động" changeType="neutral" />
       </div>
 
-      <div className={styles.tableContainer}>
-        <div className={styles.tableHeaderBar}><h3>Cấu Hình Dịch Vụ & Gói</h3><span className={styles.countBadge}>{pkgs.length} Gói</span></div>
-        <table className={styles.velzonTable}>
-          <thead><tr><th>Tên Gói</th><th>Models</th><th>Credit Limit</th><th>Giá (VNĐ)</th><th>Status</th><th>Thao Tác</th></tr></thead>
-          <tbody>
-            {pkgs.map((p) => (
-              <tr key={p.id}>
-                <td style={{ fontWeight: 600, color: '#fafafa' }}>{p.name}</td>
-                <td><div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>{p.models_included.map((m, i) => (<span key={i} style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', fontSize: '0.65rem', padding: '0.1rem 0.35rem', borderRadius: 5 }}>{m}</span>))}</div></td>
-                <td style={{ color: '#a1a1aa' }}>{p.credit_limit.toLocaleString()}</td>
-                <td style={{ fontWeight: 600, color: '#10b981' }}>{p.price_vnd.toLocaleString()} ₫</td>
-                <td><button type="button" onClick={() => handleToggle(p.id)} style={{ padding: '0.2rem 0.5rem', borderRadius: 9999, fontSize: '0.65rem', fontWeight: 600, border: 'none', cursor: 'pointer', backgroundColor: p.is_active ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)', color: p.is_active ? '#10b981' : '#f43f5e' }}>{p.is_active ? '● Active' : '○ Off'}</button></td>
-                <td><div className={styles.actionCell}>
-                  <button type="button" className={`${styles.iconActionBtn} ${styles.actionEdit}`} onClick={() => openEdit(p)}><HiOutlinePencilSquare size={16} /></button>
-                  <button type="button" className={`${styles.iconActionBtn} ${styles.actionDelete}`} onClick={() => handleDelete(p.id)}><HiOutlineTrash size={16} /></button>
-                </div></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Toolbar */}
+      <Card padding="sm">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '280px' }}>
+            <SearchInput
+              placeholder="Tìm tên gói credit, models áp dụng..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClear={() => setSearchTerm('')}
+            />
+            <Select options={CATEGORY_OPTIONS} value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} />
+          </div>
+          <Button variant="primary" size="md" onClick={handleOpenAdd}>
+            <HiOutlinePlus size={16} /> Thêm Gói Credit
+          </Button>
+        </div>
+      </Card>
 
-      {showModal && (<div className={styles.modalOverlay}><div className={styles.modalCard}>
-        <div className={styles.modalHeader}><h2>{editing ? 'Sửa Gói' : 'Thêm Gói Dịch Vụ'}</h2><button type="button" className={styles.closeBtn} onClick={() => setShowModal(false)}><HiOutlineXMark /></button></div>
-        <form onSubmit={handleSave}><div className={styles.modalBody}>
-          <div className={styles.formField}><label>Tên Gói</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-          <div className={styles.formField}><label>Giá (VNĐ)</label><input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} /></div>
-          <div className={styles.formField}><label>Credit Limit</label><input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} /></div>
-          <div className={styles.formField}><label>Models (phân cách bởi dấu phẩy)</label><input type="text" value={models} onChange={(e) => setModels(e.target.value)} placeholder="gpt-4o, claude-3.5" /></div>
-        </div><div className={styles.modalFooter}><Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button><Button variant="primary" type="submit">Lưu</Button></div></form>
-      </div></div>)}
+      {/* Main Table */}
+      <Card
+        title="Quản Lý Danh Sách Gói Tín Dụng & Dịch Vụ Credit"
+        subtitle={`Đang cấu hình ${filtered.length} gói dịch vụ nạp tiền cho người dùng và doanh nghiệp`}
+        headerRight={<HiOutlineCreditCard size={20} style={{ color: '#6366f1' }} />}
+        padding="none"
+      >
+        <Table columns={columns} data={filtered} rowKey={(p) => p.id} page={page} pageSize={10} onPageChange={setPage} />
+      </Card>
+
+      {/* Modal Thêm / Sửa Gói Credit */}
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingPkg ? 'Cập Nhật Gói Credit' : 'Thêm Gói Tín Dụng Credit Mới'}
+        size="lg"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Hủy
+            </Button>
+            <Button variant="primary" onClick={handleSave}>
+              Lưu Gói Credit
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <Input
+              label="Tên Gói Credit"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="VD: Pro Creator Credit Pack"
+              required
+              fullWidth
+            />
+            <Select
+              label="Phân Loại Gói"
+              options={[
+                { value: 'STARTER', label: 'Gói Cơ Bản (Starter)' },
+                { value: 'PRO', label: 'Gói Chuyên Nghiệp (Pro)' },
+                { value: 'ENTERPRISE', label: 'Gói Doanh Nghiệp (Enterprise)' },
+                { value: 'DEV', label: 'Gói API Developer' },
+              ]}
+              value={formCategory}
+              onChange={(e) => setFormCategory(e.target.value as CreditPackageItem['category'])}
+              fullWidth
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <Input
+              label="Nhãn / Badge Nổi Bật (Tùy chọn)"
+              value={formTagBadge}
+              onChange={(e) => setFormTagBadge(e.target.value)}
+              placeholder="VD: Bán chạy nhất, Tiết kiệm 20%"
+              fullWidth
+            />
+            <Input
+              label="Thời Hạn Sử Dụng (Ngày - Nhập 0 = Vĩnh viễn)"
+              type="number"
+              value={formDurationDays}
+              onChange={(e) => setFormDurationDays(Number(e.target.value))}
+              fullWidth
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <Input
+              label="Số Credit Cơ Bản Cấp"
+              type="number"
+              value={formCredits}
+              onChange={(e) => setFormCredits(Number(e.target.value))}
+              hint="VD: 250,000 Credits"
+              required
+              fullWidth
+            />
+            <Input
+              label="Credit Thưởng Tặng Kèm (Bonus)"
+              type="number"
+              value={formBonusCredits}
+              onChange={(e) => setFormBonusCredits(Number(e.target.value))}
+              hint="VD: 35,000 Bonus Credits"
+              fullWidth
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <Input
+              label="Giá Bán Khuyến Mãi (VNĐ)"
+              type="number"
+              value={formPriceVnd}
+              onChange={(e) => setFormPriceVnd(Number(e.target.value))}
+              required
+              fullWidth
+            />
+            <Input
+              label="Giá Gốc Niêm Yết (VNĐ)"
+              type="number"
+              value={formOriginalPriceVnd}
+              onChange={(e) => setFormOriginalPriceVnd(Number(e.target.value))}
+              fullWidth
+            />
+          </div>
+
+          <Input
+            label="Danh Sách Models Được Sử Dụng (Phân cách bởi dấu phẩy)"
+            value={formModels}
+            onChange={(e) => setFormModels(e.target.value)}
+            placeholder="gpt-4o, claude-3-5-sonnet, midjourney-v6, deepseek-chat"
+            hint="Nhập danh sách mã model AI được phép tiêu thụ bằng credit của gói này"
+            fullWidth
+          />
+
+          <Input
+            label="Giới Hạn Tốc Độ Gọi (RPM - Requests/phút)"
+            type="number"
+            value={formRateLimitRpm}
+            onChange={(e) => setFormRateLimitRpm(Number(e.target.value))}
+            hint="Mặc định: 300 RPM"
+            fullWidth
+          />
+        </form>
+      </Modal>
     </div>
   );
 };
+
 export default PackagesPage;

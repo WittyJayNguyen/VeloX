@@ -24,9 +24,10 @@ const BankingPage = lazy(() => import('@modules/billing/pages/BankingPage'));
 const WalletPage = lazy(() => import('@modules/billing/pages/WalletPage'));
 const PackagesPage = lazy(() => import('@modules/billing/pages/PackagesPage'));
 
-// Dịch Vụ
+// Gateway & Pools
 const ServicePoolPage = lazy(() => import('@modules/pools/pages/ServicePoolPage'));
 const ApiKeysPage = lazy(() => import('@modules/pools/pages/ApiKeysPage'));
+const RecaptchaPage = lazy(() => import('@modules/pools/pages/RecaptchaPage'));
 
 // Người Dùng
 const UsersPage = lazy(() => import('@modules/users/pages/UsersPage'));
@@ -59,10 +60,13 @@ const router = createBrowserRouter([
           { path: '/admin/banking', element: <BankingPage /> },
           { path: '/admin/wallet', element: <WalletPage /> },
 
-          // Dịch Vụ
+          // Gateway AI
           { path: '/admin/services', element: <ServicePoolPage /> },
           { path: '/admin/pools', element: <ServicePoolPage /> },
           { path: '/admin/keys', element: <ApiKeysPage /> },
+          { path: '/admin/recaptcha', element: <RecaptchaPage /> },
+
+          // Dịch Vụ
           { path: '/admin/packages', element: <PackagesPage /> },
 
           // Quản Lý Người Dùng
