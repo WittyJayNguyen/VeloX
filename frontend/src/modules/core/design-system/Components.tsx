@@ -73,19 +73,43 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description
 );
 
 // ── Stat Card ──
-interface StatCardProps { label: string; value: string | number; icon?: React.ReactNode; trend?: { value: string; positive: boolean }; color?: string; }
+export interface StatCardProps {
+  label?: string;
+  title?: string;
+  value: string | number;
+  icon?: React.ReactNode;
+  trend?: { value: string; positive: boolean };
+  change?: string;
+  changeType?: 'up' | 'down' | 'neutral' | string;
+  color?: string;
+}
 
-export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, color = '#6366f1' }) => (
-  <div className={styles.statCard}>
-    <div className={styles.statIcon} style={{ backgroundColor: `${color}15`, color }}>{icon || '📊'}</div>
-    <div className={styles.statInfo}>
-      <span className={styles.statLabel}>{label}</span>
-      <strong className={styles.statValue}>{value}</strong>
-      {trend && (
-        <span className={`${styles.statTrend} ${trend.positive ? styles.trendUp : styles.trendDown}`}>
-          {trend.positive ? '↑' : '↓'} {trend.value}
-        </span>
-      )}
+export const StatCard: React.FC<StatCardProps> = ({
+  label,
+  title,
+  value,
+  icon,
+  trend,
+  change,
+  changeType,
+  color = '#6366f1',
+}) => {
+  const displayLabel = title || label || '';
+  const isPositive = trend ? trend.positive : changeType === 'up';
+  const displayTrend = trend ? trend.value : change;
+
+  return (
+    <div className={styles.statCard}>
+      <div className={styles.statIcon} style={{ backgroundColor: `${color}15`, color }}>{icon}</div>
+      <div className={styles.statInfo}>
+        <span className={styles.statLabel}>{displayLabel}</span>
+        <strong className={styles.statValue}>{value}</strong>
+        {displayTrend && (
+          <span className={`${styles.statTrend} ${isPositive ? styles.trendUp : styles.trendDown}`}>
+            {isPositive ? '↑' : ''} {displayTrend}
+          </span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};

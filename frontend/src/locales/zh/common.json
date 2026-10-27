@@ -7,5 +7,60 @@
   "footer": { "rights": "© 2026 VeloX AI. 版权所有。", "terms": "条款", "privacy": "隐私" },
   "auth": { "login_title": "登录账户", "register_title": "创建账户", "email": "邮箱", "password": "密码", "full_name": "姓名", "confirm_password": "确认密码", "login_btn": "登录", "register_btn": "注册", "no_account": "还没有账户？", "has_account": "已有账户？", "or": "或" },
   "common": { "loading": "加载中...", "save": "保存", "cancel": "取消", "delete": "删除", "edit": "编辑", "search": "搜索...", "actions": "操作", "status": "状态", "active": "活跃", "inactive": "停用", "confirm_delete": "确定要删除吗？", "no_data": "暂无数据" },
-  "admin": { "sidebar": { "dashboard": "系统概览", "models": "AI模型性能", "logs": "SLA事故日志", "billing": "充值记录", "banking": "银行与QR", "wallet": "钱包与现金流", "services": "池管理", "keys": "API密钥", "packages": "服务与套餐配置", "users": "用户管理", "roles": "角色与权限", "notifications": "通知管理", "settings": "设置" }, "dashboard": { "title": "系统概览", "total_users": "总用户数", "total_revenue": "今日收入", "total_credits_used": "已消耗积分", "pool_health": "池健康度", "revenue_chart": "收入图表", "consumption": "消耗明细" } }
+  "admin": {
+    "search_placeholder": "搜索全局内容...",
+    "workspace_label": "工作区",
+    "role_super_admin": "超级管理员",
+    "enterprise": {
+      "title": "升级至企业版",
+      "desc": "解锁高级报告与智能自动化调度",
+      "learn_more": "了解更多"
+    },
+    "nav_group": {
+      "overview": "系统概览",
+      "creative": "创意与工作室",
+      "gateway": "网关与开发者",
+      "accounting": "财务与资产审计",
+      "billing": "钱包与支付",
+      "users": "用户与安全",
+      "settings": "系统设置"
+    },
+    "sidebar": {
+      "dashboard": "系统概览",
+      "playground": "AI 测试场",
+      "library": "我的作品库",
+      "developer_keys": "开发者 API 密钥",
+      "developer-keys": "开发者 API 密钥",
+      "models": "AI 模型库",
+      "recaptcha": "验证码服务",
+      "logs": "SLA 事故日志",
+      "billing": "充值记录",
+      "accounting": "财务与资产审计",
+      "accounting_pnl": "损益报表 (P&L)",
+      "accounting_assets": "账号资产审计",
+      "accounting_procurement": "采购与应付账款",
+      "accounting_cashflow": "现金流与负债",
+      "pnl": "损益报表 (P&L)",
+      "assets": "账号资产审计",
+      "procurement": "采购与应付账款",
+      "cashflow": "现金流与负债",
+      "banking": "银行与 QR",
+      "wallet": "钱包与现金流",
+      "services": "服务池管理",
+      "pools": "服务池管理",
+      "keys": "API 密钥",
+      "packages": "套餐配置",
+      "users": "用户管理",
+      "roles": "角色与权限",
+      "user-audits": "IAM 审计日志",
+      "user_audits": "IAM 审计日志",
+      "credit-audits": "积分变动明细",
+      "credit_audits": "积分变动明细",
+      "ip_abuse": "IP 防刷盾",
+      "ip-abuse": "IP 防刷盾",
+      "notifications": "通知中心",
+      "settings": "系统设置"
+    },
+    "dashboard": { "title": "系统概览", "total_users": "总用户数", "total_revenue": "今日收入", "total_credits_used": "已消耗积分", "pool_health": "池健康度", "revenue_chart": "收入图表", "consumption": "消耗明细" }
+  }
 }

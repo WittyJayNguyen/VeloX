@@ -1,9 +1,9 @@
 import { useAuthStore } from '../states/authStore';
 import { authService } from '../services/authService';
-import type { LoginPayload, RegisterPayload } from '../types/auth.types';
+import type { LoginPayload, RegisterPayload, ChangePasswordPayload } from '../types/auth.types';
 
 export const useAuth = () => {
-  const { user, token, isAuthenticated, isAdmin, login, loginAsAdmin, logout } = useAuthStore();
+  const { user, token, isAuthenticated, isAdmin, login, logout, updateUser } = useAuthStore();
 
   const handleLogin = async (payload: LoginPayload) => {
     const res = await authService.login(payload);
@@ -17,15 +17,27 @@ export const useAuth = () => {
     return res;
   };
 
+  const handleChangePassword = async (payload: ChangePasswordPayload) => {
+    const res = await authService.changePassword(payload);
+    login(res.user, res.access_token);
+    return res;
+  };
+
+  const handleLogout = async () => {
+    await authService.logout();
+    logout();
+  };
+
   return {
     user,
     token,
     isAuthenticated,
     isAdmin,
     login: handleLogin,
-    loginAsAdmin,
     register: handleRegister,
-    logout,
+    changePassword: handleChangePassword,
+    logout: handleLogout,
+    updateUser,
   };
 };
 

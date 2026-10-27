@@ -10,7 +10,7 @@ export const useLogs = () => {
     setLoading(true);
     logService
       .getLogs()
-      .then((data) => {
+      .then((data: LogItem[]) => {
         if (mounted) setLogs(data);
       })
       .catch(() => {})

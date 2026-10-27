@@ -1,191 +1,575 @@
-import { useState } from 'react';
-import { HiOutlineUserPlus, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineBanknotes, HiOutlineShieldCheck } from 'react-icons/hi2';
-import Button from '@modules/core/design-system/Button';
-import { Input } from '@modules/core/design-system/Input';
-import { Select } from '@modules/core/design-system/Select';
-import { Modal } from '@modules/core/design-system/Modal';
-import { Table, type TableColumn } from '@modules/core/design-system/Table';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card } from '@modules/core/design-system/Card';
+import Button from '@modules/core/design-system/Button';
+import { Table, type TableColumn } from '@modules/core/design-system/Table';
 import { Badge } from '@modules/core/design-system/Badge';
-import { SearchInput, Avatar } from '@modules/core/design-system/Components';
+import { Select } from '@modules/core/design-system/Select';
+import { Input } from '@modules/core/design-system/Input';
+import {
+  HiOutlineUserPlus,
+  HiOutlineArrowPath,
+  HiOutlineCheckCircle,
+  HiOutlineExclamationTriangle,
+  HiOutlineCurrencyDollar,
+  HiOutlineLockClosed,
+  HiOutlineKey,
+  HiOutlinePencilSquare,
+  HiOutlineTrash,
+  HiOutlineDocumentMagnifyingGlass,
+} from 'react-icons/hi2';
 
-export interface UserManagementItem {
-  id: string;
-  fullName: string;
-  email: string;
-  role: 'ROLE_SUPER_ADMIN' | 'ROLE_ADMIN' | 'ROLE_OPERATOR' | 'ROLE_USER';
-  creditBalance: number;
-  isActive: boolean;
-  registeredDate: string;
-  vccTopupTotal: number;
-}
+import {
+  userManagementService,
+  type UserDto,
+  type RoleDto,
+} from '../services/userManagementService';
 
-const initialUsers: UserManagementItem[] = [
-  { id: 'u_1', fullName: 'Admin VeloX (Quản Trị)', email: 'admin@velox.ai', role: 'ROLE_SUPER_ADMIN', creditBalance: 9999999, isActive: true, registeredDate: '2026-01-10', vccTopupTotal: 0 },
-  { id: 'u_2', fullName: 'Hai Nguyen Studio', email: 'studio.vn@gmail.com', role: 'ROLE_USER', creditBalance: 450200, isActive: true, registeredDate: '2026-03-15', vccTopupTotal: 1500000 },
-  { id: 'u_3', fullName: 'Le Quoc Operator', email: 'operator@velox.ai', role: 'ROLE_OPERATOR', creditBalance: 50000, isActive: true, registeredDate: '2026-05-20', vccTopupTotal: 0 },
-  { id: 'u_4', fullName: 'Dev Agency Global', email: 'dev@agency.io', role: 'ROLE_USER', creditBalance: 1250000, isActive: true, registeredDate: '2026-08-01', vccTopupTotal: 4000000 },
-];
+import UsersStatsCards from '../components/UsersStatsCards';
+import UserFormModal from '../components/UserFormModal';
+import CreditAdjustModal from '../components/CreditAdjustModal';
+import UserLockModal from '../components/UserLockModal';
+import PasswordResetModal from '../components/PasswordResetModal';
+import UserDetailModal from '../components/UserDetailModal';
 
-const roleColors: Record<string, string> = { ROLE_SUPER_ADMIN: '#f43f5e', ROLE_ADMIN: '#6366f1', ROLE_OPERATOR: '#10b981', ROLE_USER: '#71717a' };
-const roleBadgeVariant = (r: string) => r === 'ROLE_SUPER_ADMIN' ? 'danger' : r === 'ROLE_ADMIN' ? 'primary' : r === 'ROLE_OPERATOR' ? 'success' : 'neutral' as const;
+export const UsersPage: React.FC = () => {
+  // Data State
+  const [users, setUsers] = useState<UserDto[]>([]);
+  const [roles, setRoles] = useState<RoleDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-const ROLE_OPTIONS = [
-  { value: 'ALL', label: 'Tất cả phân quyền' },
-  { value: 'ROLE_SUPER_ADMIN', label: 'Super Admin' },
-  { value: 'ROLE_ADMIN', label: 'Admin' },
-  { value: 'ROLE_OPERATOR', label: 'Operator' },
-  { value: 'ROLE_USER', label: 'User Thường' },
-];
-
-const FORM_ROLE_OPTIONS = [
-  { value: 'ROLE_USER', label: 'ROLE_USER (Người dùng thông thường)' },
-  { value: 'ROLE_OPERATOR', label: 'ROLE_OPERATOR (Vận hành)' },
-  { value: 'ROLE_ADMIN', label: 'ROLE_ADMIN (Quản trị viên)' },
-  { value: 'ROLE_SUPER_ADMIN', label: 'ROLE_SUPER_ADMIN (Toàn quyền)' },
-];
-
-const UsersPage = () => {
-  const [users, setUsers] = useState<UserManagementItem[]>(() => {
-    const saved = localStorage.getItem('velox_managed_users');
-    return saved ? JSON.parse(saved) : initialUsers;
-  });
+  // Pagination & Filter State
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('ALL');
-  const [page, setPage] = useState(1);
+  const [filterStatus, setFilterStatus] = useState('ALL');
 
-  // User Add/Edit Modal
-  const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserManagementItem | null>(null);
-  const [formName, setFormName] = useState('');
-  const [formEmail, setFormEmail] = useState('');
-  const [formRole, setFormRole] = useState<UserManagementItem['role']>('ROLE_USER');
-
-  // Credit Adjust Modal
-  const [showCreditModal, setShowCreditModal] = useState(false);
-  const [targetUser, setTargetUser] = useState<UserManagementItem | null>(null);
-  const [creditDelta, setCreditDelta] = useState(50000);
-
-  const saveUsers = (updated: UserManagementItem[]) => { setUsers(updated); localStorage.setItem('velox_managed_users', JSON.stringify(updated)); };
-
-  const handleOpenAdd = () => { setEditingUser(null); setFormName(''); setFormEmail(''); setFormRole('ROLE_USER'); setShowModal(true); };
-  const handleOpenEdit = (u: UserManagementItem) => { setEditingUser(u); setFormName(u.fullName); setFormEmail(u.email); setFormRole(u.role); setShowModal(true); };
-
-  const handleSaveUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName.trim() || !formEmail.trim()) return;
-    if (editingUser) {
-      saveUsers(users.map((u) => u.id === editingUser.id ? { ...u, fullName: formName, email: formEmail, role: formRole } : u));
-    } else {
-      saveUsers([...users, { id: `u_${Date.now()}`, fullName: formName, email: formEmail, role: formRole, creditBalance: 20000, isActive: true, registeredDate: new Date().toISOString().split('T')[0], vccTopupTotal: 0 }]);
-    }
-    setShowModal(false);
-  };
-
-  const handleDeleteUser = (id: string) => { if (confirm('Xoá người dùng này?')) saveUsers(users.filter((u) => u.id !== id)); };
-  const handleToggleActive = (id: string) => saveUsers(users.map((u) => u.id === id ? { ...u, isActive: !u.isActive } : u));
-  const handleOpenCreditModal = (u: UserManagementItem) => { setTargetUser(u); setCreditDelta(50000); setShowCreditModal(true); };
-
-  const handleApplyCredit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!targetUser) return;
-    saveUsers(users.map((u) => u.id === targetUser.id ? { ...u, creditBalance: Math.max(0, u.creditBalance + Number(creditDelta)) } : u));
-    setShowCreditModal(false);
-  };
-
-  const filteredUsers = users.filter((u) => {
-    const matchSearch = u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchSearch && (filterRole === 'ALL' || u.role === filterRole);
+  // Stats State
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    lockedUsers: 0,
+    totalCredits: 0,
   });
 
-  const columns: TableColumn<UserManagementItem>[] = [
+  // Modal Control States
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserDto | null>(null);
+
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [creditTargetUser, setCreditTargetUser] = useState<UserDto | null>(null);
+
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [lockTargetUser, setLockTargetUser] = useState<UserDto | null>(null);
+
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetTargetUser, setResetTargetUser] = useState<UserDto | null>(null);
+  const [revealedNewPassword, setRevealedNewPassword] = useState<string | null>(null);
+
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailTargetUser, setDetailTargetUser] = useState<UserDto | null>(null);
+
+  // Load Data from Backend
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [res, fetchedRoles] = await Promise.all([
+        userManagementService.getUsers({
+          page,
+          pageSize,
+          search: searchTerm,
+          role: filterRole,
+          status: filterStatus,
+        }),
+        userManagementService.getRoles(),
+      ]);
+
+      setUsers(res.items);
+      setTotalPages(res.pagination.totalPages);
+      setTotalCount(res.pagination.total);
+      setStats(res.stats);
+      setRoles(fetchedRoles);
+      setIsBackendConnected(true);
+    } catch (err: unknown) {
+      setIsBackendConnected(false);
+      const msg = err instanceof Error ? err.message : 'Không thể kết nối máy chủ';
+      setStatusMessage({ type: 'error', text: msg });
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, searchTerm, filterRole, filterStatus]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Clear toast status after 5s
+  useEffect(() => {
+    if (statusMessage) {
+      const timer = setTimeout(() => setStatusMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [statusMessage]);
+
+  // Modal Opener Handlers
+  const handleOpenAdd = () => {
+    setEditingUser(null);
+    setShowFormModal(true);
+  };
+
+  const handleOpenEdit = (u: UserDto) => {
+    setEditingUser(u);
+    setShowFormModal(true);
+  };
+
+  const handleOpenCreditModal = (u: UserDto) => {
+    setCreditTargetUser(u);
+    setShowCreditModal(true);
+  };
+
+  const handleOpenLockModal = (u: UserDto) => {
+    setLockTargetUser(u);
+    setShowLockModal(true);
+  };
+
+  const handleOpenResetPassword = (u: UserDto) => {
+    setResetTargetUser(u);
+    setRevealedNewPassword(null);
+    setShowResetModal(true);
+  };
+
+  const handleOpenDetailModal = (u: UserDto) => {
+    setDetailTargetUser(u);
+    setShowDetailModal(true);
+  };
+
+  const handleUserCreatedWithPassword = (u: UserDto, tempPass: string) => {
+    setResetTargetUser(u);
+    setRevealedNewPassword(tempPass);
+    setShowResetModal(true);
+  };
+
+  // Delete User
+  const handleDeleteUser = async (u: UserDto) => {
+    if (u.email === 'admin@velox.ai') {
+      alert('Bảo mật: Không thể xóa tài khoản Super Admin của hệ thống');
+      return;
+    }
+
+    if (confirm(`Bạn có chắc chắn muốn xóa tài khoản ${u.email}? Mọi dữ liệu liên quan sẽ bị thu hồi vĩnh viễn.`)) {
+      try {
+        await userManagementService.deleteUser(u.id);
+        setStatusMessage({ type: 'success', text: `Đã xóa tài khoản ${u.email} thành công` });
+        await loadData();
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : 'Không thể xóa người dùng';
+        setStatusMessage({ type: 'error', text: errorMsg });
+      }
+    }
+  };
+
+  // Filter Dropdown Options
+  const roleFilterOptions = useMemo(() => [
+    { value: 'ALL', label: 'Tất Cả Vai Trò' },
+    ...roles.map((r) => ({ value: r.code, label: `${r.name} (${r.code})` })),
+  ], [roles]);
+
+  const statusFilterOptions = useMemo(() => [
+    { value: 'ALL', label: 'Mọi Trạng Thái' },
+    { value: 'ACTIVE', label: 'Đang Hoạt Động' },
+    { value: 'LOCKED', label: 'Bị Tạm Khóa' },
+  ], []);
+
+  // Table Columns Definition
+  const columns: TableColumn<UserDto>[] = [
     {
-      key: 'fullName', header: 'Họ Tên & Email',
+      key: 'fullName',
+      header: 'Thành Viên',
       render: (u) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar name={u.fullName} color={roleColors[u.role]} size="md" />
-          <div>
-            <strong style={{ color: '#fafafa', display: 'block' }}>{u.fullName}</strong>
-            <span style={{ fontSize: '0.72rem', color: '#71717a' }}>{u.email}</span>
+        <div style={{ whiteSpace: 'nowrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <strong style={{ color: '#fafafa' }}>{u.fullName}</strong>
+            {u.email === 'admin@velox.ai' && (
+              <Badge variant="danger" size="sm">GỐC HỆ THỐNG</Badge>
+            )}
           </div>
+          <div style={{ fontSize: '0.74rem', color: '#71717a', marginTop: 2 }}>{u.email}</div>
         </div>
       ),
     },
     {
-      key: 'role', header: 'Phân Quyền',
-      render: (u) => <Badge variant={roleBadgeVariant(u.role)} size="sm" dot><HiOutlineShieldCheck size={12} /> {u.role}</Badge>,
+      key: 'role',
+      header: 'Vai Trò RBAC',
+      render: (u) => {
+        const variant =
+          u.role === 'ROLE_SUPER_ADMIN'
+            ? 'danger'
+            : u.role === 'ROLE_ADMIN'
+            ? 'primary'
+            : u.role === 'ROLE_OPERATOR'
+            ? 'success'
+            : 'neutral';
+        return <Badge variant={variant} size="sm">{u.role}</Badge>;
+      },
     },
     {
-      key: 'creditBalance', header: 'Số Dư Credit', align: 'right',
-      render: (u) => <strong style={{ color: '#10b981' }}>{u.creditBalance.toLocaleString()} cr</strong>,
-    },
-    {
-      key: 'vccTopupTotal', header: 'Tổng Nạp VCC', align: 'right',
-      render: (u) => <span style={{ fontWeight: 600, color: '#6366f1' }}>{u.vccTopupTotal.toLocaleString()} ₫</span>,
-    },
-    { key: 'registeredDate', header: 'Ngày Tham Gia', render: (u) => <span style={{ color: '#71717a', fontSize: '0.78rem' }}>{u.registeredDate}</span> },
-    {
-      key: 'isActive', header: 'Trạng Thái',
+      key: 'tier',
+      header: 'Hạng (Tier)',
       render: (u) => (
-        <Badge variant={u.isActive ? 'success' : 'danger'} size="sm" dot>
-          <button type="button" onClick={() => handleToggleActive(u.id)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 600, fontSize: '0.72rem' }}>
-            {u.isActive ? 'Hoạt Động' : 'Đã Khóa'}
-          </button>
+        <Badge
+          variant={u.tier === 'ENTERPRISE' ? 'purple' : u.tier === 'PRO' ? 'primary' : 'neutral'}
+          size="sm"
+        >
+          {u.tier || 'FREE'}
         </Badge>
       ),
     },
     {
-      key: 'actions', header: 'Thao Tác', align: 'center',
+      key: 'creditBalance',
+      header: 'Số Dư Tín Dụng',
       render: (u) => (
-        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-          <Button variant="ghost" size="sm" onClick={() => handleOpenCreditModal(u)} title="Nạp/Trừ Credit"><HiOutlineBanknotes size={16} /></Button>
-          <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(u)} title="Sửa"><HiOutlinePencilSquare size={16} /></Button>
-          <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(u.id)} title="Xoá"><HiOutlineTrash size={16} /></Button>
+        <strong style={{ color: '#10b981', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
+          {(u.creditBalance || 0).toLocaleString()} Credits
+        </strong>
+      ),
+    },
+    {
+      key: 'isActive',
+      header: 'Trạng Thái',
+      render: (u) => (
+        <Badge variant={u.isActive ? 'success' : 'danger'} size="sm" dot>
+          {u.isActive ? 'Hoạt Động' : 'Đang Khóa'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'registeredDate',
+      header: 'Ngày Đăng Ký',
+      render: (u) => <span style={{ color: '#a1a1aa', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{u.registeredDate}</span>,
+    },
+    {
+      key: 'actions',
+      header: 'Thao Tác Bảo Mật & Quản Trị',
+      render: (u) => (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'nowrap', alignItems: 'center', whiteSpace: 'nowrap' }}>
+          <button
+            type="button"
+            onClick={() => handleOpenDetailModal(u)}
+            style={{
+              padding: '5px 8px',
+              borderRadius: 6,
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.25)',
+              color: '#60a5fa',
+              cursor: 'pointer',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title="Xem hồ sơ và nhật ký bảo mật chi tiết"
+          >
+            <HiOutlineDocumentMagnifyingGlass size={14} />
+            Hồ Sơ
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenCreditModal(u)}
+            style={{
+              padding: '5px 8px',
+              borderRadius: 6,
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              color: '#34d399',
+              cursor: 'pointer',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title="Điều chỉnh số dư credit"
+          >
+            <HiOutlineCurrencyDollar size={14} />
+            Credit
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenLockModal(u)}
+            style={{
+              padding: '5px 8px',
+              borderRadius: 6,
+              background: u.isActive ? 'rgba(244, 63, 94, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+              border: `1px solid ${u.isActive ? 'rgba(244, 63, 94, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+              color: u.isActive ? '#f43f5e' : '#34d399',
+              cursor: 'pointer',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title={u.isActive ? 'Khóa tài khoản khẩn cấp' : 'Mở khóa tài khoản'}
+          >
+            <HiOutlineLockClosed size={14} />
+            {u.isActive ? 'Khóa' : 'Mở'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenResetPassword(u)}
+            style={{
+              padding: '5px 8px',
+              borderRadius: 6,
+              background: 'rgba(234, 179, 8, 0.1)',
+              border: '1px solid rgba(234, 179, 8, 0.25)',
+              color: '#eab308',
+              cursor: 'pointer',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title="Đặt lại mật khẩu bảo mật"
+          >
+            <HiOutlineKey size={14} />
+            Reset Pass
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenEdit(u)}
+            style={{
+              padding: '5px 8px',
+              borderRadius: 6,
+              background: 'rgba(99, 102, 241, 0.1)',
+              border: '1px solid rgba(99, 102, 241, 0.25)',
+              color: '#818cf8',
+              cursor: 'pointer',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title="Chỉnh sửa thông tin thành viên"
+          >
+            <HiOutlinePencilSquare size={14} />
+            Sửa
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleDeleteUser(u)}
+            style={{
+              padding: '5px 8px',
+              borderRadius: 6,
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#f87171',
+              cursor: 'pointer',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+            title="Xóa tài khoản khỏi hệ thống"
+          >
+            <HiOutlineTrash size={14} />
+          </button>
         </div>
       ),
     },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {/* Toolbar */}
-      <Card padding="sm">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-            <SearchInput placeholder="Tìm theo tên hoặc email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onClear={() => setSearchTerm('')} />
-            <Select options={ROLE_OPTIONS} value={filterRole} onChange={(e) => setFilterRole(e.target.value)} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Top Header & Server Status */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fafafa', margin: 0 }}>
+              Quản Trị Người Dùng & Phân Quyền
+            </h1>
+            <Badge variant={isBackendConnected ? 'success' : 'danger'} size="sm" dot>
+              {isBackendConnected ? 'Hệ Thống Thực (SQLite / DB Engine)' : 'Chưa Kết Nối Máy Chủ'}
+            </Badge>
           </div>
-          <Button variant="primary" size="md" onClick={handleOpenAdd}><HiOutlineUserPlus size={16} /> Thêm Người Dùng</Button>
+          <p style={{ color: '#71717a', fontSize: '0.84rem', margin: '4px 0 0 0' }}>
+            Quản lý tài khoản thành viên, hạn mức tín dụng, cơ chế khóa bảo mật và chống tấn công leo thang đặc quyền
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <Button variant="outline" size="sm" onClick={loadData} loading={loading}>
+            <HiOutlineArrowPath size={16} style={{ marginRight: 6 }} />
+            Làm Mới
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleOpenAdd}>
+            <HiOutlineUserPlus size={16} style={{ marginRight: 6 }} />
+            Tạo Người Dùng Mới
+          </Button>
+        </div>
+      </div>
+
+      {/* Global Status Message Toast */}
+      {statusMessage && (
+        <div style={{
+          padding: '12px 16px',
+          borderRadius: 8,
+          background: statusMessage.type === 'success' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+          border: `1px solid ${statusMessage.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+          color: statusMessage.type === 'success' ? '#34d399' : '#f87171',
+          fontSize: '0.86rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}>
+          {statusMessage.type === 'success' ? <HiOutlineCheckCircle size={20} /> : <HiOutlineExclamationTriangle size={20} />}
+          <span>{statusMessage.text}</span>
+        </div>
+      )}
+
+      {/* Real Statistics Cards */}
+      <UsersStatsCards stats={stats} />
+
+      {/* Filter and Search Bar */}
+      <Card>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ flex: '1 1 240px', minWidth: '200px' }}>
+            <Input
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Tìm theo họ tên, email hoặc User ID..."
+            />
+          </div>
+
+          <div style={{ flex: '1 1 180px', minWidth: '160px' }}>
+            <Select
+              options={roleFilterOptions}
+              value={filterRole}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                setFilterRole(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <div style={{ flex: '1 1 150px', minWidth: '140px' }}>
+            <Select
+              options={statusFilterOptions}
+              value={filterStatus}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                setFilterStatus(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
         </div>
       </Card>
 
-      {/* Table */}
-      <Card title="Quản Lý Thành Viên & Phân Quyền" subtitle={`${filteredUsers.length} người dùng`} padding="none">
-        <Table columns={columns} data={filteredUsers} rowKey={(u) => u.id} page={page} pageSize={10} onPageChange={setPage} />
+      {/* Real User Data Table */}
+      <Card>
+        <Table
+          rowKey={(u: UserDto) => u.id}
+          columns={columns}
+          data={users}
+          loading={loading}
+          emptyText="Không tìm thấy người dùng nào phù hợp với bộ lọc hiện tại"
+        />
+
+        {/* Server-Side Pagination Bar */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '1.25rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid #27272a',
+          fontSize: '0.82rem',
+          color: '#71717a',
+          flexWrap: 'wrap',
+          gap: 10,
+        }}>
+          <div>
+            Hiển thị <strong>{users.length}</strong> / <strong>{totalCount}</strong> thành viên (Trang {page} / {totalPages})
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Trang Trước
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Trang Kế
+            </Button>
+          </div>
+        </div>
       </Card>
 
-      {/* Modal: Add/Edit User */}
-      <Modal open={showModal} onClose={() => setShowModal(false)} title={editingUser ? 'Cập Nhật Người Dùng' : 'Thêm Người Dùng Mới'} size="md"
-        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button><Button variant="primary" onClick={handleSaveUser}>Lưu Thông Tin</Button></>}
-      >
-        <form onSubmit={handleSaveUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Input label="Họ và Tên" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="VD: Nguyễn Văn A" required fullWidth />
-          <Input label="Địa Chỉ Email" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@example.com" required fullWidth />
-          <Select label="Cấp Phân Quyền" options={FORM_ROLE_OPTIONS} value={formRole} onChange={(e) => setFormRole(e.target.value as UserManagementItem['role'])} fullWidth />
-        </form>
-      </Modal>
+      {/* Modal 1: Create / Edit User */}
+      <UserFormModal
+        open={showFormModal}
+        onClose={() => setShowFormModal(false)}
+        editingUser={editingUser}
+        roles={roles}
+        onSuccess={loadData}
+        setStatusMessage={setStatusMessage}
+        onUserCreatedWithPassword={handleUserCreatedWithPassword}
+      />
 
-      {/* Modal: Credit Adjust */}
-      <Modal open={showCreditModal && !!targetUser} onClose={() => setShowCreditModal(false)} title={`Điều Chỉnh Credit: ${targetUser?.fullName || ''}`} size="sm"
-        footer={<><Button variant="secondary" onClick={() => setShowCreditModal(false)}>Hủy</Button><Button variant="primary" onClick={handleApplyCredit}>Cập Nhật</Button></>}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ background: '#18181b', padding: '0.85rem', borderRadius: 8, fontSize: '0.85rem', color: '#a1a1aa' }}>
-            Số dư hiện tại: <strong style={{ color: '#10b981', fontSize: '1rem' }}>{targetUser?.creditBalance.toLocaleString()} Credits</strong>
-          </div>
-          <Input label="Số Credits Điều Chỉnh (+ hoặc -)" type="number" value={creditDelta} onChange={(e) => setCreditDelta(Number(e.target.value))} hint="Nhập dương để cộng, âm để trừ" fullWidth />
-        </div>
-      </Modal>
+      {/* Modal 2: Adjust Credit */}
+      <CreditAdjustModal
+        open={showCreditModal}
+        onClose={() => setShowCreditModal(false)}
+        targetUser={creditTargetUser}
+        onSuccess={loadData}
+        setStatusMessage={setStatusMessage}
+      />
+
+      {/* Modal 3: Lock / Unlock User Account */}
+      <UserLockModal
+        open={showLockModal}
+        onClose={() => setShowLockModal(false)}
+        targetUser={lockTargetUser}
+        onSuccess={loadData}
+        setStatusMessage={setStatusMessage}
+      />
+
+      {/* Modal 4: Reset Password */}
+      <PasswordResetModal
+        open={showResetModal}
+        onClose={() => {
+          setShowResetModal(false);
+          setRevealedNewPassword(null);
+        }}
+        targetUser={resetTargetUser}
+        initialRevealedPassword={revealedNewPassword}
+        onSuccess={loadData}
+        setStatusMessage={setStatusMessage}
+      />
+
+      {/* Modal 5: User Details & Security Audit Trail */}
+      <UserDetailModal
+        open={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        userId={detailTargetUser?.id || null}
+        userFullName={detailTargetUser?.fullName}
+      />
     </div>
   );
 };

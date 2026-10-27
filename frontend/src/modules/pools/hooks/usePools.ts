@@ -10,7 +10,7 @@ export const usePools = () => {
     setLoading(true);
     poolService
       .getPools()
-      .then((data) => {
+      .then((data: ServicePoolItem[]) => {
         if (mounted) setPools(data);
       })
       .catch(() => {})

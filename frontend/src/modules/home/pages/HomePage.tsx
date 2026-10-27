@@ -37,6 +37,33 @@ const howItWorks = [
 
 const providers = ['OpenAI', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'DeepSeek', 'Groq', 'Qwen', 'Stable Diffusion', 'Luma AI'];
 
+const pricingPlans = [
+  {
+    name: 'BASIC',
+    desc: 'Perfect for getting started',
+    price: '50,000',
+    unit: '₫/tháng',
+    features: ['Truy cập 10+ Models', 'Giám sát cơ bản', 'Cộng đồng hỗ trợ', 'Email support'],
+    popular: false,
+  },
+  {
+    name: 'PRO',
+    desc: 'Most popular choice',
+    price: '200,000',
+    unit: '₫/tháng',
+    features: ['Truy cập 100+ Models', 'AI Load Balancer', 'Phân tích nâng cao', 'Webhook & Realtime', 'Quản lý nhiều Pool', 'Ưu tiên hỗ trợ'],
+    popular: true,
+  },
+  {
+    name: 'ELITE',
+    desc: 'For serious businesses',
+    price: '500,000',
+    unit: '₫/tháng',
+    features: ['Mọi tính năng Pro', 'Dedicated Gateway', 'Custom model routing', 'API Rate limit mở rộng', 'White-label branding', 'Hỗ trợ 24/7'],
+    popular: false,
+  },
+];
+
 const HomePage = () => {
   const { t } = useTranslation();
 
@@ -117,6 +144,40 @@ const HomePage = () => {
         <div className={styles.providerLogos}>
           {providers.map((p) => (
             <div key={p} className={styles.providerChip}>{p}</div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Pricing ── */}
+      <section className={styles.pricingSection} id="pricing">
+        <p className={styles.sectionLabel}>PRICING</p>
+        <h2 className={styles.sectionTitle}>
+          CHOOSE YOUR <span className={styles.gradientOrange}>PLAN</span>
+        </h2>
+        <p className={styles.sectionDesc}>
+          Start with a 7-day free trial. Cancel anytime.
+        </p>
+        <div className={styles.pricingGrid}>
+          {pricingPlans.map((plan) => (
+            <div key={plan.name} className={`${styles.pricingCard} ${plan.popular ? styles.pricingPopular : ''}`}>
+              {plan.popular && <div className={styles.popularBadge}>MOST POPULAR</div>}
+              <h3 className={styles.planName}>{plan.name}</h3>
+              <p className={styles.planDesc}>{plan.desc}</p>
+              <div className={styles.planPrice}>
+                <span className={styles.priceValue}>{plan.price}</span>
+                <span className={styles.priceUnit}>{plan.unit}</span>
+              </div>
+              <ul className={styles.planFeatures}>
+                {plan.features.map((f) => (
+                  <li key={f}><span className={styles.checkIcon}>✓</span> {f}</li>
+                ))}
+              </ul>
+              <Link to="/register">
+                <button type="button" className={`${styles.planCta} ${plan.popular ? styles.planCtaPopular : ''}`}>
+                  BẮT ĐẦU DÙNG THỬ
+                </button>
+              </Link>
+            </div>
           ))}
         </div>
       </section>

@@ -1,59 +1,64 @@
 import apiClient from '@modules/core/lib/apiClient';
-import type { LoginPayload, RegisterPayload, TokenResponse, User } from '../types/auth.types';
+import type { LoginPayload, RegisterPayload, TokenResponse, User, ChangePasswordPayload } from '../types/auth.types';
 
 export const authService = {
   login: async (payload: LoginPayload): Promise<TokenResponse> => {
     try {
-      const res = await apiClient.post<TokenResponse>('/auth/login', payload);
-      return res.data;
-    } catch {
-      // Mock / Offline Fallback for seamless demo
-      const isAdmin = payload.email.toLowerCase().includes('admin');
-      const mockUser: User = {
-        id: `usr_${Date.now()}`,
-        email: payload.email,
-        full_name: isAdmin ? 'Admin VeloX' : payload.email.split('@')[0],
-        is_active: true,
-        roles: isAdmin ? ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'] : ['ROLE_USER'],
-        created_at: new Date().toISOString(),
-      };
-      return {
-        access_token: 'mock_jwt_token_' + Date.now(),
-        token_type: 'bearer',
-        user: mockUser,
-      };
+      const res = await apiClient.post('/auth/login', payload);
+      const data = res.data?.data || res.data;
+      if (!data?.access_token || !data?.user) {
+        throw new Error('Dữ liệu phản hồi từ máy chủ không hợp lệ');
+      }
+      return data as TokenResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string; message?: string } }; message?: string };
+      const serverMsg = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.message || axiosErr?.message;
+      throw new Error(serverMsg || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
     }
   },
 
   register: async (payload: RegisterPayload): Promise<TokenResponse> => {
     try {
-      const res = await apiClient.post<TokenResponse>('/auth/register', payload);
-      return res.data;
-    } catch {
-      const mockUser: User = {
-        id: `usr_${Date.now()}`,
-        email: payload.email,
-        full_name: payload.full_name,
-        is_active: true,
-        roles: ['ROLE_USER'],
-        created_at: new Date().toISOString(),
-      };
-      return {
-        access_token: 'mock_jwt_token_' + Date.now(),
-        token_type: 'bearer',
-        user: mockUser,
-      };
+      const res = await apiClient.post('/auth/register', payload);
+      const data = res.data?.data || res.data;
+      if (!data?.access_token || !data?.user) {
+        throw new Error('Dữ liệu phản hồi đăng ký không hợp lệ');
+      }
+      return data as TokenResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string; message?: string } }; message?: string };
+      const serverMsg = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.message || axiosErr?.message;
+      throw new Error(serverMsg || 'Đăng ký tài khoản thất bại. Vui lòng thử lại.');
     }
   },
 
   getProfile: async (): Promise<User> => {
     try {
-      const res = await apiClient.get<User>('/auth/me');
-      return res.data;
+      const res = await apiClient.get('/auth/me');
+      const data = res.data?.data || res.data;
+      return data as User;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tải thông tin hồ sơ.');
+    }
+  },
+
+  changePassword: async (payload: ChangePasswordPayload): Promise<TokenResponse> => {
+    try {
+      const res = await apiClient.post('/auth/change-password', payload);
+      const data = res.data?.data || res.data;
+      return data as TokenResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Đổi mật khẩu thất bại.');
+    }
+  },
+
+  logout: async (): Promise<void> => {
+    try {
+      await apiClient.post('/auth/logout');
     } catch {
-      const raw = localStorage.getItem('velox_user');
-      if (raw) return JSON.parse(raw);
-      throw new Error('Not authenticated');
+      // ignore
     }
   },
 };

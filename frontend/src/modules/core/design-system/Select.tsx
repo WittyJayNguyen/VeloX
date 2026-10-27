@@ -11,10 +11,11 @@ interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>
   options: SelectOption[];
   placeholder?: string;
   fullWidth?: boolean;
+  noMargin?: boolean;
 }
 
-export const Select: React.FC<SelectProps> = ({ label, error, hint, options, placeholder, fullWidth, className = '', ...rest }) => (
-  <div className={`${styles.formGroup} ${fullWidth ? styles.fullWidth : ''} ${className}`}>
+export const Select: React.FC<SelectProps> = ({ label, error, hint, options, placeholder, fullWidth, noMargin, className = '', ...rest }) => (
+  <div className={`${styles.formGroup} ${fullWidth ? styles.fullWidth : ''} ${noMargin ? styles.noMargin : ''} ${className}`}>
     {label && <label className={styles.label}>{label}</label>}
     <div className={`${styles.selectWrapper} ${error ? styles.hasError : ''}`}>
       <select className={styles.select} {...rest}>

@@ -30,7 +30,7 @@ const NotificationsPage = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       {/* Toolbar */}
       <Card padding="sm">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <HiOutlineBellAlert size={20} style={{ color: '#6366f1' }} />
             <Badge variant={unreadCount > 0 ? 'danger' : 'neutral'} size="md">{unreadCount} chưa đọc</Badge>
