@@ -18,8 +18,8 @@ import {
   HiOutlineChartBar,
   HiOutlineGift,
   HiOutlineCog6Tooth,
+  HiOutlineBolt,
 } from 'react-icons/hi2';
-import { RiSparklingFill } from 'react-icons/ri';
 import styles from './UserProfileDropdown.module.scss';
 
 interface UserProfileDropdownProps {
@@ -34,6 +34,16 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Compute User Initials for clean modern Avatar
+  const getUserInitials = (name?: string) => {
+    if (!name) return 'VX';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const userInitials = getUserInitials(user?.full_name);
 
   // Check attendance status today
   useEffect(() => {
@@ -66,7 +76,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
     const lastCheckin = localStorage.getItem(key);
 
     if (lastCheckin === todayStr) {
-      setToastMsg(t('menu.already_checked_in', 'Hôm nay bạn đã điểm danh rồi!'));
+      setToastMsg(t('menu.already_checked_in', 'Bạn đã nhận phần thưởng hôm nay rồi!'));
       setTimeout(() => setToastMsg(null), 2500);
       return;
     }
@@ -74,7 +84,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
     addCredits(50);
     localStorage.setItem(key, todayStr);
     setCheckedInToday(true);
-    setToastMsg(t('menu.checkin_success', 'Điểm danh thành công! +50 credit'));
+    setToastMsg(t('menu.checkin_success', 'Nhận thưởng thành công! +50 Credits'));
     setTimeout(() => setToastMsg(null), 2500);
   };
 
@@ -98,7 +108,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
 
   return (
     <div className={styles.dropdownContainer} ref={dropdownRef}>
-      {/* Avatar Trigger Button */}
+      {/* Avatar Trigger Button with VeloX Signature Initials */}
       <button
         type="button"
         className={styles.avatarTrigger}
@@ -109,8 +119,9 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
           {user?.avatar_url ? (
             <img src={user.avatar_url} alt={user.full_name} className={styles.avatarImg} />
           ) : (
-            <span className={styles.avatarFallback}>🦎</span>
+            <span className={styles.avatarInitials}>{userInitials}</span>
           )}
+          <span className={styles.statusDot} />
         </div>
       </button>
 
@@ -125,27 +136,31 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
               {user?.avatar_url ? (
                 <img src={user.avatar_url} alt={user.full_name} className={styles.avatarImg} />
               ) : (
-                <span className={styles.headerEmoji}>🦎</span>
+                <span className={styles.headerInitials}>{userInitials}</span>
               )}
             </div>
             <div className={styles.headerDetails}>
               <div className={styles.nameRow}>
-                <span className={styles.userName}>{user?.full_name || 'Hải源海'}</span>
-                <span className={styles.tierBadge}>⭐ {user?.tier || 'Free'}</span>
+                <span className={styles.userName}>{user?.full_name || 'Admin VeloX'}</span>
+                <span className={styles.tierBadge}>{user?.tier?.toUpperCase() || 'PRO'}</span>
               </div>
-              <span className={styles.userEmail}>{user?.email || 'haiyuanhai9@gmail.com'}</span>
+              <span className={styles.userEmail}>{user?.email || 'admin@velox.ai'}</span>
             </div>
             <HiOutlineChevronRight className={styles.chevronIcon} />
           </div>
 
-          {/* Credit & Topup Card */}
+          {/* VeloX Energy & Credit Balance Card */}
           <div className={styles.creditCard}>
             <div className={styles.creditLeft}>
-              <span className={styles.diamond} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <RiSparklingFill color="#2dd4bf" size={16} />
-              </span>
-              <span className={styles.creditAmount}>{user?.credit_balance ?? 991}</span>
-              <span className={styles.creditUnit}>credit</span>
+              <div className={styles.boltIconBox}>
+                <HiOutlineBolt size={18} color="#ff6b35" />
+              </div>
+              <div className={styles.balanceInfo}>
+                <div className={styles.creditAmount}>
+                  {(user?.credit_balance ?? 991).toLocaleString()}
+                </div>
+                <div className={styles.creditUnit}>Credits khả dụng</div>
+              </div>
             </div>
             <button
               type="button"
@@ -160,18 +175,23 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
             </button>
           </div>
 
-          {/* Attendance Action */}
+          {/* Daily VeloX Reward */}
           <div
             className={`${styles.attendanceRow} ${checkedInToday ? styles.attended : ''}`}
             onClick={handleAttendance}
           >
             <div className={styles.attendanceLeft}>
-              <span className={styles.calendarIcon}>📅</span>
-              <span className={styles.attendanceText}>
-                {checkedInToday
-                  ? t('menu.checkin_done', 'Đã điểm danh hôm nay')
-                  : t('menu.checkin_today', 'Điểm danh hôm nay')}
-              </span>
+              <div className={styles.rewardIconBox}>
+                <HiOutlineGift size={16} color="#fbbf24" />
+              </div>
+              <div className={styles.rewardTextBox}>
+                <span className={styles.attendanceText}>
+                  {checkedInToday
+                    ? t('menu.checkin_done', 'Đã nhận thưởng hôm nay')
+                    : t('menu.checkin_today', 'Nhận Thưởng Hằng Ngày')}
+                </span>
+                {!checkedInToday && <span className={styles.bonusTag}>+50 cr</span>}
+              </div>
             </div>
             <HiOutlineChevronRight className={styles.chevronIconSmall} />
           </div>
@@ -213,9 +233,9 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
             </div>
           </div>
 
-          {/* SECTION: KIẾM TIỀN */}
+          {/* SECTION: ĐỐI TÁC & KIẾM TIỀN */}
           <div className={styles.menuSection}>
-            <div className={styles.sectionTitle}>{t('menu.section_earning', 'KIẾM TIỀN')}</div>
+            <div className={styles.sectionTitle}>{t('menu.section_earning', 'ĐỐI TÁC & KIẾM TIỀN')}</div>
             <div className={styles.menuItem} onClick={() => handleNavigate('/workflows')}>
               <HiOutlineSparkles className={styles.itemIcon} />
               <span>{t('client_menu.workflows', 'Workflow của tôi')}</span>
@@ -230,9 +250,9 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
             </div>
           </div>
 
-          {/* SECTION: NÂNG CAO */}
+          {/* SECTION: DÀNH CHO DEVELOPER */}
           <div className={styles.menuSection}>
-            <div className={styles.sectionTitle}>{t('menu.section_advanced', 'NÂNG CAO')}</div>
+            <div className={styles.sectionTitle}>{t('menu.section_advanced', 'DÀNH CHO DEVELOPER')}</div>
             <div className={styles.menuItem} onClick={() => handleNavigate('/developer')}>
               <HiOutlineCommandLine className={styles.itemIcon} />
               <span>{t('client_menu.developer', 'API & MCP')}</span>
