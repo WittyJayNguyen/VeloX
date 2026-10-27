@@ -1,111 +1,401 @@
-@use '../variables' as *;
-@use '../mixins' as *;
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600;700&display=swap');
+
+// ── Design Tokens ──
+$primary: #ff6b35;          // Fiery energetic orange
+$primary-dark: #e55a2b;
+$secondary: #0080ff;
+$bg-dark: #0a0a0a;          // Deep dark background
+$bg-card: #141414;          // Sleek card
+$border: #262626;
+$text-light: #ffffff;
+$text-muted: #9ca3af;
+
+$font-heading: 'Barlow Condensed', sans-serif;
+$font-body: 'Barlow', sans-serif;
 
 .layout {
   min-height: 100vh;
-  @include flex-col;
-  background-color: $body-bg;
+  display: flex;
+  flex-direction: column;
+  background-color: $bg-dark;
+  color: $text-light;
+  font-family: $font-body;
+  position: relative;
 }
 
+// ════════════════════════════════════════
+// FIXED HEADER (80px HEIGHT, SLEEK DARK)
+// ════════════════════════════════════════
 .header {
-  @include flex-between;
-  padding: 0.85rem 2rem;
-  @include glass-surface;
-  border-bottom: 1px solid $border-color;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: $z-sticky;
-
-  @media (max-width: $bp-md) {
-    padding: 0.75rem 1rem;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-}
-
-.logo {
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid $border;
+  z-index: 1000;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+}
+
+.headerContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// ── Logo ──
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.logoBadge {
-  width: 34px;
-  height: 34px;
-  background: $gradient-primary;
-  border-radius: $radius-md;
-  @include flex-center;
-  font-weight: $fw-bold;
-  color: #fff;
-  font-size: $fs-lg;
-  box-shadow: 0 4px 10px $primary-glow;
-}
-
-.brand {
-  font-size: $fs-xl;
-  font-weight: $fw-bold;
-  color: $text-heading;
-  letter-spacing: -0.5px;
-  @include text-gradient($gradient-primary);
-}
-
-.nav {
+.logoSquare {
+  width: 40px;
+  height: 40px;
+  background-color: $primary;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba($primary, 0.35);
+  transition: transform 0.2s ease;
 
-  @media (max-width: $bp-md) {
-    gap: 0.5rem;
-    flex-wrap: wrap;
+  .brandLink:hover & {
+    transform: scale(1.05);
   }
 }
 
-.navLink {
-  color: $text-body;
-  font-size: $fs-sm;
-  font-weight: $fw-medium;
-  transition: all 0.2s ease;
-  &:hover { color: $primary; }
+.boltIcon {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
 }
 
-.userMenu, .authBtns {
+.brandTitle {
+  font-family: $font-heading;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: $text-light;
+  line-height: 1;
+}
+
+.brandAccent {
+  color: $primary;
+}
+
+// ── Desktop Navigation ──
+.navCenter {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 2rem;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.navItem {
+  font-family: $font-heading;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $text-muted;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+// ── Right Action Controls ──
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.langWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.adminIconBtn {
+  font-size: 1.15rem;
+  color: $text-muted;
+  text-decoration: none;
+  padding: 0.4rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: $text-light;
+    background: rgba(255, 255, 255, 0.06);
+    transform: rotate(20deg);
+  }
+}
+
+.authGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.loginBtn {
+  font-family: $font-heading;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $text-muted;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.25rem;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.startTrialBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $primary;
+  color: #ffffff;
+  font-family: $font-heading;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: $primary-dark;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba($primary, 0.4);
+    color: #ffffff;
+  }
+}
+
+.userBox {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
 }
 
 .userName {
-  font-size: $fs-sm;
-  color: $text-heading;
-  font-weight: $fw-semibold;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $primary;
 }
 
-.main {
-  flex: 1;
-}
+// ── Mobile Toggle & Drawer ──
+.mobileToggleBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.35rem;
 
-.footer {
-  @include flex-between;
-  padding: 1.5rem 2rem;
-  border-top: 1px solid $border-color;
-  background-color: $surface-1;
-  font-size: $fs-sm;
-  color: $text-muted;
-
-  @media (max-width: $bp-md) {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
+  @media (max-width: 900px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
-.footerLinks {
+.mobileDrawer {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.98);
+  border-bottom: 1px solid $border;
+  padding: 1.5rem;
   display: flex;
-  gap: 1.5rem;
-  a {
+  flex-direction: column;
+  gap: 1.15rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px);
+}
+
+.mobileNavItem {
+  font-family: $font-heading;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $text-muted;
+  text-decoration: none;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+.mobileAuthDivider {
+  height: 1px;
+  background: $border;
+  margin: 0.5rem 0;
+}
+
+.mobileAuthRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+// ════════════════════════════════════════
+// MAIN CONTENT (Offset for 80px fixed header)
+// ════════════════════════════════════════
+.main {
+  flex: 1;
+  padding-top: 80px; // matches header height so top hero aligns perfectly
+}
+
+// ════════════════════════════════════════
+// FOOTER (PULSEFIT SLEEK DARK)
+// ════════════════════════════════════════
+.footer {
+  background-color: $bg-dark;
+  border-top: 1px solid $border;
+  padding: 4rem 1.5rem 2.5rem;
+  margin-top: auto;
+}
+
+.footerContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.footerTopRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3.5rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.footerBrandCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerDesc {
+  font-size: 0.92rem;
+  color: $text-muted;
+  line-height: 1.65;
+  margin-top: 1rem;
+  max-width: 320px;
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerColTitle {
+  font-family: $font-heading;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $text-light;
+  margin: 0 0 1.25rem;
+}
+
+.footerList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  li a {
     color: $text-muted;
-    transition: all 0.2s ease;
-    &:hover { color: $primary; }
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $primary;
+    }
+  }
+}
+
+.footerBottomBar {
+  padding-top: 2rem;
+  border-top: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.copyrightText {
+  font-size: 0.85rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.legalLinks {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+
+  a {
+    font-size: 0.85rem;
+    color: $text-muted;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #ffffff;
+    }
   }
 }

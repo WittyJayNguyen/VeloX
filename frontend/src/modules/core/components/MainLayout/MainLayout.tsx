@@ -1,70 +1,231 @@
+import { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import LangSwitcher from '../LangSwitcher/LangSwitcher';
-import Button from '../../design-system/Button';
+import { HiOutlineBars3, HiOutlineXMark } from 'react-icons/hi2';
 import styles from '@assets/scss/core/main-layout.module.scss';
 
 const MainLayout = () => {
   const { t } = useTranslation();
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className={styles.layout}>
+      {/* ── FIXED TOP NAVIGATION (MATCHING PULSEFIT / FITNESS-GYM DEMO) ── */}
       <header className={styles.header}>
-        <Link to="/" className={styles.logo}>
-          <div className={styles.logoBadge}>V</div>
-          <span className={styles.brand}>{t('app_name')}</span>
-        </Link>
-
-        <nav className={styles.nav}>
-          <Link to="/" className={styles.navLink}>{t('nav.home')}</Link>
-          <a href="/#workouts" className={styles.navLink}>{t('fitness.nav_workouts')}</a>
-          <a href="/#trainers" className={styles.navLink}>{t('fitness.nav_trainers')}</a>
-          <a href="/#pricing" className={styles.navLink}>{t('fitness.nav_pricing')}</a>
-          <LangSwitcher />
-
-          <Link to="/admin">
-            <Button variant="primary" size="sm">
-              ⚙️ {t('nav.dashboard')}
-            </Button>
+        <div className={styles.headerContainer}>
+          {/* Logo */}
+          <Link to="/" className={styles.brandLink} onClick={closeMobileMenu}>
+            <div className={styles.logoSquare}>
+              <svg
+                className={styles.boltIcon}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <span className={styles.brandTitle}>
+              PULSE<span className={styles.brandAccent}>FIT</span>
+            </span>
           </Link>
 
-          {isAuthenticated ? (
-            <div className={styles.userMenu}>
-              <span className={styles.userName}>{user?.full_name}</span>
-              <Button variant="secondary" size="sm" onClick={handleLogout}>
-                {t('nav.logout')}
-              </Button>
+          {/* Desktop Center Navigation */}
+          <nav className={styles.navCenter}>
+            <a href="/#workouts" className={styles.navItem}>
+              {t('fitness.nav_workouts')}
+            </a>
+            <a href="/#trainers" className={styles.navItem}>
+              {t('fitness.nav_trainers')}
+            </a>
+            <a href="/#pricing" className={styles.navItem}>
+              {t('fitness.nav_pricing')}
+            </a>
+            <a href="/#features" className={styles.navItem}>
+              {t('fitness.nav_community')}
+            </a>
+          </nav>
+
+          {/* Desktop Right Actions */}
+          <div className={styles.navRight}>
+            <div className={styles.langWrapper}>
+              <LangSwitcher />
             </div>
-          ) : (
-            <div className={styles.authBtns}>
-              <Link to="/login">
-                <Button variant="ghost" size="sm">{t('nav.login')}</Button>
-              </Link>
-              <Link to="/register">
-                <Button size="sm">{t('nav.register')}</Button>
-              </Link>
-            </div>
-          )}
-        </nav>
+
+            <Link to="/admin" className={styles.adminIconBtn} title={t('nav.dashboard')}>
+              ⚙️
+            </Link>
+
+            {isAuthenticated ? (
+              <div className={styles.userBox}>
+                <span className={styles.userName}>{user?.full_name}</span>
+                <button type="button" className={styles.loginBtn} onClick={handleLogout}>
+                  {t('nav.logout')}
+                </button>
+              </div>
+            ) : (
+              <div className={styles.authGroup}>
+                <Link to="/login" className={styles.loginBtn}>
+                  {t('fitness.log_in')}
+                </Link>
+                <Link to="/register" className={styles.startTrialBtn}>
+                  {t('fitness.start_trial')}
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              type="button"
+              className={styles.mobileToggleBtn}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle Menu"
+            >
+              {mobileMenuOpen ? <HiOutlineXMark size={26} /> : <HiOutlineBars3 size={26} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Slide-down Drawer */}
+        {mobileMenuOpen && (
+          <div className={styles.mobileDrawer}>
+            <a href="/#workouts" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+              {t('fitness.nav_workouts')}
+            </a>
+            <a href="/#trainers" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+              {t('fitness.nav_trainers')}
+            </a>
+            <a href="/#pricing" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+              {t('fitness.nav_pricing')}
+            </a>
+            <a href="/#features" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+              {t('fitness.nav_community')}
+            </a>
+            <div className={styles.mobileAuthDivider} />
+            {isAuthenticated ? (
+              <button
+                type="button"
+                className={styles.mobileNavItem}
+                onClick={() => {
+                  handleLogout();
+                  closeMobileMenu();
+                }}
+              >
+                {t('nav.logout')} ({user?.full_name})
+              </button>
+            ) : (
+              <div className={styles.mobileAuthRow}>
+                <Link to="/login" className={styles.loginBtn} onClick={closeMobileMenu}>
+                  {t('fitness.log_in')}
+                </Link>
+                <Link to="/register" className={styles.startTrialBtn} onClick={closeMobileMenu}>
+                  {t('fitness.start_trial')}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
+      {/* Main Content (With top padding to compensate for 80px fixed header) */}
       <main className={styles.main}>
         <Outlet />
       </main>
 
+      {/* ── FOOTER (MATCHING PULSEFIT THEME) ── */}
       <footer className={styles.footer}>
-        <p>{t('footer.rights')}</p>
-        <div className={styles.footerLinks}>
-          <a href="#">{t('footer.terms')}</a>
-          <a href="#">{t('footer.privacy')}</a>
+        <div className={styles.footerContainer}>
+          <div className={styles.footerTopRow}>
+            {/* Col 1: Brand Info */}
+            <div className={styles.footerBrandCol}>
+              <Link to="/" className={styles.brandLink}>
+                <div className={styles.logoSquare}>
+                  <svg
+                    className={styles.boltIcon}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <span className={styles.brandTitle}>
+                  PULSE<span className={styles.brandAccent}>FIT</span>
+                </span>
+              </Link>
+              <p className={styles.footerDesc}>
+                {t('fitness.hero_subtitle')}
+              </p>
+            </div>
+
+            {/* Col 2: Workouts */}
+            <div className={styles.footerCol}>
+              <h4 className={styles.footerColTitle}>{t('fitness.nav_workouts')}</h4>
+              <ul className={styles.footerList}>
+                <li><a href="/#workouts">{t('fitness.workout_hiit')}</a></li>
+                <li><a href="/#workouts">{t('fitness.workout_strength')}</a></li>
+                <li><a href="/#workouts">{t('fitness.workout_yoga')}</a></li>
+                <li><a href="/#workouts">{t('fitness.workout_boxing')}</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Company */}
+            <div className={styles.footerCol}>
+              <h4 className={styles.footerColTitle}>Company</h4>
+              <ul className={styles.footerList}>
+                <li><a href="/#features">About Us</a></li>
+                <li><a href="/#trainers">{t('fitness.trainers_title_hl')}</a></li>
+                <li><a href="/#pricing">{t('fitness.nav_pricing')}</a></li>
+                <li><a href="/#features">{t('fitness.nav_community')}</a></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Support */}
+            <div className={styles.footerCol}>
+              <h4 className={styles.footerColTitle}>Support</h4>
+              <ul className={styles.footerList}>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Terms & Privacy</a></li>
+                <li><a href="#">Security Audit</a></li>
+                <li><a href="#">Contact Us</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className={styles.footerBottomBar}>
+            <p className={styles.copyrightText}>
+              © 2026 PulseFit / VeloX. All rights reserved.
+            </p>
+            <div className={styles.legalLinks}>
+              <a href="#">{t('footer.terms')}</a>
+              <a href="#">{t('footer.privacy')}</a>
+              <a href="#">Cookies</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
