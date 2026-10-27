@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HiOutlineChatBubbleLeftRight,
@@ -187,8 +187,10 @@ interface StudioMegaMenuProps {
 export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeCatId, setActiveCatId] = useState<'chat' | 'image' | 'video'>('chat');
 
+  const isStudioActive = location.pathname.startsWith('/studio');
   const currentCategory = STUDIO_CATEGORIES.find((c) => c.id === activeCatId) || STUDIO_CATEGORIES[0];
 
   const handleSelectModel = (catId: string, modelId: string) => {
@@ -197,7 +199,7 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
   };
 
   return (
-    <div className={styles.megaMenuWrapper}>
+    <div className={`${styles.megaMenuWrapper} ${isStudioActive ? styles.active : ''}`}>
       {/* Trigger Link with Chevron */}
       <div className={styles.triggerButton}>
         <span className={styles.navLabel}>{t('nav.studio', 'Studio')}</span>
