@@ -20,28 +20,7 @@ export interface TransactionRecord {
   status: 'SUCCESS' | 'PENDING' | 'REFUNDED'; createdAt: string;
 }
 
-const initialPackages: CreditPackage[] = [
-  {
-    id: 'pkg_1', name: 'STARTER', subtitle: 'Bắt đầu nhẹ nhàng',
-    priceVnd: 50000, credits: 50000, bonusPercent: 0,
-    features: ['Truy cập 10+ Models cơ bản', 'Giám sát request đơn giản', 'Cộng đồng hỗ trợ', 'Email support'],
-  },
-  {
-    id: 'pkg_2', name: 'PRO', subtitle: 'Lựa chọn phổ biến nhất',
-    priceVnd: 200000, credits: 220000, bonusPercent: 10, isPopular: true,
-    features: ['Truy cập 100+ Models', 'AI Load Balancer tự động', 'Phân tích nâng cao', 'Webhook & Realtime', 'Quản lý nhiều Pool', 'Ưu tiên hỗ trợ kỹ thuật'],
-  },
-  {
-    id: 'pkg_3', name: 'STUDIO', subtitle: 'Cho chuyên gia sáng tạo',
-    priceVnd: 500000, credits: 600000, bonusPercent: 20,
-    features: ['Mọi tính năng Pro', 'Image & Video generation', 'Custom routing strategies', 'Dedicated rate limits', 'Phân tích chi phí nâng cao', 'Hỗ trợ priority 24/7'],
-  },
-  {
-    id: 'pkg_4', name: 'ENTERPRISE', subtitle: 'Cho doanh nghiệp lớn',
-    priceVnd: 2000000, credits: 2600000, bonusPercent: 30,
-    features: ['Mọi tính năng Studio', 'Dedicated Gateway instance', 'White-label branding', 'SLA 99.95% uptime', 'API Rate limit không giới hạn', 'Account Manager riêng'],
-  },
-];
+const initialPackages: CreditPackage[] = [];
 
 const initialTx: TransactionRecord[] = [];
 
@@ -49,7 +28,22 @@ const txBadge = (s: string) => s === 'SUCCESS' ? 'success' : s === 'PENDING' ? '
 const txLabel: Record<string, string> = { SUCCESS: 'Thành Công', PENDING: 'Chờ Xử Lý', REFUNDED: 'Đã Hoàn' };
 
 const BillingPage = () => {
-  const [packages, setPackages] = useState<CreditPackage[]>(() => { const s = localStorage.getItem('velox_packages_v2'); return s ? JSON.parse(s) : initialPackages; });
+  const [packages, setPackages] = useState<CreditPackage[]>(() => {
+    const s = localStorage.getItem('velox_packages_v2');
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.some((p: any) => p.id === 'pkg_1')) {
+          localStorage.removeItem('velox_packages_v2');
+          return [];
+        }
+        return parsed;
+      } catch {
+        return [];
+      }
+    }
+    return initialPackages;
+  });
   const [transactions, setTransactions] = useState<TransactionRecord[]>(() => {
     const s = localStorage.getItem('velox_transactions');
     if (s) {

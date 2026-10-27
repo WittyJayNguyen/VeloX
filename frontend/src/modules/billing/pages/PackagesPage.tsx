@@ -34,68 +34,7 @@ export interface CreditPackageItem {
   isActive: boolean;
 }
 
-const initialPackages: CreditPackageItem[] = [
-  {
-    id: 'pkg_starter',
-    name: 'Starter AI Credit Pack',
-    category: 'STARTER',
-    tagBadge: 'Khởi đầu tốt',
-    credits: 50000,
-    bonusCredits: 5000,
-    priceVnd: 50000,
-    originalPriceVnd: 60000,
-    modelsIncluded: ['gpt-4o-mini', 'deepseek-chat', 'dall-e-3'],
-    durationDays: 30,
-    rateLimitRpm: 120,
-    salesCount: 0,
-    isActive: true,
-  },
-  {
-    id: 'pkg_pro',
-    name: 'Pro Creator Credit Pack',
-    category: 'PRO',
-    tagBadge: 'Bán chạy nhất',
-    credits: 250000,
-    bonusCredits: 35000,
-    priceVnd: 200000,
-    originalPriceVnd: 250000,
-    modelsIncluded: ['gpt-4o', 'claude-3-5-sonnet', 'deepseek-reasoner', 'midjourney-v6'],
-    durationDays: 60,
-    rateLimitRpm: 300,
-    salesCount: 0,
-    isActive: true,
-  },
-  {
-    id: 'pkg_enterprise',
-    name: 'Enterprise Scale Suite',
-    category: 'ENTERPRISE',
-    tagBadge: 'Tiết kiệm 25%',
-    credits: 3000000,
-    bonusCredits: 600000,
-    priceVnd: 2000000,
-    originalPriceVnd: 2600000,
-    modelsIncluded: ['gpt-4o', 'o1-preview', 'claude-3-5-sonnet', 'gen-3-alpha', 'midjourney-v6'],
-    durationDays: 365,
-    rateLimitRpm: 1200,
-    salesCount: 0,
-    isActive: true,
-  },
-  {
-    id: 'pkg_dev',
-    name: 'Developer High-Concurrency API',
-    category: 'DEV',
-    tagBadge: 'Dev API',
-    credits: 1000000,
-    bonusCredits: 150000,
-    priceVnd: 850000,
-    originalPriceVnd: 1000000,
-    modelsIncluded: ['gpt-4o', 'gpt-4o-mini', 'deepseek-chat', 'text-embedding-3-large'],
-    durationDays: 0,
-    rateLimitRpm: 2500,
-    salesCount: 0,
-    isActive: true,
-  },
-];
+const initialPackages: CreditPackageItem[] = [];
 
 const CATEGORY_OPTIONS = [
   { value: 'ALL', label: 'Tất cả phân loại' },
@@ -111,14 +50,14 @@ const PackagesPage = () => {
     if (s) {
       try {
         const parsed = JSON.parse(s);
-        if (Array.isArray(parsed) && parsed.some((p: any) => (p.salesCount || 0) > 0)) {
-          const cleaned = parsed.map((p: any) => ({ ...p, salesCount: 0 }));
-          localStorage.setItem('velox_credit_packages', JSON.stringify(cleaned));
-          return cleaned;
+        // Clean out legacy mock packages
+        if (Array.isArray(parsed) && parsed.some((p: any) => p.id === 'pkg_starter')) {
+          localStorage.removeItem('velox_credit_packages');
+          return [];
         }
         return parsed;
       } catch {
-        return initialPackages;
+        return [];
       }
     }
     return initialPackages;
@@ -390,9 +329,9 @@ const PackagesPage = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Top StatCards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-        <StatCard title="Tổng Gói Đang Bán" value={`${activePackagesCount} / ${packages.length}`} icon={<HiOutlineCube size={22} />} change="Hoạt động ổn định" changeType="up" />
-        <StatCard title="Tổng Doanh Thu Gói" value={`${(totalSalesRevenue / 1000000).toFixed(1)}M ₫`} icon={<HiOutlineBanknotes size={22} />} change="Tự động nạp qua QR/Bank" changeType="up" />
-        <StatCard title="Lượt Bán Thành Công" value={totalSalesCount.toLocaleString()} icon={<HiOutlineCheckBadge size={22} />} change="Tăng trưởng 18%" changeType="up" />
+        <StatCard title="Tổng Gói Đang Bán" value={`${activePackagesCount} / ${packages.length}`} icon={<HiOutlineCube size={22} />} change="Sẵn sàng cấu hình" changeType="neutral" />
+        <StatCard title="Tổng Doanh Thu Gói" value={`${(totalSalesRevenue / 1000000).toFixed(1)}M ₫`} icon={<HiOutlineBanknotes size={22} />} change="Tự động nạp qua QR/Bank" changeType="neutral" />
+        <StatCard title="Lượt Bán Thành Công" value={totalSalesCount.toLocaleString()} icon={<HiOutlineCheckBadge size={22} />} change="Thời gian thực" changeType="neutral" />
         <StatCard title="Tín Dụng Khả Dụng" value="Đa tầng Model" icon={<HiOutlineBolt size={22} />} change="Hạn ngạch động" changeType="neutral" />
       </div>
 
