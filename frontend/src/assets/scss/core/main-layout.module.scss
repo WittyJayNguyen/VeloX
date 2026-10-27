@@ -74,22 +74,24 @@ $font-body: 'Barlow', sans-serif;
 .logoSquare {
   width: 40px;
   height: 40px;
-  background-color: $primary;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ea580c 50%, #dc2626 100%);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba($primary, 0.35);
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
   flex-shrink: 0;
 
   .brandLink:hover & {
-    transform: scale(1.05);
+    transform: scale(1.06);
+    box-shadow: 0 6px 18px rgba(255, 107, 53, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
 
   @media (max-width: 576px) {
     width: 36px;
     height: 36px;
+    border-radius: 9px;
   }
 }
 
@@ -105,12 +107,14 @@ $font-body: 'Barlow', sans-serif;
 }
 
 .brandTitle {
-  font-family: $font-heading;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
-  color: $text-light;
+  letter-spacing: -0.02em;
+  color: #ffffff;
   line-height: 1;
+  display: inline-flex;
+  align-items: baseline;
 
   @media (max-width: 576px) {
     font-size: 1.35rem;
@@ -122,7 +126,12 @@ $font-body: 'Barlow', sans-serif;
 }
 
 .brandAccent {
-  color: $primary;
+  color: #ff6b35;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff2ea6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  margin-left: 0.5px;
 }
 
 // ── Desktop Navigation ──
