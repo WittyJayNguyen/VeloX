@@ -22,7 +22,6 @@ import {
   HiOutlineShieldCheck,
   HiOutlineBellAlert,
   HiOutlineCog6Tooth,
-  HiOutlineRocketLaunch,
   HiOutlineExclamationTriangle,
   HiOutlineClipboardDocumentList,
   HiOutlineBanknotes,
@@ -232,18 +231,6 @@ const AdminLayout = () => {
             </div>
           ))}
         </nav>
-
-        {/* Upgrade Card */}
-        {!sidebarCollapsed && (
-          <div className={styles.upgradeCard}>
-            <div className={styles.upgradeIcon}>
-              <HiOutlineRocketLaunch size={20} />
-            </div>
-            <div className={styles.upgradeTitle}>{t('admin.enterprise.title', 'Nâng cấp Enterprise')}</div>
-            <div className={styles.upgradeDesc}>{t('admin.enterprise.desc', 'Mở khóa báo cáo nâng cao và tự động hóa')}</div>
-            <button className={styles.upgradeBtn} type="button">{t('admin.enterprise.learn_more', 'Tìm hiểu thêm')}</button>
-          </div>
-        )}
 
         <div className={styles.sidebarBottom}>
           <button className={styles.logoutBtn} onClick={handleLogout} type="button">
