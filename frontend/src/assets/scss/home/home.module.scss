@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
 
 // ── Colors & Design Tokens (UUPM Fitness Gym Theme) ──
 $primary: #ff6b35;          // Energetic fiery orange
@@ -13,8 +13,8 @@ $border: #262626;
 $border-light: #333333;
 $accent-green: #22c55e;     // Vibrant pulse green
 
-$font-heading: 'Barlow Condensed', sans-serif;
-$font-body: 'Barlow', sans-serif;
+$font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 // ── Root Wrapper ──
 .fitnessGym {
@@ -48,13 +48,12 @@ $font-body: 'Barlow', sans-serif;
 
 .sectionHeading {
   font-family: $font-heading;
-  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
   color: $text-light;
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .sectionSubDesc {
@@ -144,12 +143,12 @@ $font-body: 'Barlow', sans-serif;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba($primary, 0.12);
-  border: 1px solid rgba($primary, 0.35);
+  background: rgba($primary, 0.1);
+  border: 1px solid rgba($primary, 0.28);
   border-radius: 9999px;
-  padding: 0.45rem 1.15rem;
+  padding: 0.4rem 1.05rem;
   width: fit-content;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .pulseDot {
@@ -173,31 +172,40 @@ $font-body: 'Barlow', sans-serif;
 }
 
 .aiBadgeText {
-  font-family: $font-heading;
-  font-size: 0.82rem;
+  font-family: $font-body;
+  font-size: 0.8rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   color: $primary;
 }
 
 .heroHeadline {
   font-family: $font-heading;
-  font-size: clamp(3rem, 6vw, 5.2rem);
-  font-weight: 900;
-  line-height: 0.96;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-size: clamp(2.1rem, 3.8vw, 3.35rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-transform: none;
   color: $text-light;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
+
+  .highlightOrange {
+    color: $primary;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ffa07a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+  }
 }
 
 .heroSubtitle {
-  font-size: 1.08rem;
-  color: $text-muted;
-  line-height: 1.7;
-  max-width: 560px;
-  margin: 0 0 2.25rem;
+  font-family: $font-body;
+  font-size: 1.05rem;
+  color: #94a3b8;
+  line-height: 1.65;
+  max-width: 540px;
+  margin: 0 0 2rem;
+  font-weight: 400;
 }
 
 .heroCtas {
