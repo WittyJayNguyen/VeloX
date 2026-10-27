@@ -47,7 +47,7 @@ const initialPackages: CreditPackageItem[] = [
     modelsIncluded: ['gpt-4o-mini', 'deepseek-chat', 'dall-e-3'],
     durationDays: 30,
     rateLimitRpm: 120,
-    salesCount: 1420,
+    salesCount: 0,
     isActive: true,
   },
   {
@@ -62,7 +62,7 @@ const initialPackages: CreditPackageItem[] = [
     modelsIncluded: ['gpt-4o', 'claude-3-5-sonnet', 'deepseek-reasoner', 'midjourney-v6'],
     durationDays: 60,
     rateLimitRpm: 300,
-    salesCount: 3890,
+    salesCount: 0,
     isActive: true,
   },
   {
@@ -77,7 +77,7 @@ const initialPackages: CreditPackageItem[] = [
     modelsIncluded: ['gpt-4o', 'o1-preview', 'claude-3-5-sonnet', 'gen-3-alpha', 'midjourney-v6'],
     durationDays: 365,
     rateLimitRpm: 1200,
-    salesCount: 420,
+    salesCount: 0,
     isActive: true,
   },
   {
@@ -92,7 +92,7 @@ const initialPackages: CreditPackageItem[] = [
     modelsIncluded: ['gpt-4o', 'gpt-4o-mini', 'deepseek-chat', 'text-embedding-3-large'],
     durationDays: 0,
     rateLimitRpm: 2500,
-    salesCount: 810,
+    salesCount: 0,
     isActive: true,
   },
 ];
@@ -108,7 +108,20 @@ const CATEGORY_OPTIONS = [
 const PackagesPage = () => {
   const [packages, setPackages] = useState<CreditPackageItem[]>(() => {
     const s = localStorage.getItem('velox_credit_packages');
-    return s ? JSON.parse(s) : initialPackages;
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.some((p: any) => (p.salesCount || 0) > 0)) {
+          const cleaned = parsed.map((p: any) => ({ ...p, salesCount: 0 }));
+          localStorage.setItem('velox_credit_packages', JSON.stringify(cleaned));
+          return cleaned;
+        }
+        return parsed;
+      } catch {
+        return initialPackages;
+      }
+    }
+    return initialPackages;
   });
 
   const [searchTerm, setSearchTerm] = useState('');
