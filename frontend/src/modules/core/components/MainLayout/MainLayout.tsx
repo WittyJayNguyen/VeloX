@@ -77,25 +77,28 @@ const MainLayout = () => {
       {/* ── FIXED TOP NAVIGATION ── */}
       <header className={styles.header}>
         <div className={styles.headerContainer}>
-          {/* Logo */}
+          {/* VeloX Brand Logo */}
           <Link to="/" className={styles.brandLink} onClick={closeMobileMenu}>
             <div className={styles.logoSquare}>
               <svg
                 className={styles.boltIcon}
-                fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                  d="M3 4.5L10.5 19.5H13.5L21 4.5H16.8L12 14.5L7.2 4.5H3Z"
+                  fill="#ffffff"
+                />
+                <path
+                  d="M16 12L20.8 20H17.2L13.8 14.2L15 12H16Z"
+                  fill="#ffeedd"
+                  opacity="0.95"
                 />
               </svg>
             </div>
             <span className={styles.brandTitle}>
-              PULSE<span className={styles.brandAccent}>FIT</span>
+              Velo<span className={styles.brandAccent}>X</span>
             </span>
           </Link>
 
@@ -324,58 +327,60 @@ const MainLayout = () => {
                 <div className={styles.logoSquare}>
                   <svg
                     className={styles.boltIcon}
-                    fill="none"
                     viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                      d="M3 4.5L10.5 19.5H13.5L21 4.5H16.8L12 14.5L7.2 4.5H3Z"
+                      fill="#ffffff"
+                    />
+                    <path
+                      d="M16 12L20.8 20H17.2L13.8 14.2L15 12H16Z"
+                      fill="#ffeedd"
+                      opacity="0.95"
                     />
                   </svg>
                 </div>
                 <span className={styles.brandTitle}>
-                  PULSE<span className={styles.brandAccent}>FIT</span>
+                  Velo<span className={styles.brandAccent}>X</span>
                 </span>
               </Link>
               <p className={styles.footerDesc}>
-                {t('fitness.hero_subtitle')}
+                {t('hero.subtitle', 'Trung tâm điều phối & Gateway AI thế hệ mới với hơn 100+ mô hình hàng đầu thế giới.')}
               </p>
             </div>
 
-            {/* Workouts links */}
+            {/* AI Studio links */}
             <div className={styles.footerCol}>
-              <h4 className={styles.footerColTitle}>{t('fitness.nav_workouts')}</h4>
+              <h4 className={styles.footerColTitle}>AI Studio</h4>
               <ul className={styles.footerList}>
-                <li><a href="/#workouts">{t('fitness.workout_hiit')}</a></li>
-                <li><a href="/#workouts">{t('fitness.workout_strength')}</a></li>
-                <li><a href="/#workouts">{t('fitness.workout_yoga')}</a></li>
-                <li><a href="/#workouts">{t('fitness.workout_boxing')}</a></li>
+                <li><Link to="/studio?category=chat">Chat (GPT-4o, Claude 3.5)</Link></li>
+                <li><Link to="/studio?category=image">Hình Ảnh (FLUX.1, Midjourney)</Link></li>
+                <li><Link to="/studio?category=video">Video (Runway Gen-3, Kling)</Link></li>
+                <li><Link to="/models">Danh Mục Mô Hình AI</Link></li>
               </ul>
             </div>
 
-            {/* Company links */}
+            {/* Platform links */}
             <div className={styles.footerCol}>
-              <h4 className={styles.footerColTitle}>Company</h4>
+              <h4 className={styles.footerColTitle}>Nền Tảng</h4>
               <ul className={styles.footerList}>
-                <li><a href="/#features">About Us</a></li>
-                <li><a href="/#trainers">{t('fitness.trainers_title_hl')}</a></li>
-                <li><a href="/#pricing">{t('fitness.nav_pricing')}</a></li>
-                <li><a href="/#features">{t('fitness.nav_community')}</a></li>
+                <li><Link to="/subscription">Bảng Giá Tín Dụng</Link></li>
+                <li><Link to="/docs">Tài Liệu API & SDK</Link></li>
+                <li><Link to="/docs#part-10">Tích Hợp Cursor / Cline</Link></li>
+                <li><Link to="/models">Khám Phá Models</Link></li>
               </ul>
             </div>
 
             {/* Support links */}
             <div className={styles.footerCol}>
-              <h4 className={styles.footerColTitle}>Support</h4>
+              <h4 className={styles.footerColTitle}>Hỗ Trợ</h4>
               <ul className={styles.footerList}>
-                <li><Link to="/docs">{t('nav.docs', 'Tài Liệu API')}</Link></li>
-                <li><a href="#">Help Center</a></li>
-                <li><a href="#">Terms & Privacy</a></li>
-                <li><a href="#">Security Audit</a></li>
-                <li><a href="#">Contact Us</a></li>
+                <li><Link to="/docs#part-13">FAQ & Trợ Giúp</Link></li>
+                <li><Link to="/docs">API Documentation</Link></li>
+                <li><a href="#">Điều Khoản Dịch Vụ</a></li>
+                <li><a href="#">Chính Sách Bảo Mật</a></li>
               </ul>
             </div>
           </div>
@@ -383,11 +388,11 @@ const MainLayout = () => {
           {/* Footer bottom legal bar */}
           <div className={styles.footerBottomBar}>
             <p className={styles.copyrightText}>
-              © 2026 PulseFit / VeloX. All rights reserved.
+              © 2026 VeloX AI Gateway & Studio. All rights reserved.
             </p>
             <div className={styles.legalLinks}>
-              <a href="#">{t('footer.terms')}</a>
-              <a href="#">{t('footer.privacy')}</a>
+              <a href="#">{t('footer.terms', 'Điều khoản')}</a>
+              <a href="#">{t('footer.privacy', 'Bảo mật')}</a>
               <a href="#">Cookies</a>
             </div>
           </div>
