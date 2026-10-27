@@ -5,14 +5,14 @@ services:
     container_name: velox-staging-api
     restart: always
     environment:
-      - DATABASE_URL=sqlite+aiosqlite:///app/data/velox.db
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/velox.db
       - DEBUG=True
       - JWT_SECRET_KEY=velox-staging-jwt-secret-nexoratech-2026
       - CORS_ORIGINS=["*"]
     volumes:
       - velox_staging_data:/app/data
     ports:
-      - "127.0.0.1:8085:8000"
+      - "127.0.0.1:8002:8000"
     deploy:
       resources:
         limits:
@@ -24,7 +24,7 @@ services:
     container_name: velox-staging-web
     restart: always
     ports:
-      - "127.0.0.1:85:80"
+      - "127.0.0.1:8082:80"
     depends_on:
       - api
     deploy:
