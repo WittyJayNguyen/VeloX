@@ -469,7 +469,21 @@
     "cat_video": "Video",
     "open_full_studio": "Mở Studio Đầy Đủ",
     "available_models_for": "MÔ HÌNH KHẢ DỤNG",
-    "view_all_models": "Xem chi tiết & bảng giá 100+ Model"
+    "view_all_models": "Xem chi tiết & bảng giá 100+ Model",
+    "ref_image": "Ảnh tham chiếu",
+    "upload_or_paste": "Tải hoặc dán ảnh tham chiếu",
+    "aspect_ratio": "Tỉ lệ khung hình",
+    "output_count": "Số lượng kết quả",
+    "quality": "Chất lượng",
+    "duration": "Thời lượng",
+    "generating_job": "Đang xử lý Job AI",
+    "queued": "Đang xếp hàng...",
+    "rendering": "Đang sinh dữ liệu...",
+    "upscaling": "Hậu kỳ & Nâng cấp 4K...",
+    "completed": "Hoàn tất!",
+    "standard": "Tiêu chuẩn",
+    "hd": "HD 2K",
+    "ultra_4k": "Ultra 4K"
   },
   "models_page": {
     "subtitle": "Khám phá hơn 100+ mô hình AI thế hệ mới nhất cho Chat, Tạo Ảnh và Video với chi phí tối ưu"

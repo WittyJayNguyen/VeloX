@@ -469,7 +469,21 @@
     "cat_video": "Video",
     "open_full_studio": "Open Full Studio",
     "available_models_for": "AVAILABLE MODELS",
-    "view_all_models": "Browse 100+ Models & Pricing"
+    "view_all_models": "Browse 100+ Models & Pricing",
+    "ref_image": "Reference Image",
+    "upload_or_paste": "Upload or paste reference image",
+    "aspect_ratio": "Aspect Ratio",
+    "output_count": "Outputs",
+    "quality": "Quality",
+    "duration": "Duration",
+    "generating_job": "Processing AI Job",
+    "queued": "Queued in pool...",
+    "rendering": "Rendering frames...",
+    "upscaling": "Upscaling to 4K...",
+    "completed": "Completed!",
+    "standard": "Standard",
+    "hd": "HD 2K",
+    "ultra_4k": "Ultra 4K"
   },
   "models_page": {
     "subtitle": "Discover 100+ next-generation AI models for Chat, Image and Video at optimized rates"
