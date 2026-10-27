@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   HiOutlineDocumentChartBar,
   HiOutlineCircleStack,
@@ -17,40 +18,44 @@ interface Props {
   loading?: boolean;
 }
 
-const navTabs = [
-  {
-    path: '/admin/accounting/pnl',
-    label: 'Báo Cáo P&L & Lời Lỗ',
-    desc: 'Doanh thu, COGS & Lợi nhuận',
-    icon: HiOutlineDocumentChartBar,
-  },
-  {
-    path: '/admin/accounting/assets',
-    label: 'Kiểm Toán Kho Acc & Token',
-    desc: 'Định giá tài sản & Khấu hao',
-    icon: HiOutlineCircleStack,
-  },
-  {
-    path: '/admin/accounting/procurement',
-    label: 'Nhập Acc & Nạp Tiền NCC',
-    desc: 'Sổ cái phiếu chi & Hóa đơn',
-    icon: HiOutlineReceiptRefund,
-  },
-  {
-    path: '/admin/accounting/cashflow',
-    label: 'Đối Soát Dòng Tiền & Công Nợ',
-    desc: 'Dòng tiền vào/ra & Dư nợ ví',
-    icon: HiOutlineScale,
-  },
-];
-
 export const AccountingHeader: React.FC<Props> = ({
-  title = 'Kế Toán & Kiểm Toán Tài Sản VeloX',
-  subtitle = 'Phân hệ quản trị tài chính, kiểm toán tài sản tài khoản AI, khấu hao giá vốn COGS và hạch toán dòng tiền.',
+  title,
+  subtitle,
   onOpenCreateModal,
   onRefresh,
   loading = false,
 }) => {
+  const { t } = useTranslation();
+
+  const displayTitle = title || t('admin.accounting.header_title', 'Kế Toán & Kiểm Toán Tài Sản VeloX');
+  const displaySubtitle = subtitle || t('admin.accounting.header_subtitle', 'Phân hệ quản trị tài chính, kiểm toán tài sản tài khoản AI, khấu hao giá vốn COGS và hạch toán dòng tiền.');
+
+  const navTabs = [
+    {
+      path: '/admin/accounting/pnl',
+      label: t('admin.sidebar.accounting_pnl', 'Báo Cáo P&L & Lời Lỗ'),
+      desc: 'Doanh thu, COGS & Lợi nhuận',
+      icon: HiOutlineDocumentChartBar,
+    },
+    {
+      path: '/admin/accounting/assets',
+      label: t('admin.sidebar.accounting_assets', 'Kiểm Toán Kho Acc & Token'),
+      desc: 'Định giá tài sản & Khấu hao',
+      icon: HiOutlineCircleStack,
+    },
+    {
+      path: '/admin/accounting/procurement',
+      label: t('admin.sidebar.accounting_procurement', 'Nhập Acc & Nạp Tiền NCC'),
+      desc: 'Sổ cái phiếu chi & Hóa đơn',
+      icon: HiOutlineReceiptRefund,
+    },
+    {
+      path: '/admin/accounting/cashflow',
+      label: t('admin.sidebar.accounting_cashflow', 'Đối Soát Dòng Tiền & Công Nợ'),
+      desc: 'Dòng tiền vào/ra & Dư nợ ví',
+      icon: HiOutlineScale,
+    },
+  ];
   return (
     <div style={{ marginBottom: '24px' }}>
       {/* Top Banner & Actions */}
@@ -93,10 +98,10 @@ export const AccountingHeader: React.FC<Props> = ({
               letterSpacing: '-0.02em',
             }}
           >
-            {title}
+            {displayTitle}
           </h1>
           <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, maxWidth: '780px', lineHeight: 1.5 }}>
-            {subtitle}
+            {displaySubtitle}
           </p>
         </div>
 
@@ -121,7 +126,7 @@ export const AccountingHeader: React.FC<Props> = ({
               }}
             >
               <HiOutlineArrowPath size={16} className={loading ? 'spin-animation' : ''} />
-              <span>Đối Soát Lại</span>
+              <span>{t('admin.accounting.reconcile_btn', 'Đối Soát Lại')}</span>
             </button>
           )}
 
@@ -144,7 +149,7 @@ export const AccountingHeader: React.FC<Props> = ({
               }}
             >
               <HiOutlinePlus size={16} />
-              <span>Lập Phiếu Chi / Nhập Acc</span>
+              <span>{t('admin.accounting.create_expense_btn', 'Lập Phiếu Chi / Nhập Acc')}</span>
             </button>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HiOutlineCog6Tooth, HiOutlineGlobeAlt, HiOutlineShieldCheck, HiOutlineBell } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';
@@ -15,6 +16,7 @@ const LANG_OPTIONS = [
 ];
 
 const SettingsPage = () => {
+  const { t } = useTranslation();
   const [siteName, setSiteName] = useState('VeloX AI Gateway');
   const [siteDesc, setSiteDesc] = useState('Nền tảng trung gian AI Gateway thế hệ mới');
   const [defaultLang, setDefaultLang] = useState('vi');
@@ -47,7 +49,7 @@ const SettingsPage = () => {
         </div>
       </Card>
 
-      <Card title="Thông Báo" headerRight={<HiOutlineBell size={20} style={{ color: '#f59e0b' }} />}>
+      <Card title={t('admin.sidebar.notifications', 'Thông Báo')} headerRight={<HiOutlineBell size={20} style={{ color: '#f59e0b' }} />}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <Toggle label="Email Thông Báo" checked={emailNotif} onChange={setEmailNotif} />
           <Input label="Webhook URL" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://hooks.slack.com/..." fullWidth />
@@ -55,8 +57,8 @@ const SettingsPage = () => {
       </Card>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-        {saved && <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, alignSelf: 'center' }}>✓ Đã lưu!</span>}
-        <Button variant="primary" size="md" onClick={handleSave}><HiOutlineCog6Tooth size={16} /> Lưu Cài Đặt</Button>
+        {saved && <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 600, alignSelf: 'center' }}>✓ {t('common.save', 'Đã lưu!')}</span>}
+        <Button variant="primary" size="md" onClick={handleSave}><HiOutlineCog6Tooth size={16} /> {t('common.save', 'Lưu Cài Đặt')}</Button>
       </div>
     </div>
   );

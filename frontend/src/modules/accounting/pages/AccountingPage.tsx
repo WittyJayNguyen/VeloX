@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   HiOutlineBanknotes, HiOutlinePlus, HiOutlineArrowPath,
   HiOutlineShieldCheck
@@ -11,6 +12,7 @@ import { ExpenseTable } from '../components/ExpenseTable';
 import { CreateExpenseModal } from '../components/CreateExpenseModal';
 
 export const AccountingPage: React.FC = () => {
+  const { t } = useTranslation();
   const [overview, setOverview] = useState<AccountingOverview | null>(null);
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [totalExpenses, setTotalExpenses] = useState(0);
@@ -82,9 +84,11 @@ export const AccountingPage: React.FC = () => {
             <HiOutlineBanknotes size={26} />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700 }}>Kế Toán & Kiểm Toán Tài Sản VeloX</h1>
+            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700 }}>
+              {t('admin.accounting.header_title', 'Kế Toán & Kiểm Toán Tài Sản VeloX')}
+            </h1>
             <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#94a3b8' }}>
-              Báo cáo Lời - Lỗ (P&L), Định giá kho tài khoản, Khấu hao dịch vụ (COGS) và Dòng tiền nhà cung cấp.
+              {t('admin.accounting.header_subtitle', 'Báo cáo Lời - Lỗ (P&L), Định giá kho tài khoản, Khấu hao dịch vụ (COGS) và Dòng tiền nhà cung cấp.')}
             </p>
           </div>
         </div>
