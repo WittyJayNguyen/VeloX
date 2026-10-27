@@ -1,6 +1,6 @@
 {
   "app_name": "VeloX AI",
-  "nav": { "home": "首页", "features": "功能", "pricing": "价格", "docs": "文档", "login": "登录", "register": "注册", "dashboard": "仪表盘", "logout": "退出", "workspace": "工作区", "studio": "Studio", "models": "Model" },
+  "nav": { "home": "首页", "features": "功能", "pricing": "价格", "docs": "API文档", "login": "登录", "register": "注册", "dashboard": "仪表盘", "logout": "退出", "workspace": "工作区", "studio": "Studio", "models": "Model" },
   "hero": { "badge": "新一代AI网关平台", "title_1": "统一AI中心", "title_highlight": "人工智能", "subtitle": "以最低成本连接OpenAI、Claude、Gemini、Midjourney等100多个AI模型。一个API密钥即可使用所有模型。", "cta_start": "免费开始", "cta_docs": "查看文档" },
   "features": { "title": "为什么选择VeloX？", "multi_model": "多模型AI", "multi_model_desc": "通过单一平台访问100多个用于聊天、图像、视频和代码的AI模型。", "pool_system": "智能池系统", "pool_system_desc": "自动轮换API密钥和账户令牌，确保99.9%的正常运行时间和最佳价格。", "security": "企业级安全", "security_desc": "端到端加密、RBAC访问控制和全面的审计日志。", "i18n": "多语言支持", "i18n_desc": "支持5种语言：越南语、英语、日语、韩语和中文。" },
   "stats": { "models": "AI模型", "users": "用户", "requests": "请求/天", "uptime": "正常运行" },
