@@ -7,11 +7,43 @@ from app.core.database import get_db
 from app.core.security import get_current_user_payload
 from app.modules.models_catalog.models import AIModel
 from app.modules.models_catalog.schemas import (
-    AIModelCreate, AIModelUpdate, AIModelResponse,
+    AIModelCreate, AIModelUpdate, AIModelResponse, AIModelPublicResponse,
     UpdateModelPricingRequest, BatchMarkupRequest
 )
 
 router = APIRouter(tags=["Gateway — AI Models Catalog"])
+
+
+@router.get("/models/public", response_model=List[AIModelPublicResponse])
+async def list_public_models(
+    category: Optional[str] = None,
+    provider: Optional[str] = None,
+    search: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public Models Catalog API for landing page & Studio explorer.
+    Only shows publicly available models and customer credit pricing.
+    Strictly excludes upstream supplier cost and profit margins.
+    """
+    stmt = select(AIModel).where(AIModel.is_available == True)
+    if category and category != "ALL":
+        stmt = stmt.where(AIModel.category == category.upper())
+    if provider and provider != "ALL":
+        stmt = stmt.where(AIModel.provider == provider)
+    if search:
+        search_filter = f"%{search}%"
+        stmt = stmt.where(
+            or_(
+                AIModel.name.ilike(search_filter),
+                AIModel.model_code.ilike(search_filter),
+                AIModel.provider.ilike(search_filter),
+                AIModel.description.ilike(search_filter),
+            )
+        )
+
+    stmt = stmt.order_by(desc(AIModel.created_at))
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
 @router.get("/models", response_model=List[AIModelResponse])

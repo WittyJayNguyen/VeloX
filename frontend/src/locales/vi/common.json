@@ -486,6 +486,27 @@
     "ultra_4k": "Ultra 4K"
   },
   "models_page": {
-    "subtitle": "Khám phá hơn 100+ mô hình AI thế hệ mới nhất cho Chat, Tạo Ảnh và Video với chi phí tối ưu"
+    "title": "Thư Viện Mô Hình AI (AI Models Catalog)",
+    "subtitle": "Khám phá hơn 100+ mô hình AI thế hệ mới nhất cho Chat, Tạo Ảnh và Video với bảng giá Credit minh bạch và chi phí tối ưu",
+    "all": "Tất Cả",
+    "category_chat": "Chat & Ngôn Ngữ",
+    "category_image": "Tạo Ảnh Nghệ Thuật",
+    "category_video": "Tạo Video Điện Ảnh",
+    "category_code": "Lập Trình & Agent",
+    "search_placeholder": "Tìm theo tên mô hình, mã model, nhà phát triển...",
+    "input_tokens": "Input Tokens",
+    "output_tokens": "Output Tokens",
+    "cache_read": "Đọc Cache (Cache Read)",
+    "per_request": "Mỗi lượt gọi",
+    "per_image": "Mỗi ảnh",
+    "per_video": "Mỗi video",
+    "free": "Miễn phí",
+    "credits_unit": "Credits",
+    "per_1m": "/ 1M tokens",
+    "open_in_studio": "Dùng Ngay Trong Studio",
+    "active": "Sẵn Sàng",
+    "maintenance": "Bảo Trì",
+    "no_models_found": "Không tìm thấy mô hình nào phù hợp",
+    "loading": "Đang tải danh sách mô hình từ hệ thống..."
   }
 }

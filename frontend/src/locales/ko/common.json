@@ -408,6 +408,27 @@
     "ultra_4k": "울트라 4K"
   },
   "models_page": {
-    "subtitle": "채팅, 이미지, 비디오를 위한 100개 이상의 차세대 AI 모델을 최적의 가격으로 탐색하세요"
+    "title": "AI 모델 라이브러리 (AI Models Catalog)",
+    "subtitle": "채팅, 이미지, 비디오를 위한 100개 이상의 차세대 AI 모델을 투명한 크레딧 요금 및 최적의 가격으로 탐색하세요",
+    "all": "전체",
+    "category_chat": "대화 및 언어",
+    "category_image": "아트 이미지 생성",
+    "category_video": "영화급 비디오",
+    "category_code": "코딩 및 에이전트",
+    "search_placeholder": "모델 이름, 코드, 제공업체 검색...",
+    "input_tokens": "입력 Tokens",
+    "output_tokens": "출력 Tokens",
+    "cache_read": "캐시 읽기 (Cache Read)",
+    "per_request": "요청당",
+    "per_image": "이미지당",
+    "per_video": "비디오당",
+    "free": "무료",
+    "credits_unit": "크레딧",
+    "per_1m": "/ 100만 tokens",
+    "open_in_studio": "Studio에서 사용하기",
+    "active": "정상 작동",
+    "maintenance": "유지 관리 중",
+    "no_models_found": "일치하는 AI 모델이 없습니다",
+    "loading": "시스템에서 모델 목록을 불러오는 중..."
   }
 }

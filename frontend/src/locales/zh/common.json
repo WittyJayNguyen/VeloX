@@ -408,6 +408,27 @@
     "ultra_4k": "超清 4K"
   },
   "models_page": {
-    "subtitle": "探索 100+ 新一代前沿 AI 模型，覆盖聊天、图像与视频领域，高性价比极速调用"
+    "title": "AI 模型库 (AI Models Catalog)",
+    "subtitle": "探索 100+ 新一代前沿 AI 模型，覆盖聊天、图像与视频领域，透明积分定价与高性价比",
+    "all": "全部",
+    "category_chat": "对话与语言",
+    "category_image": "艺术图像生成",
+    "category_video": "电影级视频",
+    "category_code": "代码与智能体",
+    "search_placeholder": "搜索模型名称、代号或厂商...",
+    "input_tokens": "输入 Tokens",
+    "output_tokens": "输出 Tokens",
+    "cache_read": "读取缓存 (Cache Read)",
+    "per_request": "每次调用",
+    "per_image": "每张图片",
+    "per_video": "每个视频",
+    "free": "免费",
+    "credits_unit": "积分 (Credits)",
+    "per_1m": "/ 100万 tokens",
+    "open_in_studio": "在 Studio 中使用",
+    "active": "正常服务",
+    "maintenance": "维护中",
+    "no_models_found": "未找到匹配的 AI 模型",
+    "loading": "正在从系统加载模型列表中..."
   }
 }

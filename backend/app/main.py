@@ -42,10 +42,12 @@ async def lifespan(app: FastAPI):
         # Auto-migrate columns and seed default roles / super admin / gateway defaults
         from app.core.database import async_session
         from app.modules.users.router import seed_defaults
+        from app.modules.models_catalog.seed import seed_default_models
         async with async_session() as db:
             await seed_defaults(db)
             await seed_gateway_data(db)
-        print("[DB] Default roles, Super Admin, and Gateway data verified")
+            await seed_default_models(db)
+        print("[DB] Default roles, Super Admin, Gateway data, and Models Catalog verified")
     except Exception as e:
         print(f"[WARN] Database initialization warning: {e}")
     yield
