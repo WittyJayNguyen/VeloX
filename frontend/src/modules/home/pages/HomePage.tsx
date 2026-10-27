@@ -1,204 +1,488 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import Button from '@modules/core/design-system/Button';
 import {
-  HiOutlineCpuChip,
-  HiOutlineServerStack,
-  HiOutlineShieldCheck,
-  HiOutlineLanguage,
   HiOutlineBolt,
-  HiOutlineChartBar,
+  HiOutlineClock,
+  HiOutlineFire,
+  HiOutlineCheck,
   HiOutlineArrowRight,
-  HiOutlineRocketLaunch,
+  HiOutlineSparkles,
+  HiOutlineChartBar,
+  HiOutlineVideoCamera,
+  HiOutlineAcademicCap,
+  HiOutlineShieldCheck,
+  HiOutlinePlay,
 } from 'react-icons/hi2';
 import styles from '@assets/scss/home/home.module.scss';
 
-const stats = [
-  { value: '100+', key: 'stats.models' },
-  { value: '12K+', key: 'stats.users' },
-  { value: '2M+', key: 'stats.requests' },
-  { value: '99.9%', key: 'stats.uptime' },
+interface WorkoutProgram {
+  id: string;
+  titleKey: string;
+  levelKey: string;
+  duration: string;
+  calories: string;
+  image: string;
+}
+
+interface TrainerProfile {
+  id: string;
+  name: string;
+  specKey: string;
+  expKey: string;
+  image: string;
+}
+
+interface FeatureItem {
+  icon: typeof HiOutlineSparkles;
+  titleKey: string;
+  descKey: string;
+}
+
+const workoutPrograms: WorkoutProgram[] = [
+  {
+    id: 'hiit',
+    titleKey: 'fitness.workout_hiit',
+    levelKey: 'fitness.level_intermediate',
+    duration: '30 min',
+    calories: '400 cal',
+    image: 'https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=600&h=450&fit=crop&q=80',
+  },
+  {
+    id: 'strength',
+    titleKey: 'fitness.workout_strength',
+    levelKey: 'fitness.level_advanced',
+    duration: '45 min',
+    calories: '350 cal',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c149a?w=600&h=450&fit=crop&q=80',
+  },
+  {
+    id: 'yoga',
+    titleKey: 'fitness.workout_yoga',
+    levelKey: 'fitness.level_beginner',
+    duration: '40 min',
+    calories: '200 cal',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=450&fit=crop&q=80',
+  },
+  {
+    id: 'boxing',
+    titleKey: 'fitness.workout_boxing',
+    levelKey: 'fitness.level_intermediate',
+    duration: '35 min',
+    calories: '450 cal',
+    image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=600&h=450&fit=crop&q=80',
+  },
 ];
 
-const features = [
-  { icon: HiOutlineCpuChip, titleKey: 'features.multi_model', descKey: 'features.multi_model_desc' },
-  { icon: HiOutlineServerStack, titleKey: 'features.pool_system', descKey: 'features.pool_system_desc' },
-  { icon: HiOutlineShieldCheck, titleKey: 'features.security', descKey: 'features.security_desc' },
-  { icon: HiOutlineLanguage, titleKey: 'features.i18n', descKey: 'features.i18n_desc' },
-  { icon: HiOutlineBolt, titleKey: 'features.realtime', descKey: 'features.realtime_desc' },
-  { icon: HiOutlineChartBar, titleKey: 'features.analytics', descKey: 'features.analytics_desc' },
+const trainers: TrainerProfile[] = [
+  {
+    id: 'alex',
+    name: 'Alex Rivera',
+    specKey: 'fitness.spec_hiit',
+    expKey: 'fitness.exp_8_years',
+    image: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=500&h=500&fit=crop&q=80',
+  },
+  {
+    id: 'sarah',
+    name: 'Sarah Chen',
+    specKey: 'fitness.spec_yoga',
+    expKey: 'fitness.exp_10_years',
+    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=500&h=500&fit=crop&q=80',
+  },
+  {
+    id: 'marcus',
+    name: 'Marcus Johnson',
+    specKey: 'fitness.spec_strength',
+    expKey: 'fitness.exp_12_years',
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=500&fit=crop&q=80',
+  },
+  {
+    id: 'emma',
+    name: 'Emma Wilson',
+    specKey: 'fitness.spec_boxing',
+    expKey: 'fitness.exp_6_years',
+    image: 'https://images.unsplash.com/photo-1609899464726-209befafc5ba?w=500&h=500&fit=crop&q=80',
+  },
 ];
 
-const howItWorks = [
-  { step: 1, title: 'Kết Nối API Key', desc: 'Thêm API key hoặc account token từ OpenAI, Claude, Midjourney...' },
-  { step: 2, title: 'Cấu Hình Model', desc: 'Chọn model, định giá credit, thiết lập thuật toán điều phối.' },
-  { step: 3, title: 'Bắt Đầu Kiếm Tiền', desc: 'Khách hàng nạp credit, gọi API qua gateway, bạn hưởng lợi nhuận.' },
+const featuresList: FeatureItem[] = [
+  {
+    icon: HiOutlineSparkles,
+    titleKey: 'fitness.feat_ai_title',
+    descKey: 'fitness.feat_ai_desc',
+  },
+  {
+    icon: HiOutlineChartBar,
+    titleKey: 'fitness.feat_track_title',
+    descKey: 'fitness.feat_track_desc',
+  },
+  {
+    icon: HiOutlineVideoCamera,
+    titleKey: 'fitness.feat_live_title',
+    descKey: 'fitness.feat_live_desc',
+  },
+  {
+    icon: HiOutlineAcademicCap,
+    titleKey: 'fitness.feat_nutrition_title',
+    descKey: 'fitness.feat_nutrition_desc',
+  },
 ];
-
-const providers = ['OpenAI', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'DeepSeek', 'Groq', 'Qwen', 'Stable Diffusion', 'Luma AI'];
 
 const pricingPlans = [
   {
-    name: 'BASIC',
-    desc: 'Perfect for getting started',
-    price: '50,000',
-    unit: '₫/tháng',
-    features: ['Truy cập 10+ Models', 'Giám sát cơ bản', 'Cộng đồng hỗ trợ', 'Email support'],
+    id: 'basic',
+    nameKey: 'fitness.plan_basic',
+    descKey: 'fitness.plan_basic_desc',
+    price: '$9.99',
     popular: false,
+    featuresKeys: [
+      'fitness.f_workouts_100',
+      'fitness.f_basic_tracking',
+      'fitness.f_community',
+      'fitness.f_email_support',
+    ],
   },
   {
-    name: 'PRO',
-    desc: 'Most popular choice',
-    price: '200,000',
-    unit: '₫/tháng',
-    features: ['Truy cập 100+ Models', 'AI Load Balancer', 'Phân tích nâng cao', 'Webhook & Realtime', 'Quản lý nhiều Pool', 'Ưu tiên hỗ trợ'],
+    id: 'pro',
+    nameKey: 'fitness.plan_pro',
+    descKey: 'fitness.plan_pro_desc',
+    price: '$19.99',
     popular: true,
+    featuresKeys: [
+      'fitness.f_workouts_500',
+      'fitness.f_ai_trainer',
+      'fitness.f_adv_analytics',
+      'fitness.f_live_classes',
+      'fitness.f_nutrition',
+      'fitness.f_priority_support',
+    ],
   },
   {
-    name: 'ELITE',
-    desc: 'For serious businesses',
-    price: '500,000',
-    unit: '₫/tháng',
-    features: ['Mọi tính năng Pro', 'Dedicated Gateway', 'Custom model routing', 'API Rate limit mở rộng', 'White-label branding', 'Hỗ trợ 24/7'],
+    id: 'elite',
+    nameKey: 'fitness.plan_elite',
+    descKey: 'fitness.plan_elite_desc',
+    price: '$39.99',
     popular: false,
+    featuresKeys: [
+      'fitness.f_everything_pro',
+      'fitness.f_trainer_sessions',
+      'fitness.f_custom_plans',
+      'fitness.f_body_composition',
+      'fitness.f_exclusive_content',
+      'fitness.f_support_247',
+    ],
   },
 ];
 
 const HomePage = () => {
   const { t } = useTranslation();
 
+  // Interactive Workout Demo State
+  const [tasks, setTasks] = useState([
+    { id: 1, nameKey: 'fitness.warm_up', time: '5 min', completed: true },
+    { id: 2, nameKey: 'fitness.circuit_1', time: '15 min', completed: true },
+    { id: 3, nameKey: 'fitness.circuit_2', time: '15 min', completed: false },
+    { id: 4, nameKey: 'fitness.cool_down', time: '5 min', completed: false },
+  ]);
+
+  const toggleTask = (id: number) => {
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  const completedCount = tasks.filter(t => t.completed).length;
+  const progressPercent = Math.round((completedCount / tasks.length) * 100);
+
   return (
-    <div className={styles.page}>
-      {/* ── Hero ── */}
-      <section className={styles.hero}>
-        <span className={styles.badge}>{t('hero.badge')}</span>
-        <h1 className={styles.title}>
-          {t('hero.title_1')} <br />
-          <span className={styles.gradient}>{t('hero.title_highlight')}</span>
-        </h1>
-        <p className={styles.subtitle}>{t('hero.subtitle')}</p>
-        <div className={styles.ctas}>
-          <Link to="/register">
-            <Button size="lg">
-              <HiOutlineRocketLaunch size={18} /> {t('hero.cta_start')}
-            </Button>
-          </Link>
-          <a href="#features">
-            <Button variant="outline" size="lg">
-              {t('hero.cta_docs')} <HiOutlineArrowRight size={16} />
-            </Button>
+    <div className={styles.fitnessGym}>
+      {/* ── HERO SECTION ── */}
+      <section className={styles.heroSection}>
+        {/* Background Gym Image with deep contrast gradient */}
+        <div className={styles.heroBgWrapper}>
+          <img
+            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&h=1080&fit=crop&q=85"
+            alt="Gym Background"
+            className={styles.heroBgImg}
+          />
+          <div className={styles.heroOverlay} />
+        </div>
+
+        <div className={styles.heroContainer}>
+          {/* Left Content */}
+          <div className={styles.heroContent}>
+            <div className={styles.aiBadge}>
+              <span className={styles.pulseDot} />
+              <span className={styles.aiBadgeText}>{t('fitness.hero_badge')}</span>
+            </div>
+
+            <h1 className={styles.heroHeadline}>
+              {t('fitness.hero_title_1')}<br />
+              {t('fitness.hero_title_2')}<br />
+              <span className={styles.highlightOrange}>{t('fitness.hero_title_hl')}</span>
+            </h1>
+
+            <p className={styles.heroSubtitle}>
+              {t('fitness.hero_subtitle')}
+            </p>
+
+            <div className={styles.heroCtas}>
+              <Link to="/register" className={styles.btnPrimary}>
+                {t('fitness.cta_trial')}
+                <HiOutlineArrowRight className={styles.btnIcon} />
+              </Link>
+              <a href="#workouts" className={styles.btnSecondary}>
+                <HiOutlinePlay className={styles.btnIcon} />
+                {t('fitness.cta_demo')}
+              </a>
+            </div>
+
+            <div className={styles.heroStats}>
+              <div className={styles.statCol}>
+                <div className={styles.statNumber}>500K+</div>
+                <div className={styles.statLabel}>{t('fitness.stat_members')}</div>
+              </div>
+              <div className={styles.statCol}>
+                <div className={styles.statNumber}>1000+</div>
+                <div className={styles.statLabel}>{t('fitness.stat_workouts')}</div>
+              </div>
+              <div className={styles.statCol}>
+                <div className={styles.statNumber}>50+</div>
+                <div className={styles.statLabel}>{t('fitness.stat_trainers')}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Floating Workout Widget Demo */}
+          <div className={styles.heroWidgetCol}>
+            <div className={styles.workoutWidget}>
+              <div className={styles.widgetHeader}>
+                <div className={styles.widgetIconWrap}>
+                  <HiOutlineBolt className={styles.widgetBoltIcon} />
+                </div>
+                <div>
+                  <div className={styles.widgetTitle}>{t('fitness.today_workout')}</div>
+                  <div className={styles.widgetSubtitle}>{t('fitness.hiit_training')}</div>
+                </div>
+              </div>
+
+              <div className={styles.widgetTasks}>
+                {tasks.map(item => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={styles.taskRow}
+                    onClick={() => toggleTask(item.id)}
+                  >
+                    <div className={styles.taskLeft}>
+                      <div
+                        className={`${styles.checkbox} ${
+                          item.completed ? styles.checkboxChecked : ''
+                        }`}
+                      >
+                        {item.completed && <HiOutlineCheck className={styles.checkMark} />}
+                      </div>
+                      <span
+                        className={`${styles.taskName} ${
+                          item.completed ? styles.taskNameDone : ''
+                        }`}
+                      >
+                        {t(item.nameKey)}
+                      </span>
+                    </div>
+                    <span className={styles.taskTime}>{item.time}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.progressContainer}>
+                <div
+                  className={styles.progressBarFill}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <div className={styles.progressLabel}>
+                {progressPercent}% Complete
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WORKOUTS SECTION ── */}
+      <section id="workouts" className={styles.workoutsSection}>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <span className={styles.tagOrange}>{t('fitness.workouts_tag')}</span>
+            <h2 className={styles.sectionHeading}>
+              {t('fitness.workouts_title')}{' '}
+              <span className={styles.highlightOrange}>{t('fitness.workouts_title_hl')}</span>
+            </h2>
+          </div>
+          <a href="#workouts" className={styles.btnSecondarySm}>
+            {t('fitness.btn_view_all')}
           </a>
         </div>
 
-        <div className={styles.statsStrip}>
-          {stats.map((s) => (
-            <div key={s.key} className={styles.stat}>
-              <span className={styles.statValue}>{s.value}</span>
-              <span className={styles.statLabel}>{t(s.key)}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section className={styles.featuresSection} id="features">
-        <p className={styles.sectionLabel}>POWERFUL FEATURES</p>
-        <h2 className={styles.sectionTitle}>{t('features.title')}</h2>
-        <p className={styles.sectionDesc}>
-          Nền tảng AI Gateway mạnh mẽ nhất — hỗ trợ đa nhà cung cấp, pool quản lý key thông minh, và hệ thống billing tự động.
-        </p>
-        <div className={styles.grid}>
-          {features.map((f) => (
-            <div key={f.titleKey} className={styles.card}>
-              <div className={styles.cardIcon}>
-                <f.icon size={26} />
+        <div className={styles.workoutsGrid}>
+          {workoutPrograms.map(workout => (
+            <div key={workout.id} className={styles.workoutCard}>
+              <div className={styles.workoutMedia}>
+                <img
+                  src={workout.image}
+                  alt={t(workout.titleKey)}
+                  className={styles.workoutImg}
+                />
+                <div className={styles.workoutImgMask} />
+                <span className={styles.levelBadge}>{t(workout.levelKey)}</span>
               </div>
-              <h3>{t(f.titleKey)}</h3>
-              <p>{t(f.descKey)}</p>
+              <div className={styles.workoutInfo}>
+                <h3 className={styles.workoutCardTitle}>{t(workout.titleKey)}</h3>
+                <div className={styles.workoutMeta}>
+                  <span className={styles.metaItem}>
+                    <HiOutlineClock className={styles.metaIcon} />
+                    {workout.duration}
+                  </span>
+                  <span className={styles.metaItem}>
+                    <HiOutlineFire className={styles.metaIconFire} />
+                    {workout.calories}
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── How It Works ── */}
-      <section className={styles.howSection}>
-        <p className={styles.sectionLabel}>HOW IT WORKS</p>
-        <h2 className={styles.sectionTitle}>3 Bước Bắt Đầu</h2>
-        <p className={styles.sectionDesc}>
-          Từ kết nối API key đến thu lợi nhuận — chỉ mất vài phút cấu hình.
-        </p>
-        <div className={styles.howGrid}>
-          {howItWorks.map((h) => (
-            <div key={h.step} className={styles.howCard}>
-              <div className={styles.howStep}>{h.step}</div>
-              <div className={styles.howTitle}>{h.title}</div>
-              <div className={styles.howDesc}>{h.desc}</div>
+      {/* ── FEATURES SECTION ── */}
+      <section id="features" className={styles.featuresSection}>
+        <div className={styles.sectionHeaderCenter}>
+          <span className={styles.tagOrange}>{t('fitness.features_tag')}</span>
+          <h2 className={styles.sectionHeading}>
+            {t('fitness.features_title')}{' '}
+            <span className={styles.highlightOrange}>{t('fitness.features_title_hl')}</span>
+          </h2>
+        </div>
+
+        <div className={styles.featuresGrid}>
+          {featuresList.map((feat, idx) => (
+            <div key={idx} className={styles.featureCard}>
+              <div className={styles.featureIconWrap}>
+                <feat.icon className={styles.featureIcon} />
+              </div>
+              <h3 className={styles.featureTitle}>{t(feat.titleKey)}</h3>
+              <p className={styles.featureDesc}>{t(feat.descKey)}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Providers ── */}
-      <section className={styles.providers}>
-        <p className={styles.providerLabel}>{t('hero.providers_label') || 'Hỗ Trợ Hơn 100+ Mô Hình AI'}</p>
-        <div className={styles.providerLogos}>
-          {providers.map((p) => (
-            <div key={p} className={styles.providerChip}>{p}</div>
+      {/* ── EXPERT TRAINERS SECTION ── */}
+      <section id="trainers" className={styles.trainersSection}>
+        <div className={styles.sectionHeaderCenter}>
+          <span className={styles.tagOrange}>{t('fitness.trainers_tag')}</span>
+          <h2 className={styles.sectionHeading}>
+            {t('fitness.trainers_title')}{' '}
+            <span className={styles.highlightOrange}>{t('fitness.trainers_title_hl')}</span>
+          </h2>
+          <p className={styles.sectionSubDesc}>
+            {t('fitness.trainers_desc')}
+          </p>
+        </div>
+
+        <div className={styles.trainersGrid}>
+          {trainers.map(trainer => (
+            <div key={trainer.id} className={styles.trainerCard}>
+              <div className={styles.trainerAvatarWrap}>
+                <img
+                  src={trainer.image}
+                  alt={trainer.name}
+                  className={styles.trainerAvatar}
+                />
+                <div className={styles.trainerOverlay}>
+                  <button type="button" className={styles.btnProfile}>
+                    {t('fitness.view_profile')}
+                  </button>
+                </div>
+              </div>
+              <h3 className={styles.trainerName}>{trainer.name}</h3>
+              <p className={styles.trainerSpec}>{t(trainer.specKey)}</p>
+              <p className={styles.trainerExp}>{t(trainer.expKey)}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ── Pricing ── */}
-      <section className={styles.pricingSection} id="pricing">
-        <p className={styles.sectionLabel}>PRICING</p>
-        <h2 className={styles.sectionTitle}>
-          CHOOSE YOUR <span className={styles.gradientOrange}>PLAN</span>
-        </h2>
-        <p className={styles.sectionDesc}>
-          Start with a 7-day free trial. Cancel anytime.
-        </p>
+      {/* ── PRICING SECTION ── */}
+      <section id="pricing" className={styles.pricingSection}>
+        <div className={styles.sectionHeaderCenter}>
+          <span className={styles.tagOrange}>{t('fitness.pricing_tag')}</span>
+          <h2 className={styles.sectionHeading}>
+            {t('fitness.pricing_title')}{' '}
+            <span className={styles.highlightOrange}>{t('fitness.pricing_title_hl')}</span>
+          </h2>
+          <p className={styles.sectionSubDesc}>
+            {t('fitness.pricing_desc')}
+          </p>
+        </div>
+
         <div className={styles.pricingGrid}>
-          {pricingPlans.map((plan) => (
-            <div key={plan.name} className={`${styles.pricingCard} ${plan.popular ? styles.pricingPopular : ''}`}>
-              {plan.popular && <div className={styles.popularBadge}>MOST POPULAR</div>}
-              <h3 className={styles.planName}>{plan.name}</h3>
-              <p className={styles.planDesc}>{plan.desc}</p>
-              <div className={styles.planPrice}>
-                <span className={styles.priceValue}>{plan.price}</span>
-                <span className={styles.priceUnit}>{plan.unit}</span>
+          {pricingPlans.map(plan => (
+            <div
+              key={plan.id}
+              className={`${styles.pricingCard} ${
+                plan.popular ? styles.pricingCardPopular : ''
+              }`}
+            >
+              {plan.popular && (
+                <div className={styles.popularBadge}>
+                  {t('fitness.most_popular')}
+                </div>
+              )}
+              <h3 className={styles.planName}>{t(plan.nameKey)}</h3>
+              <p className={styles.planDesc}>{t(plan.descKey)}</p>
+              <div className={styles.priceRow}>
+                <span className={styles.priceMain}>{plan.price}</span>
+                <span className={styles.pricePeriod}>{t('fitness.per_month')}</span>
               </div>
-              <ul className={styles.planFeatures}>
-                {plan.features.map((f) => (
-                  <li key={f}><span className={styles.checkIcon}>✓</span> {f}</li>
+              <ul className={styles.planFeatureList}>
+                {plan.featuresKeys.map(fk => (
+                  <li key={fk} className={styles.planFeatureItem}>
+                    <HiOutlineCheck className={styles.planCheckIcon} />
+                    <span>{t(fk)}</span>
+                  </li>
                 ))}
               </ul>
-              <Link to="/register">
-                <button type="button" className={`${styles.planCta} ${plan.popular ? styles.planCtaPopular : ''}`}>
-                  BẮT ĐẦU DÙNG THỬ
-                </button>
+              <Link to="/register" className={plan.popular ? styles.planBtnPopular : styles.planBtn}>
+                {t('fitness.start_trial')}
               </Link>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className={styles.ctaSection}>
-        <div className={styles.ctaCard}>
-          <h2 className={styles.ctaTitle}>Sẵn Sàng Khởi Tạo AI Gateway?</h2>
-          <p className={styles.ctaDesc}>
-            Đăng ký miễn phí, nhận 50,000 credits dùng thử. Không cần thẻ tín dụng.
+      {/* ── MOTIVATIONAL CTA BANNER ── */}
+      <section className={styles.ctaBannerSection}>
+        <div className={styles.ctaBannerCard}>
+          <div className={styles.ctaBadge}>
+            <HiOutlineShieldCheck className={styles.ctaBadgeIcon} />
+            <span>7-DAY TRIAL GUARANTEE</span>
+          </div>
+          <h2 className={styles.ctaTitle}>
+            {t('fitness.cta_banner_title')}
+          </h2>
+          <p className={styles.ctaSubtitle}>
+            {t('fitness.cta_banner_desc')}
           </p>
-          <div className={styles.ctaBtns}>
-            <Link to="/register">
-              <Button size="lg">
-                <HiOutlineRocketLaunch size={18} /> Bắt Đầu Miễn Phí
-              </Button>
+          <div className={styles.ctaButtonsRow}>
+            <Link to="/register" className={styles.btnPrimaryLg}>
+              {t('fitness.cta_trial')}
+              <HiOutlineArrowRight className={styles.btnIcon} />
             </Link>
-            <Link to="/login">
-              <Button variant="outline" size="lg">
-                Đăng Nhập
-              </Button>
+            <Link to="/login" className={styles.btnSecondaryLg}>
+              {t('nav.login')}
             </Link>
           </div>
         </div>
