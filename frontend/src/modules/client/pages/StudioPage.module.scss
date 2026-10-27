@@ -149,258 +149,499 @@
   }
 }
 
-// ── BOTTOM STUDIO CONTROL PANEL (Nằm ở dưới như lúc đầu) ──
+// ── Studio Bottom Floating Prompt Bar (Modern High-End AI Studio) ──
 .bottomControlPanel {
   position: sticky;
-  bottom: 0;
-  background: rgba(9, 14, 26, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid #1a253a;
-  padding: 0.85rem 1.5rem 1.15rem;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
-  z-index: 30;
-  margin-top: auto;
-}
-
-// Fallback compatibility
-.topControlPanel {
-  @extend .bottomControlPanel;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  z-index: 50;
+  pointer-events: auto;
 }
 
 .controlContainer {
-  max-width: 1100px;
-  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .promptInputBox {
-  background: #101626;
-  border: 1px solid #202c44;
-  border-radius: 16px;
-  padding: 0.75rem 1rem;
+  background: #191919;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 12px 16px 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  gap: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:focus-within {
-    border-color: #ff6b35;
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
-  }
-
-  // Reference Image Thumbnail Preview
-  .refImagePreviewRow {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: #151d30;
-    border: 1px dashed #2c3c5d;
-    padding: 6px 10px;
-    border-radius: 10px;
-
-    .refThumbnailBox {
-      position: relative;
-      width: 44px;
-      height: 44px;
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid #38bdf8;
-      flex-shrink: 0;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .removeRefBtn {
-        position: absolute;
-        top: 2px;
-        right: 2px;
-        background: rgba(239, 68, 68, 0.85);
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: transform 0.15s ease;
-
-        &:hover {
-          transform: scale(1.15);
-          background: #ef4444;
-        }
-      }
-    }
-
-    .refLabelBox {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-
-      .refTitle {
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: #38bdf8;
-      }
-
-      .refDesc {
-        font-size: 0.72rem;
-        color: #94a3b8;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-  }
-
-  .promptTextarea {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 0.95rem;
-    outline: none;
-    resize: none;
-    font-family: inherit;
-    line-height: 1.5;
-
-    &::placeholder {
-      color: #64748b;
-    }
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 }
 
-.promptActionsRow {
+// ── Top Bar: Slots & Inspire Me ──
+.promptTopBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  border-top: 1px solid #192338;
-  padding-top: 0.65rem;
-  flex-wrap: wrap;
+  gap: 0.75rem;
+  min-height: 38px;
 }
 
-.optionsGroup {
+.slotsGroup {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 6px;
   flex-wrap: wrap;
 
-  .optChipBtn {
+  .slotArrow {
+    color: #52525b;
+    font-size: 0.8rem;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    background: #172033;
-    border: 1px solid #23314e;
-    color: #cbd5e1;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 5px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.18s ease;
+  }
+}
 
-    &:hover {
-      background: #1d2942;
-      color: #fff;
-      border-color: #38bdf8;
-    }
+.refSlotBtn {
+  background: #242426;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 4px 8px;
+  min-width: 48px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #a1a1aa;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
 
-    &.chipActive {
-      background: rgba(56, 189, 248, 0.12);
-      border-color: #38bdf8;
-      color: #38bdf8;
+  &:hover {
+    background: #2c2c2e;
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+
+  &.slotActive {
+    border-style: solid;
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.1);
+    color: #ff6b35;
+  }
+
+  .slotIconWithPlus {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+
+    .subPlus {
+      font-size: 0.55rem;
+      position: absolute;
+      top: -2px;
+      right: -5px;
+      font-weight: 800;
     }
   }
 
-  .selectControl {
+  .slotLabel {
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .slotThumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .clearSlotBtn {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+}
+
+.inspireMeBtn {
+  background: transparent;
+  border: none;
+  color: #d4d4d8;
+  font-size: 0.82rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: color 0.18s ease, background 0.18s ease;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .sparkleIcon {
+    color: #e4e4e7;
+  }
+}
+
+// ── Middle: Clean Borderless Textarea ──
+.promptTextarea {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.96rem;
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  width: 100%;
+  min-height: 48px;
+  padding: 4px 0;
+
+  &::placeholder {
+    color: #71717a;
+  }
+}
+
+// ── Bottom Toolbar: Mode Switcher, Model, Params, Mic, Submit ──
+.promptBottomToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+// Segmented Mode Switcher [Ảnh] [Video] [Âm thanh]
+.modeSwitcherGroup {
+  display: inline-flex;
+  align-items: center;
+  background: #242426;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+
+  .modeTabBtn {
+    background: transparent;
+    border: none;
+    color: #a1a1aa;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 5px 9px;
+    border-radius: 8px;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    background: #141b2c;
-    border: 1px solid #222d46;
-    padding: 3px 8px;
-    border-radius: 8px;
+    gap: 5px;
+    transition: all 0.15s ease;
 
-    .selectLabel {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #718096;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+    &:hover {
+      color: #fff;
     }
 
-    .compactSelect {
-      background: transparent;
-      border: none;
-      color: #f1f5f9;
-      font-size: 0.78rem;
-      font-weight: 600;
-      outline: none;
+    &.modeTabActive {
+      background: #323236;
+      color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// Book Icon Button [📖]
+.iconBookBtn {
+  background: #242426;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #d4d4d8;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #2c2c2e;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+// Model Selector Pill Button ✦ [Model Name] ⌵
+.modelPillDropdown {
+  position: relative;
+
+  .modelPillBtn {
+    background: #242426;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 6px 12px;
+    color: #ffffff;
+    font-size: 0.84rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #2c2c2e;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .starIcon {
+      color: #ff6b35;
+      font-size: 0.9rem;
+    }
+
+    .chevron {
+      color: #a1a1aa;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Params Pill Button (e.g. 1K · Tự động · Cao ⌵)
+.paramsPillDropdown {
+  position: relative;
+
+  .paramsPillBtn {
+    background: #242426;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 6px 12px;
+    color: #ffffff;
+    font-size: 0.84rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #2c2c2e;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .chevron {
+      color: #a1a1aa;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Toolbar Right: Mic & Pink Neon Circle Submit
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.micBtn {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &.micActive {
+    color: #ff2ea6;
+    animation: pulseText 1s infinite alternate;
+  }
+}
+
+.pinkNeonSubmitBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ff2ea6;
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 10px rgba(255, 46, 166, 0.4);
+
+  &:hover:not(:disabled) {
+    transform: scale(1.08);
+    background: #ff47b3;
+    box-shadow: 0 4px 14px rgba(255, 46, 166, 0.6);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// Standalone Speaker Button for Video Mode
+.standaloneSpeakerBtn {
+  background: #191919;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #d4d4d8;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #242426;
+    color: #fff;
+  }
+}
+
+// Popover Menu for Models, Params & Inspirations
+.customPopoverMenu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background: #1e1e20;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px;
+  min-width: 260px;
+  max-width: 360px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fadeIn 0.18s ease;
+
+  &.popoverRight {
+    left: auto;
+    right: 0;
+  }
+
+  .popoverItem {
+    background: transparent;
+    border: none;
+    color: #d4d4d8;
+    padding: 7px 10px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: #2a2a2d;
+      color: #fff;
+    }
+
+    &.popoverActive {
+      background: rgba(255, 107, 53, 0.15);
+      color: #ff6b35;
+      font-weight: 700;
+    }
+
+    .itemCreditBadge {
+      font-size: 0.72rem;
+      color: #2dd4bf;
+      background: rgba(45, 212, 191, 0.12);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+  }
+
+  .paramGroupTitle {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px 2px;
+  }
+
+  .paramOptionsGrid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 2px 4px 6px;
+
+    .paramChip {
+      background: #28282b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
       cursor: pointer;
 
-      option {
-        background: #0f1524;
+      &:hover {
+        background: #333338;
         color: #fff;
+      }
+
+      &.paramActive {
+        background: #ff6b35;
+        color: #fff;
+        border-color: #ff6b35;
       }
     }
   }
 }
 
-.submitArea {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-
-  .costBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.12);
-    border: 1px solid rgba(245, 158, 11, 0.35);
-    padding: 4px 9px;
-    border-radius: 8px;
-  }
-
-  .generateBtn {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
-    color: #fff;
-    border: none;
-    font-weight: 700;
-    font-size: 0.88rem;
-    padding: 0.55rem 1.35rem;
-    border-radius: 10px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25);
-
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    .spinnerPulse {
-      animation: pulseText 1s infinite alternate;
-    }
-  }
-}
 
 // ── Main Canvas & Gallery Area ──
 .canvasContainer {

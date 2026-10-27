@@ -27,9 +27,29 @@ export interface ModelCatalogItem {
   profit_margin_pct?: number;
 }
 
+export interface PublicModelItem {
+  id: string;
+  name: string;
+  model_code: string;
+  category: 'CHAT' | 'IMAGE' | 'VIDEO' | 'DEV_REQ' | string;
+  provider: string;
+  selling_credit_price: number;
+  input_credit_price: number;
+  output_credit_price: number;
+  cache_read_credit_price: number;
+  is_available: boolean;
+  description?: string;
+  created_at?: string;
+}
+
 export type ModelItem = ModelCatalogItem;
 
 export const modelService = {
+  getPublicModels: async (params?: { category?: string; provider?: string; search?: string }): Promise<PublicModelItem[]> => {
+    const res = await apiClient.get<PublicModelItem[]>('/models/public', { params });
+    return res.data;
+  },
+
   getModels: async (params?: { category?: string; provider?: string; search?: string }): Promise<ModelCatalogItem[]> => {
     const res = await apiClient.get<ModelCatalogItem[]>('/models', { params });
     return res.data;

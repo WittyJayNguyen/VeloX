@@ -61,3 +61,10 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Python & Database
+*.db
+*.sqlite3
+__pycache__/
+*.py[cod]
+backend/venv/
