@@ -484,6 +484,27 @@
     "ultra_4k": "ウルトラ 4K"
   },
   "models_page": {
-    "subtitle": "チャット、画像、動画向け100以上の次世代AIモデルを最適価格で探索"
+    "title": "AIモデルカタログ (AI Models Catalog)",
+    "subtitle": "チャット、画像、動画向け100以上の次世代AIモデルを透明なクレジット料金と最適価格で探索",
+    "all": "すべて",
+    "category_chat": "チャットと言語",
+    "category_image": "画像生成アート",
+    "category_video": "シネマティック動画",
+    "category_code": "プログラミング＆エージェント",
+    "search_placeholder": "モデル名、コード、提供元で検索...",
+    "input_tokens": "入力 Tokens",
+    "output_tokens": "出力 Tokens",
+    "cache_read": "キャッシュ読込 (Cache Read)",
+    "per_request": "1回のリクエストあたり",
+    "per_image": "画像1枚あたり",
+    "per_video": "動画1本あたり",
+    "free": "無料",
+    "credits_unit": "クレジット",
+    "per_1m": "/ 100万 tokens",
+    "open_in_studio": "Studio で試す",
+    "active": "オンライン",
+    "maintenance": "メンテナンス中",
+    "no_models_found": "一致するAIモデルが見つかりません",
+    "loading": "システムからモデル一覧を読み込み中..."
   }
 }

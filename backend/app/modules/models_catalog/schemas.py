@@ -79,6 +79,27 @@ class AIModelResponse(BaseModel):
         from_attributes = True
 
 
+class AIModelPublicResponse(BaseModel):
+    """Schema dành cho người dùng công khai (Homepage /models /studio).
+    TUYỆT ĐỐI KHÔNG chứa giá vốn hay thông tin NCC (cost, profit, margin).
+    Chỉ hiển thị giá bán Credits niêm yết mà user sẽ bị trừ!"""
+    id: str
+    name: str
+    model_code: str
+    category: str
+    provider: str
+    selling_credit_price: int
+    input_credit_price: int
+    output_credit_price: int
+    cache_read_credit_price: int
+    is_available: bool
+    description: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
 class UpdateModelPricingRequest(BaseModel):
     cost_per_req_or_1k_tok: Optional[float] = None  # Giá gốc (media/1k tok)
     selling_credit_price: Optional[int] = None      # Giá bán ra (Credits)

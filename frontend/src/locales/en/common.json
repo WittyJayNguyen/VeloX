@@ -486,6 +486,27 @@
     "ultra_4k": "Ultra 4K"
   },
   "models_page": {
-    "subtitle": "Discover 100+ next-generation AI models for Chat, Image and Video at optimized rates"
+    "title": "AI Models Catalog",
+    "subtitle": "Discover 100+ next-generation AI models for Chat, Image and Video with transparent credit pricing",
+    "all": "All Models",
+    "category_chat": "Chat & Language",
+    "category_image": "AI Image Art",
+    "category_video": "Cinematic Video",
+    "category_code": "Coding & Agents",
+    "search_placeholder": "Search by model name, code, provider...",
+    "input_tokens": "Input Tokens",
+    "output_tokens": "Output Tokens",
+    "cache_read": "Cache Read",
+    "per_request": "Per request",
+    "per_image": "Per image",
+    "per_video": "Per video",
+    "free": "Free",
+    "credits_unit": "Credits",
+    "per_1m": "/ 1M tokens",
+    "open_in_studio": "Use in Studio",
+    "active": "Online",
+    "maintenance": "Maintenance",
+    "no_models_found": "No matching AI models found",
+    "loading": "Loading models catalog from system..."
   }
 }
