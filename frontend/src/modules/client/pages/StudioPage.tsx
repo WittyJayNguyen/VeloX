@@ -12,7 +12,14 @@ import {
   HiOutlineXMark,
   HiOutlineClock,
   HiOutlineArrowsPointingOut,
+  HiOutlineUser,
+  HiOutlinePlay,
 } from 'react-icons/hi2';
+import {
+  RiOpenaiFill,
+  RiReactjsFill,
+  RiSparklingFill,
+} from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { STUDIO_CATEGORIES } from '@modules/core/components/StudioMegaMenu/StudioMegaMenu';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
@@ -428,7 +435,10 @@ export const StudioPage: React.FC = () => {
           </div>
 
           <div className={styles.creditPill} onClick={() => setTopupOpen(true)}>
-            <span>💎 {user?.credit_balance ?? 991} cr</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <RiSparklingFill size={13} color="#2dd4bf" />
+              {user?.credit_balance ?? 991} cr
+            </span>
             <button type="button" className={styles.miniTopupBtn}>Nạp</button>
           </div>
         </div>
@@ -592,7 +602,10 @@ export const StudioPage: React.FC = () => {
                   disabled={isGenerating || !prompt.trim()}
                 >
                   {isGenerating ? (
-                    <span className={styles.spinnerPulse}>⏳ Đang tạo...</span>
+                    <span className={styles.spinnerPulse} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <RiReactjsFill size={16} color="#61dafb" style={{ animation: 'spin360 2s linear infinite' }} />
+                      <span>Đang tạo...</span>
+                    </span>
                   ) : (
                     <>
                       <HiOutlineSparkles size={16} />
@@ -618,7 +631,11 @@ export const StudioPage: React.FC = () => {
                   className={`${styles.messageRow} ${msg.role === 'user' ? styles.userRow : styles.assistantRow}`}
                 >
                   <div className={styles.avatarBox}>
-                    {msg.role === 'user' ? '👤' : '⚡'}
+                    {msg.role === 'user' ? (
+                      <HiOutlineUser size={18} color="#94a3b8" />
+                    ) : (
+                      <RiOpenaiFill size={18} color="#10a37f" />
+                    )}
                   </div>
                   <div className={styles.messageBubble}>
                     <div className={styles.bubbleMeta}>{msg.model}</div>
@@ -628,7 +645,9 @@ export const StudioPage: React.FC = () => {
               ))}
               {isGenerating && (
                 <div className={`${styles.messageRow} ${styles.assistantRow}`}>
-                  <div className={styles.avatarBox}>⚡</div>
+                  <div className={styles.avatarBox}>
+                    <RiOpenaiFill size={18} color="#10a37f" />
+                  </div>
                   <div className={styles.messageBubble}>
                     <div className={styles.typingIndicator}>
                       <span></span><span></span><span></span>
@@ -816,7 +835,9 @@ export const StudioPage: React.FC = () => {
                     }
                   >
                     <img src={vid.poster} alt={vid.title} loading="lazy" />
-                    <div className={styles.playIconOverlay}>▶</div>
+                    <div className={styles.playIconOverlay}>
+                      <HiOutlinePlay size={24} />
+                    </div>
 
                     <div className={styles.overlayActions}>
                       <button

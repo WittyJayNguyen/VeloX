@@ -19,6 +19,7 @@ import {
   HiOutlineGift,
   HiOutlineCog6Tooth,
 } from 'react-icons/hi2';
+import { RiSparklingFill } from 'react-icons/ri';
 import styles from './UserProfileDropdown.module.scss';
 
 interface UserProfileDropdownProps {
@@ -140,7 +141,9 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
           {/* Credit & Topup Card */}
           <div className={styles.creditCard}>
             <div className={styles.creditLeft}>
-              <span className={styles.diamond}>💎</span>
+              <span className={styles.diamond} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <RiSparklingFill color="#2dd4bf" size={16} />
+              </span>
               <span className={styles.creditAmount}>{user?.credit_balance ?? 991}</span>
               <span className={styles.creditUnit}>credit</span>
             </div>

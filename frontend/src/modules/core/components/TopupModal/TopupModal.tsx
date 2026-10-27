@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HiOutlineXMark, HiOutlineCheckCircle, HiOutlineDocumentDuplicate, HiOutlineSparkles } from 'react-icons/hi2';
+import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import styles from './TopupModal.module.scss';
 
@@ -81,7 +82,9 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <div className={styles.titleArea}>
-            <div className={styles.diamondIcon}>💎</div>
+            <div className={styles.diamondIcon} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <RiSparklingFill size={22} color="#2dd4bf" />
+            </div>
             <div>
               <h3>{t('topup.title', 'Nạp Credit Tài Khoản')}</h3>
               <p className={styles.balanceInfo}>
@@ -121,8 +124,8 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
                         <HiOutlineSparkles size={11} /> HOT
                       </span>
                     )}
-                    <div className={styles.optionCredits}>
-                      💎 {opt.credits.toLocaleString()} <span className={styles.crUnit}>credit</span>
+                    <div className={styles.optionCredits} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <RiSparklingFill size={15} color="#2dd4bf" /> {opt.credits.toLocaleString()} <span className={styles.crUnit}>credit</span>
                     </div>
                     <div className={styles.optionPrice}>{opt.priceVnd.toLocaleString()} đ</div>
                     {opt.bonusPercent > 0 && (
