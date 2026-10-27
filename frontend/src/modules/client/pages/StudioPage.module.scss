@@ -149,14 +149,23 @@
   }
 }
 
-// ── TOP STUDIO CONTROL PANEL (Sát lên trên) ──
-.topControlPanel {
-  background: #090e1a;
-  border-bottom: 1px solid #1a253a;
-  padding: 1rem 1.5rem 1.25rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  position: relative;
+// ── BOTTOM STUDIO CONTROL PANEL (Nằm ở dưới như lúc đầu) ──
+.bottomControlPanel {
+  position: sticky;
+  bottom: 0;
+  background: rgba(9, 14, 26, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid #1a253a;
+  padding: 0.85rem 1.5rem 1.15rem;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
   z-index: 30;
+  margin-top: auto;
+}
+
+// Fallback compatibility
+.topControlPanel {
+  @extend .bottomControlPanel;
 }
 
 .controlContainer {
