@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════
 
 // ── Form Group ──
-.formGroup { margin-bottom: 1rem; &.fullWidth { width: 100%; } }
+.formGroup { margin-bottom: 1rem; &.fullWidth { width: 100%; } &.noMargin { margin-bottom: 0 !important; } }
 .label { display: block; font-size: 0.8rem; font-weight: 600; color: #a1a1aa; margin-bottom: 0.4rem; }
 .inputWrapper { position: relative; display: flex; align-items: center;
   &.hasError .input, &.hasError .textarea { border-color: #f43f5e; }
@@ -38,13 +38,14 @@
 }
 
 // ── Modal ──
-.modalOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); animation: fadeIn 0.15s ease; padding: 1rem; }
+.modalOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: fadeIn 0.15s ease; padding: 0.75rem; }
 .modalCard {
   background: #1c1c22;
   border: 1px solid #27272a;
   border-radius: 14px;
-  width: 90%;
-  max-height: 90vh;
+  width: 100%;
+  max-width: 95vw;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -100,9 +101,36 @@
   z-index: 10;
 }
 
+@media (max-width: 640px) {
+  .modalHeader {
+    padding: 1rem 1.15rem;
+    h2 { font-size: 0.95rem; }
+  }
+  .modalBody {
+    padding: 1rem 1.15rem;
+  }
+  .modalFooter {
+    padding: 0.85rem 1.15rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    button {
+      flex: 1 1 auto;
+    }
+  }
+}
+
 // ── Tabs ──
 .tabsContainer { width: 100%; }
-.tabsNav { display: flex; gap: 0; border-bottom: 2px solid #27272a; margin-bottom: 1rem; overflow-x: auto; }
+.tabsNav {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #27272a;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
 .tabs_pill { border-bottom: none; background: #18181b; border-radius: 10px; padding: 4px; gap: 4px; }
 .tabBtn { padding: 0.65rem 1.2rem; font-size: 0.8rem; font-weight: 600; color: #71717a; background: none; border: none; cursor: pointer; position: relative; transition: all 0.2s; white-space: nowrap;
   &:hover { color: #a1a1aa; }
@@ -116,11 +144,39 @@
 .tabContent { min-height: 40px; }
 
 // ── Table ──
-.tableWrapper { width: 100%; }
-.tableScroll { overflow-x: auto; }
-.table { width: 100%; border-collapse: collapse;
-  th { padding: 0.7rem 1rem; font-size: 0.72rem; font-weight: 700; color: #71717a; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #27272a; background: #18181b; white-space: nowrap; }
-  td { padding: 0.75rem 1rem; font-size: 0.82rem; color: #d4d4d8; border-bottom: 1px solid rgba(39,39,42,0.5); }
+.tableWrapper { width: 100%; max-width: 100%; overflow: hidden; }
+.tableScroll {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+  &::-webkit-scrollbar { height: 6px; width: 6px; }
+  &::-webkit-scrollbar-thumb { background-color: #3f3f46; border-radius: 9999px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+  th {
+    padding: 0.7rem 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #27272a;
+    background: #18181b;
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    color: #d4d4d8;
+    border-bottom: 1px solid rgba(39,39,42,0.5);
+    white-space: nowrap;
+  }
   tbody tr { transition: background 0.15s;
     &:hover { background: rgba(99,102,241,0.04); }
   }
@@ -128,7 +184,23 @@
 .loadingCell, .emptyCell { text-align: center !important; padding: 2.5rem 1rem !important; color: #52525b; }
 
 // ── Pagination ──
-.pagination { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; border-top: 1px solid #27272a; flex-wrap: wrap; gap: 0.6rem; }
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid #27272a;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    .pageInfo { text-align: center; }
+    .pageButtons { flex-wrap: wrap; justify-content: center; }
+  }
+}
 .pageInfo { font-size: 0.75rem; color: #71717a; }
 .pageButtons { display: flex; align-items: center; gap: 4px; }
 .pageBtn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #27272a; border-radius: 6px; background: transparent; color: #a1a1aa; font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
@@ -162,6 +234,12 @@
 .cardSubtitle { font-size: 0.72rem; color: #71717a; margin: 0.2rem 0 0; }
 .cardHeaderRight { display: flex; align-items: center; gap: 0.5rem; }
 
+@media (max-width: 640px) {
+  .card_pad_md .cardBody { padding: 0.9rem; }
+  .card_pad_lg .cardBody { padding: 1rem; }
+  .cardHeader { padding: 0.85rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+}
+
 // ── Spinner ──
 .spinnerContainer { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
 .spinnerCircle { border: 3px solid #27272a; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.65s linear infinite; }
@@ -188,7 +266,7 @@
 .toggleOn .toggleThumb { transform: translateX(18px); }
 
 // ── SearchInput ──
-.searchInputWrapper { position: relative; display: flex; align-items: center; }
+.searchInputWrapper { position: relative; display: flex; align-items: center; width: 100%; }
 .searchIcon { position: absolute; left: 0.75rem; color: #52525b; }
 .searchField { width: 100%; padding: 0.55rem 2rem 0.55rem 2.4rem; background: #18181b; border: 1px solid #27272a; border-radius: 8px; color: #fafafa; font-size: 0.82rem; transition: border 0.2s;
   &:focus { outline: none; border-color: #6366f1; }
@@ -225,6 +303,15 @@
 .statTrend { font-size: 0.7rem; font-weight: 600; }
 .trendUp { color: #10b981; }
 .trendDown { color: #f43f5e; }
+
+@media (max-width: 480px) {
+  .statCard {
+    padding: 0.85rem;
+    gap: 0.75rem;
+    .statIcon { width: 38px; height: 38px; font-size: 1rem; }
+    .statValue { font-size: 1.15rem; }
+  }
+}
 
 // ── Animations ──
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

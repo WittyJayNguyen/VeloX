@@ -43,6 +43,7 @@ const RolesPage = () => {
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     gateway: true,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load Data from Backend
   const loadData = async () => {
@@ -164,8 +165,9 @@ const RolesPage = () => {
   // Save Role
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || (!editingRole && !formCode.trim())) return;
+    if (isSubmitting || !formName.trim() || (!editingRole && !formCode.trim())) return;
 
+    setIsSubmitting(true);
     try {
       if (editingRole) {
         await userManagementService.updateRole(editingRole.id, {
@@ -190,6 +192,8 @@ const RolesPage = () => {
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Có lỗi xảy ra khi lưu vai trò';
       alert(errorMsg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -380,7 +384,7 @@ const RolesPage = () => {
             <Button variant="secondary" onClick={() => setShowModal(false)}>
               Hủy
             </Button>
-            <Button variant="primary" onClick={handleSave}>
+            <Button variant="primary" onClick={handleSave} loading={isSubmitting} disabled={isSubmitting}>
               {editingRole ? 'Lưu Cấu Hình Quyền' : 'Tạo Vai Trò'}
             </Button>
           </>

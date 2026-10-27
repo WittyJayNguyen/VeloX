@@ -1,183 +1,194 @@
+/**
+ * VeloX AI Gateway — Service Pools, Keys & Captcha Solvers API Service
+ */
 import apiClient from '@modules/core/lib/apiClient';
 
-// ── Types ──
-export interface PoolKeyDto {
+export type KeyAuthType = 'API_KEY' | 'SESSION_TOKEN';
+export type KeyStatus = 'ACTIVE' | 'PAUSED' | 'QUOTA_EXCEEDED' | 'ERROR';
+export type PlanTier = 'Free' | 'Plus' | 'Pro' | 'Team' | 'Enterprise';
+export type ProviderType = 'OpenAI' | 'Anthropic' | 'Google' | 'DeepSeek' | 'Midjourney' | 'Runway' | 'OpenRouter' | 'Custom';
+export type RoutingStrategy = 'ROUND_ROBIN' | 'PRIORITY' | 'LEAST_USED' | 'WEIGHTED';
+
+export interface PoolKeyItem {
   id: string;
-  name: string;
-  key_value: string;
-  recap_token?: string;
-  is_active: boolean;
-  requests_count: number;
-  detected_models: string[];
-}
-
-export interface ServicePoolDto {
-  id: string;
-  name: string;
-  provider: 'OpenAI' | 'Anthropic' | 'Midjourney' | 'Runway' | 'DeepSeek' | 'Google';
-  auth_type: 'API_KEY' | 'TOKEN_ACCOUNT';
-  routing_strategy: 'ROUND_ROBIN' | 'LEAST_USED' | 'WEIGHTED';
-  is_active: boolean;
-  rate_limit_per_min: number;
-  keys: PoolKeyDto[];
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface CreatePoolPayload {
-  name: string;
-  provider: ServicePoolDto['provider'];
-  auth_type: ServicePoolDto['auth_type'];
-  routing_strategy: ServicePoolDto['routing_strategy'];
-  rate_limit_per_min: number;
-}
-
-export interface AddKeyPayload {
   pool_id: string;
   name: string;
-  key_value: string;
+  auth_type: KeyAuthType;
+  key_val: string;
   recap_token?: string;
+  cookies?: string;
+  metadata_json?: string;
+  quota_daily: number;
+  quota_daily_used: number;
+  quota_monthly: number;
+  quota_monthly_used: number;
+  points: number;
+  priority: number;
+  plan_badge: PlanTier;
+  status: KeyStatus;
+  requests_count: number;
+  detected_models: string[];
+  last_checked_at?: string;
+  quota_remaining_usd?: number;
+  notes?: string;
+  created_at?: string;
 }
 
-export type ServicePoolItem = ServicePoolDto;
+export interface PoolItem {
+  id: string;
+  name: string;
+  provider: ProviderType;
+  base_url: string;
+  auth_type: 'API_KEY' | 'TOKEN_ACCOUNT' | 'HYBRID';
+  routing_strategy: RoutingStrategy;
+  keys: PoolKeyItem[];
+  is_active: boolean;
+  rate_limit_per_min: number;
+  max_tokens_per_min?: number;
+  timeout_ms?: number;
+  description?: string;
+  created_at?: string;
+}
 
-// ── Offline fallback using localStorage ──
-const STORAGE_KEY = 'velox_pools';
+export type ServicePoolItem = PoolItem;
 
-const getLocal = (): ServicePoolDto[] => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-};
+export interface RecaptchaSolverItem {
+  id: string;
+  name: string;
+  provider: '2Captcha' | 'CapSolver' | 'Anti-Captcha' | 'EzCaptcha' | 'CustomNode';
+  api_key: string;
+  supported_types: string[];
+  balance_usd: number;
+  avg_solve_time_sec: number;
+  solved_count: number;
+  success_rate_pct: number;
+  timeout_sec: number;
+  assigned_accounts_count: number;
+  is_active: boolean;
+  created_at?: string;
+}
 
-const saveLocal = (data: ServicePoolDto[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-};
-
-// ── Service (tries API first, falls back to localStorage) ──
 export const poolService = {
-  getPools: async (): Promise<ServicePoolDto[]> => {
-    return poolService.getAll();
+  // ── Pools ──
+  getPools: async (): Promise<PoolItem[]> => {
+    const res = await apiClient.get<PoolItem[]>('/pools');
+    return res.data;
   },
 
-  // ─── Pool CRUD ───
-  getAll: async (): Promise<ServicePoolDto[]> => {
-    try {
-      const res = await apiClient.get<ServicePoolDto[]>('/pools');
-      saveLocal(res.data);
-      return res.data;
-    } catch {
-      return getLocal();
-    }
+  createPool: async (data: Partial<PoolItem>): Promise<PoolItem> => {
+    const res = await apiClient.post<PoolItem>('/pools', data);
+    return res.data;
   },
 
-  getById: async (id: string): Promise<ServicePoolDto | undefined> => {
-    try {
-      const res = await apiClient.get<ServicePoolDto>(`/pools/${id}`);
-      return res.data;
-    } catch {
-      return getLocal().find((p) => p.id === id);
-    }
+  updatePool: async (id: string, data: Partial<PoolItem>): Promise<PoolItem> => {
+    const res = await apiClient.put<PoolItem>(`/pools/${id}`, data);
+    return res.data;
   },
 
-  create: async (payload: CreatePoolPayload): Promise<ServicePoolDto> => {
-    try {
-      const res = await apiClient.post<ServicePoolDto>('/pools', payload);
-      const all = getLocal();
-      all.push(res.data);
-      saveLocal(all);
-      return res.data;
-    } catch {
-      const newPool: ServicePoolDto = {
-        id: `pool_${Date.now()}`,
-        ...payload,
-        is_active: true,
-        keys: [],
-        created_at: new Date().toISOString(),
-      };
-      const all = getLocal();
-      all.push(newPool);
-      saveLocal(all);
-      return newPool;
-    }
+  deletePool: async (id: string): Promise<void> => {
+    await apiClient.delete(`/pools/${id}`);
   },
 
-  update: async (id: string, payload: Partial<CreatePoolPayload>): Promise<ServicePoolDto> => {
-    try {
-      const res = await apiClient.put<ServicePoolDto>(`/pools/${id}`, payload);
-      const all = getLocal().map((p) => (p.id === id ? { ...p, ...res.data } : p));
-      saveLocal(all);
-      return res.data;
-    } catch {
-      const all = getLocal().map((p) => (p.id === id ? { ...p, ...payload, updated_at: new Date().toISOString() } : p));
-      saveLocal(all);
-      return all.find((p) => p.id === id)!;
-    }
+  togglePool: async (id: string): Promise<PoolItem> => {
+    const res = await apiClient.post<PoolItem>(`/pools/${id}/toggle`);
+    return res.data;
   },
 
-  remove: async (id: string): Promise<void> => {
-    try {
-      await apiClient.delete(`/pools/${id}`);
-    } catch { /* offline */ }
-    saveLocal(getLocal().filter((p) => p.id !== id));
+  // ── Keys ──
+  getPoolKeys: async (params?: { pool_id?: string; status?: string; plan?: string; search?: string }): Promise<PoolKeyItem[]> => {
+    const res = await apiClient.get<PoolKeyItem[]>('/pool-keys', { params });
+    return res.data;
   },
 
-  toggleActive: async (id: string): Promise<ServicePoolDto> => {
-    const all = getLocal();
-    const pool = all.find((p) => p.id === id);
-    if (!pool) throw new Error('Pool not found');
-    pool.is_active = !pool.is_active;
-    saveLocal(all);
-    try { await apiClient.patch(`/pools/${id}/toggle`); } catch { /* offline */ }
-    return pool;
+  createPoolKey: async (data: Partial<PoolKeyItem>): Promise<PoolKeyItem> => {
+    const res = await apiClient.post<PoolKeyItem>('/pool-keys', data);
+    return res.data;
   },
 
-  // ─── Key CRUD ───
-  addKey: async (payload: AddKeyPayload): Promise<PoolKeyDto> => {
-    const newKey: PoolKeyDto = {
-      id: `key_${Date.now()}`,
-      name: payload.name,
-      key_value: payload.key_value,
-      recap_token: payload.recap_token,
-      is_active: true,
-      requests_count: 0,
-      detected_models: [],
-    };
-    try {
-      const res = await apiClient.post<PoolKeyDto>(`/pools/${payload.pool_id}/keys`, payload);
-      Object.assign(newKey, res.data);
-    } catch { /* offline */ }
-    const all = getLocal().map((p) =>
-      p.id === payload.pool_id ? { ...p, keys: [...p.keys, newKey] } : p
-    );
-    saveLocal(all);
-    return newKey;
+  updatePoolKey: async (id: string, data: Partial<PoolKeyItem>): Promise<PoolKeyItem> => {
+    const res = await apiClient.put<PoolKeyItem>(`/pool-keys/${id}`, data);
+    return res.data;
   },
 
-  removeKey: async (poolId: string, keyId: string): Promise<void> => {
-    try { await apiClient.delete(`/pools/${poolId}/keys/${keyId}`); } catch { /* offline */ }
-    const all = getLocal().map((p) =>
-      p.id === poolId ? { ...p, keys: p.keys.filter((k) => k.id !== keyId) } : p
-    );
-    saveLocal(all);
+  deletePoolKey: async (id: string): Promise<void> => {
+    await apiClient.delete(`/pool-keys/${id}`);
   },
 
-  toggleKey: async (poolId: string, keyId: string): Promise<void> => {
-    const all = getLocal().map((p) =>
-      p.id === poolId
-        ? { ...p, keys: p.keys.map((k) => (k.id === keyId ? { ...k, is_active: !k.is_active } : k)) }
-        : p
-    );
-    saveLocal(all);
-    try { await apiClient.patch(`/pools/${poolId}/keys/${keyId}/toggle`); } catch { /* offline */ }
+  togglePoolKey: async (id: string): Promise<PoolKeyItem> => {
+    const res = await apiClient.post<PoolKeyItem>(`/pool-keys/${id}/toggle`);
+    return res.data;
   },
 
-  autoDetectModels: async (poolId: string, keyId: string): Promise<string[]> => {
-    try {
-      const res = await apiClient.post<{ models: string[] }>(`/pools/${poolId}/keys/${keyId}/detect`);
-      return res.data.models;
-    } catch {
-      return ['gpt-4o', 'gpt-4o-mini', 'dall-e-3']; // mock
-    }
+  detectKeyModels: async (
+    keyVal: string,
+    provider: string,
+    poolId?: string,
+    baseUrl?: string,
+    authType?: string,
+    cookies?: string
+  ) => {
+    const res = await apiClient.post<{
+      status: string;
+      provider: string;
+      plan: PlanTier;
+      quota_remaining_usd: number;
+      detected_models: string[];
+      detailed_models?: Array<{
+        code: string;
+        input_cost_per_1m: number;
+        output_cost_per_1m: number;
+        cache_read_cost_per_1m: number;
+        input_credit_price: number;
+        output_credit_price: number;
+        cache_read_credit_price: number;
+      }>;
+      total_models: number;
+      message: string;
+    }>('/pool-keys/detect', {
+      key_val: keyVal,
+      provider,
+      pool_id: poolId,
+      base_url: baseUrl,
+      auth_type: authType,
+      cookies,
+    });
+    return res.data;
+  },
+
+  // ── Recaptcha Solvers ──
+  getRecaptchaSolvers: async (): Promise<RecaptchaSolverItem[]> => {
+    const res = await apiClient.get<RecaptchaSolverItem[]>('/recaptcha-solvers');
+    return res.data;
+  },
+
+  createRecaptchaSolver: async (data: Partial<RecaptchaSolverItem>): Promise<RecaptchaSolverItem> => {
+    const res = await apiClient.post<RecaptchaSolverItem>('/recaptcha-solvers', data);
+    return res.data;
+  },
+
+  updateRecaptchaSolver: async (id: string, data: Partial<RecaptchaSolverItem>): Promise<RecaptchaSolverItem> => {
+    const res = await apiClient.put<RecaptchaSolverItem>(`/recaptcha-solvers/${id}`, data);
+    return res.data;
+  },
+
+  deleteRecaptchaSolver: async (id: string): Promise<void> => {
+    await apiClient.delete(`/recaptcha-solvers/${id}`);
+  },
+
+  toggleRecaptchaSolver: async (id: string): Promise<RecaptchaSolverItem> => {
+    const res = await apiClient.post<RecaptchaSolverItem>(`/recaptcha-solvers/${id}/toggle`);
+    return res.data;
+  },
+
+  testRecaptchaSolver: async (id: string) => {
+    const res = await apiClient.post<{
+      status: string;
+      solver_name: string;
+      provider: string;
+      balance_usd: number;
+      ping_ms: number;
+      message: string;
+    }>(`/recaptcha-solvers/${id}/test`);
+    return res.data;
   },
 };
-
-export default poolService;

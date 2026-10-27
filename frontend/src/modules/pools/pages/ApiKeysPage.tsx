@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   HiOutlinePlus,
   HiOutlineTrash,
@@ -8,13 +8,13 @@ import {
   HiOutlineSparkles,
   HiOutlineKey,
   HiOutlineBolt,
-  HiOutlineCpuChip,
-  HiOutlineDocumentText,
   HiOutlineExclamationTriangle,
   HiOutlineEye,
   HiOutlineEyeSlash,
   HiOutlineServerStack,
   HiOutlineCheck,
+  HiOutlineArrowPath,
+  HiOutlineArrowTopRightOnSquare,
 } from 'react-icons/hi2';
 import { RiOpenaiFill } from 'react-icons/ri';
 import Button from '@modules/core/design-system/Button';
@@ -27,14 +27,13 @@ import { Card } from '@modules/core/design-system/Card';
 import { Badge } from '@modules/core/design-system/Badge';
 import { StatCard, SearchInput } from '@modules/core/design-system/Components';
 import {
-  getPoolsFromStorage,
-  savePoolsToStorage,
+  poolService,
   type PoolItem,
   type PoolKeyItem,
   type KeyAuthType,
   type KeyStatus,
   type PlanTier,
-} from './ServicePoolPage';
+} from '../services/poolService';
 import poolStyles from '@assets/scss/admin/pools-admin.module.scss';
 
 const PLAN_OPTIONS = [
@@ -57,11 +56,22 @@ const STATUS_OPTIONS = [
   { value: 'ERROR', label: 'Lỗi Token / Cookie (Error)' },
 ];
 
+interface EnrichedKeyItem extends PoolKeyItem {
+  poolName: string;
+  poolProvider: string;
+}
+
 const ApiKeysPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialPoolFilter = searchParams.get('pool') || 'ALL';
 
-  const [pools, setPools] = useState<PoolItem[]>(getPoolsFromStorage);
+  const [pools, setPools] = useState<PoolItem[]>([]);
+  const [keys, setKeys] = useState<PoolKeyItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPool, setFilterPool] = useState(initialPoolFilter);
   const [filterPlan, setFilterPlan] = useState('ALL');
@@ -71,7 +81,11 @@ const ApiKeysPage = () => {
 
   // Key Modal State
   const [showKeyModal, setShowKeyModal] = useState(false);
-  const [editingKey, setEditingKey] = useState<{ poolId: string; key: PoolKeyItem } | null>(null);
+  const [editingKey, setEditingKey] = useState<PoolKeyItem | null>(null);
+
+  // View Models Modal State
+  const [viewModelsKey, setViewModelsKey] = useState<EnrichedKeyItem | null>(null);
+  const [modelsModalSearch, setModelsModalSearch] = useState('');
 
   // Form Fields
   const [formPoolId, setFormPoolId] = useState('');
@@ -90,6 +104,7 @@ const ApiKeysPage = () => {
   const [formPlanBadge, setFormPlanBadge] = useState<PlanTier>('Pro');
   const [formStatus, setFormStatus] = useState<KeyStatus>('ACTIVE');
   const [formDetectedModels, setFormDetectedModels] = useState<string[]>([]);
+  const [formDetailedModels, setFormDetailedModels] = useState<Array<{ code: string; input_cost_per_1m: number; output_cost_per_1m: number; cache_read_cost_per_1m: number }>>([]);
 
   // Auto-detect Provider State
   const [autoDetecting, setAutoDetecting] = useState(false);
@@ -101,10 +116,27 @@ const ApiKeysPage = () => {
     }
   }, [initialPoolFilter]);
 
-  const savePools = (u: PoolItem[]) => {
-    setPools(u);
-    savePoolsToStorage(u);
-  };
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [poolsData, keysData] = await Promise.all([
+        poolService.getPools(),
+        poolService.getPoolKeys(),
+      ]);
+      setPools(poolsData);
+      setKeys(keysData);
+    } catch (err: any) {
+      console.error('Failed to load pools and keys:', err);
+      setError(err?.response?.data?.detail || 'Không thể tải danh sách Keys từ server');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleOpenAddKey = (targetPoolId?: string) => {
     setEditingKey(null);
@@ -128,271 +160,213 @@ const ApiKeysPage = () => {
     setShowKeyModal(true);
   };
 
-  const handleOpenEditKey = (poolId: string, k: PoolKeyItem) => {
-    setEditingKey({ poolId, key: k });
-    setFormPoolId(poolId);
+  const handleOpenEditKey = (k: PoolKeyItem) => {
+    setEditingKey(k);
+    setFormPoolId(k.pool_id);
     setFormName(k.name);
-    setFormAuthType(k.authType);
-    setFormKeyVal(k.keyVal);
-    setFormRecapToken(k.recapToken || '');
+    setFormAuthType(k.auth_type);
+    setFormKeyVal(k.key_val);
+    setFormRecapToken(k.recap_token || '');
     setFormCookies(k.cookies || '');
-    setFormMetadataJson(k.metadataJson || '');
-    setFormQuotaDaily(k.quotaDaily);
-    setFormQuotaDailyUsed(k.quotaDailyUsed);
-    setFormQuotaMonthly(k.quotaMonthly);
-    setFormQuotaMonthlyUsed(k.quotaMonthlyUsed);
+    setFormMetadataJson(k.metadata_json || '');
+    setFormQuotaDaily(k.quota_daily);
+    setFormQuotaDailyUsed(k.quota_daily_used);
+    setFormQuotaMonthly(k.quota_monthly);
+    setFormQuotaMonthlyUsed(k.quota_monthly_used);
     setFormPoints(k.points);
     setFormPriority(k.priority);
-    setFormPlanBadge(k.planBadge);
+    setFormPlanBadge(k.plan_badge);
     setFormStatus(k.status);
-    setFormDetectedModels(k.detectedModels || []);
+    setFormDetectedModels(k.detected_models || []);
     setDetectSuccessMessage(null);
     setShowKeyModal(true);
   };
 
-  // ⚡ Nhận diện & Lấy Quota Tự Động Từ NCC
-  const handleAutoDetectFromProvider = (e?: React.MouseEvent) => {
+  // ⚡ Nhận diện & Lấy Quota Tự Động Từ NCC qua API
+  const handleAutoDetectFromProvider = async (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    if (!formKeyVal.trim()) {
-      alert('Vui lòng nhập API Key hoặc Session Token trước khi nhận diện NCC.');
+    if (!formKeyVal.trim() && !formCookies.trim()) {
+      alert('Vui lòng nhập API Key hoặc Session Token / Cookies trước khi nhận diện NCC.');
       return;
     }
+
+    const selectedPool = pools.find((p) => p.id === formPoolId);
+    const provider = selectedPool?.provider || 'OpenAI';
+    const baseUrl = selectedPool?.base_url;
 
     setAutoDetecting(true);
     setDetectSuccessMessage(null);
 
-    // Giả lập kết nối endpoint nhà cung cấp (OpenAI / Claude / DeepSeek)
-    setTimeout(() => {
-      setAutoDetecting(false);
-
-      const isSession = formAuthType === 'SESSION_TOKEN' || formKeyVal.startsWith('sess-');
-      const isAnthropic = formKeyVal.startsWith('sk-ant');
-      const isDeepSeek = formKeyVal.startsWith('sk-ds');
-
-      let detectedModels = ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini', 'text-embedding-3-large'];
-      let detectedTier: PlanTier = 'Pro';
-      let autoDaily = 25000;
-      let autoMonthly = 500000;
-      let autoPoints = 45000;
-      let balanceUsd = 120.0;
-
-      if (isSession) {
-        detectedModels = ['gpt-4o', 'gpt-4o-mini', 'dall-e-3'];
-        detectedTier = 'Plus';
-        autoDaily = 2000;
-        autoMonthly = 40000;
-        autoPoints = 15000;
-        balanceUsd = 20.0;
-      } else if (isAnthropic) {
-        detectedModels = ['claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307'];
-        detectedTier = 'Enterprise';
-        autoDaily = 15000;
-        autoMonthly = 350000;
-        autoPoints = 50000;
-        balanceUsd = 450.0;
-      } else if (isDeepSeek) {
-        detectedModels = ['deepseek-chat', 'deepseek-reasoner'];
-        detectedTier = 'Pro';
-        autoDaily = 30000;
-        autoMonthly = 600000;
-        autoPoints = 35000;
-        balanceUsd = 180.0;
-      }
-
-      setFormDetectedModels(detectedModels);
-      setFormPlanBadge(detectedTier);
-      setFormQuotaDaily(autoDaily);
-      setFormQuotaMonthly(autoMonthly);
-      setFormPoints(autoPoints);
-      setFormStatus('ACTIVE');
-
-      setDetectSuccessMessage(
-        `Đã nhận diện thành công: ${detectedModels.length} models khả dụng | Số dư khả dụng: $${balanceUsd.toFixed(2)} | Gói: ${detectedTier}`
+    try {
+      const res = await poolService.detectKeyModels(
+        formKeyVal.trim(),
+        provider,
+        formPoolId,
+        baseUrl,
+        formAuthType,
+        formCookies.trim()
       );
-    }, 900);
+      if (res.status === 'INVALID') {
+        alert(res.message);
+        setDetectSuccessMessage(res.message);
+        return;
+      }
+      setFormDetectedModels(res.detected_models || []);
+      setFormDetailedModels(res.detailed_models || []);
+      setFormPlanBadge(res.plan);
+      setFormPoints(Math.round(res.quota_remaining_usd * 100));
+      setFormStatus('ACTIVE');
+      setDetectSuccessMessage(
+        `${res.message} | Số dư ước tính: ${Math.round(res.quota_remaining_usd).toLocaleString()} ₫ | Gói: ${res.plan}`
+      );
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Lỗi nhận diện Key từ nhà cung cấp');
+    } finally {
+      setAutoDetecting(false);
+    }
   };
 
-  const handleSaveKey = (e: React.FormEvent) => {
+  const handleSaveKey = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formPoolId || !formKeyVal.trim()) {
       alert('Vui lòng chọn cụm Pool và nhập giá trị Key/Token.');
       return;
     }
 
-    const keyPayload: PoolKeyItem = {
-      id: editingKey ? editingKey.key.id : `key_${Date.now()}`,
-      name: formName || `Key #${Date.now().toString(36).toUpperCase()}`,
-      authType: formAuthType,
-      keyVal: formKeyVal.trim(),
-      recapToken: formRecapToken.trim() || undefined,
-      cookies: formCookies.trim() || undefined,
-      metadataJson: formMetadataJson.trim() || undefined,
-      quotaDaily: Number(formQuotaDaily),
-      quotaDailyUsed: Number(formQuotaDailyUsed),
-      quotaMonthly: Number(formQuotaMonthly),
-      quotaMonthlyUsed: Number(formQuotaMonthlyUsed),
-      points: Number(formPoints),
-      priority: Number(formPriority),
-      planBadge: formPlanBadge,
-      status: formStatus,
-      requestsCount: editingKey ? editingKey.key.requestsCount : 0,
-      detectedModels: formDetectedModels.length > 0 ? formDetectedModels : ['gpt-4o', 'gpt-4o-mini'],
-      lastCheckedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      quotaRemainingUsd: formPoints > 0 ? formPoints / 100 : undefined,
-    };
+    setSaving(true);
+    try {
+      const payload: Partial<PoolKeyItem> = {
+        pool_id: formPoolId,
+        name: formName.trim() || `Key #${Date.now().toString(36).toUpperCase()}`,
+        auth_type: formAuthType,
+        key_val: formKeyVal.trim(),
+        recap_token: formRecapToken.trim() || undefined,
+        cookies: formCookies.trim() || undefined,
+        metadata_json: formMetadataJson.trim() || undefined,
+        quota_daily: Number(formQuotaDaily),
+        quota_daily_used: Number(formQuotaDailyUsed),
+        quota_monthly: Number(formQuotaMonthly),
+        quota_monthly_used: Number(formQuotaMonthlyUsed),
+        points: Number(formPoints),
+        priority: Number(formPriority),
+        plan_badge: formPlanBadge,
+        status: formStatus,
+        detected_models: formDetectedModels,
+        quota_remaining_usd: formPoints > 0 ? formPoints / 100 : undefined,
+      };
 
-    if (editingKey) {
-      // Key may have moved pool
-      const oldPoolId = editingKey.poolId;
-      if (oldPoolId === formPoolId) {
-        savePools(
-          pools.map((p) =>
-            p.id === formPoolId
-              ? {
-                  ...p,
-                  keys: p.keys.map((k) => (k.id === keyPayload.id ? keyPayload : k)),
-                }
-              : p
-          )
-        );
+      if (editingKey) {
+        await poolService.updatePoolKey(editingKey.id, payload);
       } else {
-        // Remove from old pool, add to new pool
-        const updated = pools.map((p) => {
-          if (p.id === oldPoolId) {
-            return { ...p, keys: p.keys.filter((k) => k.id !== keyPayload.id) };
-          }
-          if (p.id === formPoolId) {
-            return { ...p, keys: [...p.keys, keyPayload] };
-          }
-          return p;
-        });
-        savePools(updated);
+        await poolService.createPoolKey(payload);
       }
-    } else {
-      // Add new key to selected pool
-      savePools(
-        pools.map((p) =>
-          p.id === formPoolId
-            ? { ...p, keys: [...p.keys, keyPayload] }
-            : p
-        )
-      );
-    }
 
-    setShowKeyModal(false);
-  };
-
-  const handleToggleStatus = (poolId: string, keyId: string) => {
-    savePools(
-      pools.map((p) =>
-        p.id === poolId
-          ? {
-              ...p,
-              keys: p.keys.map((k) => {
-                if (k.id === keyId) {
-                  const nextStatus: KeyStatus = k.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
-                  return { ...k, status: nextStatus };
-                }
-                return k;
-              }),
-            }
-          : p
-      )
-    );
-  };
-
-  const handleDeleteKey = (poolId: string, keyId: string) => {
-    if (confirm('Bạn có chắc muốn xoá API Key/Token này khỏi cụm điều phối?')) {
-      savePools(
-        pools.map((p) =>
-          p.id === poolId ? { ...p, keys: p.keys.filter((k) => k.id !== keyId) } : p
-        )
-      );
+      setShowKeyModal(false);
+      await fetchData();
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Lỗi khi lưu Key');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const toggleRevealKey = (keyId: string) => {
-    setRevealedKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
+  const handleDeleteKey = async (keyId: string) => {
+    if (confirm('Bạn có chắc chắn muốn xoá API Key / Token này khỏi cụm Pool?')) {
+      try {
+        await poolService.deletePoolKey(keyId);
+        await fetchData();
+      } catch (err: any) {
+        alert(err?.response?.data?.detail || 'Không thể xoá key');
+      }
+    }
   };
 
-  // Flatten all keys with pool info
-  const allKeys = pools.flatMap((p) =>
-    p.keys.map((k) => ({
-      ...k,
-      poolName: p.name,
-      poolId: p.id,
-      poolProvider: p.provider,
-      poolBaseUrl: p.baseUrl,
-    }))
-  );
+  const handleToggleStatus = async (keyId: string) => {
+    try {
+      await poolService.togglePoolKey(keyId);
+      await fetchData();
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Không thể đổi trạng thái key');
+    }
+  };
 
-  // Filters
-  const filteredKeys = allKeys.filter((k) => {
+  const toggleRevealKey = (id: string) => {
+    setRevealedKeys((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Enriched Keys with Pool info
+  const poolMap = useMemo(() => {
+    const map = new Map<string, PoolItem>();
+    pools.forEach((p) => map.set(p.id, p));
+    return map;
+  }, [pools]);
+
+  const enrichedKeys: EnrichedKeyItem[] = useMemo(() => {
+    return keys.map((k) => {
+      const p = poolMap.get(k.pool_id);
+      return {
+        ...k,
+        poolName: p ? p.name : 'Unknown Pool',
+        poolProvider: p ? p.provider : 'Custom',
+      };
+    });
+  }, [keys, poolMap]);
+
+  // Metrics
+  const totalKeys = enrichedKeys.length;
+  const activeKeys = enrichedKeys.filter((k) => k.status === 'ACTIVE').length;
+  const quotaExceededKeys = enrichedKeys.filter((k) => k.status === 'QUOTA_EXCEEDED').length;
+  const sessionTokenKeys = enrichedKeys.filter((k) => k.auth_type === 'SESSION_TOKEN').length;
+
+  // Filter
+  const filteredKeys = enrichedKeys.filter((k) => {
     const matchSearch =
       k.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      k.keyVal.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (k.cookies && k.cookies.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchPool = filterPool === 'ALL' || k.poolId === filterPool;
-    const matchPlan = filterPlan === 'ALL' || k.planBadge === filterPlan;
+      k.key_val.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (k.detected_models || []).some((m) => m.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchPool = filterPool === 'ALL' || k.pool_id === filterPool;
+    const matchPlan = filterPlan === 'ALL' || k.plan_badge === filterPlan;
     const matchStatus = filterStatus === 'ALL' || k.status === filterStatus;
+
     return matchSearch && matchPool && matchPlan && matchStatus;
   });
 
-  // Stats calculation
-  const totalKeysCount = allKeys.length;
-  const activeKeysCount = allKeys.filter((k) => k.status === 'ACTIVE').length;
-  const totalPoints = allKeys.reduce((acc, k) => acc + (k.points || 0), 0);
-  const errorOrExceeded = allKeys.filter((k) => k.status === 'ERROR' || k.status === 'QUOTA_EXCEEDED').length;
-
-  const poolOptions = [{ value: 'ALL', label: 'Tất cả Pools Điều Phối' }, ...pools.map((p) => ({ value: p.id, label: `${p.name} (${p.provider})` }))];
-
-  const columns: TableColumn<(typeof filteredKeys)[0]>[] = [
+  const columns: TableColumn<EnrichedKeyItem>[] = [
     {
       key: 'name',
-      header: 'Tên Tài Khoản & Giá Trị',
+      header: 'Tên Key & Giá Trị',
       render: (k) => {
         const isRevealed = revealedKeys[k.id];
-        const masked = isRevealed
-          ? k.keyVal
-          : k.keyVal.length > 14
-          ? `${k.keyVal.substring(0, 8)}...${k.keyVal.substring(k.keyVal.length - 4)}`
+        const masked = k.key_val.length > 14
+          ? `${k.key_val.substring(0, 7)}••••••••${k.key_val.substring(k.key_val.length - 4)}`
           : '••••••••••••';
 
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <strong style={{ color: '#fafafa' }}>{k.name}</strong>
-              <span className={`${poolStyles.planBadge} ${poolStyles[k.planBadge.toLowerCase()] || ''}`}>
-                {k.planBadge}
-              </span>
-              <Badge variant={k.authType === 'API_KEY' ? 'info' : 'purple'} size="sm">
-                {k.authType === 'API_KEY' ? 'API Key' : 'Session Token'}
-              </Badge>
-            </div>
-
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span className={poolStyles.keySnippet}>
-                <code>{masked}</code>
-                <button
-                  type="button"
-                  onClick={() => toggleRevealKey(k.id)}
-                  style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', padding: 0 }}
-                  title={isRevealed ? 'Ẩn key' : 'Hiện key'}
-                >
-                  {isRevealed ? <HiOutlineEyeSlash size={13} /> : <HiOutlineEye size={13} />}
-                </button>
-              </span>
-
-              {k.cookies && (
-                <span className={poolStyles.cookieMetaTag} title="Có Cookie / JSON Metadata">
-                  <HiOutlineDocumentText size={11} /> Cookie
-                </span>
+              <strong style={{ color: '#fafafa' }}>{k.name}</strong>
+              <Badge variant={k.plan_badge === 'Enterprise' ? 'purple' : k.plan_badge === 'Pro' ? 'primary' : 'neutral'} size="sm">
+                {k.plan_badge}
+              </Badge>
+              {k.auth_type === 'SESSION_TOKEN' && (
+                <Badge variant="warning" size="sm">
+                  Web Session
+                </Badge>
               )}
-              {k.recapToken && (
-                <span className={poolStyles.cookieMetaTag} title={`Tự giải Recaptcha: ${k.recapToken}`}>
-                  <HiOutlineShieldCheck size={11} /> Recaptcha
-                </span>
-              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: '#a1a1aa' }}>
+              <code style={{ background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>
+                {isRevealed ? k.key_val : masked}
+              </code>
+              <button
+                type="button"
+                onClick={() => toggleRevealKey(k.id)}
+                style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: 0 }}
+                title={isRevealed ? 'Ẩn giá trị' : 'Xem giá trị đầy đủ'}
+              >
+                {isRevealed ? <HiOutlineEyeSlash size={14} /> : <HiOutlineEye size={14} />}
+              </button>
             </div>
           </div>
         );
@@ -437,37 +411,44 @@ const ApiKeysPage = () => {
       key: 'quotaDaily',
       header: 'Hạn Mức Quota (Daily / Monthly)',
       render: (k) => {
-        const dailyPct = k.quotaDaily > 0 ? Math.min(100, Math.round((k.quotaDailyUsed / k.quotaDaily) * 100)) : 0;
-        const monthlyPct = k.quotaMonthly > 0 ? Math.min(100, Math.round((k.quotaMonthlyUsed / k.quotaMonthly) * 100)) : 0;
+        const dailyPctRaw = k.quota_daily > 0 ? (k.quota_daily_used / k.quota_daily) * 100 : 0;
+        const monthlyPctRaw = k.quota_monthly > 0 ? (k.quota_monthly_used / k.quota_monthly) * 100 : 0;
+
+        const dailyPct = Math.min(100, Math.round(dailyPctRaw));
+        const monthlyPct = Math.min(100, Math.round(monthlyPctRaw));
+
+        const dailyText = dailyPctRaw > 0 && dailyPctRaw < 1 ? dailyPctRaw.toFixed(1) + '%' : `${dailyPct}%`;
+        const monthlyText = monthlyPctRaw > 0 && monthlyPctRaw < 1 ? monthlyPctRaw.toFixed(1) + '%' : `${monthlyPct}%`;
+
+        const dailyBarWidth = k.quota_daily_used > 0 ? Math.max(3, dailyPct) : 0;
+        const monthlyBarWidth = k.quota_monthly_used > 0 ? Math.max(3, monthlyPct) : 0;
 
         const getMeterColor = (pct: number) => (pct > 90 ? poolStyles.danger : pct > 70 ? poolStyles.warning : poolStyles.safe);
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 160 }}>
-            {/* Daily */}
             <div className={poolStyles.quotaMeter}>
               <div className={poolStyles.quotaLabel}>
-                <span>Ngày: {k.quotaDailyUsed.toLocaleString()} / {k.quotaDaily.toLocaleString()}</span>
-                <span>{dailyPct}%</span>
+                <span>Ngày: {k.quota_daily_used.toLocaleString()} / {k.quota_daily.toLocaleString()}</span>
+                <span style={{ fontWeight: 600 }}>{dailyText}</span>
               </div>
               <div className={poolStyles.progressBarTrack}>
                 <div
                   className={`${poolStyles.progressBarFill} ${getMeterColor(dailyPct)}`}
-                  style={{ width: `${dailyPct}%` }}
+                  style={{ width: `${dailyBarWidth}%` }}
                 />
               </div>
             </div>
 
-            {/* Monthly */}
             <div className={poolStyles.quotaMeter}>
               <div className={poolStyles.quotaLabel}>
-                <span>Tháng: {k.quotaMonthlyUsed.toLocaleString()} / {k.quotaMonthly.toLocaleString()}</span>
-                <span>{monthlyPct}%</span>
+                <span>Tháng: {k.quota_monthly_used.toLocaleString()} / {k.quota_monthly.toLocaleString()}</span>
+                <span style={{ fontWeight: 600 }}>{monthlyText}</span>
               </div>
               <div className={poolStyles.progressBarTrack}>
                 <div
                   className={`${poolStyles.progressBarFill} ${getMeterColor(monthlyPct)}`}
-                  style={{ width: `${monthlyPct}%` }}
+                  style={{ width: `${monthlyBarWidth}%` }}
                 />
               </div>
             </div>
@@ -476,22 +457,46 @@ const ApiKeysPage = () => {
       },
     },
     {
-      key: 'detectedModels',
+      key: 'detected_models',
       header: 'Models Nhận Diện',
-      render: (k) => (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 220 }}>
-          {(k.detectedModels || []).slice(0, 3).map((m) => (
-            <Badge key={m} variant="neutral" size="sm">
-              {m}
-            </Badge>
-          ))}
-          {(k.detectedModels || []).length > 3 && (
-            <Badge variant="primary" size="sm">
-              +{(k.detectedModels || []).length - 3}
-            </Badge>
-          )}
-        </div>
-      ),
+      render: (k) => {
+        const count = (k.detected_models || []).length;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setViewModelsKey(k);
+                setModelsModalSearch('');
+              }}
+              style={{
+                background: 'rgba(99, 102, 241, 0.15)',
+                border: '1px solid rgba(99, 102, 241, 0.35)',
+                color: '#818cf8',
+                borderRadius: '6px',
+                padding: '3px 8px',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+              title="Bấm để xem danh sách chi tiết các models thuộc key này"
+            >
+              <HiOutlineSparkles size={13} />
+              {count} Models
+            </button>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 140 }}>
+              {(k.detected_models || []).slice(0, 2).map((m) => (
+                <span key={m} style={{ fontSize: '0.68rem', color: '#71717a' }}>
+                  {m}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: 'status',
@@ -516,7 +521,7 @@ const ApiKeysPage = () => {
           <Badge variant={badgeVariant} size="sm" dot>
             <button
               type="button"
-              onClick={() => handleToggleStatus(k.poolId, k.id)}
+              onClick={() => handleToggleStatus(k.id)}
               style={{
                 background: 'none',
                 border: 'none',
@@ -525,7 +530,6 @@ const ApiKeysPage = () => {
                 fontWeight: 600,
                 fontSize: '0.72rem',
               }}
-              title="Bấm để chuyển trạng thái Hoạt động / Tạm dừng"
             >
               {label}
             </button>
@@ -542,18 +546,18 @@ const ApiKeysPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            title="⚡ Quét & Lấy Quota Từ NCC ngay"
+            title="Xem danh sách models thuộc Key này"
             onClick={() => {
-              handleOpenEditKey(k.poolId, k);
-              setTimeout(() => handleAutoDetectFromProvider(), 200);
+              setViewModelsKey(k);
+              setModelsModalSearch('');
             }}
           >
-            <HiOutlineSparkles size={16} style={{ color: '#10b981' }} />
+            <HiOutlineSparkles size={16} style={{ color: '#818cf8' }} />
           </Button>
-          <Button variant="ghost" size="sm" title="Chỉnh sửa key" onClick={() => handleOpenEditKey(k.poolId, k)}>
+          <Button variant="ghost" size="sm" title="Chỉnh sửa Key" onClick={() => handleOpenEditKey(k)}>
             <HiOutlinePencilSquare size={16} />
           </Button>
-          <Button variant="ghost" size="sm" title="Xóa key" onClick={() => handleDeleteKey(k.poolId, k.id)}>
+          <Button variant="ghost" size="sm" title="Xóa Key khỏi Pool" onClick={() => handleDeleteKey(k.id)}>
             <HiOutlineTrash size={16} style={{ color: '#f43f5e' }} />
           </Button>
         </div>
@@ -563,278 +567,462 @@ const ApiKeysPage = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      {/* Top StatCards */}
-      <div className={poolStyles.statsGrid}>
-        <StatCard title="Tổng Keys & Session Tokens" value={totalKeysCount} icon={<HiOutlineKey size={22} />} change="Đa nhà cung cấp" changeType="up" />
-        <StatCard title="Keys Đang Hoạt Động" value={activeKeysCount} icon={<HiOutlineShieldCheck size={22} />} change={`${totalKeysCount > 0 ? Math.round((activeKeysCount / totalKeysCount) * 100) : 0}% sẵn sàng`} changeType="up" />
-        <StatCard title="Tổng Điểm / Points" value={`${totalPoints.toLocaleString()} pts`} icon={<HiOutlineBolt size={22} />} change="Xoay vòng thông minh" changeType="up" />
-        <StatCard title="Cảnh Báo Quota / Lỗi" value={errorOrExceeded} icon={<HiOutlineExclamationTriangle size={22} />} change={errorOrExceeded > 0 ? 'Cần nạp thêm' : 'Ổn định'} changeType={errorOrExceeded > 0 ? 'down' : 'neutral'} />
-      </div>
-
-      {/* Filter Toolbar */}
-      <Card padding="sm">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '300px', flexWrap: 'wrap' }}>
-            <SearchInput
-              placeholder="Tìm tên, mã key, session token, cookie..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClear={() => setSearchTerm('')}
-            />
-            <Select options={poolOptions} value={filterPool} onChange={(e) => setFilterPool(e.target.value)} />
-            <Select
-              options={[
-                { value: 'ALL', label: 'Tất cả Gói (Tier)' },
-                { value: 'Free', label: 'Free' },
-                { value: 'Plus', label: 'Plus' },
-                { value: 'Pro', label: 'Pro' },
-                { value: 'Team', label: 'Team' },
-                { value: 'Enterprise', label: 'Enterprise' },
-              ]}
-              value={filterPlan}
-              onChange={(e) => setFilterPlan(e.target.value)}
-            />
-            <Select
-              options={[
-                { value: 'ALL', label: 'Tất cả Trạng Thái' },
-                { value: 'ACTIVE', label: 'Hoạt động' },
-                { value: 'PAUSED', label: 'Tạm dừng' },
-                { value: 'QUOTA_EXCEEDED', label: 'Hết Quota' },
-                { value: 'ERROR', label: 'Lỗi' },
-              ]}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            />
-          </div>
-          <Button variant="primary" size="md" onClick={() => handleOpenAddKey()}>
-            <HiOutlinePlus size={16} /> Thêm Key / Session Token
+      {/* Top Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: '#fafafa', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <HiOutlineKey style={{ color: '#6366f1' }} />
+            Kho Tài Khoản & API Key Pool (Gateway)
+          </h1>
+          <p style={{ margin: '4px 0 0', color: '#a1a1aa', fontSize: '0.85rem' }}>
+            Quản lý tập trung API Key chính thức, Session Token Web Account, phân bổ Quota & xoay vòng thông minh
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Button variant="secondary" onClick={fetchData} disabled={loading}>
+            <HiOutlineArrowPath size={16} className={loading ? 'spin' : ''} />
+            Làm Mới
+          </Button>
+          <Button variant="primary" onClick={() => handleOpenAddKey()}>
+            <HiOutlinePlus size={16} />
+            Thêm API Key / Token Mới
           </Button>
         </div>
+      </div>
+
+      {error && (
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', borderRadius: '8px', color: '#f43f5e', fontSize: '0.85rem' }}>
+          {error}
+        </div>
+      )}
+
+      {/* 4 Stats Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+        <StatCard
+          title="Tổng Keys / Tokens"
+          value={totalKeys}
+          trend={{ value: `${sessionTokenKeys} Session Web`, positive: true }}
+          icon={<HiOutlineKey size={22} />}
+        />
+        <StatCard
+          title="Đang Hoạt Động (Active)"
+          value={activeKeys}
+          trend={{ value: `${totalKeys > 0 ? Math.round((activeKeys / totalKeys) * 100) : 0}% sẵn sàng`, positive: true }}
+          icon={<HiOutlineSparkles size={22} />}
+        />
+        <StatCard
+          title="Hết Quota / Cảnh Báo"
+          value={quotaExceededKeys}
+          trend={{ value: 'Tự động dừng cấp phát', positive: false }}
+          icon={<HiOutlineExclamationTriangle size={22} />}
+        />
+        <StatCard
+          title="Tổng Cụm Service Pool"
+          value={pools.length}
+          trend={{ value: 'Phân phối tải đa vùng', positive: true }}
+          icon={<HiOutlineServerStack size={22} />}
+        />
+      </div>
+
+      {/* Filter & Table Card */}
+      <Card padding="md">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flex: 1, minWidth: '280px', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <SearchInput
+                placeholder="Tìm theo tên key, sk-..., model..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div style={{ minWidth: '170px' }}>
+              <Select
+                value={filterPool}
+                onChange={(e) => setFilterPool(e.target.value)}
+                options={[{ value: 'ALL', label: 'Tất cả Pool' }, ...pools.map((p) => ({ value: p.id, label: p.name }))]}
+              />
+            </div>
+            <div style={{ minWidth: '140px' }}>
+              <Select
+                value={filterPlan}
+                onChange={(e) => setFilterPlan(e.target.value)}
+                options={[{ value: 'ALL', label: 'Tất cả Gói' }, ...PLAN_OPTIONS]}
+              />
+            </div>
+            <div style={{ minWidth: '150px' }}>
+              <Select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                options={[{ value: 'ALL', label: 'Tất cả Trạng thái' }, ...STATUS_OPTIONS]}
+              />
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: '#a1a1aa' }}>
+            Hiển thị <strong>{filteredKeys.length}</strong> / {totalKeys} keys
+          </div>
+        </div>
+
+        <Table
+          columns={columns}
+          data={filteredKeys}
+          rowKey={(k) => k.id}
+          page={page}
+          pageSize={10}
+          onPageChange={setPage}
+          emptyText={loading ? 'Đang tải danh sách keys...' : 'Không tìm thấy API Key / Token nào phù hợp với bộ lọc'}
+        />
       </Card>
 
-      {/* Main Table Card */}
-      <Card
-        title="Quản Lý API Keys & Session Tokens Điều Phối"
-        subtitle={`Đang hiển thị ${filteredKeys.length} khóa / tài khoản đang được quản lý`}
-        headerRight={<HiOutlineCpuChip size={20} style={{ color: '#10b981' }} />}
-        padding="none"
-      >
-        <Table columns={columns} data={filteredKeys} rowKey={(k) => `${k.poolId}_${k.id}`} page={page} pageSize={10} onPageChange={setPage} />
-      </Card>
-
-      {/* Modal Thêm / Cập Nhật Key & Token */}
+      {/* Modal Add / Edit Key */}
       <Modal
         open={showKeyModal}
         onClose={() => setShowKeyModal(false)}
-        title={editingKey ? 'Cập Nhật API Key & Session Token' : 'Thêm API Key / Session Token Mới'}
+        title={editingKey ? `Chỉnh Sửa Key: ${editingKey.name}` : 'Thêm API Key / Token Vào Pool'}
         size="lg"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setShowKeyModal(false)}>
-              Hủy
-            </Button>
-            <Button variant="primary" onClick={handleSaveKey}>
-              {editingKey ? 'Lưu Thay Đổi' : 'Tạo Khóa Mới'}
-            </Button>
-          </>
-        }
       >
         <form onSubmit={handleSaveKey} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* ⚡ Auto-Detect Provider Banner Box */}
-          <div className={poolStyles.autoDetectBanner}>
-            <div className={poolStyles.detectInfo}>
-              <div className={poolStyles.detectIcon}>
-                <HiOutlineBolt />
-              </div>
-              <div>
-                <h4>Nhận Diện & Lấy Quota Tự Động Từ NCC</h4>
-                <p>Tự động gọi API nhà cung cấp để quét danh sách models khả dụng, số dư và hạn mức quota.</p>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAutoDetectFromProvider}
-              loading={autoDetecting}
-            >
-              <HiOutlineSparkles size={15} style={{ color: '#10b981' }} />
-              ⚡ Quét & Lấy Quota Ngay
-            </Button>
-          </div>
-
-          {detectSuccessMessage && (
-            <div className={poolStyles.detectSuccessToast}>
-              <HiOutlineCheck size={16} />
-              <span>{detectSuccessMessage}</span>
+          {pools.length === 0 && (
+            <div style={{ padding: '0.75rem 1rem', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 8, color: '#fbbf24', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <span>⚠️ Hệ thống chưa có cụm Service Pool nào để gán Key. Vui lòng tạo Pool trước.</span>
+              <Button size="sm" variant="secondary" type="button" onClick={() => { setShowKeyModal(false); navigate('/admin/services'); }}>
+                Tạo Cụm Pool Ngay
+              </Button>
             </div>
           )}
 
-          {/* Section 1: Gán Cụm & Nhận Diện */}
-          <div className={poolStyles.formSectionTitle}>
-            <HiOutlineServerStack /> Gán Cụm Pool Điều Phối & Nhận Diện
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Gán Vào Cụm Service Pool <span style={{ color: '#f43f5e' }}>*</span>
+              </label>
+              <Select
+                value={formPoolId}
+                onChange={(e) => setFormPoolId(e.target.value)}
+                options={pools.map((p) => ({ value: p.id, label: `${p.name} (${p.provider})` }))}
+                placeholder={pools.length === 0 ? '-- Chưa có Pool nào (Vui lòng tạo trước) --' : '-- Chọn Cụm Pool --'}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Loại Xác Thực (Auth Type) <span style={{ color: '#f43f5e' }}>*</span>
+              </label>
+              <Select
+                value={formAuthType}
+                onChange={(e) => setFormAuthType(e.target.value as KeyAuthType)}
+                options={AUTH_TYPE_OPTIONS}
+              />
+            </div>
           </div>
 
-          <div className={poolStyles.formGrid2}>
-            <Select
-              label="Gán Cụm Pool Điều Phối"
-              options={pools.map((p) => ({ value: p.id, label: `${p.name} (${p.provider})` }))}
-              value={formPoolId}
-              onChange={(e) => setFormPoolId(e.target.value)}
-              required
-              fullWidth
-            />
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+              Tên Gợi Nhớ (Friendly Name)
+            </label>
             <Input
-              label="Tên Nhận Diện Tài Khoản / Key"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              placeholder="VD: OpenAI Team Shared #1"
+              placeholder="VD: OpenAI Org Master #1, DeepSeek Tier 3 Key..."
+            />
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7' }}>
+                {formAuthType === 'API_KEY' ? 'Khóa API Key Chính Thức (sk-...)' : 'Session Token / Access Token'} <span style={{ color: '#f43f5e' }}>*</span>
+              </label>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleAutoDetectFromProvider}
+                disabled={autoDetecting || (!formKeyVal.trim() && !formCookies.trim())}
+                title="Gửi ping đến nhà cung cấp để nhận diện models và quota"
+              >
+                <HiOutlineSparkles size={14} style={{ color: '#818cf8' }} />
+                {autoDetecting ? 'Đang Nhận Diện...' : 'Nhận Diện Models Tự Động'}
+              </Button>
+            </div>
+            <Input
+              value={formKeyVal}
+              onChange={(e) => setFormKeyVal(e.target.value)}
+              placeholder={formAuthType === 'API_KEY' ? 'sk-proj-xxxxxxxxxxxx...' : 'sess-xxxxxxxxxxxx...'}
               required
-              fullWidth
             />
+            {detectSuccessMessage && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#34d399', marginTop: 4 }}>
+                <HiOutlineCheck size={14} />
+                {detectSuccessMessage}
+              </div>
+            )}
+            {formDetectedModels.length > 0 && (
+              <div style={{ marginTop: 8, padding: '0.65rem 0.85rem', background: 'rgba(56, 189, 248, 0.05)', borderRadius: 8, border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#38bdf8' }}>
+                    Models Khả Dụng Từ NCC ({formDetectedModels.length})
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                    Tự động đồng bộ vào All Models
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 130, overflowY: 'auto', paddingRight: 4 }}>
+                  {formDetectedModels.map((m) => {
+                    const detail = formDetailedModels.find((d) => d.code === m);
+                    return (
+                      <span
+                        key={m}
+                        style={{
+                          fontSize: '0.68rem',
+                          fontFamily: 'monospace',
+                          padding: '3px 8px',
+                          borderRadius: 4,
+                          background: '#0f172a',
+                          color: '#bae6fd',
+                          border: '1px solid #1e293b',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6
+                        }}
+                      >
+                        <strong>{m}</strong>
+                        {detail && (
+                          <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>
+                            (Vào: {detail.input_cost_per_1m.toLocaleString()}₫ | Ra: {detail.output_cost_per_1m.toLocaleString()}₫ | Cache: {detail.cache_read_cost_per_1m.toLocaleString()}₫ / 1M)
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-
-          <div className={poolStyles.formGrid2}>
-            <Select
-              label="Gói Tài Khoản (Plan Badge)"
-              options={PLAN_OPTIONS}
-              value={formPlanBadge}
-              onChange={(e) => setFormPlanBadge(e.target.value as PlanTier)}
-              fullWidth
-            />
-            <Select
-              label="Trạng Thái Hoạt Động"
-              options={STATUS_OPTIONS}
-              value={formStatus}
-              onChange={(e) => setFormStatus(e.target.value as KeyStatus)}
-              fullWidth
-            />
-          </div>
-
-          {/* Section 2: Loại Xác Thực & Bí Mật */}
-          <div className={poolStyles.formSectionTitle}>
-            <HiOutlineKey /> Loại Xác Thực & Thông Tin Bí Mật
-          </div>
-
-          <Select
-            label="Loại Xác Thực"
-            options={AUTH_TYPE_OPTIONS}
-            value={formAuthType}
-            onChange={(e) => setFormAuthType(e.target.value as KeyAuthType)}
-            fullWidth
-          />
-
-          <Input
-            label={formAuthType === 'API_KEY' ? 'Giá Trị API Key (Secret Key)' : 'Session Token (Mỗi Token 1 Acc Khác Nhau)'}
-            value={formKeyVal}
-            onChange={(e) => setFormKeyVal(e.target.value)}
-            placeholder={formAuthType === 'API_KEY' ? 'sk-proj-... hoặc sk-ant-...' : 'sess-8812... hoặc bearer token'}
-            required
-            fullWidth
-          />
 
           {formAuthType === 'SESSION_TOKEN' && (
-            <Input
-              label="Recaptcha Solver Token / Account (Tự giải Recaptcha)"
-              value={formRecapToken}
-              onChange={(e) => setFormRecapToken(e.target.value)}
-              placeholder="VD: 2cap_solver_acc01 / anti-captcha key"
-              hint="Hỗ trợ tự động vượt Recaptcha v2/v3 theo từng account độc lập"
-              fullWidth
-            />
-          )}
-
-          <Textarea
-            label="Cookies / JSON Metadata (Tùy Chọn)"
-            value={formCookies}
-            onChange={(e) => setFormCookies(e.target.value)}
-            placeholder="cf_clearance=...; __cf_bm=...; __Secure-next-auth.session-token=... hoặc JSON headers tùy biến"
-            hint="Nhập Cookie phiên web hoặc JSON metadata bổ sung cho tài khoản này"
-            fullWidth
-          />
-
-          {/* Section 3: Cấu hình Hạn Mức Quota & Giới Hạn Gọi */}
-          <div className={poolStyles.formSectionTitle}>
-            <HiOutlineCpuChip /> Cấu Hình Hạn Mức Quota & Giới Hạn Gọi
-          </div>
-
-          <div className={poolStyles.formGrid2}>
-            <Input
-              label="Hạn Mức Quota Ngày (Daily Limit - Requests)"
-              type="number"
-              value={formQuotaDaily}
-              onChange={(e) => setFormQuotaDaily(Number(e.target.value))}
-              hint="Giới hạn số lượt gọi tối đa trong 1 ngày"
-              fullWidth
-            />
-            <Input
-              label="Đã Dùng Trong Ngày (Daily Used)"
-              type="number"
-              value={formQuotaDailyUsed}
-              onChange={(e) => setFormQuotaDailyUsed(Number(e.target.value))}
-              fullWidth
-            />
-          </div>
-
-          <div className={poolStyles.formGrid2}>
-            <Input
-              label="Hạn Mức Quota Tháng (Monthly Limit - Requests)"
-              type="number"
-              value={formQuotaMonthly}
-              onChange={(e) => setFormQuotaMonthly(Number(e.target.value))}
-              hint="Giới hạn số lượt gọi tối đa trong 1 tháng"
-              fullWidth
-            />
-            <Input
-              label="Đã Dùng Trong Tháng (Monthly Used)"
-              type="number"
-              value={formQuotaMonthlyUsed}
-              onChange={(e) => setFormQuotaMonthlyUsed(Number(e.target.value))}
-              fullWidth
-            />
-          </div>
-
-          {/* Section 4: Mức Ưu Tiên & Điểm Số */}
-          <div className={poolStyles.formSectionTitle}>
-            <HiOutlineBolt /> Điều Phối Xoay Vòng: Ưu Tiên & Điểm Số
-          </div>
-
-          <div className={poolStyles.formGrid2}>
-            <Input
-              label="Số Điểm / Points (Balance / Trọng Số)"
-              type="number"
-              value={formPoints}
-              onChange={(e) => setFormPoints(Number(e.target.value))}
-              hint="Điểm khả dụng hoặc trọng số phân bổ request"
-              fullWidth
-            />
-            <Input
-              label="Mức Ưu Tiên Xoay Vòng (Priority 1 - 10)"
-              type="number"
-              min={1}
-              max={10}
-              value={formPriority}
-              onChange={(e) => setFormPriority(Number(e.target.value))}
-              hint="10 là ưu tiên cao nhất (gọi trước), 1 là thấp nhất"
-              fullWidth
-            />
-          </div>
-
-          {formDetectedModels.length > 0 && (
-            <div>
-              <label style={{ fontSize: '0.75rem', color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
-                Models Được Nhận Diện Từ NCC:
-              </label>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {formDetectedModels.map((m) => (
-                  <Badge key={m} variant="primary" size="sm">
-                    {m}
-                  </Badge>
-                ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.85rem', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid #27272a' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <HiOutlineShieldCheck size={16} /> Cấu Hình Vượt Captcha & Cookies (Session Token Node)
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: '#a1a1aa', marginBottom: 2 }}>
+                  Recaptcha Token / Solver Task ID
+                </label>
+                <Input
+                  value={formRecapToken}
+                  onChange={(e) => setFormRecapToken(e.target.value)}
+                  placeholder="Token từ 2Captcha, CapSolver hoặc solver nội bộ..."
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: '#a1a1aa', marginBottom: 2 }}>
+                  Cookies Chuỗi Header (__Secure-next-auth.session-token=...)
+                </label>
+                <Textarea
+                  value={formCookies}
+                  onChange={(e) => setFormCookies(e.target.value)}
+                  placeholder="__Secure-next-auth.session-token=...; cf_clearance=..."
+                  rows={2}
+                />
               </div>
             </div>
           )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Hạn Mức Ngày (Daily Quota)
+              </label>
+              <Input
+                type="number"
+                value={formQuotaDaily}
+                onChange={(e) => setFormQuotaDaily(Number(e.target.value))}
+                min={0}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Hạn Mức Tháng (Monthly Quota)
+              </label>
+              <Input
+                type="number"
+                value={formQuotaMonthly}
+                onChange={(e) => setFormQuotaMonthly(Number(e.target.value))}
+                min={0}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Điểm Trọng Số (Points)
+              </label>
+              <Input
+                type="number"
+                value={formPoints}
+                onChange={(e) => setFormPoints(Number(e.target.value))}
+                min={0}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Ưu Tiên (Priority 1 - 10)
+              </label>
+              <Input
+                type="number"
+                value={formPriority}
+                onChange={(e) => setFormPriority(Number(e.target.value))}
+                min={1}
+                max={10}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Gói Tài Khoản (Tier Badge)
+              </label>
+              <Select
+                value={formPlanBadge}
+                onChange={(e) => setFormPlanBadge(e.target.value as PlanTier)}
+                options={PLAN_OPTIONS}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7', marginBottom: '0.35rem' }}>
+                Trạng Thái Khởi Tạo
+              </label>
+              <Select
+                value={formStatus}
+                onChange={(e) => setFormStatus(e.target.value as KeyStatus)}
+                options={STATUS_OPTIONS}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem', borderTop: '1px solid #27272a', paddingTop: '1rem' }}>
+            <Button variant="secondary" type="button" onClick={() => setShowKeyModal(false)}>
+              Huỷ Bỏ
+            </Button>
+            <Button variant="primary" type="submit" disabled={saving}>
+              {saving ? 'Đang lưu vào DB...' : editingKey ? 'Lưu Thay Đổi Key' : 'Thêm Key Vào Pool'}
+            </Button>
+          </div>
         </form>
+      </Modal>
+
+      {/* Modal: Xem Danh Sách Models của Key */}
+      <Modal
+        open={Boolean(viewModelsKey)}
+        onClose={() => setViewModelsKey(null)}
+        title={
+          viewModelsKey
+            ? `Danh Sách Models — Key: ${viewModelsKey.name} (${viewModelsKey.poolName || 'Pool'})`
+            : 'Danh Sách Models'
+        }
+        size="lg"
+      >
+        {viewModelsKey && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Header info banner */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.85rem 1rem',
+                background: '#18181b',
+                borderRadius: '8px',
+                border: '1px solid #27272a',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <Badge variant={viewModelsKey.status === 'ACTIVE' ? 'success' : 'neutral'} size="sm">
+                  {viewModelsKey.status}
+                </Badge>
+                <Badge variant="purple" size="sm">
+                  {viewModelsKey.plan_badge} Tier
+                </Badge>
+                <Badge variant="info" size="sm">
+                  P{viewModelsKey.priority}
+                </Badge>
+                <span style={{ fontSize: '0.82rem', color: '#a1a1aa' }}>
+                  Hỗ trợ: <strong style={{ color: '#fafafa' }}>{(viewModelsKey.detected_models || []).length}</strong> models
+                </span>
+              </div>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  navigate(`/admin/models?key=${viewModelsKey.id}`);
+                }}
+                title="Chuyển sang trang All Models và tự động lọc danh sách theo Key này"
+              >
+                Mở trong All Models <HiOutlineArrowTopRightOnSquare size={14} style={{ marginLeft: 4 }} />
+              </Button>
+            </div>
+
+            {/* Search within models */}
+            <SearchInput
+              placeholder="Tìm mã model (vd: gpt-4o, claude-3-5, gemini, deepseek)..."
+              value={modelsModalSearch}
+              onChange={(e) => setModelsModalSearch(e.target.value)}
+              onClear={() => setModelsModalSearch('')}
+            />
+
+            {/* Models Grid */}
+            <div
+              style={{
+                maxHeight: '400px',
+                overflowY: 'auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: '0.5rem',
+                padding: '0.5rem',
+                background: '#09090b',
+                borderRadius: '8px',
+                border: '1px solid #1f2937',
+              }}
+            >
+              {(viewModelsKey.detected_models || [])
+                .filter((m) => m.toLowerCase().includes(modelsModalSearch.toLowerCase()))
+                .map((m) => (
+                  <div
+                    key={m}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      background: '#18181b',
+                      borderRadius: '6px',
+                      border: '1px solid #27272a',
+                      fontSize: '0.78rem',
+                      color: '#e4e4e7',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    <span style={{ color: '#38bdf8' }}>{m}</span>
+                  </div>
+                ))}
+
+              {(viewModelsKey.detected_models || []).filter((m) =>
+                m.toLowerCase().includes(modelsModalSearch.toLowerCase())
+              ).length === 0 && (
+                <div style={{ gridColumn: '1 / -1', padding: '2rem', textAlign: 'center', color: '#71717a', fontSize: '0.85rem' }}>
+                  Không tìm thấy model nào khớp với từ khóa "{modelsModalSearch}"
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <Button variant="secondary" onClick={() => setViewModelsKey(null)}>
+                Đóng
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

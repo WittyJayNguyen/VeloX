@@ -13,6 +13,19 @@ from app.core.database import engine
 from app.common.base_model import Base
 import app.modules.users.models  # noqa
 import app.modules.billing.models  # noqa
+import app.modules.pools.models  # noqa
+import app.modules.models_catalog.models  # noqa
+import app.modules.logs.models  # noqa
+import app.modules.developers.models  # noqa
+import app.modules.accounting.models  # noqa
+from app.modules.pools.router import router as pools_router
+from app.modules.models_catalog.router import router as models_router
+from app.modules.playground.router import router as playground_router
+from app.modules.developers.router import router as developers_router
+from app.modules.logs.router import router as logs_router
+from app.modules.proxy.router import router as proxy_router
+from app.modules.accounting.router import router as accounting_router
+from app.modules.pools.seed import seed_gateway_data
 
 settings = get_settings()
 
@@ -25,6 +38,14 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         print("[DB] Database tables initialized successfully")
+        
+        # Auto-migrate columns and seed default roles / super admin / gateway defaults
+        from app.core.database import async_session
+        from app.modules.users.router import seed_defaults
+        async with async_session() as db:
+            await seed_defaults(db)
+            await seed_gateway_data(db)
+        print("[DB] Default roles, Super Admin, and Gateway data verified")
     except Exception as e:
         print(f"[WARN] Database initialization warning: {e}")
     yield
@@ -51,6 +72,13 @@ app.add_middleware(
 # Register Module Routers
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
+app.include_router(pools_router, prefix="/api/v1")
+app.include_router(models_router, prefix="/api/v1")
+app.include_router(playground_router, prefix="/api/v1")
+app.include_router(developers_router, prefix="/api/v1")
+app.include_router(logs_router, prefix="/api/v1")
+app.include_router(accounting_router, prefix="/api/v1")
+app.include_router(proxy_router)
 
 
 @app.get("/api/v1/health")

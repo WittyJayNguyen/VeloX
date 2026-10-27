@@ -6,7 +6,7 @@ from app.common.base_model import Base, UUIDMixin, TimestampMixin
 class ApiCallLog(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "api_call_logs"
     user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"))
-    model_id = Column(String(64), ForeignKey("ai_models.id", ondelete="SET NULL"))
+    model_id = Column(String(64), nullable=True, index=True)
     credential_id = Column(String(36), ForeignKey("provider_credentials.id", ondelete="SET NULL"))
     prompt_tokens = Column(Integer, default=0)
     completion_tokens = Column(Integer, default=0)
@@ -18,8 +18,8 @@ class ApiCallLog(Base, UUIDMixin, TimestampMixin):
 
 class MediaGenerationLog(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "media_generation_logs"
-    user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"))
-    model_id = Column(String(64), ForeignKey("ai_models.id", ondelete="SET NULL"))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    model_id = Column(String(64), nullable=True, index=True)
     media_type = Column(String(16), nullable=False)     # IMAGE, VIDEO
     prompt = Column(Text, nullable=False)
     output_url = Column(Text)

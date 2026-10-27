@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "*"]
 
+    # CDN & Zero-Disk Storage Settings
+    CDN_PROVIDER: str = "auto"
+    CDN_API_KEY: str = ""
+    USER_JOB_RETENTION_LIMIT: int = 50  # Cap maximum job history records per user to preserve server disk
+
     class Config:
         env_file = ".env"
         case_sensitive = True

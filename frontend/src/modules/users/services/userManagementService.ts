@@ -7,27 +7,6 @@ export interface PermissionNode {
   children?: PermissionNode[];
 }
 
-export interface RoleDto {
-  id: string;
-  name: string;
-  code: string;
-  description?: string;
-  permissions: string[];
-  user_count: number;
-}
-
-export interface UserDto {
-  id: string;
-  fullName: string;
-  email: string;
-  role: string;
-  creditBalance: number;
-  isActive: boolean;
-  registeredDate: string;
-  vccTopupTotal: number;
-}
-
-// Fallback Default Tree if backend is offline
 export const FALLBACK_PERMISSION_TREE: PermissionNode[] = [
   {
     id: 'gateway',
@@ -152,57 +131,160 @@ export const FALLBACK_PERMISSION_TREE: PermissionNode[] = [
   },
 ];
 
+export interface RoleDto {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  permissions: string[];
+  user_count: number;
+}
+
+export interface UserDto {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  tier?: string;
+  creditBalance: number;
+  isActive: boolean;
+  registeredDate: string;
+  lastLoginAt?: string;
+  vccTopupTotal?: number;
+}
+
+export interface UserDetailDto extends UserDto {
+  roles: string[];
+  isVerified: boolean;
+  lastLoginIp?: string;
+  failedLoginAttempts?: number;
+}
+
+export interface UserAuditLogDto {
+  id: string;
+  action: string;
+  actorEmail: string;
+  details?: string;
+  reason?: string;
+  ipAddress?: string;
+  createdAt: string;
+}
+
+export interface CreditAuditLogDto {
+  id: string;
+  delta: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  reason: string;
+  actorEmail: string;
+  createdAt: string;
+}
+
+export interface UsersResponse {
+  items: UserDto[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+  stats: {
+    totalUsers: number;
+    activeUsers: number;
+    lockedUsers: number;
+    totalCredits: number;
+  };
+}
+
+export interface SystemUserAuditItem {
+  id: string;
+  action: string;
+  actorEmail: string;
+  actorId?: string;
+  targetUserId: string;
+  targetEmail: string;
+  targetName: string;
+  details?: string;
+  reason?: string;
+  ipAddress: string;
+  createdAt: string;
+}
+
+export interface SystemUserAuditResponse {
+  items: SystemUserAuditItem[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+  stats: {
+    totalEvents: number;
+    securityLockouts: number;
+    passwordResets: number;
+  };
+}
+
+export interface SystemCreditAuditItem {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  actorEmail: string;
+  actorId?: string;
+  delta: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  reason: string;
+  ipAddress: string;
+  createdAt: string;
+}
+
+export interface SystemCreditAuditResponse {
+  items: SystemCreditAuditItem[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+  stats: {
+    totalAdjustments: number;
+    totalCredited: number;
+    totalDeducted: number;
+  };
+}
+
 export const userManagementService = {
-  // ── Permission Tree ──
+  // ── Roles & Permission Tree ──
   async getPermissionTree(): Promise<PermissionNode[]> {
     try {
       const res = await apiClient.get('/permissions/tree');
-      if (res.data?.data) return res.data.data;
-    } catch {
-      // Backend offline fallback
+      const data = res.data?.data || res.data;
+      return Array.isArray(data) ? data : [];
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tải cây phân quyền');
     }
-    return FALLBACK_PERMISSION_TREE;
   },
 
-  // ── Roles ──
   async getRoles(): Promise<RoleDto[]> {
     try {
       const res = await apiClient.get('/roles');
-      if (res.data?.data) {
-        localStorage.setItem('velox_roles_cache', JSON.stringify(res.data.data));
-        return res.data.data;
-      }
-    } catch {
-      // Backend offline fallback
+      const data = res.data?.data || res.data;
+      return Array.isArray(data) ? data : [];
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tải danh sách vai trò');
     }
-    const cached = localStorage.getItem('velox_roles_cache') || localStorage.getItem('velox_roles');
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch {
-        // ignore
-      }
-    }
-    return [
-      { id: 'ROLE_SUPER_ADMIN', name: 'Super Admin', code: 'ROLE_SUPER_ADMIN', description: 'Toàn quyền quản trị hệ thống VeloX', permissions: ['ALL'], user_count: 1 },
-      { id: 'ROLE_ADMIN', name: 'Admin Quản Trị', code: 'ROLE_ADMIN', description: 'Quản lý nghiệp vụ, gateway và người dùng', permissions: ['pools.view', 'pools.create', 'pools.edit', 'keys.view', 'keys.create', 'keys.quota_edit', 'recaptcha.view', 'recaptcha.manage', 'models.view', 'models.create', 'models.pricing', 'packages.view', 'packages.create', 'packages.edit', 'wallet.view', 'wallet.topup_manual', 'banking.manage', 'users.view', 'users.create', 'users.edit', 'users.adjust_credit', 'users.lock', 'logs.view'], user_count: 2 },
-      { id: 'ROLE_OPERATOR', name: 'Operator Vận Hành', code: 'ROLE_OPERATOR', description: 'Giám sát pool, model và sự cố SLA', permissions: ['pools.view', 'keys.view', 'models.view', 'packages.view', 'wallet.view', 'logs.view'], user_count: 3 },
-      { id: 'ROLE_USER', name: 'Khách Hàng / Developer', code: 'ROLE_USER', description: 'Truy cập API và nạp credit', permissions: ['pools.view', 'keys.view', 'packages.view', 'wallet.view'], user_count: 12450 },
-    ];
   },
 
   async createRole(data: { id: string; name: string; description?: string; permissions: string[] }): Promise<void> {
     try {
       await apiClient.post('/roles', data);
     } catch (err: unknown) {
-      // Local fallback
-      const roles = await this.getRoles();
-      const updated = [...roles, { ...data, code: data.id, user_count: 0 }];
-      localStorage.setItem('velox_roles_cache', JSON.stringify(updated));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tạo vai trò mới');
     }
   },
 
@@ -210,14 +292,8 @@ export const userManagementService = {
     try {
       await apiClient.put(`/roles/${id}`, data);
     } catch (err: unknown) {
-      // Local fallback
-      const roles = await this.getRoles();
-      const updated = roles.map((r) => (r.id === id ? { ...r, ...data, permissions: data.permissions } : r));
-      localStorage.setItem('velox_roles_cache', JSON.stringify(updated));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể cập nhật vai trò');
     }
   },
 
@@ -225,80 +301,145 @@ export const userManagementService = {
     try {
       await apiClient.delete(`/roles/${id}`);
     } catch (err: unknown) {
-      // Local fallback
-      const roles = await this.getRoles();
-      const updated = roles.filter((r) => r.id !== id);
-      localStorage.setItem('velox_roles_cache', JSON.stringify(updated));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể xóa vai trò này');
     }
   },
 
-  // ── Users ──
-  async getUsers(): Promise<UserDto[]> {
+  // ── Users Management ──
+  async getUsers(params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    role?: string;
+    status?: string;
+  }): Promise<UsersResponse> {
     try {
-      const res = await apiClient.get('/users');
-      if (res.data?.data) {
-        localStorage.setItem('velox_users_cache', JSON.stringify(res.data.data));
-        return res.data.data;
-      }
-    } catch {
-      // Backend offline fallback
-    }
-    const cached = localStorage.getItem('velox_users_cache') || localStorage.getItem('velox_managed_users');
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch {
-        // ignore
-      }
-    }
-    return [
-      { id: 'u_1', fullName: 'Admin VeloX (Quản Trị)', email: 'admin@velox.ai', role: 'ROLE_SUPER_ADMIN', creditBalance: 9999999, isActive: true, registeredDate: '2026-01-10', vccTopupTotal: 0 },
-      { id: 'u_2', fullName: 'Hai Nguyen Studio', email: 'studio.vn@gmail.com', role: 'ROLE_USER', creditBalance: 450200, isActive: true, registeredDate: '2026-03-15', vccTopupTotal: 1500000 },
-      { id: 'u_3', fullName: 'Le Quoc Operator', email: 'operator@velox.ai', role: 'ROLE_OPERATOR', creditBalance: 50000, isActive: true, registeredDate: '2026-05-20', vccTopupTotal: 0 },
-      { id: 'u_4', fullName: 'Dev Agency Global', email: 'dev@agency.io', role: 'ROLE_USER', creditBalance: 1250000, isActive: true, registeredDate: '2026-08-01', vccTopupTotal: 4000000 },
-    ];
-  },
+      const res = await apiClient.get('/users', {
+        params: {
+          page: params?.page || 1,
+          page_size: params?.pageSize || 10,
+          search: params?.search || undefined,
+          role: params?.role || 'ALL',
+          status: params?.status || 'ALL',
+        },
+      });
 
-  async createUser(data: { email: string; full_name: string; role_id: string; credit_balance?: number; password?: string }): Promise<void> {
-    try {
-      await apiClient.post('/users', data);
+      const data = res.data?.data || res.data;
+      if (data && Array.isArray(data.items)) {
+        return data as UsersResponse;
+      }
+
+      // If array returned directly
+      if (Array.isArray(data)) {
+        return {
+          items: data,
+          pagination: { total: data.length, page: 1, pageSize: data.length, totalPages: 1 },
+          stats: {
+            totalUsers: data.length,
+            activeUsers: data.filter((u: UserDto) => u.isActive).length,
+            lockedUsers: data.filter((u: UserDto) => !u.isActive).length,
+            totalCredits: data.reduce((acc: number, u: UserDto) => acc + (u.creditBalance || 0), 0),
+          },
+        };
+      }
+
+      throw new Error('Dữ liệu người dùng trả về không hợp lệ');
     } catch (err: unknown) {
-      // Local fallback
-      const users = await this.getUsers();
-      const newUser: UserDto = {
-        id: `u_${Date.now()}`,
-        fullName: data.full_name,
-        email: data.email,
-        role: data.role_id,
-        creditBalance: data.credit_balance || 50000,
-        isActive: true,
-        registeredDate: new Date().toISOString().split('T')[0],
-        vccTopupTotal: 0,
-      };
-      localStorage.setItem('velox_users_cache', JSON.stringify([...users, newUser]));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể kết nối đến máy chủ quản lý người dùng');
     }
   },
 
-  async updateUser(id: string, data: { full_name: string; email: string; role_id: string; is_active: boolean }): Promise<void> {
+  async getUserDetail(id: string): Promise<UserDetailDto> {
+    try {
+      const res = await apiClient.get(`/users/${id}`);
+      return (res.data?.data || res.data) as UserDetailDto;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể lấy thông tin chi tiết người dùng');
+    }
+  },
+
+  async createUser(data: {
+    email: string;
+    full_name: string;
+    role_id: string;
+    credit_balance?: number;
+    password?: string;
+    tier?: string;
+  }): Promise<{ id: string; email: string; generated_password?: string }> {
+    try {
+      const res = await apiClient.post('/users', data);
+      return (res.data?.data || res.data) as { id: string; email: string; generated_password?: string };
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tạo người dùng mới');
+    }
+  },
+
+  async updateUser(id: string, data: {
+    full_name: string;
+    email: string;
+    role_id: string;
+    is_active: boolean;
+    tier?: string;
+  }): Promise<void> {
     try {
       await apiClient.put(`/users/${id}`, data);
     } catch (err: unknown) {
-      // Local fallback
-      const users = await this.getUsers();
-      const updated = users.map((u) => (u.id === id ? { ...u, fullName: data.full_name, email: data.email, role: data.role_id, isActive: data.is_active } : u));
-      localStorage.setItem('velox_users_cache', JSON.stringify(updated));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể cập nhật người dùng');
+    }
+  },
+
+  async toggleUserStatus(id: string, isActive: boolean, reason: string): Promise<void> {
+    try {
+      await apiClient.patch(`/users/${id}/status`, { is_active: isActive, reason });
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể thay đổi trạng thái tài khoản');
+    }
+  },
+
+  async adjustCredit(id: string, delta: number, reason: string): Promise<{ credit_balance: number }> {
+    try {
+      const res = await apiClient.post(`/users/${id}/credits`, { delta, reason });
+      return (res.data?.data || res.data) as { credit_balance: number };
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể điều chỉnh credit');
+    }
+  },
+
+  async resetPassword(id: string, newPassword?: string, autoGenerate?: boolean): Promise<{ temporary_password?: string }> {
+    try {
+      const res = await apiClient.post(`/users/${id}/reset-password`, {
+        new_password: newPassword || undefined,
+        auto_generate: autoGenerate || false,
+      });
+      return (res.data?.data || res.data) as { temporary_password?: string };
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể đặt lại mật khẩu');
+    }
+  },
+
+  async getUserAuditLogs(id: string): Promise<UserAuditLogDto[]> {
+    try {
+      const res = await apiClient.get(`/users/${id}/audit-logs`);
+      return (res.data?.data || res.data) as UserAuditLogDto[];
+    } catch {
+      return [];
+    }
+  },
+
+  async getUserCreditLogs(id: string): Promise<CreditAuditLogDto[]> {
+    try {
+      const res = await apiClient.get(`/users/${id}/credit-logs`);
+      return (res.data?.data || res.data) as CreditAuditLogDto[];
+    } catch {
+      return [];
     }
   },
 
@@ -306,29 +447,154 @@ export const userManagementService = {
     try {
       await apiClient.delete(`/users/${id}`);
     } catch (err: unknown) {
-      // Local fallback
-      const users = await this.getUsers();
-      const updated = users.filter((u) => u.id !== id);
-      localStorage.setItem('velox_users_cache', JSON.stringify(updated));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể xóa người dùng');
     }
   },
 
-  async adjustCredit(id: string, delta: number): Promise<void> {
+  async getSystemUserAudits(params?: {
+    page?: number;
+    pageSize?: number;
+    action?: string;
+    search?: string;
+  }): Promise<SystemUserAuditResponse> {
     try {
-      await apiClient.post(`/users/${id}/credits`, { delta });
+      const res = await apiClient.get('/audit/users', {
+        params: {
+          page: params?.page || 1,
+          page_size: params?.pageSize || 20,
+          action: params?.action || 'ALL',
+          search: params?.search || undefined,
+        },
+      });
+      return (res.data?.data || res.data) as SystemUserAuditResponse;
     } catch (err: unknown) {
-      // Local fallback
-      const users = await this.getUsers();
-      const updated = users.map((u) => (u.id === id ? { ...u, creditBalance: Math.max(0, u.creditBalance + delta) } : u));
-      localStorage.setItem('velox_users_cache', JSON.stringify(updated));
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      if (axiosErr?.response?.data?.detail) {
-        throw new Error(axiosErr.response.data.detail);
-      }
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tải nhật ký kiểm toán IAM');
+    }
+  },
+
+  async getSystemCreditAudits(params?: {
+    page?: number;
+    pageSize?: number;
+    deltaType?: string;
+    search?: string;
+  }): Promise<SystemCreditAuditResponse> {
+    try {
+      const res = await apiClient.get('/audit/credits', {
+        params: {
+          page: params?.page || 1,
+          page_size: params?.pageSize || 20,
+          delta_type: params?.deltaType || 'ALL',
+          search: params?.search || undefined,
+        },
+      });
+      return (res.data?.data || res.data) as SystemCreditAuditResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tải sổ cái kiểm toán tín dụng');
+    }
+  },
+
+  async getIpRules(params?: {
+    page?: number;
+    pageSize?: number;
+    status?: string;
+    search?: string;
+  }): Promise<IpRuleListResponse> {
+    try {
+      const res = await apiClient.get('/ip-rules', {
+        params: {
+          page: params?.page || 1,
+          page_size: params?.pageSize || 20,
+          status: params?.status || 'ALL',
+          search: params?.search || undefined,
+        },
+      });
+      return (res.data?.data || res.data) as IpRuleListResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tải danh sách IP giám sát');
+    }
+  },
+
+  async banIp(payload: {
+    ip_address: string;
+    reason: string;
+    action_type?: string;
+    banned_until?: string;
+  }): Promise<void> {
+    try {
+      await apiClient.post('/ip-rules/ban', payload);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể thực hiện chặn IP');
+    }
+  },
+
+  async unbanIp(ip_address: string): Promise<void> {
+    try {
+      await apiClient.post('/ip-rules/unban', { ip_address });
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể gỡ chặn IP');
+    }
+  },
+
+  async batchLockIp(payload: { ip_address: string; reason: string }): Promise<void> {
+    try {
+      await apiClient.post('/ip-rules/batch-lock', payload);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể khóa tài khoản thuộc IP này');
+    }
+  },
+
+  async batchRevokeCreditsIp(payload: { ip_address: string; reason: string }): Promise<void> {
+    try {
+      await apiClient.post('/ip-rules/batch-revoke-credits', payload);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      throw new Error(axiosErr?.response?.data?.detail || 'Không thể tịch thu credit của IP này');
     }
   },
 };
+
+export interface IpLinkedAccount {
+  email: string;
+  isActive: boolean;
+  creditBalance: number;
+}
+
+export interface IpRuleDto {
+  id: string;
+  ipAddress: string;
+  status: 'BANNED' | 'SUSPICIOUS' | 'ALLOWED';
+  reason: string;
+  actionType: string;
+  bannedBy: string;
+  bannedUntil?: string | null;
+  accountCount: number;
+  totalCreditsHeld: number;
+  lastActive?: string | null;
+  linkedAccounts?: IpLinkedAccount[];
+}
+
+export interface IpRuleListResponse {
+  items: IpRuleDto[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+  stats: {
+    totalTrackedIps: number;
+    bannedIps: number;
+    suspiciousIps: number;
+    farmedCreditsAtRisk: number;
+  };
+}
+
+export default userManagementService;
+
