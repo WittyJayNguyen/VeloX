@@ -249,30 +249,41 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
               </span>
             </div>
 
-            <div className={styles.modelsGrid}>
+            <div className={styles.modelsList}>
               {currentCategory.models.map((model) => (
                 <div
                   key={model.id}
-                  className={styles.modelCard}
+                  className={styles.modelListItem}
                   onClick={() => handleSelectModel(currentCategory.id, model.id)}
                 >
-                  <div className={styles.cardHeaderRow}>
-                    <div className={styles.nameProvider}>
-                      <span className={styles.modelName}>{model.name}</span>
-                      <span className={styles.providerName}>{model.provider}</span>
+                  <div className={styles.modelLeft}>
+                    <div className={styles.modelIconBadge}>
+                      {model.provider.includes('OpenAI') ? '🟢' :
+                       model.provider.includes('Anthropic') ? '🟠' :
+                       model.provider.includes('Google') ? '🔵' :
+                       model.provider.includes('Meta') ? '🔷' :
+                       model.provider.includes('Midjourney') ? '⛵' :
+                       model.provider.includes('Runway') ? '🎬' :
+                       model.provider.includes('DeepSeek') ? '🐋' : '⚡'}
                     </div>
-                    {model.badge && (
-                      <span className={styles.modelBadge}>{model.badge}</span>
-                    )}
+                    <div className={styles.modelInfo}>
+                      <div className={styles.modelTitleRow}>
+                        <span className={styles.modelName}>{model.name}</span>
+                        <span className={styles.providerTag}>{model.provider}</span>
+                        {model.badge && (
+                          <span className={styles.modelBadge}>{model.badge}</span>
+                        )}
+                      </div>
+                      <p className={styles.modelDesc}>{model.description}</p>
+                    </div>
                   </div>
 
-                  <p className={styles.modelDesc}>{model.description}</p>
-
-                  <div className={styles.cardFooterRow}>
+                  <div className={styles.modelRight}>
                     <span className={styles.modelTag}>{model.tag}</span>
                     <span className={styles.creditsCost}>
                       <HiOutlineBolt size={13} /> {model.credits}
                     </span>
+                    <HiOutlineArrowRight className={styles.itemArrow} size={15} />
                   </div>
                 </div>
               ))}
