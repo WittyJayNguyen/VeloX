@@ -1,33 +1,17 @@
 import { useState } from 'react';
-import {
-  HiOutlinePlus,
-  HiOutlineCreditCard,
-  HiOutlineCheckCircle,
-  HiOutlineXMark,
-  HiOutlineMagnifyingGlass,
-  HiOutlineArrowPath,
-} from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlineCreditCard, HiOutlineCheckCircle, HiOutlineArrowPath } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
-import styles from '@assets/scss/admin/common-admin.module.scss';
+import { Input } from '@modules/core/design-system/Input';
+import { Select } from '@modules/core/design-system/Select';
+import { Modal } from '@modules/core/design-system/Modal';
+import { Table, type TableColumn } from '@modules/core/design-system/Table';
+import { Card } from '@modules/core/design-system/Card';
+import { Badge } from '@modules/core/design-system/Badge';
+import { Tabs } from '@modules/core/design-system/Tabs';
+import { SearchInput, StatCard } from '@modules/core/design-system/Components';
 
-export interface CreditPackage {
-  id: string;
-  name: string;
-  priceVnd: number;
-  credits: number;
-  bonusPercent: number;
-  isPopular?: boolean;
-}
-
-export interface TransactionRecord {
-  id: string;
-  userEmail: string;
-  amountVnd: number;
-  creditsGiven: number;
-  method: 'VietQR' | 'MoMo' | 'VCC_Card' | 'Bank_Transfer';
-  status: 'SUCCESS' | 'PENDING' | 'REFUNDED';
-  createdAt: string;
-}
+export interface CreditPackage { id: string; name: string; priceVnd: number; credits: number; bonusPercent: number; isPopular?: boolean; }
+export interface TransactionRecord { id: string; userEmail: string; amountVnd: number; creditsGiven: number; method: 'VietQR' | 'MoMo' | 'VCC_Card' | 'Bank_Transfer'; status: 'SUCCESS' | 'PENDING' | 'REFUNDED'; createdAt: string; }
 
 const initialPackages: CreditPackage[] = [
   { id: 'pkg_1', name: 'Starter Gói Nhỏ', priceVnd: 50000, credits: 50000, bonusPercent: 0 },
@@ -36,379 +20,117 @@ const initialPackages: CreditPackage[] = [
   { id: 'pkg_4', name: 'Enterprise Gói Doanh Nghiệp', priceVnd: 2000000, credits: 2600000, bonusPercent: 30 },
 ];
 
-const initialTransactions: TransactionRecord[] = [
-  {
-    id: 'TX-88219',
-    userEmail: 'studio.vn@gmail.com',
-    amountVnd: 500000,
-    creditsGiven: 600000,
-    method: 'VietQR',
-    status: 'SUCCESS',
-    createdAt: '2026-10-26 21:40',
-  },
-  {
-    id: 'TX-88218',
-    userEmail: 'dev.anh@gmail.com',
-    amountVnd: 200000,
-    creditsGiven: 220000,
-    method: 'MoMo',
-    status: 'SUCCESS',
-    createdAt: '2026-10-26 20:15',
-  },
-  {
-    id: 'TX-88217',
-    userEmail: 'corporate@agency.com',
-    amountVnd: 2000000,
-    creditsGiven: 2600000,
-    method: 'VCC_Card',
-    status: 'SUCCESS',
-    createdAt: '2026-10-26 18:30',
-  },
-  {
-    id: 'TX-88216',
-    userEmail: 'test.user@yahoo.com',
-    amountVnd: 50000,
-    creditsGiven: 50000,
-    method: 'VietQR',
-    status: 'PENDING',
-    createdAt: '2026-10-26 17:10',
-  },
+const initialTx: TransactionRecord[] = [
+  { id: 'TX-88219', userEmail: 'studio.vn@gmail.com', amountVnd: 500000, creditsGiven: 600000, method: 'VietQR', status: 'SUCCESS', createdAt: '2026-10-26 21:40' },
+  { id: 'TX-88218', userEmail: 'dev.anh@gmail.com', amountVnd: 200000, creditsGiven: 220000, method: 'MoMo', status: 'SUCCESS', createdAt: '2026-10-26 20:15' },
+  { id: 'TX-88217', userEmail: 'corporate@agency.com', amountVnd: 2000000, creditsGiven: 2600000, method: 'Bank_Transfer', status: 'PENDING', createdAt: '2026-10-26 18:00' },
+  { id: 'TX-88216', userEmail: 'test.user@yahoo.com', amountVnd: 50000, creditsGiven: 50000, method: 'VCC_Card', status: 'REFUNDED', createdAt: '2026-10-26 14:20' },
 ];
 
+const txBadge = (s: string) => s === 'SUCCESS' ? 'success' : s === 'PENDING' ? 'warning' : 'danger' as const;
+const txLabel: Record<string, string> = { SUCCESS: 'Thành Công', PENDING: 'Chờ Xử Lý', REFUNDED: 'Đã Hoàn' };
+
 const BillingPage = () => {
-  const [packages, setPackages] = useState<CreditPackage[]>(() => {
-    const saved = localStorage.getItem('velox_billing_packages');
-    return saved ? JSON.parse(saved) : initialPackages;
-  });
+  const [packages, setPackages] = useState<CreditPackage[]>(() => { const s = localStorage.getItem('velox_packages'); return s ? JSON.parse(s) : initialPackages; });
+  const [transactions, setTransactions] = useState<TransactionRecord[]>(() => { const s = localStorage.getItem('velox_transactions'); return s ? JSON.parse(s) : initialTx; });
+  const [searchTx, setSearchTx] = useState('');
+  const [txPage, setTxPage] = useState(1);
 
-  const [transactions, setTransactions] = useState<TransactionRecord[]>(() => {
-    const saved = localStorage.getItem('velox_transactions');
-    return saved ? JSON.parse(saved) : initialTransactions;
-  });
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterMethod, setFilterMethod] = useState('ALL');
-
-  // Package Modal State
+  // Package Modal
   const [showPkgModal, setShowPkgModal] = useState(false);
+  const [editingPkg, setEditingPkg] = useState<CreditPackage | null>(null);
   const [pkgName, setPkgName] = useState('');
-  const [pkgPrice, setPkgPrice] = useState(100000);
-  const [pkgCredits, setPkgCredits] = useState(100000);
-  const [pkgBonus, setPkgBonus] = useState(5);
+  const [pkgPrice, setPkgPrice] = useState(0);
+  const [pkgCredits, setPkgCredits] = useState(0);
+  const [pkgBonus, setPkgBonus] = useState(0);
 
-  const savePackages = (updated: CreditPackage[]) => {
-    setPackages(updated);
-    localStorage.setItem('velox_billing_packages', JSON.stringify(updated));
-  };
+  const savePkg = (u: CreditPackage[]) => { setPackages(u); localStorage.setItem('velox_packages', JSON.stringify(u)); };
+  const saveTx = (u: TransactionRecord[]) => { setTransactions(u); localStorage.setItem('velox_transactions', JSON.stringify(u)); };
 
-  const saveTransactions = (updated: TransactionRecord[]) => {
-    setTransactions(updated);
-    localStorage.setItem('velox_transactions', JSON.stringify(updated));
-  };
+  const handleOpenAddPkg = () => { setEditingPkg(null); setPkgName(''); setPkgPrice(0); setPkgCredits(0); setPkgBonus(0); setShowPkgModal(true); };
+  const handleEditPkg = (p: CreditPackage) => { setEditingPkg(p); setPkgName(p.name); setPkgPrice(p.priceVnd); setPkgCredits(p.credits); setPkgBonus(p.bonusPercent); setShowPkgModal(true); };
 
-  const handleAddPackage = (e: React.FormEvent) => {
+  const handleSavePkg = (e: React.FormEvent) => {
     e.preventDefault();
     if (!pkgName.trim()) return;
-
-    const newPkg: CreditPackage = {
-      id: `pkg_${Date.now()}`,
-      name: pkgName,
-      priceVnd: Number(pkgPrice),
-      credits: Number(pkgCredits),
-      bonusPercent: Number(pkgBonus),
-    };
-
-    savePackages([...packages, newPkg]);
+    if (editingPkg) { savePkg(packages.map((p) => p.id === editingPkg.id ? { ...p, name: pkgName, priceVnd: pkgPrice, credits: pkgCredits, bonusPercent: pkgBonus } : p)); }
+    else { savePkg([...packages, { id: `pkg_${Date.now()}`, name: pkgName, priceVnd: pkgPrice, credits: pkgCredits, bonusPercent: pkgBonus }]); }
     setShowPkgModal(false);
   };
 
-  const handleDeletePackage = (id: string) => {
-    if (confirm('Xoá gói nạp này?')) {
-      savePackages(packages.filter((p) => p.id !== id));
-    }
-  };
+  const handleRefundTx = (id: string) => { if (confirm('Hoàn tiền giao dịch này?')) saveTx(transactions.map((t) => t.id === id ? { ...t, status: 'REFUNDED' as const } : t)); };
 
-  // Simulate Quick Top-Up Test
-  const handleSimulateTopup = () => {
-    const newTx: TransactionRecord = {
-      id: `TX-${Math.floor(10000 + Math.random() * 90000)}`,
-      userEmail: 'customer@demo.vn',
-      amountVnd: 200000,
-      creditsGiven: 220000,
-      method: 'VietQR',
-      status: 'SUCCESS',
-      createdAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-    };
-    saveTransactions([newTx, ...transactions]);
-    alert('Đã giả lập giao dịch nạp tiền thành công và cộng 220.000 credit cho user!');
-  };
+  const totalRevenue = transactions.filter((t) => t.status === 'SUCCESS').reduce((s, t) => s + t.amountVnd, 0);
+  const filteredTx = transactions.filter((t) => t.id.includes(searchTx) || t.userEmail.toLowerCase().includes(searchTx.toLowerCase()));
 
-  const handleApproveTx = (id: string) => {
-    const updated = transactions.map((t) => (t.id === id ? { ...t, status: 'SUCCESS' as const } : t));
-    saveTransactions(updated);
-  };
+  const txColumns: TableColumn<TransactionRecord>[] = [
+    { key: 'id', header: 'Mã GD', render: (t) => <strong style={{ color: '#6366f1' }}>{t.id}</strong> },
+    { key: 'userEmail', header: 'Email KH', render: (t) => <span style={{ fontSize: '0.8rem' }}>{t.userEmail}</span> },
+    { key: 'amountVnd', header: 'Số Tiền (₫)', align: 'right', render: (t) => <strong>{t.amountVnd.toLocaleString()} ₫</strong> },
+    { key: 'creditsGiven', header: 'Credits', align: 'right', render: (t) => <span style={{ color: '#10b981', fontWeight: 600 }}>{t.creditsGiven.toLocaleString()} cr</span> },
+    { key: 'method', header: 'Phương Thức', render: (t) => <Badge variant="neutral" size="sm">{t.method}</Badge> },
+    { key: 'status', header: 'Trạng Thái', render: (t) => <Badge variant={txBadge(t.status)} size="sm" dot>{txLabel[t.status]}</Badge> },
+    { key: 'createdAt', header: 'Thời Gian', render: (t) => <span style={{ color: '#71717a', fontSize: '0.78rem' }}>{t.createdAt}</span> },
+    { key: 'actions', header: '', align: 'center', render: (t) => t.status === 'SUCCESS' ? <Button variant="ghost" size="sm" onClick={() => handleRefundTx(t.id)} title="Hoàn"><HiOutlineArrowPath size={14} /></Button> : null },
+  ];
 
-  const filteredTx = transactions.filter((tx) => {
-    const matchesSearch =
-      tx.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesMethod = filterMethod === 'ALL' || tx.method === filterMethod;
-    return matchesSearch && matchesMethod;
-  });
-
-  return (
-    <div className={styles.moduleContainer}>
-      {/* 4 Credit Package Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+  const packagesTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button variant="primary" size="md" onClick={handleOpenAddPkg}><HiOutlinePlus size={16} /> Thêm Gói</Button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
         {packages.map((pkg) => (
-          <div
-            key={pkg.id}
-            style={{
-              backgroundColor: '#fff',
-              border: pkg.isPopular ? '2px solid #6366f1' : '1px solid #27272a',
-              borderRadius: 8,
-              padding: '1.25rem',
-              boxShadow: '0 1px 2px rgba(56,65,74,0.1)',
-              position: 'relative',
-            }}
-          >
-            {pkg.isPopular && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: -10,
-                  right: 15,
-                  backgroundColor: '#6366f1',
-                  color: '#fff',
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: 9999,
-                }}
-              >
-                PHỔ BIẾN NHẤT
-              </span>
-            )}
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fafafa', marginBottom: '0.35rem' }}>
-              {pkg.name}
-            </h4>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981', marginBottom: '0.25rem' }}>
-              {pkg.priceVnd.toLocaleString()} ₫
+          <Card key={pkg.id} padding="md">
+            <div style={{ textAlign: 'center' }}>
+              {pkg.isPopular && <Badge variant="warning" size="sm">⭐ Phổ biến</Badge>}
+              <h3 style={{ color: '#fafafa', margin: '0.5rem 0 0.25rem', fontSize: '1rem' }}>{pkg.name}</h3>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#6366f1' }}>{pkg.priceVnd.toLocaleString()} ₫</div>
+              <div style={{ color: '#10b981', fontWeight: 700, margin: '0.3rem 0' }}>{pkg.credits.toLocaleString()} Credits</div>
+              {pkg.bonusPercent > 0 && <Badge variant="success" size="sm">+{pkg.bonusPercent}% Bonus</Badge>}
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: '1rem' }}>
+                <Button variant="outline" size="sm" onClick={() => handleEditPkg(pkg)}>Sửa</Button>
+                <Button variant="ghost" size="sm" onClick={() => savePkg(packages.filter((p) => p.id !== pkg.id))}>Xoá</Button>
+              </div>
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#a1a1aa', marginBottom: '0.75rem' }}>
-              Nhận: <strong>{pkg.credits.toLocaleString()} Credits</strong>
-              {pkg.bonusPercent > 0 && (
-                <span style={{ color: '#f59e0b', marginLeft: 4, fontWeight: 700 }}>
-                  (+{pkg.bonusPercent}% Thưởng)
-                </span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => handleDeletePackage(pkg.id)}
-              style={{
-                fontSize: '0.75rem',
-                color: '#f43f5e',
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-              }}
-            >
-              Xoá gói
-            </button>
-          </div>
+          </Card>
         ))}
       </div>
+    </div>
+  );
 
-      {/* Toolbar */}
-      <div className={styles.toolbarCard}>
-        <div className={styles.searchFilterGroup}>
-          <div className={styles.searchInput}>
-            <HiOutlineMagnifyingGlass size={16} />
-            <input
-              type="text"
-              placeholder="Tìm theo mã GD hoặc email khách..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <select
-            className={styles.selectFilter}
-            value={filterMethod}
-            onChange={(e) => setFilterMethod(e.target.value)}
-          >
-            <option value="ALL">Tất cả cổng thanh toán</option>
-            <option value="VietQR">VietQR (Ngân hàng)</option>
-            <option value="MoMo">Ví MoMo</option>
-            <option value="VCC_Card">VCC (Thẻ ảo/Credit)</option>
-          </select>
-        </div>
-
-        <div className={styles.actionButtonGroup}>
-          <Button variant="outline" size="md" onClick={handleSimulateTopup}>
-            <HiOutlineArrowPath size={16} /> Giả Lập Nạp Tiền Thử
-          </Button>
-          <Button variant="primary" size="md" onClick={() => setShowPkgModal(true)}>
-            <HiOutlinePlus size={16} /> Tạo Gói Nạp Mới
-          </Button>
-        </div>
+  const txTab = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <StatCard label="Tổng Doanh Thu" value={`${totalRevenue.toLocaleString()} ₫`} color="#10b981" icon="💰" />
+        <StatCard label="Tổng Giao Dịch" value={transactions.length} color="#6366f1" icon="📋" />
       </div>
+      <Card padding="sm">
+        <SearchInput placeholder="Tìm mã GD hoặc email..." value={searchTx} onChange={(e) => setSearchTx(e.target.value)} onClear={() => setSearchTx('')} />
+      </Card>
+      <Card title="Lịch Sử Giao Dịch" subtitle={`${filteredTx.length} giao dịch`} padding="none">
+        <Table columns={txColumns} data={filteredTx} rowKey={(t) => t.id} page={txPage} pageSize={10} onPageChange={setTxPage} />
+      </Card>
+    </div>
+  );
 
-      {/* Transactions Table */}
-      <div className={styles.tableContainer}>
-        <div className={styles.tableHeaderBar}>
-          <div>
-            <h3>Lịch Sử Giao Dịch & Nạp Tiền Theo Ngày</h3>
-            <span style={{ fontSize: '0.75rem', color: '#71717a' }}>
-              Quản lý thanh toán tự động qua VietQR, MoMo và thẻ VCC
-            </span>
-          </div>
-          <span className={styles.countBadge}>{filteredTx.length} Giao Dịch</span>
-        </div>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Tabs variant="line" items={[
+        { key: 'packages', label: '📦 Gói Credit', icon: <HiOutlineCreditCard size={16} />, content: packagesTab },
+        { key: 'transactions', label: '📋 Giao Dịch', icon: <HiOutlineCheckCircle size={16} />, content: txTab },
+      ]} defaultKey="packages" />
 
-        <table className={styles.velzonTable}>
-          <thead>
-            <tr>
-              <th>Mã Giao Dịch</th>
-              <th>Khách Hàng / Email</th>
-              <th>Số Tiền Nạp (VND)</th>
-              <th>Credits Đã Cộng</th>
-              <th>Cổng Thanh Toán</th>
-              <th>Thời Gian</th>
-              <th>Trạng Thái</th>
-              <th>Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTx.map((tx) => (
-              <tr key={tx.id}>
-                <td>
-                  <strong style={{ color: '#6366f1' }}>{tx.id}</strong>
-                </td>
-                <td>{tx.userEmail}</td>
-                <td style={{ fontWeight: 700 }}>{tx.amountVnd.toLocaleString()} ₫</td>
-                <td style={{ color: '#10b981', fontWeight: 700 }}>
-                  +{tx.creditsGiven.toLocaleString()} cr
-                </td>
-                <td>
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: '#6366f1',
-                    }}
-                  >
-                    <HiOutlineCreditCard size={15} /> {tx.method}
-                  </span>
-                </td>
-                <td style={{ fontSize: '0.75rem', color: '#71717a' }}>{tx.createdAt}</td>
-                <td>
-                  <span
-                    style={{
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: 9999,
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      backgroundColor:
-                        tx.status === 'SUCCESS'
-                          ? 'rgba(16,185,129,0.12)'
-                          : tx.status === 'PENDING'
-                          ? 'rgba(245,158,11,0.12)'
-                          : 'rgba(244,63,94,0.12)',
-                      color:
-                        tx.status === 'SUCCESS'
-                          ? '#10b981'
-                          : tx.status === 'PENDING'
-                          ? '#f59e0b'
-                          : '#f43f5e',
-                    }}
-                  >
-                    {tx.status}
-                  </span>
-                </td>
-                <td>
-                  {tx.status === 'PENDING' && (
-                    <Button variant="outline" size="sm" onClick={() => handleApproveTx(tx.id)}>
-                      <HiOutlineCheckCircle size={14} /> Duyệt Nạp
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal: Tạo gói nạp */}
-      {showPkgModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalCard}>
-            <div className={styles.modalHeader}>
-              <h2>Tạo Gói Nạp Credit Mới</h2>
-              <button type="button" className={styles.closeBtn} onClick={() => setShowPkgModal(false)}>
-                <HiOutlineXMark />
-              </button>
-            </div>
-            <form onSubmit={handleAddPackage}>
-              <div className={styles.modalBody}>
-                <div className={styles.formField}>
-                  <label>Tên Gói Nạp</label>
-                  <input
-                    type="text"
-                    value={pkgName}
-                    onChange={(e) => setPkgName(e.target.value)}
-                    placeholder="VD: Gói Siêu Khuyến Mãi 100K"
-                    required
-                  />
-                </div>
-
-                <div className={styles.formField}>
-                  <label>Giá Tiền Thu (VND)</label>
-                  <input
-                    type="number"
-                    value={pkgPrice}
-                    onChange={(e) => setPkgPrice(Number(e.target.value))}
-                    required
-                  />
-                </div>
-
-                <div className={styles.formField}>
-                  <label>Số Credits Nhận Được</label>
-                  <input
-                    type="number"
-                    value={pkgCredits}
-                    onChange={(e) => setPkgCredits(Number(e.target.value))}
-                    required
-                  />
-                </div>
-
-                <div className={styles.formField}>
-                  <label>Phần Trăm Thưởng Thêm (%)</label>
-                  <input
-                    type="number"
-                    value={pkgBonus}
-                    onChange={(e) => setPkgBonus(Number(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.modalFooter}>
-                <Button variant="secondary" onClick={() => setShowPkgModal(false)}>
-                  Hủy Bỏ
-                </Button>
-                <Button variant="primary" type="submit">
-                  Lưu Gói Nạp
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal open={showPkgModal} onClose={() => setShowPkgModal(false)} title={editingPkg ? 'Cập Nhật Gói' : 'Thêm Gói Mới'} size="md"
+        footer={<><Button variant="secondary" onClick={() => setShowPkgModal(false)}>Hủy</Button><Button variant="primary" onClick={handleSavePkg}>Lưu</Button></>}
+      >
+        <form onSubmit={handleSavePkg} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Input label="Tên Gói" value={pkgName} onChange={(e) => setPkgName(e.target.value)} required fullWidth />
+          <Input label="Giá (VNĐ)" type="number" value={pkgPrice} onChange={(e) => setPkgPrice(Number(e.target.value))} fullWidth />
+          <Input label="Credits" type="number" value={pkgCredits} onChange={(e) => setPkgCredits(Number(e.target.value))} fullWidth />
+          <Input label="Bonus (%)" type="number" value={pkgBonus} onChange={(e) => setPkgBonus(Number(e.target.value))} hint="0 = không bonus" fullWidth />
+        </form>
+      </Modal>
     </div>
   );
 };
