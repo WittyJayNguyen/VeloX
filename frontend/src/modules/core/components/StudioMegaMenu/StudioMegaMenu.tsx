@@ -10,6 +10,18 @@ import {
   HiOutlineSparkles,
   HiOutlineBolt,
 } from 'react-icons/hi2';
+import {
+  RiOpenaiFill,
+  RiReactjsFill,
+  RiImageAiFill,
+  RiVideoAiFill,
+  RiBrainAi3Fill,
+} from 'react-icons/ri';
+import {
+  SiAnthropic,
+  SiGoogle,
+  SiMeta,
+} from 'react-icons/si';
 import styles from './StudioMegaMenu.module.scss';
 
 export interface ModelItem {
@@ -258,13 +270,23 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
                 >
                   <div className={styles.modelLeft}>
                     <div className={styles.modelIconBadge}>
-                      {model.provider.includes('OpenAI') ? '🟢' :
-                       model.provider.includes('Anthropic') ? '🟠' :
-                       model.provider.includes('Google') ? '🔵' :
-                       model.provider.includes('Meta') ? '🔷' :
-                       model.provider.includes('Midjourney') ? '⛵' :
-                       model.provider.includes('Runway') ? '🎬' :
-                       model.provider.includes('DeepSeek') ? '🐋' : '⚡'}
+                      {model.provider.includes('OpenAI') ? (
+                        <RiOpenaiFill size={16} color="#10a37f" title="OpenAI" />
+                      ) : model.provider.includes('Anthropic') ? (
+                        <SiAnthropic size={15} color="#d97706" title="Anthropic" />
+                      ) : model.provider.includes('Google') ? (
+                        <SiGoogle size={14} color="#4285f4" title="Google" />
+                      ) : model.provider.includes('Meta') ? (
+                        <SiMeta size={14} color="#0668e1" title="Meta AI" />
+                      ) : model.provider.includes('Midjourney') ? (
+                        <RiImageAiFill size={16} color="#38bdf8" title="Midjourney" />
+                      ) : model.provider.includes('Runway') ? (
+                        <RiVideoAiFill size={16} color="#c084fc" title="Runway" />
+                      ) : model.provider.includes('DeepSeek') ? (
+                        <RiBrainAi3Fill size={16} color="#2dd4bf" title="DeepSeek" />
+                      ) : (
+                        <RiReactjsFill size={16} color="#61dafb" title="VeloX AI" />
+                      )}
                     </div>
                     <div className={styles.modelInfo}>
                       <div className={styles.modelTitleRow}>
