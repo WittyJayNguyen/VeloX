@@ -9,7 +9,9 @@
     "register": "Đăng Ký",
     "dashboard": "Bảng Quản Trị",
     "logout": "Đăng Xuất",
-    "workspace": "Khu Làm Việc"
+    "workspace": "Khu Làm Việc",
+    "studio": "Studio",
+    "models": "Model"
   },
   "hero": {
     "badge": "Nền Tảng AI Gateway Thế Hệ Mới",
@@ -459,5 +461,17 @@
   },
   "downloads": {
     "subtitle": "Trải nghiệm sức mạnh AI Gateway trực tiếp trên màn hình máy tính với phím tắt tức thời"
+  },
+  "studio": {
+    "tools_title": "CÔNG CỤ SÁNG TẠO",
+    "cat_chat": "Chat",
+    "cat_image": "Hình Ảnh",
+    "cat_video": "Video",
+    "open_full_studio": "Mở Studio Đầy Đủ",
+    "available_models_for": "MÔ HÌNH KHẢ DỤNG",
+    "view_all_models": "Xem chi tiết & bảng giá 100+ Model"
+  },
+  "models_page": {
+    "subtitle": "Khám phá hơn 100+ mô hình AI thế hệ mới nhất cho Chat, Tạo Ảnh và Video với chi phí tối ưu"
   }
 }

@@ -1,6 +1,6 @@
 {
   "app_name": "VeloX AI",
-  "nav": { "home": "홈", "features": "기능", "pricing": "요금제", "docs": "문서", "login": "로그인", "register": "회원가입", "dashboard": "대시보드", "logout": "로그아웃", "workspace": "워크스페이스" },
+  "nav": { "home": "홈", "features": "기능", "pricing": "요금제", "docs": "문서", "login": "로그인", "register": "회원가입", "dashboard": "대시보드", "logout": "로그아웃", "workspace": "워크스페이스", "studio": "Studio", "models": "Model" },
   "hero": { "badge": "차세대 AI 게이트웨이 플랫폼", "title_1": "통합 AI 허브", "title_highlight": "인공지능", "subtitle": "OpenAI, Claude, Gemini, Midjourney 등 100개 이상의 AI 모델을 최저 비용으로 연결합니다. 하나의 API 키로 모든 것을.", "cta_start": "무료로 시작", "cta_docs": "문서 보기" },
   "features": { "title": "VeloX를 선택하는 이유", "multi_model": "멀티모델 AI", "multi_model_desc": "채팅, 이미지, 비디오, 코드용 100개 이상의 AI 모델을 단일 플랫폼에서 액세스합니다.", "pool_system": "스마트 풀 시스템", "pool_system_desc": "API 키와 계정 토큰을 자동 로테이션하여 99.9% 가동률과 최적의 가격을 보장합니다.", "security": "엔터프라이즈 보안", "security_desc": "종단간 암호화, RBAC 접근 제어, 포괄적인 감사 로깅.", "i18n": "다국어 지원", "i18n_desc": "베트남어, 영어, 일본어, 한국어, 중국어 5개 언어를 지원합니다." },
   "stats": { "models": "AI 모델", "users": "사용자", "requests": "요청/일", "uptime": "가동률" },
@@ -383,5 +383,17 @@
   },
   "downloads": {
     "subtitle": "단축키로 즉시 호출하는 강력한 PC 전용 AI 게이트웨이"
+  },
+  "studio": {
+    "tools_title": "AI 크리에이티브 도구",
+    "cat_chat": "채팅 대화",
+    "cat_image": "이미지 생성",
+    "cat_video": "비디오 생성",
+    "open_full_studio": "전체 스튜디오 열기",
+    "available_models_for": "사용 가능한 모델",
+    "view_all_models": "100개 이상의 모델 및 요금 확인"
+  },
+  "models_page": {
+    "subtitle": "채팅, 이미지, 비디오를 위한 100개 이상의 차세대 AI 모델을 최적의 가격으로 탐색하세요"
   }
 }
