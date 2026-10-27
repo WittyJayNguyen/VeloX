@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   HiOutlineWallet,
   HiOutlineArrowTrendingUp,
@@ -58,6 +59,7 @@ const initialCashFlow: CashFlowRecord[] = [
 ];
 
 const WalletPage = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'topup' | 'cashflow'>('topup');
   const [topUpList, setTopUpList] = useState<TopUpTransaction[]>(() => {
     const s = localStorage.getItem('velox_topup_tx');
@@ -249,10 +251,10 @@ const WalletPage = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Top StatCards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-        <StatCard title="Số Dư Ví Khả Dụng" value={`${currentBalance.toLocaleString()} ₫`} icon={<HiOutlineWallet size={22} />} change="Sẵn sàng gọi API" changeType="up" />
-        <StatCard title="Tổng Tiền Đã Nạp" value={`${(totalTopUp / 1000000).toFixed(2)}M ₫`} icon={<HiOutlineArrowTrendingUp size={22} />} change={`${successTxCount} giao dịch thành công`} changeType="up" />
-        <StatCard title="Tổng Tiêu Thụ AI" value={`${(totalConsume / 1000000).toFixed(2)}M ₫`} icon={<HiOutlineArrowTrendingDown size={22} />} change="Chi phí vận hành model" changeType="neutral" />
-        <StatCard title="Giao Dịch Nạp Thành Công" value={`${successTxCount} / ${topUpList.length}`} icon={<HiOutlineCheckCircle size={22} />} change="Tỷ lệ 98.5%" changeType="up" />
+        <StatCard title={t('admin.wallet.available_balance', 'Số Dư Ví Khả Dụng')} value={`${currentBalance.toLocaleString()} ₫`} icon={<HiOutlineWallet size={22} />} change="Sẵn sàng gọi API" changeType="up" />
+        <StatCard title={t('admin.wallet.total_deposited', 'Tổng Tiền Đã Nạp')} value={`${(totalTopUp / 1000000).toFixed(2)}M ₫`} icon={<HiOutlineArrowTrendingUp size={22} />} change={`${successTxCount} giao dịch thành công`} changeType="up" />
+        <StatCard title={t('admin.wallet.total_consumed', 'Tổng Tiêu Thụ AI')} value={`${(totalConsume / 1000000).toFixed(2)}M ₫`} icon={<HiOutlineArrowTrendingDown size={22} />} change="Chi phí vận hành model" changeType="neutral" />
+        <StatCard title={t('admin.wallet.success_tx', 'Giao Dịch Nạp Thành Công')} value={`${successTxCount} / ${topUpList.length}`} icon={<HiOutlineCheckCircle size={22} />} change="Tỷ lệ 98.5%" changeType="up" />
       </div>
 
       {/* Tabs Switcher */}
@@ -261,8 +263,8 @@ const WalletPage = () => {
           <Tabs
             variant="pill"
             items={[
-              { key: 'topup', label: `Lịch Sử Nạp Tiền (${topUpList.length})` },
-              { key: 'cashflow', label: `Biến Động Dòng Tiền (${cashFlowList.length})` },
+              { key: 'topup', label: `${t('admin.wallet.tab_topup', 'Lịch Sử Nạp Tiền')} (${topUpList.length})` },
+              { key: 'cashflow', label: `${t('admin.wallet.tab_cashflow', 'Biến Động Dòng Tiền')} (${cashFlowList.length})` },
             ]}
             activeKey={activeTab}
             onChange={(key) => {
@@ -273,7 +275,7 @@ const WalletPage = () => {
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <Button variant="primary" size="md" onClick={() => setShowTopUpModal(true)}>
-              <HiOutlinePlus size={16} /> Nạp Tiền Thủ Công
+              <HiOutlinePlus size={16} /> {t('admin.wallet.btn_manual_topup', 'Nạp Tiền Thủ Công')}
             </Button>
           </div>
         </div>
@@ -282,7 +284,7 @@ const WalletPage = () => {
       {/* Main Content Table */}
       {activeTab === 'topup' ? (
         <Card
-          title="Lịch Sử Giao Dịch Nạp Tiền & Đối Soát"
+          title={t('admin.wallet.tx_history_title', 'Lịch Sử Giao Dịch Nạp Tiền & Đối Soát')}
           subtitle={`Đang hiển thị ${filteredTopUp.length} giao dịch nạp tiền qua VietQR, MoMo, Ngân Hàng`}
           headerRight={<HiOutlineCreditCard size={20} style={{ color: '#10b981' }} />}
           padding="none"

@@ -145,6 +145,52 @@
       "balance_overview": "Revenue vs Token Cost Balance",
       "deals_status": "Recent Transactions",
       "pool_alerts": "Pool Health & Depletion Alerts"
+    },
+    "audit": {
+      "iam_title": "IAM & Security Audit Log",
+      "iam_desc": "Monitor all account interventions, role modifications, password changes, and brute-force lockouts",
+      "credit_ledger_title": "Credit Audit Ledger",
+      "credit_ledger_desc": "Immutable audit ledger tracking manual credit interventions, balance reconciliations, and anti-fraud adjustments",
+      "ip_abuse_title": "IP Abuse Monitoring & Anti-Farm Firewall",
+      "ip_abuse_desc": "Detect and block multi-account farming from single IPs/proxies exploiting free credit quotas",
+      "refresh_ledger": "Refresh Ledger",
+      "add_ip_blacklist": "Add IP to Blacklist",
+      "immutable_badge": "Immutable Log",
+      "stat_total_events": "Total Audit Events",
+      "stat_lockouts": "Brute-Force Lockouts",
+      "stat_resets": "Password Resets",
+      "stat_integrity": "Ledger Integrity",
+      "stat_total_adjustments": "Total Adjustments",
+      "stat_total_credited": "Total Credited (+)",
+      "stat_total_deducted": "Total Deducted (-)",
+      "stat_net_balance": "Net Ledger Balance",
+      "stat_banned_ips": "Total Banned IPs",
+      "stat_violating_accs": "Penalized Accounts",
+      "stat_blocked_requests": "Blocked Spam Requests"
+    },
+    "wallet": {
+      "available_balance": "Available Balance",
+      "total_deposited": "Total Deposited",
+      "total_consumed": "Total AI Consumed",
+      "success_tx": "Successful Transactions",
+      "tab_topup": "Top-Up History",
+      "tab_cashflow": "Cash Flow History",
+      "btn_manual_topup": "Manual Top-Up",
+      "tx_history_title": "Top-Up Transactions & Reconciliation",
+      "cashflow_title": "Cash Flow Ledger & Balance Activity"
+    },
+    "accounting": {
+      "header_title": "VeloX Enterprise Accounting & Audit",
+      "header_subtitle": "Financial management suite, AI account asset auditing, COGS depreciation, and cash flow reconciliation.",
+      "reconcile_btn": "Re-Reconcile",
+      "create_expense_btn": "Create Voucher / Stock Acc"
+    },
+    "badge": {
+      "profit": "Margin",
+      "inventory": "Stock",
+      "expense": "Voucher",
+      "cashflow": "Flow",
+      "my_library": "My Library"
     }
   }
 }

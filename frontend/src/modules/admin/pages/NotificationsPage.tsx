@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HiOutlineBellAlert, HiOutlineTrash, HiOutlineCheckCircle } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Card } from '@modules/core/design-system/Card';
@@ -15,6 +16,7 @@ const initialNotifs: Notification[] = [
 ];
 
 const NotificationsPage = () => {
+  const { t } = useTranslation();
   const [notifs, setNotifs] = useState<Notification[]>(() => { const s = localStorage.getItem('velox_notifs'); return s ? JSON.parse(s) : initialNotifs; });
   const save = (d: Notification[]) => { setNotifs(d); localStorage.setItem('velox_notifs', JSON.stringify(d)); };
 
@@ -33,9 +35,9 @@ const NotificationsPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <HiOutlineBellAlert size={20} style={{ color: '#6366f1' }} />
-            <Badge variant={unreadCount > 0 ? 'danger' : 'neutral'} size="md">{unreadCount} chưa đọc</Badge>
+            <Badge variant={unreadCount > 0 ? 'danger' : 'neutral'} size="md">{unreadCount} {t('common.unread', 'chưa đọc')}</Badge>
           </div>
-          <Button variant="outline" size="sm" onClick={markAllRead}><HiOutlineCheckCircle size={16} /> Đánh dấu tất cả đã đọc</Button>
+          <Button variant="outline" size="sm" onClick={markAllRead}><HiOutlineCheckCircle size={16} /> {t('admin.notifications.mark_all_read', 'Đánh dấu tất cả đã đọc')}</Button>
         </div>
       </Card>
 

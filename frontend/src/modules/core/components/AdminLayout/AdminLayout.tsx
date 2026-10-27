@@ -43,6 +43,7 @@ interface NavItem {
   key: string;
   end?: boolean;
   badge?: string;
+  badgeKey?: string;
 }
 
 interface NavSection {
@@ -65,7 +66,7 @@ const navSections: NavSection[] = [
     defaultHeader: 'SÁNG TẠO & KHO TÁC PHẨM',
     items: [
       { path: '/admin/playground', icon: HiOutlineCommandLine, key: 'playground', badge: 'Live' },
-      { path: '/admin/library', icon: HiOutlinePhoto, key: 'library', badge: 'Kho Của Tôi' },
+      { path: '/admin/library', icon: HiOutlinePhoto, key: 'library', badge: 'Kho Của Tôi', badgeKey: 'admin.badge.my_library' },
     ],
   },
   {
@@ -76,7 +77,7 @@ const navSections: NavSection[] = [
       { path: '/admin/services', icon: HiOutlineServerStack, key: 'services' },
       { path: '/admin/keys', icon: HiOutlineKey, key: 'keys' },
       { path: '/admin/models', icon: HiOutlineCpuChip, key: 'models', badge: '100+' },
-      { path: '/admin/model-pricing', icon: HiOutlineBanknotes, key: 'model_pricing', badge: 'Lợi Nhuận' },
+      { path: '/admin/model-pricing', icon: HiOutlineBanknotes, key: 'model_pricing', badge: 'Lợi Nhuận', badgeKey: 'admin.badge.profit' },
       { path: '/admin/recaptcha', icon: HiOutlineShieldCheck, key: 'recaptcha', badge: 'Auto' },
     ],
   },
@@ -85,9 +86,9 @@ const navSections: NavSection[] = [
     defaultHeader: 'KẾ TOÁN & KIỂM TOÁN TÀI SẢN',
     items: [
       { path: '/admin/accounting/pnl', icon: HiOutlineDocumentChartBar, key: 'accounting_pnl', badge: 'P&L' },
-      { path: '/admin/accounting/assets', icon: HiOutlineCircleStack, key: 'accounting_assets', badge: 'Kiểm Kê' },
-      { path: '/admin/accounting/procurement', icon: HiOutlineReceiptRefund, key: 'accounting_procurement', badge: 'Phiếu Chi' },
-      { path: '/admin/accounting/cashflow', icon: HiOutlineScale, key: 'accounting_cashflow', badge: 'Dòng Tiền' },
+      { path: '/admin/accounting/assets', icon: HiOutlineCircleStack, key: 'accounting_assets', badge: 'Kiểm Kê', badgeKey: 'admin.badge.inventory' },
+      { path: '/admin/accounting/procurement', icon: HiOutlineReceiptRefund, key: 'accounting_procurement', badge: 'Phiếu Chi', badgeKey: 'admin.badge.expense' },
+      { path: '/admin/accounting/cashflow', icon: HiOutlineScale, key: 'accounting_cashflow', badge: 'Dòng Tiền', badgeKey: 'admin.badge.cashflow' },
     ],
   },
   {
@@ -145,7 +146,13 @@ const AdminLayout = () => {
 
   const getPageTitle = () => {
     const p = location.pathname;
-    if (p === '/admin') return t('admin.dashboard.title');
+    if (p === '/admin') return t('admin.dashboard.title', 'Bảng Điều Khiển Quản Trị CRM');
+    if (p === '/admin/user-audits') return t('admin.audit.iam_title', 'Nhật Ký Kiểm Toán IAM & Bảo Mật');
+    if (p === '/admin/credit-audits') return t('admin.audit.credit_ledger_title', 'Sổ Cái Biến Động Tín Dụng (Credit Ledger)');
+    if (p === '/admin/ip-abuse') return t('admin.audit.ip_abuse_title', 'Giám Sát IP & Chống Bào Free');
+    if (p === '/admin/notifications') return t('admin.sidebar.notifications', 'Thông Báo');
+    if (p === '/admin/wallet') return t('admin.sidebar.wallet', 'Ví & Lịch Sử');
+    if (p === '/admin/accounting') return t('admin.sidebar.accounting', 'Kế Toán & Kiểm Toán Tài Sản');
     // Extract last segment → look up in sidebar translations
     const seg = p.split('/').pop() || '';
     const underscoreSeg = seg.replace(/-/g, '_');
@@ -217,8 +224,8 @@ const AdminLayout = () => {
                     <item.icon size={19} />
                   </span>
                   {!sidebarCollapsed && <span className={styles.navLabel}>{t(`admin.sidebar.${item.key}`)}</span>}
-                  {!sidebarCollapsed && item.badge && (
-                    <span className={styles.badgePill}>{item.badge}</span>
+                  {!sidebarCollapsed && (item.badgeKey || item.badge) && (
+                    <span className={styles.badgePill}>{item.badgeKey ? t(item.badgeKey, item.badge || '') : item.badge}</span>
                   )}
                 </NavLink>
               ))}
@@ -267,7 +274,12 @@ const AdminLayout = () => {
               <HiOutlineMoon size={18} />
             </button>
 
-            <button className={styles.iconBtn} type="button" title="Notifications">
+            <button
+              className={styles.iconBtn}
+              type="button"
+              title={t('admin.sidebar.notifications', 'Thông Báo')}
+              onClick={() => navigate('/admin/notifications')}
+            >
               <HiOutlineBell size={18} />
               <span className={styles.badgeCount}>3</span>
             </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   HiOutlineBanknotes,
   HiOutlineArrowPath,
@@ -18,6 +19,7 @@ import {
 } from '../services/userManagementService';
 
 export const CreditAuditsPage = () => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<SystemCreditAuditItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -143,45 +145,45 @@ export const CreditAuditsPage = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fafafa', margin: 0 }}>
-              Sổ Cái Biến Động Tín Dụng (Credit Ledger)
+              {t('admin.audit.credit_ledger_title', 'Sổ Cái Biến Động Tín Dụng (Credit Ledger)')}
             </h1>
             <Badge variant="success" size="sm">
               ACID Row-Locked
             </Badge>
           </div>
           <p style={{ color: '#71717a', fontSize: '0.84rem', margin: '4px 0 0 0' }}>
-            Sổ cái kiểm toán bất biến theo dõi toàn bộ các lệnh can thiệp tín dụng thủ công, đối soát số dư và chống gian lận
+            {t('admin.audit.credit_ledger_desc', 'Sổ cái kiểm toán bất biến theo dõi toàn bộ các lệnh can thiệp tín dụng thủ công, đối soát số dư và chống gian lận')}
           </p>
         </div>
 
         <Button variant="outline" size="sm" onClick={loadData} loading={loading}>
           <HiOutlineArrowPath size={16} style={{ marginRight: 6 }} />
-          Làm Mới Sổ Cái
+          {t('admin.audit.refresh_ledger', 'Làm Mới Sổ Cái')}
         </Button>
       </div>
 
       {/* Summary Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
         <StatCard
-          label="Tổng Lệnh Điều Chỉnh"
+          label={t('admin.audit.stat_total_adjustments', 'Tổng Lệnh Điều Chỉnh')}
           value={stats.totalAdjustments.toLocaleString()}
           icon={<HiOutlineBanknotes />}
           color="#6366f1"
         />
         <StatCard
-          label="Tổng Tín Dụng Đã Cấp (+)"
+          label={t('admin.audit.stat_total_credited', 'Tổng Tín Dụng Đã Cấp (+)')}
           value={`+${stats.totalCredited.toLocaleString()}`}
           icon={<HiOutlineArrowTrendingUp />}
           color="#10b981"
         />
         <StatCard
-          label="Tổng Tín Dụng Đã Trừ (-)"
+          label={t('admin.audit.stat_total_deducted', 'Tổng Tín Dụng Đã Trừ (-)')}
           value={`-${stats.totalDeducted.toLocaleString()}`}
           icon={<HiOutlineArrowTrendingDown />}
           color="#f43f5e"
         />
         <StatCard
-          label="Dòng Tín Dụng Thực Tế"
+          label={t('admin.audit.stat_net_balance', 'Số Dư Biến Động Ròng')}
           value={`${netCredits >= 0 ? '+' : ''}${netCredits.toLocaleString()} pts`}
           icon={<HiOutlineScale />}
           color="#8b5cf6"
