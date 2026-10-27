@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HiOutlinePlus, HiOutlineCreditCard, HiOutlineCheckCircle, HiOutlineArrowPath, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineCheck } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlineCreditCard, HiOutlineCheckCircle, HiOutlineArrowPath, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineCheck, HiOutlineBanknotes, HiOutlineClock, HiOutlineClipboardDocumentList } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';
 import { Modal } from '@modules/core/design-system/Modal';
@@ -165,9 +165,9 @@ const BillingPage = () => {
   const txTab = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-        <StatCard label="Tổng Doanh Thu" value={`${totalRevenue.toLocaleString()} ₫`} color="#10b981" icon="💰" />
-        <StatCard label="Đang Chờ Xử Lý" value={`${totalPending.toLocaleString()} ₫`} color="#f59e0b" icon="⏳" />
-        <StatCard label="Tổng Giao Dịch" value={transactions.length} color="#6366f1" icon="📋" />
+        <StatCard label="Tổng Doanh Thu" value={`${totalRevenue.toLocaleString()} ₫`} color="#10b981" icon={<HiOutlineBanknotes size={22} />} />
+        <StatCard label="Đang Chờ Xử Lý" value={`${totalPending.toLocaleString()} ₫`} color="#f59e0b" icon={<HiOutlineClock size={22} />} />
+        <StatCard label="Tổng Giao Dịch" value={transactions.length} color="#6366f1" icon={<HiOutlineClipboardDocumentList size={22} />} />
       </div>
       <Card padding="sm">
         <SearchInput placeholder="Tìm mã GD hoặc email..." value={searchTx} onChange={(e) => setSearchTx(e.target.value)} onClear={() => setSearchTx('')} />
@@ -181,8 +181,8 @@ const BillingPage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <Tabs variant="line" items={[
-        { key: 'packages', label: '💳 Gói Credit', icon: <HiOutlineCreditCard size={16} />, content: packagesTab },
-        { key: 'transactions', label: '📋 Lịch Sử Giao Dịch', icon: <HiOutlineCheckCircle size={16} />, content: txTab },
+        { key: 'packages', label: 'Gói Credit', icon: <HiOutlineCreditCard size={16} />, content: packagesTab },
+        { key: 'transactions', label: 'Lịch Sử Giao Dịch', icon: <HiOutlineCheckCircle size={16} />, content: txTab },
       ]} defaultKey="packages" />
 
       {/* Modal: Add/Edit Package */}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HiOutlinePlus, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineCalculator } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineCalculator, HiOutlineChatBubbleLeftRight, HiOutlinePhoto, HiOutlineFilm, HiOutlineCodeBracket } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';
 import { Select } from '@modules/core/design-system/Select';
@@ -105,10 +105,10 @@ const ModelsPage = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <Tabs variant="pill" items={[
         { key: 'ALL', label: 'Tất Cả', content: tabContent },
-        { key: 'CHAT', label: '💬 Chat', content: tabContent },
-        { key: 'IMAGE', label: '🖼️ Image', content: tabContent },
-        { key: 'VIDEO', label: '🎬 Video', content: tabContent },
-        { key: 'DEV_REQ', label: '💻 Dev Req', content: tabContent },
+        { key: 'CHAT', label: 'Chat', icon: <HiOutlineChatBubbleLeftRight size={15} />, content: tabContent },
+        { key: 'IMAGE', label: 'Image', icon: <HiOutlinePhoto size={15} />, content: tabContent },
+        { key: 'VIDEO', label: 'Video', icon: <HiOutlineFilm size={15} />, content: tabContent },
+        { key: 'DEV_REQ', label: 'Dev Req', icon: <HiOutlineCodeBracket size={15} />, content: tabContent },
       ]} defaultKey="ALL" onChange={(k) => { setActiveTab(k); setPage(1); }} />
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editingModel ? 'Cập Nhật Model' : 'Thêm Model Mới'} size="lg"

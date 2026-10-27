@@ -77,7 +77,7 @@ interface StatCardProps { label: string; value: string | number; icon?: React.Re
 
 export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, color = '#6366f1' }) => (
   <div className={styles.statCard}>
-    <div className={styles.statIcon} style={{ backgroundColor: `${color}15`, color }}>{icon || '📊'}</div>
+    <div className={styles.statIcon} style={{ backgroundColor: `${color}15`, color }}>{icon}</div>
     <div className={styles.statInfo}>
       <span className={styles.statLabel}>{label}</span>
       <strong className={styles.statValue}>{value}</strong>
