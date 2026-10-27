@@ -12,7 +12,10 @@ import base64
 import tempfile
 import subprocess
 from typing import Dict, Any, Optional
-from playwright.async_api import async_playwright
+try:
+    from playwright.async_api import async_playwright
+except ImportError:
+    async_playwright = None
 
 
 def detect_media_type(raw_bytes: bytes) -> tuple:
@@ -189,6 +192,13 @@ async def generate_media_via_muse(
                 temp_img_path = tf.name
         except Exception:
             temp_img_path = None
+
+    if async_playwright is None:
+        return {
+            "success": False,
+            "error": "Playwright is not installed in the backend environment.",
+            "latency_ms": 0.0,
+        }
 
     try:
         async with async_playwright() as p:
