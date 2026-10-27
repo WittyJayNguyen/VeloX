@@ -9,7 +9,9 @@
     "register": "新規登録",
     "dashboard": "ダッシュボード",
     "logout": "ログアウト",
-    "workspace": "ワークスペース"
+    "workspace": "ワークスペース",
+    "studio": "Studio",
+    "models": "Model"
   },
   "hero": {
     "badge": "次世代 AI ゲートウェイ プラットフォーム",
@@ -457,5 +459,17 @@
   },
   "downloads": {
     "subtitle": "PCデスクトップから即座にAI機能をショートカット起動"
+  },
+  "studio": {
+    "tools_title": "クリエイティブツール",
+    "cat_chat": "チャット",
+    "cat_image": "画像生成",
+    "cat_video": "動画生成",
+    "open_full_studio": "フルスタジオを開く",
+    "available_models_for": "利用可能なモデル",
+    "view_all_models": "100以上のモデルと料金を確認"
+  },
+  "models_page": {
+    "subtitle": "チャット、画像、動画向け100以上の次世代AIモデルを最適価格で探索"
   }
 }

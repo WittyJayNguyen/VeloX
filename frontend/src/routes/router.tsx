@@ -58,6 +58,8 @@ const CreatorSalesPage = lazy(() => import('@modules/client/pages/CreatorSalesPa
 const ReferralPage = lazy(() => import('@modules/client/pages/ReferralPage'));
 const DeveloperApiPage = lazy(() => import('@modules/client/pages/DeveloperApiPage'));
 const DownloadsPage = lazy(() => import('@modules/client/pages/DownloadsPage'));
+const StudioPage = lazy(() => import('@modules/client/pages/StudioPage'));
+const ModelsExplorePage = lazy(() => import('@modules/client/pages/ModelsExplorePage'));
 
 const router = createBrowserRouter([
   {
@@ -66,6 +68,9 @@ const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      // Core AI Navigation
+      { path: '/studio', element: <StudioPage /> },
+      { path: '/models', element: <ModelsExplorePage /> },
       // Client functional pages
       { path: '/profile', element: <ProfilePage /> },
       { path: '/security', element: <SecurityPage /> },

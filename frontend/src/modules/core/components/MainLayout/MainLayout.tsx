@@ -7,6 +7,7 @@ import { HiOutlineBars3, HiOutlineXMark, HiOutlineMagnifyingGlass, HiOutlineBell
 import UserProfileDropdown from '../UserProfileDropdown/UserProfileDropdown';
 import TopupModal from '../TopupModal/TopupModal';
 import QuickSearchModal from '../QuickSearchModal/QuickSearchModal';
+import StudioMegaMenu from '../StudioMegaMenu/StudioMegaMenu';
 import styles from '@assets/scss/core/main-layout.module.scss';
 
 const MainLayout = () => {
@@ -86,18 +87,20 @@ const MainLayout = () => {
 
           {/* Desktop Navigation Links */}
           <nav className={styles.navCenter}>
-            <a href="/#workouts" className={styles.navItem}>
-              {t('fitness.nav_workouts')}
-            </a>
-            <a href="/#trainers" className={styles.navItem}>
-              {t('fitness.nav_trainers')}
-            </a>
-            <a href="/#pricing" className={styles.navItem}>
-              {t('fitness.nav_pricing')}
-            </a>
-            <a href="/#features" className={styles.navItem}>
-              {t('fitness.nav_community')}
-            </a>
+            <Link to="/" className={styles.navItem}>
+              {t('nav.home', 'Trang Chủ')}
+            </Link>
+
+            {/* Studio Mega Menu with 2-column hover flyout */}
+            <StudioMegaMenu onCloseMenu={closeMobileMenu} />
+
+            <Link to="/subscription" className={styles.navItem}>
+              {t('nav.pricing', 'Bảng Giá')}
+            </Link>
+
+            <Link to="/models" className={styles.navItem}>
+              {t('nav.models', 'Model')}
+            </Link>
           </nav>
 
           {/* Right Action Group */}
@@ -186,18 +189,29 @@ const MainLayout = () => {
             <div className={styles.mobileBackdrop} onClick={closeMobileMenu} />
             <div className={styles.mobileDrawer}>
               <nav className={styles.mobileNavLinks}>
-                <a href="/#workouts" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  {t('fitness.nav_workouts')}
-                </a>
-                <a href="/#trainers" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  {t('fitness.nav_trainers')}
-                </a>
-                <a href="/#pricing" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  {t('fitness.nav_pricing')}
-                </a>
-                <a href="/#features" className={styles.mobileNavItem} onClick={closeMobileMenu}>
-                  {t('fitness.nav_community')}
-                </a>
+                <Link to="/" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  🏠 {t('nav.home', 'Trang Chủ')}
+                </Link>
+
+                <div className={styles.mobileSectionHeader}>⚡ STUDIO SÁNG TẠO</div>
+                <Link to="/studio?category=chat" className={styles.mobileSubItem} onClick={closeMobileMenu}>
+                  💬 Chat (GPT-4o, Claude 3.5, Gemini)
+                </Link>
+                <Link to="/studio?category=image" className={styles.mobileSubItem} onClick={closeMobileMenu}>
+                  🎨 Hình Ảnh (Midjourney, FLUX.1, DALL-E)
+                </Link>
+                <Link to="/studio?category=video" className={styles.mobileSubItem} onClick={closeMobileMenu}>
+                  🎬 Video (Runway Gen-3, Luma, Kling)
+                </Link>
+
+                <div style={{ height: '6px' }} />
+
+                <Link to="/subscription" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  💳 {t('nav.pricing', 'Bảng Giá')}
+                </Link>
+                <Link to="/models" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  🤖 {t('nav.models', 'Model')}
+                </Link>
               </nav>
 
               <div className={styles.mobileDivider} />
