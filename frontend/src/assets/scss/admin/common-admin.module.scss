@@ -248,6 +248,9 @@
   box-shadow: $shadow-xl, $shadow-glow-primary;
   width: 100%;
   max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   animation: scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -256,6 +259,9 @@
   @include flex-between;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid $border-color;
+  flex-shrink: 0;
+  background-color: $surface-1;
+  z-index: 10;
 
   h2 {
     font-size: $fs-lg;
@@ -280,7 +286,8 @@
   padding: 1.5rem;
   @include flex-col;
   gap: 1rem;
-  max-height: 75vh;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   @include custom-scrollbar;
 }
@@ -289,7 +296,9 @@
   @include flex-between;
   padding: 1rem 1.5rem;
   border-top: 1px solid $border-color;
-  background-color: rgba(24, 24, 27, 0.6);
+  background-color: rgba(24, 24, 27, 0.95);
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 // ── Form Field ──
