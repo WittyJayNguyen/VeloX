@@ -329,5 +329,135 @@
     "start_trial": "Start Free Trial",
     "cta_banner_title": "Ready To Transform Your Body & Life?",
     "cta_banner_desc": "Join over 500,000 active members today. Start your 7-day free trial with zero risk."
+  },
+  "header": {
+    "quick_search": "Quick search",
+    "pricing": "Pricing",
+    "notifications": "Notifications"
+  },
+  "menu": {
+    "topup_now": "Top up",
+    "checkin_today": "Daily Check-in",
+    "checkin_done": "Checked in today",
+    "checkin_success": "Check-in successful! +50 credits",
+    "already_checked_in": "You have already checked in today!",
+    "section_account": "ACCOUNT",
+    "section_billing": "PLANS & BILLING",
+    "section_earning": "EARNING",
+    "section_advanced": "ADVANCED",
+    "super_admin_panel": "Super Admin Dashboard",
+    "language": "Language"
+  },
+  "client_menu": {
+    "profile": "Profile & settings",
+    "security": "Security & 2FA",
+    "team": "Your team",
+    "subscription": "Manage plan",
+    "history": "Usage history",
+    "orders": "Purchased orders",
+    "workflows": "My workflows",
+    "sales": "Creator sales",
+    "referral": "Refer a friend",
+    "developer": "API & MCP",
+    "downloads": "PC software"
+  },
+  "topup": {
+    "title": "Top Up Account Credits",
+    "current_balance": "Current balance",
+    "choose_package": "1. Choose Credit Package",
+    "payment_info": "2. Scan VietQR Banking Code",
+    "bank": "Bank",
+    "account_no": "Account number",
+    "account_name": "Account holder",
+    "amount": "Amount",
+    "memo": "Transfer note",
+    "copy": "Copy",
+    "copied": "Copied",
+    "confirm_paid": "I Have Completed Transfer",
+    "checking": "Verifying transaction...",
+    "success_title": "Top-up Successful!",
+    "success_desc": "Your account has been credited with",
+    "qr_hint": "Open your mobile banking app to scan"
+  },
+  "search": {
+    "placeholder": "Quick search pages, tools, settings... (Ctrl+K)",
+    "empty": "No matching results found.",
+    "hint_navigate": "Navigate",
+    "hint_select": "Select",
+    "hint_close": "Close"
+  },
+  "profile": {
+    "subtitle": "Manage your profile details and VeloX membership information",
+    "save_success": "Profile details updated successfully!",
+    "balance_label": "Credit Balance",
+    "tier_label": "Service Tier",
+    "role_label": "User Role",
+    "personal_info": "Personal Information",
+    "full_name": "Full name",
+    "email": "Email address (Identity)",
+    "avatar_url": "Avatar Image URL",
+    "created_at": "Joined Date",
+    "save_btn": "Save Changes"
+  },
+  "security": {
+    "subtitle": "Enhance account safety with two-factor authentication and session audit",
+    "2fa_title": "Two-Factor Authentication (2FA Authenticator)",
+    "2fa_desc": "Protect your account using Google Authenticator or Authy during login.",
+    "status_active": "Status: Active",
+    "status_inactive": "Status: Inactive",
+    "turn_on": "Enable 2FA",
+    "turn_off": "Disable 2FA",
+    "2fa_enabled": "Two-factor authentication enabled!",
+    "2fa_disabled": "Two-factor authentication disabled.",
+    "change_pass_title": "Change Password",
+    "old_pass": "Current password",
+    "new_pass": "New password",
+    "confirm_pass": "Confirm new password",
+    "save_pass_btn": "Update Password",
+    "err_mismatch": "Password confirmation does not match!",
+    "err_short": "Password must be at least 6 characters!",
+    "success_pass": "Password changed successfully!",
+    "sessions_title": "Active Login Sessions"
+  },
+  "team": {
+    "subtitle": "Collaborate, share credit quotas and manage workspace member access",
+    "total_members": "Total Members",
+    "pooled_credit": "Pooled Credit Fund",
+    "invite_title": "Invite New Member",
+    "email_label": "Member email",
+    "role_label": "Role",
+    "send_invite": "Send Invitation",
+    "list_title": "Member List",
+    "invited_success": "Invitation sent to member email!"
+  },
+  "subscription": {
+    "subtitle": "Choose the AI service plan that best matches your productivity needs",
+    "topup_btn": "Top Up Credits Now",
+    "current_plan": "Active Plan"
+  },
+  "history": {
+    "subtitle": "Breakdown of AI request calls, tokens processed and credit usage"
+  },
+  "orders": {
+    "subtitle": "Track your top-up payments, subscription orders and electronic invoices",
+    "new_topup": "New Top Up"
+  },
+  "workflows": {
+    "subtitle": "Automate complex AI pipelines with multi-step workflows",
+    "create_new": "Create New Workflow"
+  },
+  "sales": {
+    "subtitle": "Track revenue from publishing your AI workflows and prompts on VeloX Marketplace",
+    "withdraw_btn": "Request Payout"
+  },
+  "referral": {
+    "subtitle": "Invite friends to experience VeloX and earn 20% lifetime credit commission on all their top-ups",
+    "copied_notice": "Referral link copied to clipboard!"
+  },
+  "developer": {
+    "subtitle": "Connect VeloX AI Gateway with IDEs, Claude Desktop, Cursor and backend services"
+  },
+  "downloads": {
+    "subtitle": "Experience native desktop AI Gateway with instant keyboard shortcuts"
   }
 }

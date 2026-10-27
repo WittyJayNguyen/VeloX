@@ -618,3 +618,135 @@ $font-body: 'Barlow', sans-serif;
     }
   }
 }
+
+// ── Authenticated Topbar Controls (Matching User Reference) ──
+.topbarAuthControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
+}
+
+.quickSearchBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0f1422;
+  border: 1px solid #1f283d;
+  color: #94a3b8;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #38bdf8;
+    color: #f1f5f9;
+    background: #141b2e;
+  }
+
+  .searchShortcut {
+    font-size: 0.7rem;
+    font-family: inherit;
+    background: #1e2638;
+    color: #cbd5e1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #28334a;
+  }
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.navPricingLink {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #ff6b35;
+  }
+
+  @media (max-width: 520px) {
+    display: none;
+  }
+}
+
+.creditBadgeBox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  border-radius: 999px;
+  padding: 2px 4px 2px 10px;
+
+  .creditPill {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+
+    .diamondIcon {
+      font-size: 0.95rem;
+    }
+
+    .creditValue {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #fff;
+    }
+  }
+
+  .navTopupBtn {
+    background: #2dd4bf;
+    color: #032b28;
+    border: none;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #5eead4;
+      transform: scale(1.05);
+    }
+  }
+
+  @media (max-width: 440px) {
+    .navTopupBtn {
+      display: none;
+    }
+  }
+}
+
+.bellBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    background: #141b2e;
+  }
+}
+

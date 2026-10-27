@@ -46,6 +46,19 @@ const UserAuditsPage = lazy(() => import('@modules/users/pages/UserAuditsPage'))
 const CreditAuditsPage = lazy(() => import('@modules/users/pages/CreditAuditsPage'));
 const IpAbusePage = lazy(() => import('@modules/users/pages/IpAbusePage'));
 
+// Client Pages
+const ProfilePage = lazy(() => import('@modules/client/pages/ProfilePage'));
+const SecurityPage = lazy(() => import('@modules/client/pages/SecurityPage'));
+const TeamPage = lazy(() => import('@modules/client/pages/TeamPage'));
+const SubscriptionPage = lazy(() => import('@modules/client/pages/SubscriptionPage'));
+const HistoryPage = lazy(() => import('@modules/client/pages/HistoryPage'));
+const OrdersPage = lazy(() => import('@modules/client/pages/OrdersPage'));
+const WorkflowsPage = lazy(() => import('@modules/client/pages/WorkflowsPage'));
+const CreatorSalesPage = lazy(() => import('@modules/client/pages/CreatorSalesPage'));
+const ReferralPage = lazy(() => import('@modules/client/pages/ReferralPage'));
+const DeveloperApiPage = lazy(() => import('@modules/client/pages/DeveloperApiPage'));
+const DownloadsPage = lazy(() => import('@modules/client/pages/DownloadsPage'));
+
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -53,6 +66,19 @@ const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      // Client functional pages
+      { path: '/profile', element: <ProfilePage /> },
+      { path: '/security', element: <SecurityPage /> },
+      { path: '/team', element: <TeamPage /> },
+      { path: '/subscription', element: <SubscriptionPage /> },
+      { path: '/pricing', element: <SubscriptionPage /> },
+      { path: '/history', element: <HistoryPage /> },
+      { path: '/orders', element: <OrdersPage /> },
+      { path: '/workflows', element: <WorkflowsPage /> },
+      { path: '/creator-sales', element: <CreatorSalesPage /> },
+      { path: '/referral', element: <ReferralPage /> },
+      { path: '/developer', element: <DeveloperApiPage /> },
+      { path: '/downloads', element: <DownloadsPage /> },
     ],
   },
   {

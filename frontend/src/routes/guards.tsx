@@ -17,19 +17,19 @@ export const ProtectedRoute = () => {
 
 /** 
  * Admin Route:
- * Strictly verifies authenticated user has ROLE_ADMIN or ROLE_SUPER_ADMIN.
+ * Strictly verifies authenticated user has ROLE_SUPER_ADMIN.
  * If unauthenticated -> redirects to /login.
- * If authenticated but non-admin -> shows secure 403 Forbidden screen.
+ * If authenticated but not super admin -> shows secure 403 Forbidden screen with redirect to homepage.
  */
 export const AdminRoute = () => {
-  const { isAuthenticated, isAdmin } = useAuthStore();
+  const { isAuthenticated, isSuperAdmin } = useAuthStore();
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
-  if (!isAdmin) {
+  if (!isSuperAdmin) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -63,17 +63,17 @@ export const AdminRoute = () => {
             <HiOutlineShieldExclamation size={36} />
           </div>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.75rem', color: '#fff' }}>
-            Truy Cập Bị Từ Chối (403)
+            Khu Vực Dành Riêng Cho Super Admin
           </h2>
           <p style={{ color: '#a1a1aa', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-            Tài khoản của bạn không có vai trò Quản Trị Viên (Admin) để truy cập phân hệ này.
-            Vui lòng đăng nhập với tài khoản được cấp quyền hoặc quay về trang chủ.
+            Hệ thống Quản Trị Cấp Cao yêu cầu quyền hạn <strong>Super Admin</strong>.
+            Tài khoản của bạn là thành viên tiêu chuẩn và chỉ có thể sử dụng các chức năng tại Trang Chủ & Không Gian Cá Nhân.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
-              Về Trang Chủ
+            <Button variant="primary" onClick={() => window.location.href = '/'}>
+              Quay Về Trang Chủ
             </Button>
-            <Button variant="primary" onClick={() => window.location.href = '/login'}>
+            <Button variant="outline" onClick={() => window.location.href = '/login'}>
               Đổi Tài Khoản
             </Button>
           </div>
