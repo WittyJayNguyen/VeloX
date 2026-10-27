@@ -7,7 +7,6 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineBolt,
   HiOutlineArrowTrendingUp,
-  HiOutlineExclamationTriangle,
 } from 'react-icons/hi2';
 import {
   BarChart,
@@ -25,13 +24,13 @@ import {
 } from 'recharts';
 import styles from '@assets/scss/admin/dashboard.module.scss';
 
-// Top KPI metrics matching Velzon CRM
+// Top KPI metrics matching CRM
 const kpiCards = [
   {
     icon: HiOutlineUsers,
     labelKey: 'admin.dashboard.total_users',
-    value: '12,458',
-    trend: '+8.2%',
+    value: '1',
+    trend: '+0%',
     trendUp: true,
     bg: 'rgba(99, 102, 241, 0.12)',
     color: '#6366f1',
@@ -39,8 +38,8 @@ const kpiCards = [
   {
     icon: HiOutlineBanknotes,
     labelKey: 'admin.dashboard.total_revenue',
-    value: '489.4M ₫',
-    trend: '+12.5%',
+    value: '0 ₫',
+    trend: '+0%',
     trendUp: true,
     bg: 'rgba(16, 185, 129, 0.12)',
     color: '#10b981',
@@ -48,8 +47,8 @@ const kpiCards = [
   {
     icon: HiOutlineCheckBadge,
     labelKey: 'admin.dashboard.lead_conversion',
-    value: '99.85%',
-    trend: '+0.1%',
+    value: '0%',
+    trend: '+0%',
     trendUp: true,
     bg: 'rgba(245, 158, 11, 0.12)',
     color: '#f59e0b',
@@ -57,8 +56,8 @@ const kpiCards = [
   {
     icon: HiOutlineCurrencyDollar,
     labelKey: 'admin.dashboard.daily_income',
-    value: '15.8M ₫',
-    trend: '+5.4%',
+    value: '0 ₫',
+    trend: '+0%',
     trendUp: true,
     bg: 'rgba(6, 182, 212, 0.12)',
     color: '#06b6d4',
@@ -66,8 +65,8 @@ const kpiCards = [
   {
     icon: HiOutlineBolt,
     labelKey: 'admin.dashboard.total_requests',
-    value: '2.85M',
-    trend: '+18.4%',
+    value: '0',
+    trend: '+0%',
     trendUp: true,
     bg: 'rgba(244, 63, 94, 0.12)',
     color: '#f43f5e',
@@ -76,97 +75,57 @@ const kpiCards = [
 
 // Package Sales Forecast (Starter, Pro, Studio, Enterprise)
 const packageSalesData = [
-  { name: 'Starter (50K)', sales: 420, revenue: 21 },
-  { name: 'Pro (200K)', sales: 680, revenue: 136 },
-  { name: 'Studio (500K)', sales: 310, revenue: 155 },
-  { name: 'Enterprise (2M)', sales: 88, revenue: 176 },
+  { name: 'Starter (50K)', sales: 0, revenue: 0 },
+  { name: 'Pro (200K)', sales: 0, revenue: 0 },
+  { name: 'Studio (500K)', sales: 0, revenue: 0 },
+  { name: 'Enterprise (2M)', sales: 0, revenue: 0 },
 ];
 
-// 4 Nhóm Model trong Note tay: Chat, Ảnh, Video, Dev Request
+// 4 Nhóm Model: Chat, Ảnh, Video, Dev Request
 const modelCategoryData = [
-  { name: 'Modal Chat', value: 48, color: '#6366f1', reqs: '1.36M' },
-  { name: 'Modal Tạo Ảnh', value: 24, color: '#10b981', reqs: '680K' },
-  { name: 'Modal Tạo Video', value: 16, color: '#f59e0b', reqs: '450K' },
-  { name: 'Modal Req Dev', value: 12, color: '#8b5cf6', reqs: '360K' },
+  { name: 'Modal Chat', value: 0, color: '#6366f1', reqs: '0' },
+  { name: 'Modal Tạo Ảnh', value: 0, color: '#10b981', reqs: '0' },
+  { name: 'Modal Tạo Video', value: 0, color: '#f59e0b', reqs: '0' },
+  { name: 'Modal Req Dev', value: 0, color: '#8b5cf6', reqs: '0' },
 ];
 
 // Balance Overview: Doanh thu nạp vs Chi phí token
 const balanceOverviewData = [
-  { month: 'Jan', revenue: 28, cost: 14 },
-  { month: 'Feb', revenue: 35, cost: 18 },
-  { month: 'Mar', revenue: 42, cost: 20 },
-  { month: 'Apr', revenue: 48, cost: 22 },
-  { month: 'May', revenue: 65, cost: 28 },
-  { month: 'Jun', revenue: 78, cost: 32 },
-  { month: 'Jul', revenue: 95, cost: 38 },
-  { month: 'Aug', revenue: 110, cost: 42 },
-  { month: 'Sep', revenue: 135, cost: 50 },
-  { month: 'Oct', revenue: 158, cost: 56 },
+  { month: 'Jan', revenue: 0, cost: 0 },
+  { month: 'Feb', revenue: 0, cost: 0 },
+  { month: 'Mar', revenue: 0, cost: 0 },
+  { month: 'Apr', revenue: 0, cost: 0 },
+  { month: 'May', revenue: 0, cost: 0 },
+  { month: 'Jun', revenue: 0, cost: 0 },
+  { month: 'Jul', revenue: 0, cost: 0 },
+  { month: 'Aug', revenue: 0, cost: 0 },
+  { month: 'Sep', revenue: 0, cost: 0 },
+  { month: 'Oct', revenue: 0, cost: 0 },
 ];
 
 // Deals / Recent Transaction status table
-const recentDeals = [
-  {
-    id: 'TX-9901',
-    user: 'Hai Nguyen (Studio)',
-    avatar: 'H',
-    package: 'Studio Pack',
-    status: 'Deal Won',
-    statusType: 'success',
-    amount: '500,000 ₫',
-    date: '26 Oct, 2026',
-  },
-  {
-    id: 'TX-9900',
-    user: 'Thanh Le AI',
-    avatar: 'T',
-    package: 'Pro Pack',
-    status: 'Deal Won',
-    statusType: 'success',
-    amount: '200,000 ₫',
-    date: '26 Oct, 2026',
-  },
-  {
-    id: 'TX-9899',
-    user: 'Minh Quang Dev',
-    avatar: 'M',
-    package: 'Enterprise',
-    status: 'Pending',
-    statusType: 'warning',
-    amount: '2,000,000 ₫',
-    date: '25 Oct, 2026',
-  },
-  {
-    id: 'TX-9898',
-    user: 'Cyber Lab VN',
-    avatar: 'C',
-    package: 'Studio Pack',
-    status: 'Deal Won',
-    statusType: 'success',
-    amount: '500,000 ₫',
-    date: '25 Oct, 2026',
-  },
-  {
-    id: 'TX-9897',
-    user: 'Hoang Anh Dev',
-    avatar: 'H',
-    package: 'Starter Pack',
-    status: 'Deal Won',
-    statusType: 'success',
-    amount: '50,000 ₫',
-    date: '24 Oct, 2026',
-  },
-];
+interface DealRecord {
+  id: string;
+  user: string;
+  avatar: string;
+  package: string;
+  status: string;
+  statusType: 'success' | 'warning' | 'danger';
+  amount: string;
+  date: string;
+}
 
-// Pool health list with Alert when empty/low
-const poolHealthItems = [
-  { name: 'OpenAI GPT-4o Pool', status: 'active', keys: '18 Active Keys', quota: '92% Quota' },
-  { name: 'Claude 3.5 Sonnet Pool', status: 'active', keys: '12 Active Keys', quota: '84% Quota' },
-  { name: 'Midjourney Token Pool', status: 'active', keys: '6 Accounts', quota: '78% Fast-hr' },
-  { name: 'Runway Gen-3 Token Pool', status: 'warning', keys: '1 Token Left', quota: '15% Quota' },
-  { name: 'DeepSeek-V3 API Pool', status: 'active', keys: '25 Active Keys', quota: '98% Quota' },
-  { name: 'Luma Video Dream Pool', status: 'danger', keys: '0 Key (Cạn Pool!)', quota: '0% Hết Token' },
-];
+const recentDeals: DealRecord[] = [];
+
+// Pool health list
+interface PoolHealthItem {
+  name: string;
+  status: 'active' | 'warning' | 'danger';
+  keys: string;
+  quota: string;
+}
+
+const poolHealthItems: PoolHealthItem[] = [];
 
 const DashboardPage = () => {
   const { t } = useTranslation();
@@ -289,15 +248,15 @@ const DashboardPage = () => {
           </div>
           <div className={styles.chartStatsRow}>
             <div className={styles.statItem}>
-              <span className={styles.statNum} style={{ color: '#6366f1' }}>489.4M ₫</span>
+              <span className={styles.statNum} style={{ color: '#6366f1' }}>0 ₫</span>
               <span className={styles.statTitle}>Tổng Thu Nạp</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statNum} style={{ color: '#10b981' }}>182.1M ₫</span>
+              <span className={styles.statNum} style={{ color: '#10b981' }}>0 ₫</span>
               <span className={styles.statTitle}>Chi Phí API Gốc</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statNum} style={{ color: '#f59e0b' }}>62.8%</span>
+              <span className={styles.statNum} style={{ color: '#f59e0b' }}>0%</span>
               <span className={styles.statTitle}>Biên Lợi Nhuận Gộp</span>
             </div>
           </div>
@@ -357,52 +316,66 @@ const DashboardPage = () => {
               </tr>
             </thead>
             <tbody>
-              {recentDeals.map((deal) => (
-                <tr key={deal.id}>
-                  <td style={{ fontWeight: 600, color: '#6366f1' }}>{deal.id}</td>
-                  <td>
-                    <div className={styles.userCell}>
-                      <div className={styles.miniAvatar}>{deal.avatar}</div>
-                      <span className={styles.userNameText}>{deal.user}</span>
-                    </div>
+              {recentDeals.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: '#71717a' }}>
+                    Chưa có giao dịch nạp tiền nào
                   </td>
-                  <td>{deal.package}</td>
-                  <td>
-                    <span className={`${styles.pillBadge} ${styles[deal.statusType]}`}>
-                      {deal.status}
-                    </span>
-                  </td>
-                  <td style={{ fontWeight: 600, color: '#fafafa' }}>{deal.amount}</td>
-                  <td style={{ color: '#71717a', fontSize: '0.75rem' }}>{deal.date}</td>
                 </tr>
-              ))}
+              ) : (
+                recentDeals.map((deal) => (
+                  <tr key={deal.id}>
+                    <td style={{ fontWeight: 600, color: '#6366f1' }}>{deal.id}</td>
+                    <td>
+                      <div className={styles.userCell}>
+                        <div className={styles.miniAvatar}>{deal.avatar}</div>
+                        <span className={styles.userNameText}>{deal.user}</span>
+                      </div>
+                    </td>
+                    <td>{deal.package}</td>
+                    <td>
+                      <span className={`${styles.pillBadge} ${styles[deal.statusType]}`}>
+                        {deal.status}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 600, color: '#fafafa' }}>{deal.amount}</td>
+                    <td style={{ color: '#71717a', fontSize: '0.75rem' }}>{deal.date}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Quick Pool Health / Cảnh Báo Khi Pool Hết */}
+        {/* Quick Pool Health */}
         <div className={styles.tableCard}>
           <div className={styles.cardHeader}>
             <h3>{t('admin.dashboard.pool_alerts') || 'Giám Sát Tình Trạng Pool'}</h3>
-            <span style={{ fontSize: '0.75rem', color: '#f43f5e', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <HiOutlineExclamationTriangle size={14} /> 1 Cảnh Báo
+            <span style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              Bình Thường
             </span>
           </div>
           <div className={styles.poolHealthList}>
-            {poolHealthItems.map((pool, idx) => (
-              <div key={idx} className={styles.poolHealthItem}>
-                <div className={styles.poolLeft}>
-                  <span className={`${styles.poolDot} ${styles[pool.status]}`} />
-                  <div>
-                    <div className={styles.poolName}>{pool.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#71717a' }}>{pool.keys}</div>
-                  </div>
-                </div>
-                <span className={`${styles.pillBadge} ${styles[pool.status]}`}>
-                  {pool.quota}
-                </span>
+            {poolHealthItems.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px', color: '#71717a', fontSize: '0.85rem' }}>
+                Hệ thống đang sẵn sàng, chưa có cảnh báo pool
               </div>
-            ))}
+            ) : (
+              poolHealthItems.map((pool, idx) => (
+                <div key={idx} className={styles.poolHealthItem}>
+                  <div className={styles.poolLeft}>
+                    <span className={`${styles.poolDot} ${styles[pool.status]}`} />
+                    <div>
+                      <div className={styles.poolName}>{pool.name}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#71717a' }}>{pool.keys}</div>
+                    </div>
+                  </div>
+                  <span className={`${styles.pillBadge} ${styles[pool.status]}`}>
+                    {pool.quota}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -50,7 +50,14 @@ export const AccountInventoryTable: React.FC<Props> = ({ items }) => {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, idx) => {
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ padding: '36px 18px', textAlign: 'center', color: '#64748b' }}>
+                  Chưa có tài sản kho hoặc số dư nhà cung cấp nào
+                </td>
+              </tr>
+            ) : (
+              items.map((item, idx) => {
               const pctRemaining = item.total_cost_vnd > 0
                 ? Math.round((item.remaining_value_vnd / item.total_cost_vnd) * 100)
                 : 100;
@@ -101,7 +108,7 @@ export const AccountInventoryTable: React.FC<Props> = ({ items }) => {
                   </td>
                 </tr>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>
