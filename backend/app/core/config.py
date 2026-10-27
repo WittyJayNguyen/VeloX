@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
 
-    # Database (PostgreSQL)
-    DATABASE_URL: str = "postgresql+asyncpg://velox:velox@localhost:5432/velox_db"
+    # Database: SQLite fallback for local development or PostgreSQL in production
+    DATABASE_URL: str = "sqlite+aiosqlite:///./velox.db"
 
     # JWT Auth
     JWT_SECRET_KEY: str = "velox-super-secret-key-change-in-production"
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     JWT_EXPIRATION_MINUTES: int = 1440  # 24 hours
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "*"]
 
     class Config:
         env_file = ".env"
