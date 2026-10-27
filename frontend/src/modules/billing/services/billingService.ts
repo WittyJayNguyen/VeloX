@@ -21,6 +21,8 @@ export interface TransactionDto {
   created_at: string;
 }
 
+export type TransactionItem = TransactionDto;
+
 export interface CreatePackagePayload {
   name: string;
   price_vnd: number;

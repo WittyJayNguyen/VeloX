@@ -1,25 +1,63 @@
-"""VeloX AI Gateway — AI Model Catalog"""
-from sqlalchemy import Column, String, Boolean, Numeric, ForeignKey
-from sqlalchemy.orm import relationship
-from app.common.base_model import Base, UUIDMixin, TimestampMixin
+"""VeloX AI Gateway — AI Model Catalog Models"""
+import uuid
+from sqlalchemy import Column, String, Boolean, Float, Integer, Text
+from app.common.base_model import Base, TimestampMixin
+
+
+def generate_uuid() -> str:
+    return str(uuid.uuid4())
 
 
 class AIModel(Base, TimestampMixin):
     __tablename__ = "ai_models"
-    id = Column(String(64), primary_key=True)           # 'gpt-4o', 'flux-pro'
-    provider_id = Column(String(64), ForeignKey("providers.id", ondelete="RESTRICT"), nullable=False)
-    display_name = Column(String(128), nullable=False)
-    category = Column(String(32), nullable=False)       # CHAT, IMAGE, VIDEO
-    unit_type = Column(String(32), nullable=False)      # PER_1K_TOKENS, PER_IMAGE, PER_SECOND
-    cost_price_usd = Column(Numeric(10, 6), nullable=False)
-    selling_price_credits = Column(Numeric(12, 4), nullable=False)
-    profit_margin_percent = Column(Numeric(6, 2), nullable=False)
+
+    id = Column(String(64), primary_key=True, default=generate_uuid)
+    name = Column(String(128), nullable=False)                          # 'OpenAI GPT-4o Omni'
+    model_code = Column(String(64), unique=True, index=True, nullable=False) # 'gpt-4o'
+    category = Column(String(32), default="CHAT")                       # CHAT, IMAGE, VIDEO, DEV_REQ
+    provider = Column(String(64), nullable=False)                       # OpenAI, Anthropic, DeepSeek, Midjourney, Runway
+    # Base cost and legacy pricing
+    cost_per_req_or_1k_tok = Column(Float, default=0.5)                 # Base cost (cents / request or 1k tokens)
+    selling_credit_price = Column(Integer, default=250)                 # Selling price in credits
+
+    # Token Pricing per 1 Million Tokens ($ USD from Upstream Provider)
+    input_cost_per_1m = Column(Float, default=0.0)                      # Giá gốc Đầu vào ($/1M tokens)
+    output_cost_per_1m = Column(Float, default=0.0)                     # Giá gốc Đầu ra ($/1M tokens)
+    cache_read_cost_per_1m = Column(Float, default=0.0)                 # Giá gốc Đã cache ($/1M tokens)
+
+    # Selling Pricing in Credits (per 1 Million Tokens)
+    input_credit_price = Column(Integer, default=0)                     # Giá bán credits / 1M tokens đầu vào
+    output_credit_price = Column(Integer, default=0)                    # Giá bán credits / 1M tokens đầu ra
+    cache_read_credit_price = Column(Integer, default=0)                # Giá bán credits / 1M tokens đã cache
+
     is_available = Column(Boolean, default=True)
+    pool_id = Column(String(64), nullable=True)                         # Foreign pool ID reference
+    description = Column(Text, nullable=True)
 
+    @property
+    def cost_price_vnd(self) -> float:
+        """Computed cost price in VNĐ (either per request for media or average 1M token cost)"""
+        if self.category in ["IMAGE", "VIDEO"] or (not self.input_cost_per_1m and not self.output_cost_per_1m):
+            return float(self.cost_per_req_or_1k_tok or 0.0)
+        return round((float(self.input_cost_per_1m or 0.0) + float(self.output_cost_per_1m or 0.0)) / 2.0, 2)
 
-class ModelCredentialMapping(Base, UUIDMixin):
-    __tablename__ = "model_credential_mappings"
-    model_id = Column(String(64), ForeignKey("ai_models.id", ondelete="CASCADE"), nullable=False)
-    credential_id = Column(String(36), ForeignKey("provider_credentials.id", ondelete="CASCADE"), nullable=False)
-    account_cost_price = Column(Numeric(10, 6))
-    is_active = Column(Boolean, default=True)
+    @property
+    def selling_price_vnd(self) -> float:
+        """Computed selling price in Credits/VNĐ (either per request or average 1M token selling price)"""
+        if self.category in ["IMAGE", "VIDEO"] or (not self.input_credit_price and not self.output_credit_price):
+            return float(self.selling_credit_price or 0.0)
+        return round((float(self.input_credit_price or 0.0) + float(self.output_credit_price or 0.0)) / 2.0, 2)
+
+    @property
+    def profit_vnd(self) -> float:
+        """Net profit in VNĐ / Credits per unit"""
+        return round(self.selling_price_vnd - self.cost_price_vnd, 2)
+
+    @property
+    def profit_margin_pct(self) -> float:
+        """Profit margin percentage (Markup %)"""
+        cost = self.cost_price_vnd
+        if cost > 0:
+            return round(((self.selling_price_vnd - cost) / cost) * 100.0, 1)
+        return 100.0 if self.selling_price_vnd > 0 else 0.0
+

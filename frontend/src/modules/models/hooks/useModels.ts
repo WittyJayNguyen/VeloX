@@ -10,7 +10,7 @@ export const useModels = () => {
     setLoading(true);
     modelService
       .getModels()
-      .then((data) => {
+      .then((data: ModelItem[]) => {
         if (mounted) setModels(data);
       })
       .catch(() => {})

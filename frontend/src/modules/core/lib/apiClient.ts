@@ -21,9 +21,16 @@ apiClient.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error.response?.status;
-    if (status === 401) {
+    const url = error.config?.url || '';
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+
+    // Only redirect on 401 if it's NOT an authentication attempt
+    if (status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('velox_token');
-      window.location.href = '/login';
+      localStorage.removeItem('velox_user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = `/login?session_expired=1&redirect=${encodeURIComponent(window.location.pathname)}`;
+      }
     }
     return Promise.reject(error);
   }

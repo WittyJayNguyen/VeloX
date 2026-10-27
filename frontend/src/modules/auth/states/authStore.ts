@@ -2,50 +2,43 @@ import { create } from 'zustand';
 import { ADMIN_ROLES } from '@modules/core/utils/constants';
 import type { User } from '../types/auth.types';
 
-export const DEFAULT_ADMIN_USER: User = {
-  id: 'usr_admin_001',
-  email: 'admin@velox.ai',
-  full_name: 'Admin VeloX',
-  is_active: true,
-  roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'],
-  created_at: new Date().toISOString(),
-};
-
 interface AuthStore {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (user: User, token: string) => void;
-  loginAsAdmin: () => void;
+  updateUser: (updatedFields: Partial<User>) => void;
   logout: () => void;
   hydrate: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => {
-  // Initialize with admin by default so user can access /admin immediately
   const savedToken = localStorage.getItem('velox_token');
   const savedUserRaw = localStorage.getItem('velox_user');
-  
-  let initialUser: User = DEFAULT_ADMIN_USER;
-  let initialToken: string = 'velox_admin_session_token';
-  let initialAuth = true;
-  let initialIsAdmin = true;
 
-  if (savedToken && savedUserRaw) {
+  let initialUser: User | null = null;
+  let initialToken: string | null = null;
+  let initialAuth = false;
+  let initialIsAdmin = false;
+
+  // Clean out legacy demo backdoor token if found
+  if (savedToken === 'velox_admin_session_token' || savedToken?.startsWith('mock_jwt_token_')) {
+    localStorage.removeItem('velox_token');
+    localStorage.removeItem('velox_user');
+  } else if (savedToken && savedUserRaw) {
     try {
       const parsed = JSON.parse(savedUserRaw) as User;
-      initialUser = parsed;
-      initialToken = savedToken;
-      initialAuth = true;
-      initialIsAdmin = parsed.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+      if (parsed && parsed.id && parsed.email) {
+        initialUser = parsed;
+        initialToken = savedToken;
+        initialAuth = true;
+        initialIsAdmin = Array.isArray(parsed.roles) && parsed.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+      }
     } catch {
-      // Keep defaults
+      localStorage.removeItem('velox_token');
+      localStorage.removeItem('velox_user');
     }
-  } else {
-    // Save default admin so it's always accessible
-    localStorage.setItem('velox_token', initialToken);
-    localStorage.setItem('velox_user', JSON.stringify(initialUser));
   }
 
   return {
@@ -57,57 +50,71 @@ export const useAuthStore = create<AuthStore>((set) => {
     login: (user, token) => {
       localStorage.setItem('velox_token', token);
       localStorage.setItem('velox_user', JSON.stringify(user));
+      const isAdmin = Array.isArray(user.roles) && user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
       set({
         user,
         token,
         isAuthenticated: true,
-        isAdmin: user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r)),
+        isAdmin,
       });
     },
 
-    loginAsAdmin: () => {
-      localStorage.setItem('velox_token', 'velox_admin_session_token');
-      localStorage.setItem('velox_user', JSON.stringify(DEFAULT_ADMIN_USER));
-      set({
-        user: DEFAULT_ADMIN_USER,
-        token: 'velox_admin_session_token',
-        isAuthenticated: true,
-        isAdmin: true,
+    updateUser: (updatedFields) => {
+      set((state) => {
+        if (!state.user) return state;
+        const updated = { ...state.user, ...updatedFields };
+        localStorage.setItem('velox_user', JSON.stringify(updated));
+        const isAdmin = Array.isArray(updated.roles) && updated.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+        return {
+          user: updated,
+          isAdmin,
+        };
       });
     },
 
     logout: () => {
       localStorage.removeItem('velox_token');
       localStorage.removeItem('velox_user');
-      set({ user: null, token: null, isAuthenticated: false, isAdmin: false });
+      localStorage.removeItem('velox_users_cache');
+      localStorage.removeItem('velox_roles_cache');
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isAdmin: false,
+      });
     },
 
     hydrate: () => {
       const token = localStorage.getItem('velox_token');
       const raw = localStorage.getItem('velox_user');
+
+      if (token === 'velox_admin_session_token' || token?.startsWith('mock_jwt_token_')) {
+        localStorage.removeItem('velox_token');
+        localStorage.removeItem('velox_user');
+        set({ user: null, token: null, isAuthenticated: false, isAdmin: false });
+        return;
+      }
+
       if (token && raw) {
         try {
           const user: User = JSON.parse(raw);
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isAdmin: user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r)),
-          });
-          return;
+          if (user && user.id && user.email) {
+            const isAdmin = Array.isArray(user.roles) && user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+            set({
+              user,
+              token,
+              isAuthenticated: true,
+              isAdmin,
+            });
+            return;
+          }
         } catch {
-          // ignore
+          // parse failed
         }
       }
-      // If nothing saved, keep default admin
-      localStorage.setItem('velox_token', 'velox_admin_session_token');
-      localStorage.setItem('velox_user', JSON.stringify(DEFAULT_ADMIN_USER));
-      set({
-        user: DEFAULT_ADMIN_USER,
-        token: 'velox_admin_session_token',
-        isAuthenticated: true,
-        isAdmin: true,
-      });
+
+      set({ user: null, token: null, isAuthenticated: false, isAdmin: false });
     },
   };
 });

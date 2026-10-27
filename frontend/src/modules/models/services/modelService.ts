@@ -1,7 +1,9 @@
+/**
+ * VeloX AI Gateway — Models Catalog API Service
+ */
 import apiClient from '@modules/core/lib/apiClient';
 
-// ── Types ──
-export interface ModelCatalogDto {
+export interface ModelCatalogItem {
   id: string;
   name: string;
   model_code: string;
@@ -9,86 +11,85 @@ export interface ModelCatalogDto {
   provider: string;
   cost_per_req_or_1k_tok: number;
   selling_credit_price: number;
-  is_active: boolean;
-  pool_id: string;
+  input_cost_per_1m?: number;
+  output_cost_per_1m?: number;
+  cache_read_cost_per_1m?: number;
+  input_credit_price?: number;
+  output_credit_price?: number;
+  cache_read_credit_price?: number;
+  is_available: boolean;
+  pool_id?: string;
+  description?: string;
   created_at?: string;
+  cost_price_vnd?: number;
+  selling_price_vnd?: number;
+  profit_vnd?: number;
+  profit_margin_pct?: number;
 }
 
-export interface CreateModelPayload {
-  name: string;
-  model_code: string;
-  category: ModelCatalogDto['category'];
-  provider: string;
-  cost_per_req_or_1k_tok: number;
-  selling_credit_price: number;
-  pool_id: string;
-}
+export type ModelItem = ModelCatalogItem;
 
-// ── Offline fallback ──
-const STORAGE_KEY = 'velox_models';
-const getLocal = (): ModelCatalogDto[] => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-};
-const saveLocal = (data: ModelCatalogDto[]) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-// ── Service ──
 export const modelService = {
-  getAll: async (): Promise<ModelCatalogDto[]> => {
-    try {
-      const res = await apiClient.get<ModelCatalogDto[]>('/models');
-      saveLocal(res.data);
-      return res.data;
-    } catch { return getLocal(); }
+  getModels: async (params?: { category?: string; provider?: string; search?: string }): Promise<ModelCatalogItem[]> => {
+    const res = await apiClient.get<ModelCatalogItem[]>('/models', { params });
+    return res.data;
   },
 
-  getById: async (id: string): Promise<ModelCatalogDto | undefined> => {
-    try {
-      const res = await apiClient.get<ModelCatalogDto>(`/models/${id}`);
-      return res.data;
-    } catch { return getLocal().find((m) => m.id === id); }
+  createModel: async (data: Partial<ModelCatalogItem>): Promise<ModelCatalogItem> => {
+    const res = await apiClient.post<ModelCatalogItem>('/models', data);
+    return res.data;
   },
 
-  create: async (payload: CreateModelPayload): Promise<ModelCatalogDto> => {
-    const newModel: ModelCatalogDto = { id: `model_${Date.now()}`, ...payload, is_active: true, created_at: new Date().toISOString() };
-    try {
-      const res = await apiClient.post<ModelCatalogDto>('/models', payload);
-      Object.assign(newModel, res.data);
-    } catch { /* offline */ }
-    const all = getLocal();
-    all.push(newModel);
-    saveLocal(all);
-    return newModel;
+  updateModel: async (id: string, data: Partial<ModelCatalogItem>): Promise<ModelCatalogItem> => {
+    const res = await apiClient.put<ModelCatalogItem>(`/models/${id}`, data);
+    return res.data;
   },
 
-  update: async (id: string, payload: Partial<CreateModelPayload>): Promise<ModelCatalogDto> => {
-    try {
-      const res = await apiClient.put<ModelCatalogDto>(`/models/${id}`, payload);
-      const all = getLocal().map((m) => (m.id === id ? { ...m, ...res.data } : m));
-      saveLocal(all);
-      return res.data;
-    } catch {
-      const all = getLocal().map((m) => (m.id === id ? { ...m, ...payload } : m));
-      saveLocal(all);
-      return all.find((m) => m.id === id)!;
-    }
+  updateModelPricing: async (id: string, data: {
+    cost_per_req_or_1k_tok?: number;
+    selling_credit_price?: number;
+    input_cost_per_1m?: number;
+    input_credit_price?: number;
+    output_cost_per_1m?: number;
+    output_credit_price?: number;
+    cache_read_cost_per_1m?: number;
+    cache_read_credit_price?: number;
+  }): Promise<ModelCatalogItem> => {
+    const res = await apiClient.put<ModelCatalogItem>(`/models/${id}/pricing`, data);
+    return res.data;
   },
 
-  remove: async (id: string): Promise<void> => {
-    try { await apiClient.delete(`/models/${id}`); } catch { /* offline */ }
-    saveLocal(getLocal().filter((m) => m.id !== id));
+  bulkMarkup: async (data: {
+    markup_percent?: number;
+    markup_multiplier?: number;
+    category?: string;
+    provider?: string;
+    model_ids?: string[];
+  }): Promise<{ status: string; updated_count: number; markup_percent: number; message: string }> => {
+    const res = await apiClient.post<{ status: string; updated_count: number; markup_percent: number; message: string }>(
+      '/models/bulk-markup',
+      data
+    );
+    return res.data;
   },
 
-  toggleActive: async (id: string): Promise<void> => {
-    const all = getLocal().map((m) => (m.id === id ? { ...m, is_active: !m.is_active } : m));
-    saveLocal(all);
-    try { await apiClient.patch(`/models/${id}/toggle`); } catch { /* offline */ }
+  deleteModel: async (id: string): Promise<void> => {
+    await apiClient.delete(`/models/${id}`);
   },
 
-  calculateMargin: (costCents: number, sellingCredits: number): number => {
-    const costVnd = costCents * 250;
-    if (costVnd === 0) return 100;
-    return Math.round(((sellingCredits - costVnd) / sellingCredits) * 100);
+  toggleModel: async (id: string): Promise<ModelCatalogItem> => {
+    const res = await apiClient.post<ModelCatalogItem>(`/models/${id}/toggle`);
+    return res.data;
+  },
+
+  syncFromKeys: async () => {
+    const res = await apiClient.post<{
+      status: string;
+      synced_count: number;
+      synced_models: string[];
+      message: string;
+    }>('/models/sync-from-keys');
+    return res.data;
   },
 };
 
-export default modelService;

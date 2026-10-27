@@ -25,6 +25,8 @@ export interface LogFilterParams {
   per_page?: number;
 }
 
+export type LogItem = GatewayLogDto;
+
 // ── Offline fallback ──
 const STORAGE_KEY = 'velox_gateway_logs';
 const getLocal = (): GatewayLogDto[] => {
@@ -34,6 +36,10 @@ const saveLocal = (d: GatewayLogDto[]) => localStorage.setItem(STORAGE_KEY, JSON
 
 // ── Service ──
 export const logService = {
+  getLogs: async (filters?: LogFilterParams): Promise<GatewayLogDto[]> => {
+    return logService.getAll(filters);
+  },
+
   getAll: async (filters?: LogFilterParams): Promise<GatewayLogDto[]> => {
     try {
       const res = await apiClient.get<GatewayLogDto[]>('/logs', { params: filters });

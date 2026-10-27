@@ -4,7 +4,7 @@ import styles from '@assets/scss/core/design-system.module.scss';
 // ── Badge ──
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+  variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'purple';
   size?: 'sm' | 'md';
   dot?: boolean;
 }

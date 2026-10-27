@@ -10,7 +10,7 @@ export const useBilling = () => {
     setLoading(true);
     billingService
       .getTransactions()
-      .then((data) => {
+      .then((data: TransactionItem[]) => {
         if (mounted) setTransactions(data);
       })
       .catch(() => {})

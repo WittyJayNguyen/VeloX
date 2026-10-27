@@ -1,0 +1,219 @@
+@use '../variables' as *;
+@use '../mixins' as *;
+
+.treeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.treeToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .counter {
+    font-size: 0.82rem;
+    color: $text-muted;
+    strong {
+      color: #818cf8;
+      font-size: 0.9rem;
+    }
+  }
+
+  .quickActions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+}
+
+.categoryGroup {
+  background: rgba(24, 24, 27, 0.75);
+  border: 1px solid #27272a;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+  min-height: fit-content;
+
+  &.expanded {
+    border-color: rgba(99, 102, 241, 0.45);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+
+    .categoryHeader {
+      background: rgba(99, 102, 241, 0.1);
+      border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+
+      .categoryTitle {
+        h4 {
+          color: #a5b4fc;
+        }
+        .iconChevron {
+          color: #818cf8;
+        }
+      }
+    }
+  }
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem;
+  min-height: 52px;
+  flex-shrink: 0;
+  background: rgba(39, 39, 42, 0.45);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(39, 39, 42, 0.8);
+  }
+
+  .categoryTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    .iconChevron {
+      color: $text-muted;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    h4 {
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: $text-heading;
+    }
+
+    .categoryDesc {
+      font-size: 0.74rem;
+      color: $text-muted;
+      margin-left: 0.25rem;
+    }
+  }
+
+  .categoryCheck {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: $text-muted;
+
+    input[type='checkbox'] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: $primary;
+    }
+  }
+}
+
+.subCategoryGroup {
+  padding: 0.75rem 1.25rem 1rem 2.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(18, 18, 20, 0.5);
+}
+
+.subCategoryTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin: 0.35rem 0 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  button {
+    background: none;
+    border: none;
+    color: #818cf8;
+    font-size: 0.72rem;
+    cursor: pointer;
+    padding: 0 4px;
+    font-weight: 500;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.permissionsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.6rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.permissionItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+
+  &.checked {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.45);
+  }
+
+  input[type='checkbox'] {
+    margin-top: 0.2rem;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: $primary;
+    flex-shrink: 0;
+  }
+
+  .itemMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    .itemTitle {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $text-heading;
+      line-height: 1.25;
+    }
+
+    .itemCode {
+      font-family: $font-mono;
+      font-size: 0.7rem;
+      color: #818cf8;
+    }
+
+    .itemDesc {
+      font-size: 0.72rem;
+      color: $text-muted;
+      line-height: 1.3;
+    }
+  }
+}

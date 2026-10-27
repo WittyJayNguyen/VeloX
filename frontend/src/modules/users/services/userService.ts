@@ -12,6 +12,8 @@ export interface UserDto {
   vcc_topup_total: number;
 }
 
+export type UserItem = UserDto;
+
 export interface CreateUserPayload {
   full_name: string;
   email: string;
@@ -40,6 +42,10 @@ export const userService = {
       saveLocal(res.data);
       return res.data;
     } catch { return getLocal(); }
+  },
+
+  getUsers: async (): Promise<UserDto[]> => {
+    return userService.getAll();
   },
 
   getById: async (id: string): Promise<UserDto | undefined> => {
