@@ -114,6 +114,22 @@ const RolesPage = () => {
     setExpandedCategories((prev) => ({ ...prev, [catId]: !prev[catId] }));
   };
 
+  const handleExpandAll = () => {
+    const map: Record<string, boolean> = {};
+    permissionTree.forEach((n) => {
+      map[n.id] = true;
+    });
+    setExpandedCategories(map);
+  };
+
+  const handleCollapseAll = () => {
+    const map: Record<string, boolean> = {};
+    permissionTree.forEach((n) => {
+      map[n.id] = false;
+    });
+    setExpandedCategories(map);
+  };
+
   // Toggle single permission
   const handleTogglePerm = (permId: string) => {
     setSelectedPermissions((prev) =>
@@ -412,6 +428,12 @@ const RolesPage = () => {
                 Đã chọn <strong>{selectedPermissions.length}</strong> / {allPermissionIds.length} quyền hạn trong cây
               </div>
               <div className={treeStyles.quickActions}>
+                <Button type="button" variant="ghost" size="sm" onClick={handleExpandAll}>
+                  Mở Rộng Hết
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={handleCollapseAll}>
+                  Thu Gọn Hết
+                </Button>
                 <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
                   Chọn Tất Cả
                 </Button>
