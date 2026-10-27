@@ -88,7 +88,10 @@
       "stat_total_credited": "총 지급 크레딧 (+)",
       "stat_total_deducted": "총 차감 크레딧 (-)",
       "stat_net_balance": "순 변동 잔액",
+      "stat_tracked_ips": "모니터링된 총 IP 수",
       "stat_banned_ips": "차단된 총 IP 수",
+      "stat_suspicious_ips": "의심스러운 악용 IP (>= 3 계정)",
+      "stat_farmed_credits": "위험 크레딧",
       "stat_violating_accs": "제재된 위반 계정",
       "stat_blocked_requests": "차단된 스팸 요청"
     },

@@ -88,7 +88,10 @@
       "stat_total_credited": "总充值发放 (+)",
       "stat_total_deducted": "总扣除核销 (-)",
       "stat_net_balance": "净变动余额",
+      "stat_tracked_ips": "监控 IP 总数",
       "stat_banned_ips": "已封禁 IP 总数",
+      "stat_suspicious_ips": "可疑滥用 IP (>= 3 账号)",
+      "stat_farmed_credits": "风险信用额度",
       "stat_violating_accs": "受处罚违规账号",
       "stat_blocked_requests": "已拦截刷量请求"
     },
