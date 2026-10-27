@@ -46,8 +46,25 @@ export type ModelItem = ModelCatalogItem;
 
 export const modelService = {
   getPublicModels: async (params?: { category?: string; provider?: string; search?: string }): Promise<PublicModelItem[]> => {
-    const res = await apiClient.get<PublicModelItem[]>('/models/public', { params });
-    return res.data;
+    try {
+      const res = await apiClient.get<PublicModelItem[]>('/models/public', { params });
+      return res.data || [];
+    } catch (err) {
+      console.warn('apiClient getPublicModels error, attempting native fetch fallback:', err);
+      try {
+        const query = params?.category ? `?category=${encodeURIComponent(params.category)}` : '';
+        const fRes = await window.fetch(`/api/v1/models/public${query}`, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (fRes.ok) {
+          const json = await fRes.json();
+          return json || [];
+        }
+      } catch (fErr) {
+        console.warn('Native fetch fallback failed:', fErr);
+      }
+      return [];
+    }
   },
 
   getModels: async (params?: { category?: string; provider?: string; search?: string }): Promise<ModelCatalogItem[]> => {

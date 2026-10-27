@@ -317,8 +317,9 @@ const MainLayout = () => {
         <Outlet />
       </main>
 
-      {/* ── FOOTER ── */}
-      <footer className={styles.footer}>
+      {/* ── FOOTER (Hidden on /studio workspace) ── */}
+      {!location.pathname.startsWith('/studio') && (
+        <footer className={styles.footer}>
         <div className={styles.footerContainer}>
           <div className={styles.footerTopRow}>
             {/* Brand column */}
@@ -398,6 +399,7 @@ const MainLayout = () => {
           </div>
         </div>
       </footer>
+    )}
 
       {/* Quick Search Ctrl+K Modal */}
       <QuickSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
