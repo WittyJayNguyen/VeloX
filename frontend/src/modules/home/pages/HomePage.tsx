@@ -30,36 +30,39 @@ const features = [
 ];
 
 const howItWorks = [
-  { step: 1, title: 'Kết Nối API Key', desc: 'Thêm API key hoặc account token từ OpenAI, Claude, Midjourney...' },
-  { step: 2, title: 'Cấu Hình Model', desc: 'Chọn model, định giá credit, thiết lập thuật toán điều phối.' },
-  { step: 3, title: 'Bắt Đầu Kiếm Tiền', desc: 'Khách hàng nạp credit, gọi API qua gateway, bạn hưởng lợi nhuận.' },
+  { step: 1, titleKey: 'home.how_step1_title', descKey: 'home.how_step1_desc' },
+  { step: 2, titleKey: 'home.how_step2_title', descKey: 'home.how_step2_desc' },
+  { step: 3, titleKey: 'home.how_step3_title', descKey: 'home.how_step3_desc' },
 ];
 
-const providers = ['OpenAI', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'DeepSeek', 'Groq', 'Qwen', 'Stable Diffusion', 'Luma AI'];
+const providers = ['OpenAI', 'Claude', 'Gemini', 'Midjourney', 'Runway', 'DeepSeek', 'Groq', 'Qwen', 'Stable Diffusion', 'Luma AI', 'Meta Llama', 'Mistral'];
 
 const pricingPlans = [
   {
-    name: 'BASIC',
-    desc: 'Perfect for getting started',
+    name: 'STARTER',
+    descKey: 'home.plan_starter_desc',
     price: '50,000',
-    unit: '₫/tháng',
-    features: ['Truy cập 10+ Models', 'Giám sát cơ bản', 'Cộng đồng hỗ trợ', 'Email support'],
+    unit: '₫',
+    periodKey: 'home.per_month',
+    featuresKeys: ['home.plan_starter_f1', 'home.plan_starter_f2', 'home.plan_starter_f3', 'home.plan_starter_f4'],
     popular: false,
   },
   {
     name: 'PRO',
-    desc: 'Most popular choice',
+    descKey: 'home.plan_pro_desc',
     price: '200,000',
-    unit: '₫/tháng',
-    features: ['Truy cập 100+ Models', 'AI Load Balancer', 'Phân tích nâng cao', 'Webhook & Realtime', 'Quản lý nhiều Pool', 'Ưu tiên hỗ trợ'],
+    unit: '₫',
+    periodKey: 'home.per_month',
+    featuresKeys: ['home.plan_pro_f1', 'home.plan_pro_f2', 'home.plan_pro_f3', 'home.plan_pro_f4', 'home.plan_pro_f5', 'home.plan_pro_f6'],
     popular: true,
   },
   {
     name: 'ELITE',
-    desc: 'For serious businesses',
+    descKey: 'home.plan_elite_desc',
     price: '500,000',
-    unit: '₫/tháng',
-    features: ['Mọi tính năng Pro', 'Dedicated Gateway', 'Custom model routing', 'API Rate limit mở rộng', 'White-label branding', 'Hỗ trợ 24/7'],
+    unit: '₫',
+    periodKey: 'home.per_month',
+    featuresKeys: ['home.plan_elite_f1', 'home.plan_elite_f2', 'home.plan_elite_f3', 'home.plan_elite_f4', 'home.plan_elite_f5', 'home.plan_elite_f6'],
     popular: false,
   },
 ];
@@ -67,16 +70,26 @@ const pricingPlans = [
 const HomePage = () => {
   const { t } = useTranslation();
 
+  // Double the providers array for seamless marquee
+  const marqueeProviders = [...providers, ...providers];
+
   return (
     <div className={styles.page}>
       {/* ── Hero ── */}
       <section className={styles.hero}>
+        {/* Decorative orbits */}
+        <div className={styles.heroOrbit} />
+        <div className={styles.heroOrbit2} />
+
         <span className={styles.badge}>{t('hero.badge')}</span>
+
         <h1 className={styles.title}>
           {t('hero.title_1')} <br />
           <span className={styles.gradient}>{t('hero.title_highlight')}</span>
         </h1>
+
         <p className={styles.subtitle}>{t('hero.subtitle')}</p>
+
         <div className={styles.ctas}>
           <Link to="/register">
             <Button size="lg">
@@ -100,13 +113,21 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ── Providers Marquee ── */}
+      <section className={styles.providers}>
+        <p className={styles.providerLabel}>{t('hero.providers_label')}</p>
+        <div className={styles.providerTrack}>
+          {marqueeProviders.map((p, idx) => (
+            <div key={`${p}-${idx}`} className={styles.providerChip}>{p}</div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Features ── */}
       <section className={styles.featuresSection} id="features">
-        <p className={styles.sectionLabel}>POWERFUL FEATURES</p>
+        <p className={styles.sectionLabel}>{t('home.features_label')}</p>
         <h2 className={styles.sectionTitle}>{t('features.title')}</h2>
-        <p className={styles.sectionDesc}>
-          Nền tảng AI Gateway mạnh mẽ nhất — hỗ trợ đa nhà cung cấp, pool quản lý key thông minh, và hệ thống billing tự động.
-        </p>
+        <p className={styles.sectionDesc}>{t('home.features_desc')}</p>
         <div className={styles.grid}>
           {features.map((f) => (
             <div key={f.titleKey} className={styles.card}>
@@ -122,59 +143,45 @@ const HomePage = () => {
 
       {/* ── How It Works ── */}
       <section className={styles.howSection}>
-        <p className={styles.sectionLabel}>HOW IT WORKS</p>
-        <h2 className={styles.sectionTitle}>3 Bước Bắt Đầu</h2>
-        <p className={styles.sectionDesc}>
-          Từ kết nối API key đến thu lợi nhuận — chỉ mất vài phút cấu hình.
-        </p>
+        <p className={styles.sectionLabel}>{t('home.how_label')}</p>
+        <h2 className={styles.sectionTitle}>{t('home.how_title')}</h2>
+        <p className={styles.sectionDesc}>{t('home.how_desc')}</p>
         <div className={styles.howGrid}>
           {howItWorks.map((h) => (
             <div key={h.step} className={styles.howCard}>
               <div className={styles.howStep}>{h.step}</div>
-              <div className={styles.howTitle}>{h.title}</div>
-              <div className={styles.howDesc}>{h.desc}</div>
+              <div className={styles.howTitle}>{t(h.titleKey)}</div>
+              <div className={styles.howDesc}>{t(h.descKey)}</div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Providers ── */}
-      <section className={styles.providers}>
-        <p className={styles.providerLabel}>{t('hero.providers_label') || 'Hỗ Trợ Hơn 100+ Mô Hình AI'}</p>
-        <div className={styles.providerLogos}>
-          {providers.map((p) => (
-            <div key={p} className={styles.providerChip}>{p}</div>
           ))}
         </div>
       </section>
 
       {/* ── Pricing ── */}
       <section className={styles.pricingSection} id="pricing">
-        <p className={styles.sectionLabel}>PRICING</p>
+        <p className={styles.sectionLabel}>{t('home.pricing_label')}</p>
         <h2 className={styles.sectionTitle}>
-          CHOOSE YOUR <span className={styles.gradientOrange}>PLAN</span>
+          {t('home.pricing_title_1')} <span className={styles.gradientOrange}>{t('home.pricing_title_highlight')}</span>
         </h2>
-        <p className={styles.sectionDesc}>
-          Start with a 7-day free trial. Cancel anytime.
-        </p>
+        <p className={styles.sectionDesc}>{t('home.pricing_desc')}</p>
         <div className={styles.pricingGrid}>
           {pricingPlans.map((plan) => (
             <div key={plan.name} className={`${styles.pricingCard} ${plan.popular ? styles.pricingPopular : ''}`}>
-              {plan.popular && <div className={styles.popularBadge}>MOST POPULAR</div>}
+              {plan.popular && <div className={styles.popularBadge}>{t('home.most_popular')}</div>}
               <h3 className={styles.planName}>{plan.name}</h3>
-              <p className={styles.planDesc}>{plan.desc}</p>
+              <p className={styles.planDesc}>{t(plan.descKey)}</p>
               <div className={styles.planPrice}>
                 <span className={styles.priceValue}>{plan.price}</span>
-                <span className={styles.priceUnit}>{plan.unit}</span>
+                <span className={styles.priceUnit}>{plan.unit}/{t(plan.periodKey)}</span>
               </div>
               <ul className={styles.planFeatures}>
-                {plan.features.map((f) => (
-                  <li key={f}><span className={styles.checkIcon}>✓</span> {f}</li>
+                {plan.featuresKeys.map((fk) => (
+                  <li key={fk}><span className={styles.checkIcon}>✓</span> {t(fk)}</li>
                 ))}
               </ul>
               <Link to="/register">
                 <button type="button" className={`${styles.planCta} ${plan.popular ? styles.planCtaPopular : ''}`}>
-                  BẮT ĐẦU DÙNG THỬ
+                  {t('home.plan_cta')}
                 </button>
               </Link>
             </div>
@@ -185,19 +192,17 @@ const HomePage = () => {
       {/* ── CTA ── */}
       <section className={styles.ctaSection}>
         <div className={styles.ctaCard}>
-          <h2 className={styles.ctaTitle}>Sẵn Sàng Khởi Tạo AI Gateway?</h2>
-          <p className={styles.ctaDesc}>
-            Đăng ký miễn phí, nhận 50,000 credits dùng thử. Không cần thẻ tín dụng.
-          </p>
+          <h2 className={styles.ctaTitle}>{t('home.cta_title')}</h2>
+          <p className={styles.ctaDesc}>{t('home.cta_desc')}</p>
           <div className={styles.ctaBtns}>
             <Link to="/register">
               <Button size="lg">
-                <HiOutlineRocketLaunch size={18} /> Bắt Đầu Miễn Phí
+                <HiOutlineRocketLaunch size={18} /> {t('home.cta_start_free')}
               </Button>
             </Link>
             <Link to="/login">
               <Button variant="outline" size="lg">
-                Đăng Nhập
+                {t('nav.login')}
               </Button>
             </Link>
           </div>
