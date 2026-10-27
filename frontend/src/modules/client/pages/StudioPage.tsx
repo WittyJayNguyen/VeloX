@@ -65,6 +65,22 @@ const INSPIRATION_PROMPTS = [
   'Retro-futuristic 1980s synthwave sports car speeding on a laser grid highway into a sunset',
 ];
 
+// Clean redundant provider prefixes from model display names
+export const cleanModelDisplayName = (name: string): string => {
+  if (!name) return '';
+  return name.replace(/^OpenAI\s+/i, '').replace(/^Google\s+/i, '').trim();
+};
+
+// 4-Bar Sound Wave Icon (1:1 with Krea/Audio mockup)
+export const SoundWaveIcon: React.FC<{ size?: number }> = ({ size = 15 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <rect x="1.5" y="5" width="2" height="6" rx="1" />
+    <rect x="5.5" y="2" width="2" height="12" rx="1" />
+    <rect x="9.5" y="4" width="2" height="8" rx="1" />
+    <rect x="13.5" y="6" width="2" height="4" rx="1" />
+  </svg>
+);
+
 export const StudioPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { user, addCredits } = useAuthStore();
@@ -79,9 +95,9 @@ export const StudioPage: React.FC = () => {
   const urlModel = searchParams.get('model');
 
   // Studio Mode: 'image' | 'video' | 'audio'
-  const [activeTab, setActiveTab] = useState<'image' | 'video' | 'audio'>('image');
+  const [activeTab, setActiveTab] = useState<'image' | 'video' | 'audio'>(urlCategory || 'image');
   const [dbModels, setDbModels] = useState<PublicModelItem[]>([]);
-  const [selectedModelCode, setSelectedModelCode] = useState<string>('');
+  const [selectedModelCode, setSelectedModelCode] = useState<string>('gpt-image-2.5-sunburst');
   const [prompt, setPrompt] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [topupOpen, setTopupOpen] = useState<boolean>(false);
@@ -201,34 +217,52 @@ export const StudioPage: React.FC = () => {
     };
   }, []);
 
-  // Filter models for current active tab
+  // Filter and merge models for current active tab (Both DB models and standard creative models)
   const availableModels = useMemo(() => {
     if (activeTab === 'image') {
-      const filtered = dbModels.filter((m) => m.category?.toUpperCase() === 'IMAGE');
-      if (filtered.length > 0) return filtered;
-      // Fallback if DB is empty
-      return [
-        { id: '1', name: 'GPT Image 2.5 Sunburst', model_code: 'gpt-image-2.5-sunburst', provider: 'OpenAI', selling_credit_price: 35, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: '2', name: 'FLUX.1 [dev/pro]', model_code: 'flux-1-dev', provider: 'Black Forest Labs', selling_credit_price: 25, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: '3', name: 'Midjourney v6.1 Ultra', model_code: 'midjourney-v6.1', provider: 'Midjourney', selling_credit_price: 45, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      ] as PublicModelItem[];
+      const dbImageModels = dbModels.filter((m) => m.category?.toUpperCase() === 'IMAGE');
+      const standardImageModels: PublicModelItem[] = [
+        { id: 'img-std-1', name: 'GPT Image 2.5 Sunburst', model_code: 'gpt-image-2.5-sunburst', provider: 'OpenAI', selling_credit_price: 35, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'img-std-2', name: 'FLUX.1 [dev/pro]', model_code: 'flux-1-dev', provider: 'Black Forest Labs', selling_credit_price: 25, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'img-std-3', name: 'Midjourney v6.1 Ultra', model_code: 'midjourney-v6.1', provider: 'Midjourney', selling_credit_price: 45, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'img-std-4', name: 'DALL-E 3 Ultra', model_code: 'dall-e-3', provider: 'OpenAI', selling_credit_price: 30, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+      ];
+      const map = new Map<string, PublicModelItem>();
+      standardImageModels.forEach((m) => map.set(m.model_code, m));
+      dbImageModels.forEach((m) => map.set(m.model_code, m));
+      return Array.from(map.values());
     }
+
     if (activeTab === 'video') {
-      const filtered = dbModels.filter((m) => m.category?.toUpperCase() === 'VIDEO');
-      if (filtered.length > 0) return filtered;
-      return [
-        { id: '4', name: 'Seedance 2.5', model_code: 'seedance-2.5', provider: 'ByteDance', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: '5', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3-alpha', provider: 'Runway', selling_credit_price: 95, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: '6', name: 'Kling AI v1.5 Pro', model_code: 'kling-v1.5-pro', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      ] as PublicModelItem[];
+      const dbVideoModels = dbModels.filter((m) => m.category?.toUpperCase() === 'VIDEO');
+      const standardVideoModels: PublicModelItem[] = [
+        { id: 'vid-std-1', name: 'Seedance 2.5', model_code: 'seedance-2.5', provider: 'ByteDance', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-2', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3-alpha', provider: 'Runway', selling_credit_price: 95, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-3', name: 'Minimax Video-01', model_code: 'minimax-video-01', provider: 'MiniMax', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-4', name: 'Kling AI v1.5 Pro', model_code: 'kling-v1.5-pro', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-5', name: 'Grok Imagine Video 1.5', model_code: 'grok-imagine-video-1.5', provider: 'OpenAI', selling_credit_price: 18, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+      ];
+      const map = new Map<string, PublicModelItem>();
+      standardVideoModels.forEach((m) => map.set(m.model_code, m));
+      dbVideoModels.forEach((m) => {
+        if (!map.has(m.model_code)) {
+          map.set(m.model_code, m);
+        }
+      });
+      return Array.from(map.values());
     }
-    // Audio Mode
-    const filtered = dbModels.filter((m) => m.category?.toUpperCase() === 'AUDIO' || m.category?.toUpperCase() === 'CHAT');
-    if (filtered.length > 0) return filtered;
-    return [
-      { id: '7', name: 'Eleven v3', model_code: 'eleven-multilingual-v3', provider: 'ElevenLabs', selling_credit_price: 15, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      { id: '8', name: 'OpenAI TTS HD', model_code: 'tts-1-hd', provider: 'OpenAI', selling_credit_price: 20, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-    ] as PublicModelItem[];
+
+    // Audio Mode: strictly audio models
+    const dbAudioModels = dbModels.filter((m) => m.category?.toUpperCase() === 'AUDIO');
+    const standardAudioModels: PublicModelItem[] = [
+      { id: 'aud-std-1', name: 'Eleven v3', model_code: 'eleven-multilingual-v3', provider: 'ElevenLabs', selling_credit_price: 15, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+      { id: 'aud-std-2', name: 'OpenAI TTS HD', model_code: 'tts-1-hd', provider: 'OpenAI', selling_credit_price: 20, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+      { id: 'aud-std-3', name: 'Chatterbox Turbo', model_code: 'chatterbox-turbo', provider: 'Meta', selling_credit_price: 10, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+    ];
+    const map = new Map<string, PublicModelItem>();
+    standardAudioModels.forEach((m) => map.set(m.model_code, m));
+    dbAudioModels.forEach((m) => map.set(m.model_code, m));
+    return Array.from(map.values());
   }, [activeTab, dbModels]);
 
   // Sync selected model code when active tab changes or models load
@@ -246,8 +280,26 @@ export const StudioPage: React.FC = () => {
   useEffect(() => {
     if (urlCategory && ['image', 'video', 'audio'].includes(urlCategory)) {
       setActiveTab(urlCategory);
+      if (urlCategory === 'image') setSelectedModelCode('gpt-image-2.5-sunburst');
+      else if (urlCategory === 'video') setSelectedModelCode('seedance-2.5');
+      else if (urlCategory === 'audio') setSelectedModelCode('eleven-multilingual-v3');
     }
   }, [urlCategory]);
+
+  // Tab switch handler that automatically picks the right primary model
+  const handleTabChange = (newTab: 'image' | 'video' | 'audio') => {
+    setActiveTab(newTab);
+    setIsModelMenuOpen(false);
+    setIsParamsMenuOpen(false);
+    setIsInspireMenuOpen(false);
+    if (newTab === 'image') {
+      setSelectedModelCode('gpt-image-2.5-sunburst');
+    } else if (newTab === 'video') {
+      setSelectedModelCode('seedance-2.5');
+    } else if (newTab === 'audio') {
+      setSelectedModelCode('eleven-multilingual-v3');
+    }
+  };
 
   const currentModel = useMemo(() => {
     return availableModels.find((m) => m.model_code === selectedModelCode) || availableModels[0];
@@ -344,11 +396,12 @@ export const StudioPage: React.FC = () => {
     addCredits(-totalCreditsNeeded);
 
     const newJobId = `job-${Date.now()}`;
+    const selectedModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
     const newJob: GenerationJob = {
       id: newJobId,
       type: activeTab,
       prompt,
-      model: currentModel?.name || 'VeloX Engine',
+      model: selectedModelName,
       progress: 5,
       statusText: 'Đang xếp hàng trong cụm GPU...',
       aspectRatio,
@@ -390,7 +443,7 @@ export const StudioPage: React.FC = () => {
           id: `img-${Date.now()}`,
           url: demoUrls[Math.floor(Math.random() * demoUrls.length)],
           prompt,
-          model: currentModel?.name || 'VeloX Engine',
+          model: selectedModelName,
           aspectRatio,
           quality,
           createdAt: 'Vừa xong',
@@ -401,7 +454,7 @@ export const StudioPage: React.FC = () => {
           id: `vid-${Date.now()}`,
           title: prompt.slice(0, 32) + '...',
           prompt,
-          model: currentModel?.name || 'VeloX Engine',
+          model: selectedModelName,
           poster: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
           duration: '5s',
           quality: '1080p FHD',
@@ -942,30 +995,30 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'image' ? styles.modeTabActive : ''}`}
-                    onClick={() => setActiveTab('image')}
+                    onClick={() => handleTabChange('image')}
                     title="Tạo hình ảnh"
                   >
-                    <HiOutlinePhoto size={16} />
+                    <HiOutlinePhoto size={15} />
                     {activeTab === 'image' && <span>Ảnh</span>}
                   </button>
 
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'video' ? styles.modeTabActive : ''}`}
-                    onClick={() => setActiveTab('video')}
+                    onClick={() => handleTabChange('video')}
                     title="Tạo video"
                   >
-                    <HiOutlineFilm size={16} />
+                    <HiOutlineFilm size={15} />
                     {activeTab === 'video' && <span>Video</span>}
                   </button>
 
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'audio' ? styles.modeTabActive : ''}`}
-                    onClick={() => setActiveTab('audio')}
+                    onClick={() => handleTabChange('audio')}
                     title="Tạo âm thanh / giọng nói"
                   >
-                    <HiOutlineMusicalNote size={16} />
+                    <SoundWaveIcon size={14} />
                     {activeTab === 'audio' && <span>Âm thanh</span>}
                   </button>
                 </div>
@@ -982,10 +1035,10 @@ export const StudioPage: React.FC = () => {
                     setTimeout(() => setToastMsg(null), 2500);
                   }}
                 >
-                  <HiOutlineBookOpen size={17} />
+                  <HiOutlineBookOpen size={16} />
                 </button>
 
-                {/* 3. Model Dropdown ✦ [Model Name] ⌵ (Load từ Admin DB thật) */}
+                {/* 3. Model Dropdown ✦ [Model Name] ⌵ */}
                 <div className={styles.modelPillDropdown}>
                   <button
                     type="button"
@@ -998,34 +1051,41 @@ export const StudioPage: React.FC = () => {
                     }}
                   >
                     <span className={styles.starIcon}>✦</span>
-                    <span>{currentModel?.name || 'Chọn Model'}</span>
-                    <HiOutlineChevronDown className={styles.chevron} size={13} />
+                    <span>{cleanModelDisplayName(currentModel?.name || 'Chọn Model')}</span>
+                    <HiOutlineChevronDown className={styles.chevron} size={12} />
                   </button>
 
                   {isModelMenuOpen && (
                     <div className={styles.customPopoverMenu}>
                       <div className={styles.paramGroupTitle}>
-                        Mô hình khả dụng ({availableModels.length})
+                        Mô hình {activeTab === 'image' ? 'Ảnh' : activeTab === 'video' ? 'Video' : 'Âm thanh'} ({availableModels.length})
                       </div>
-                      {availableModels.map((m) => (
-                        <button
-                          key={m.id || m.model_code}
-                          type="button"
-                          className={`${styles.popoverItem} ${selectedModelCode === m.model_code ? styles.popoverActive : ''}`}
-                          onClick={() => {
-                            setSelectedModelCode(m.model_code);
-                            setIsModelMenuOpen(false);
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontWeight: 600 }}>{m.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: '#71717a' }}>{m.provider}</div>
-                          </div>
-                          <span className={styles.itemCreditBadge}>
-                            {m.selling_credit_price} cr
-                          </span>
-                        </button>
-                      ))}
+                      {availableModels.map((m) => {
+                        const isSelected = selectedModelCode === m.model_code;
+                        return (
+                          <button
+                            key={m.id || m.model_code}
+                            type="button"
+                            className={`${styles.popoverItem} ${isSelected ? styles.popoverActive : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedModelCode(m.model_code);
+                              setIsModelMenuOpen(false);
+                            }}
+                          >
+                            <div>
+                              <div style={{ fontWeight: 600 }}>{cleanModelDisplayName(m.name)}</div>
+                              <div style={{ fontSize: '0.68rem', color: '#71717a' }}>{m.provider}</div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span className={styles.itemCreditBadge}>
+                                {m.selling_credit_price} cr
+                              </span>
+                              {isSelected && <HiOutlineCheck size={14} color="#ff6b35" />}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
