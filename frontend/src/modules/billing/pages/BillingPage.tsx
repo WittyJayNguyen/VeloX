@@ -43,20 +43,29 @@ const initialPackages: CreditPackage[] = [
   },
 ];
 
-const initialTx: TransactionRecord[] = [
-  { id: 'TX-88219', userEmail: 'studio.vn@gmail.com', amountVnd: 500000, creditsGiven: 600000, method: 'VietQR', status: 'SUCCESS', createdAt: '2026-10-26 21:40' },
-  { id: 'TX-88218', userEmail: 'dev.anh@gmail.com', amountVnd: 200000, creditsGiven: 220000, method: 'MoMo', status: 'SUCCESS', createdAt: '2026-10-26 20:15' },
-  { id: 'TX-88217', userEmail: 'corporate@agency.com', amountVnd: 2000000, creditsGiven: 2600000, method: 'Bank_Transfer', status: 'PENDING', createdAt: '2026-10-26 18:00' },
-  { id: 'TX-88216', userEmail: 'test.user@yahoo.com', amountVnd: 50000, creditsGiven: 50000, method: 'VCC_Card', status: 'REFUNDED', createdAt: '2026-10-26 14:20' },
-  { id: 'TX-88215', userEmail: 'ai.lab@techcorp.vn', amountVnd: 2000000, creditsGiven: 2600000, method: 'Bank_Transfer', status: 'SUCCESS', createdAt: '2026-10-25 16:30' },
-];
+const initialTx: TransactionRecord[] = [];
 
 const txBadge = (s: string) => s === 'SUCCESS' ? 'success' : s === 'PENDING' ? 'warning' : 'danger' as const;
 const txLabel: Record<string, string> = { SUCCESS: 'Thành Công', PENDING: 'Chờ Xử Lý', REFUNDED: 'Đã Hoàn' };
 
 const BillingPage = () => {
   const [packages, setPackages] = useState<CreditPackage[]>(() => { const s = localStorage.getItem('velox_packages_v2'); return s ? JSON.parse(s) : initialPackages; });
-  const [transactions, setTransactions] = useState<TransactionRecord[]>(() => { const s = localStorage.getItem('velox_transactions'); return s ? JSON.parse(s) : initialTx; });
+  const [transactions, setTransactions] = useState<TransactionRecord[]>(() => {
+    const s = localStorage.getItem('velox_transactions');
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed) && parsed.some((x: any) => x.id === 'TX-88219')) {
+          localStorage.removeItem('velox_transactions');
+          return [];
+        }
+        return parsed;
+      } catch {
+        return [];
+      }
+    }
+    return initialTx;
+  });
   const [searchTx, setSearchTx] = useState('');
   const [txPage, setTxPage] = useState(1);
 

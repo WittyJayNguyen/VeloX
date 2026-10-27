@@ -40,34 +40,45 @@ export interface CashFlowRecord {
   createdAt: string;
 }
 
-const initialTopUpTx: TopUpTransaction[] = [
-  { id: 'TX-88219', userEmail: 'studio.vn@gmail.com', packageName: 'Studio Creator', amountVnd: 500000, creditsGiven: 600000, method: 'VietQR', status: 'SUCCESS', createdAt: '2026-10-26 21:40' },
-  { id: 'TX-88218', userEmail: 'dev.anh@gmail.com', packageName: 'Pro Pack', amountVnd: 200000, creditsGiven: 220000, method: 'MoMo', status: 'SUCCESS', createdAt: '2026-10-26 20:15' },
-  { id: 'TX-88217', userEmail: 'corporate@agency.com', packageName: 'Enterprise Suite', amountVnd: 2000000, creditsGiven: 2600000, method: 'Bank_Transfer', status: 'PENDING', createdAt: '2026-10-26 18:00' },
-  { id: 'TX-88216', userEmail: 'test.user@yahoo.com', packageName: 'Starter Pack', amountVnd: 50000, creditsGiven: 50000, method: 'VCC_Card', status: 'REFUNDED', createdAt: '2026-10-26 14:20' },
-  { id: 'TX-88215', userEmail: 'ai.lab@techcorp.vn', packageName: 'Enterprise Suite', amountVnd: 2000000, creditsGiven: 2600000, method: 'Bank_Transfer', status: 'SUCCESS', createdAt: '2026-10-25 16:30' },
-  { id: 'TX-88214', userEmail: 'creator.lee@gmail.com', packageName: 'Pro Pack', amountVnd: 200000, creditsGiven: 220000, method: 'VietQR', status: 'SUCCESS', createdAt: '2026-10-25 11:20' },
-];
-
-const initialCashFlow: CashFlowRecord[] = [
-  { id: 'cf_1', type: 'TOPUP', amount: 500000, balanceAfter: 1689500, description: 'Nạp tiền VietQR - Đơn TX-88219 (Studio Creator)', createdAt: '2026-10-26 21:40' },
-  { id: 'cf_2', type: 'CONSUME', amount: -12500, balanceAfter: 1189500, description: 'Tiêu thụ API GPT-4o Gateway (x50 requests)', createdAt: '2026-10-26 21:35' },
-  { id: 'cf_3', type: 'CONSUME', amount: -48000, balanceAfter: 1202000, description: 'Tiêu thụ Midjourney v6 Engine (x6 ảnh HD)', createdAt: '2026-10-26 20:10' },
-  { id: 'cf_4', type: 'TOPUP', amount: 200000, balanceAfter: 1250000, description: 'Nạp tiền MoMo - Đơn TX-88218 (Pro Pack)', createdAt: '2026-10-26 20:15' },
-  { id: 'cf_5', type: 'REFUND', amount: 50000, balanceAfter: 1050000, description: 'Hoàn tiền sự cố gián đoạn upstream model', createdAt: '2026-10-26 18:00' },
-  { id: 'cf_6', type: 'CONSUME', amount: -95000, balanceAfter: 1000000, description: 'Tiêu thụ Claude 3.5 Sonnet Coding (x120 requests)', createdAt: '2026-10-26 15:30' },
-];
+const initialTopUpTx: TopUpTransaction[] = [];
+const initialCashFlow: CashFlowRecord[] = [];
 
 const WalletPage = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'topup' | 'cashflow'>('topup');
   const [topUpList, setTopUpList] = useState<TopUpTransaction[]>(() => {
     const s = localStorage.getItem('velox_topup_tx');
-    return s ? JSON.parse(s) : initialTopUpTx;
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        // Clean out legacy mock data if present
+        if (Array.isArray(parsed) && parsed.some((x: any) => x.id === 'TX-88219')) {
+          localStorage.removeItem('velox_topup_tx');
+          return [];
+        }
+        return parsed;
+      } catch {
+        return [];
+      }
+    }
+    return initialTopUpTx;
   });
   const [cashFlowList, setCashFlowList] = useState<CashFlowRecord[]>(() => {
     const s = localStorage.getItem('velox_cashflow_records');
-    return s ? JSON.parse(s) : initialCashFlow;
+    if (s) {
+      try {
+        const parsed = JSON.parse(s);
+        // Clean out legacy mock data if present
+        if (Array.isArray(parsed) && parsed.some((x: any) => x.id === 'cf_1')) {
+          localStorage.removeItem('velox_cashflow_records');
+          return [];
+        }
+        return parsed;
+      } catch {
+        return [];
+      }
+    }
+    return initialCashFlow;
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,9 +94,9 @@ const WalletPage = () => {
   const [modalMethod, setModalMethod] = useState<TopUpTransaction['method']>('VietQR');
 
   // Stats
-  const currentBalance = 1689500;
   const totalTopUp = topUpList.filter((t) => t.status === 'SUCCESS').reduce((acc, t) => acc + t.amountVnd, 0);
   const totalConsume = Math.abs(cashFlowList.filter((c) => c.type === 'CONSUME').reduce((acc, c) => acc + c.amount, 0));
+  const currentBalance = Math.max(0, totalTopUp - totalConsume);
   const successTxCount = topUpList.filter((t) => t.status === 'SUCCESS').length;
 
   const handleManualTopUp = (e: React.FormEvent) => {

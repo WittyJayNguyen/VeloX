@@ -250,100 +250,8 @@ async def get_accounting_overview(db: AsyncSession) -> AccountingOverviewRespons
 
 
 async def seed_accounting_defaults(db: AsyncSession):
-    """Auto-seeds default realistic accounting data if table is empty."""
-    c_res = await db.execute(select(func.count()).select_from(ExpenseEntry))
-    if (c_res.scalar() or 0) > 0:
-        return
-
-    defaults = [
-        ExpenseEntry(
-            entry_code="EXP-202610-001",
-            category="ACCOUNT_PURCHASE",
-            title="Nhập 5 Tài Khoản Meta AI Muse 31 Tỷ Token (30.000đ/acc)",
-            amount_vnd=150000.0,
-            provider="Meta AI",
-            account_count=5,
-            tokens_capacity=155_000_000_000,
-            depreciation_method="TOKEN_CONSUMPTION",
-            depreciated_amount_vnd=2500.0,
-            remaining_value_vnd=147500.0,
-            notes="Nhập kho tài khoản Muse 31B KBH phục vụ video và ảnh cho khách VIP",
-            status="COMPLETED",
-        ),
-        ExpenseEntry(
-            entry_code="EXP-202610-002",
-            category="ACCOUNT_PURCHASE",
-            title="Nhập 5 Tài Khoản Meta AI Muse 1 Tỷ Token (5.000đ/acc)",
-            amount_vnd=25000.0,
-            provider="Meta AI",
-            account_count=5,
-            tokens_capacity=5_000_000_000,
-            depreciation_method="TOKEN_CONSUMPTION",
-            depreciated_amount_vnd=600.0,
-            remaining_value_vnd=24400.0,
-            notes="Nhập kho tài khoản Muse 1B KBH chạy test và khách vãng lai",
-            status="COMPLETED",
-        ),
-        ExpenseEntry(
-            entry_code="EXP-202610-003",
-            category="PROVIDER_TOPUP",
-            title="Nạp Số Dư Ví API OpenAI $20 (Prepaid Tier 1)",
-            amount_vnd=500000.0,
-            amount_usd=20.0,
-            provider="OpenAI",
-            account_count=1,
-            tokens_capacity=20_000_000,
-            depreciation_method="PER_REQUEST",
-            depreciated_amount_vnd=12000.0,
-            remaining_value_vnd=488000.0,
-            notes="Dự phòng routing OpenAI fallback khi pool gặp tải cao",
-            status="COMPLETED",
-        ),
-        ExpenseEntry(
-            entry_code="EXP-202610-004",
-            category="CAPTCHA_SOLVER",
-            title="Nạp Số Dư 2Captcha Auto Solver $10",
-            amount_vnd=250000.0,
-            amount_usd=10.0,
-            provider="2Captcha",
-            account_count=1,
-            tokens_capacity=5000,
-            depreciation_method="PER_REQUEST",
-            depreciated_amount_vnd=5000.0,
-            remaining_value_vnd=245000.0,
-            notes="Quỹ giải captcha tự động cho pool accounts",
-            status="COMPLETED",
-        ),
-    ]
-
-    for d in defaults:
-        db.add(d)
-
-    # Check if there are payment transactions, if not seed 2 realistic completed transactions
-    p_res = await db.execute(select(func.count()).select_from(PaymentTransaction))
-    if (p_res.scalar() or 0) == 0:
-        # Get admin user id
-        u_res = await db.execute(select(app.modules.users.models.User).limit(1))
-        u = u_res.scalar_one_or_none()
-        if u:
-            db.add(PaymentTransaction(
-                transaction_code="TXN-202610-001",
-                user_id=u.id,
-                amount_vnd=500000.0,
-                credits_credited=5000.0,
-                payment_gateway="BANK_TRANSFER",
-                status="COMPLETED"
-            ))
-            db.add(PaymentTransaction(
-                transaction_code="TXN-202610-002",
-                user_id=u.id,
-                amount_vnd=1200000.0,
-                credits_credited=13000.0,
-                payment_gateway="MOMO",
-                status="COMPLETED"
-            ))
-
-    await db.commit()
+    """No-op: do not seed fake accounting data."""
+    return
 
 
 async def get_cashflow_statement(db: AsyncSession) -> CashFlowStatementResponse:
@@ -355,7 +263,6 @@ async def get_cashflow_statement(db: AsyncSession) -> CashFlowStatementResponse:
     - Customer Unearned Revenue (Liabilities)
     - Chronological list of cash movements
     """
-    await seed_accounting_defaults(db)
 
     # 1. Total Inflow
     inflow_stmt = select(func.sum(PaymentTransaction.amount_vnd)).where(PaymentTransaction.status == "COMPLETED")

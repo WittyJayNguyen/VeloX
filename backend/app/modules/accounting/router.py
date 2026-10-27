@@ -16,7 +16,7 @@ from app.modules.accounting.schemas import (
 )
 from app.modules.accounting.services import (
     create_expense_entry, list_expense_entries, delete_expense_entry,
-    get_accounting_overview, get_cashflow_statement, seed_accounting_defaults
+    get_accounting_overview, get_cashflow_statement
 )
 
 router = APIRouter(prefix="/accounting", tags=["Accounting & Financial Ledger"])
@@ -31,8 +31,6 @@ async def api_get_accounting_overview(
     Get full financial overview: Revenue, Capital Expenses, COGS Depreciation,
     Asset Valuation, Gross & Net Profit, and ROI.
     """
-    # Ensure defaults exist
-    await seed_accounting_defaults(db)
     return await get_accounting_overview(db)
 
 
@@ -58,7 +56,6 @@ async def api_list_expenses(
     """
     List all expense entries (Account purchases, provider top-ups, proxy costs).
     """
-    await seed_accounting_defaults(db)
     return await list_expense_entries(category=category, page=page, page_size=page_size, db=db)
 
 
