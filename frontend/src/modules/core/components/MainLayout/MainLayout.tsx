@@ -15,6 +15,7 @@ import {
   HiOutlineChatBubbleLeftRight,
   HiOutlinePhoto,
   HiOutlineFilm,
+  HiOutlineCodeBracket,
 } from 'react-icons/hi2';
 import { RiOpenaiFill, RiSparklingFill } from 'react-icons/ri';
 import UserProfileDropdown from '../UserProfileDropdown/UserProfileDropdown';
@@ -122,6 +123,13 @@ const MainLayout = () => {
               className={`${styles.navItem} ${location.pathname.startsWith('/models') ? styles.active : ''}`}
             >
               {t('nav.models', 'Model')}
+            </Link>
+
+            <Link
+              to="/docs"
+              className={`${styles.navItem} ${location.pathname.startsWith('/docs') || location.pathname.startsWith('/apidocs') ? styles.active : ''}`}
+            >
+              {t('nav.docs', 'Tài Liệu API')}
             </Link>
           </nav>
 
@@ -237,6 +245,9 @@ const MainLayout = () => {
                 </Link>
                 <Link to="/models" className={styles.mobileNavItem} onClick={closeMobileMenu}>
                   <RiOpenaiFill size={18} color="#10a37f" /> {t('nav.models', 'Model')}
+                </Link>
+                <Link to="/docs" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  <HiOutlineCodeBracket size={18} color="#38bdf8" /> {t('nav.docs', 'Tài Liệu API')}
                 </Link>
               </nav>
 
@@ -360,6 +371,7 @@ const MainLayout = () => {
             <div className={styles.footerCol}>
               <h4 className={styles.footerColTitle}>Support</h4>
               <ul className={styles.footerList}>
+                <li><Link to="/docs">{t('nav.docs', 'Tài Liệu API')}</Link></li>
                 <li><a href="#">Help Center</a></li>
                 <li><a href="#">Terms & Privacy</a></li>
                 <li><a href="#">Security Audit</a></li>
