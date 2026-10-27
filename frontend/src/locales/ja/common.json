@@ -337,14 +337,14 @@
   },
   "menu": {
     "topup_now": "チャージ",
-    "checkin_today": "毎日のログインボーナス",
+    "checkin_today": "デイリー特典を受け取る",
     "checkin_done": "本日は受取済みです",
     "checkin_success": "受取完了！+50クレジット",
     "already_checked_in": "本日のクレジットは既に受け取り済みです！",
     "section_account": "アカウント",
     "section_billing": "プランと請求",
-    "section_earning": "収益化",
-    "section_advanced": "高度な機能",
+    "section_earning": "パートナー＆収益化",
+    "section_advanced": "開発者向け",
     "super_admin_panel": "スーパー管理者パネル",
     "language": "言語切り替え"
   },

@@ -13,56 +13,73 @@
   outline: none;
 
   .avatarCircle {
+    position: relative;
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: #ffaa40;
-    border: 2px solid #ff7a00;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+    border: 2px solid rgba(255, 107, 53, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 
     &:hover {
       transform: scale(1.06);
-      box-shadow: 0 0 12px rgba(255, 122, 0, 0.4);
+      border-color: #ff6b35;
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.45);
     }
 
     .avatarImg {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 50%;
     }
 
-    .avatarFallback {
-      font-size: 1.3rem;
+    .avatarInitials {
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
       line-height: 1;
+    }
+
+    .statusDot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border: 2px solid #0a0e17;
+      border-radius: 50%;
     }
   }
 }
 
 .popover {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 10px);
   right: 0;
-  width: 320px;
-  background: #0d121e;
-  border: 1px solid #1a2234;
+  width: 330px;
+  background: #0d121c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
-  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(15, 23, 42, 0.7);
-  padding: 0.85rem;
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  padding: 0.9rem;
   z-index: 9999;
   color: #f1f5f9;
   font-family: inherit;
-  animation: dropdownIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: dropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: top right;
 }
 
 .toastNotice {
-  background: rgba(45, 212, 191, 0.15);
-  border: 1px solid rgba(45, 212, 191, 0.4);
-  color: #2dd4bf;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -76,29 +93,35 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: #141b2c;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 
   .headerAvatar {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #ffaa40;
-    border: 2px solid #ff7a00;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+    border: 2px solid rgba(255, 107, 53, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
 
-    .headerEmoji {
-      font-size: 1.5rem;
+    .headerInitials {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
     }
 
     .avatarImg {
@@ -115,7 +138,7 @@
     .nameRow {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
 
       .userName {
         font-size: 0.95rem;
@@ -127,13 +150,14 @@
       }
 
       .tierBadge {
-        font-size: 0.65rem;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #cbd5e1;
+        font-size: 0.62rem;
+        background: rgba(255, 107, 53, 0.15);
+        border: 1px solid rgba(255, 107, 53, 0.4);
+        color: #ff6b35;
         padding: 1px 6px;
         border-radius: 999px;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.04em;
         white-space: nowrap;
       }
     }
@@ -145,7 +169,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-top: 1px;
+      margin-top: 2px;
     }
   }
 
@@ -156,12 +180,13 @@
   }
 }
 
+// ── VeloX Energy & Credit Balance Card ──
 .creditCard {
   margin-top: 0.65rem;
-  background: rgba(20, 184, 166, 0.08);
-  border: 1px solid rgba(45, 212, 191, 0.35);
-  border-radius: 12px;
-  padding: 0.65rem 0.85rem;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(14, 19, 30, 0.95) 100%);
+  border: 1px solid rgba(255, 107, 53, 0.25);
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -169,59 +194,86 @@
   .creditLeft {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.6rem;
 
-    .diamond {
-      font-size: 1.15rem;
+    .boltIconBox {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 107, 53, 0.15);
+      border: 1px solid rgba(255, 107, 53, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
-    .creditAmount {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #fff;
-    }
+    .balanceInfo {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
 
-    .creditUnit {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      font-weight: 500;
+      .creditAmount {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #ffffff;
+        font-family: inherit;
+      }
+
+      .creditUnit {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        font-weight: 500;
+      }
     }
   }
 
   .topupBtn {
-    background: #2dd4bf;
-    color: #032b28;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+    color: #ffffff;
     border: none;
     font-weight: 700;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.85rem;
+    font-size: 0.84rem;
+    padding: 0.42rem 1rem;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.18s ease;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 
     &:hover {
-      background: #5eead4;
-      transform: scale(1.04);
+      background: #ff5714;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(255, 107, 53, 0.45);
     }
   }
 }
 
+// ── Daily Reward Row ──
 .attendanceRow {
-  margin-top: 0.65rem;
+  margin-top: 0.55rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.65rem;
+  padding: 0.55rem 0.75rem;
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.15);
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: #141b2c;
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.3);
   }
 
   &.attended {
-    opacity: 0.8;
+    opacity: 0.65;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.06);
+
+    .attendanceText {
+      color: #94a3b8;
+    }
   }
 
   .attendanceLeft {
@@ -229,14 +281,31 @@
     align-items: center;
     gap: 0.55rem;
 
-    .calendarIcon {
-      font-size: 1rem;
+    .rewardIconBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .attendanceText {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #fbbf24;
+    .rewardTextBox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .attendanceText {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #fcd34d;
+      }
+
+      .bonusTag {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #22c55e;
+        background: rgba(34, 197, 94, 0.12);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
     }
   }
 
@@ -248,20 +317,20 @@
 
 .divider {
   height: 1px;
-  background: #1a2234;
+  background: rgba(255, 255, 255, 0.06);
   margin: 0.65rem 0;
 }
 
 .menuSection {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 
   .sectionTitle {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    padding: 0.25rem 0.65rem;
-    margin-bottom: 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #475569;
+    padding: 0.2rem 0.65rem;
+    margin-bottom: 0.1rem;
     text-transform: uppercase;
   }
 
@@ -271,17 +340,17 @@
     gap: 0.65rem;
     padding: 0.45rem 0.65rem;
     border-radius: 8px;
-    font-size: 0.86rem;
-    color: #e2e8f0;
+    font-size: 0.85rem;
+    color: #cbd5e1;
     cursor: pointer;
     transition: all 0.15s ease;
 
     &:hover {
-      background: #141b2c;
-      color: #38bdf8;
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
 
       .itemIcon {
-        color: #38bdf8;
+        color: #ff6b35;
       }
     }
 
@@ -297,11 +366,12 @@
     }
 
     .itemBadgeGray {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: #94a3b8;
-      background: #1a2234;
-      padding: 1px 7px;
-      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
     }
   }
 }
@@ -360,7 +430,7 @@
     gap: 0.35rem;
 
     .langLabel {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: #94a3b8;
     }
 
@@ -368,14 +438,14 @@
       background: #141b2c;
       border: 1px solid #243048;
       color: #f1f5f9;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       padding: 3px 6px;
       border-radius: 6px;
       outline: none;
       cursor: pointer;
 
       &:hover {
-        border-color: #38bdf8;
+        border-color: #ff6b35;
       }
     }
   }
