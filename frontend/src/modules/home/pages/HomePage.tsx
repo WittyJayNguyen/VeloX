@@ -44,64 +44,64 @@ const workoutPrograms: WorkoutProgram[] = [
     id: 'hiit',
     titleKey: 'fitness.workout_hiit',
     levelKey: 'fitness.level_intermediate',
-    duration: '30 min',
-    calories: '400 cal',
-    image: 'https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=600&h=450&fit=crop&q=80',
+    duration: '5 sec',
+    calories: '80 cr',
+    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=450&fit=crop&q=80',
   },
   {
     id: 'strength',
     titleKey: 'fitness.workout_strength',
     levelKey: 'fitness.level_advanced',
-    duration: '45 min',
-    calories: '350 cal',
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c149a?w=600&h=450&fit=crop&q=80',
+    duration: '8K Ultra',
+    calories: '35 cr',
+    image: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&h=450&fit=crop&q=80',
   },
   {
     id: 'yoga',
     titleKey: 'fitness.workout_yoga',
     levelKey: 'fitness.level_beginner',
-    duration: '40 min',
-    calories: '200 cal',
-    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=450&fit=crop&q=80',
+    duration: 'Prompt Art',
+    calories: '25 cr',
+    image: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=600&h=450&fit=crop&q=80',
   },
   {
     id: 'boxing',
     titleKey: 'fitness.workout_boxing',
     levelKey: 'fitness.level_intermediate',
-    duration: '35 min',
-    calories: '450 cal',
-    image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=600&h=450&fit=crop&q=80',
+    duration: '60 FPS',
+    calories: '75 cr',
+    image: 'https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?w=600&h=450&fit=crop&q=80',
   },
 ];
 
 const trainers: TrainerProfile[] = [
   {
     id: 'alex',
-    name: 'Alex Rivera',
+    name: 'OpenAI GPT-4o',
     specKey: 'fitness.spec_hiit',
     expKey: 'fitness.exp_8_years',
-    image: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=500&h=500&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=500&fit=crop&q=80',
   },
   {
     id: 'sarah',
-    name: 'Sarah Chen',
+    name: 'Midjourney v6.1',
     specKey: 'fitness.spec_yoga',
     expKey: 'fitness.exp_10_years',
-    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=500&h=500&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&h=500&fit=crop&q=80',
   },
   {
     id: 'marcus',
-    name: 'Marcus Johnson',
+    name: 'Claude 3.5 Sonnet',
     specKey: 'fitness.spec_strength',
     expKey: 'fitness.exp_12_years',
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=500&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=500&h=500&fit=crop&q=80',
   },
   {
     id: 'emma',
-    name: 'Emma Wilson',
+    name: 'Runway Gen-3 Alpha',
     specKey: 'fitness.spec_boxing',
     expKey: 'fitness.exp_6_years',
-    image: 'https://images.unsplash.com/photo-1609899464726-209befafc5ba?w=500&h=500&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=500&fit=crop&q=80',
   },
 ];
 
@@ -200,11 +200,11 @@ const HomePage = () => {
     <div className={styles.fitnessGym}>
       {/* ── HERO SECTION ── */}
       <section className={styles.heroSection}>
-        {/* Background Gym Image with deep contrast gradient */}
+        {/* Background AI Digital Studio with deep contrast gradient */}
         <div className={styles.heroBgWrapper}>
           <img
-            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&h=1080&fit=crop&q=85"
-            alt="Gym Background"
+            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&h=1080&fit=crop&q=85"
+            alt="AI Studio Background"
             className={styles.heroBgImg}
           />
           <div className={styles.heroOverlay} />
@@ -229,27 +229,27 @@ const HomePage = () => {
             </p>
 
             <div className={styles.heroCtas}>
-              <Link to="/register" className={styles.btnPrimary}>
+              <Link to="/studio" className={styles.btnPrimary}>
                 {t('fitness.cta_trial')}
                 <HiOutlineArrowRight className={styles.btnIcon} />
               </Link>
-              <a href="#workouts" className={styles.btnSecondary}>
+              <Link to="/models" className={styles.btnSecondary}>
                 <HiOutlinePlay className={styles.btnIcon} />
                 {t('fitness.cta_demo')}
-              </a>
+              </Link>
             </div>
 
             <div className={styles.heroStats}>
               <div className={styles.statCol}>
-                <div className={styles.statNumber}>500K+</div>
+                <div className={styles.statNumber}>100K+</div>
                 <div className={styles.statLabel}>{t('fitness.stat_members')}</div>
               </div>
               <div className={styles.statCol}>
-                <div className={styles.statNumber}>1000+</div>
+                <div className={styles.statNumber}>100+</div>
                 <div className={styles.statLabel}>{t('fitness.stat_workouts')}</div>
               </div>
               <div className={styles.statCol}>
-                <div className={styles.statNumber}>50+</div>
+                <div className={styles.statNumber}>99.99%</div>
                 <div className={styles.statLabel}>{t('fitness.stat_trainers')}</div>
               </div>
             </div>
@@ -321,9 +321,9 @@ const HomePage = () => {
               <span className={styles.highlightOrange}>{t('fitness.workouts_title_hl')}</span>
             </h2>
           </div>
-          <a href="#workouts" className={styles.btnSecondarySm}>
+          <Link to="/studio" className={styles.btnSecondarySm}>
             {t('fitness.btn_view_all')}
-          </a>
+          </Link>
         </div>
 
         <div className={styles.workoutsGrid}>
@@ -402,9 +402,9 @@ const HomePage = () => {
                   className={styles.trainerAvatar}
                 />
                 <div className={styles.trainerOverlay}>
-                  <button type="button" className={styles.btnProfile}>
+                  <Link to="/models" className={styles.btnProfile}>
                     {t('fitness.view_profile')}
-                  </button>
+                  </Link>
                 </div>
               </div>
               <h3 className={styles.trainerName}>{trainer.name}</h3>
