@@ -55,13 +55,19 @@ export const LoginForm = () => {
       const params = new URLSearchParams(location.search);
       const redirectUrl = params.get('redirect');
 
+      const isSuperAdmin = res.user.roles?.includes('ROLE_SUPER_ADMIN');
+
       if (redirectUrl && !redirectUrl.startsWith('/login')) {
+        // If regular user was trying to access /admin, don't redirect them to /admin
+        if (redirectUrl.startsWith('/admin') && !isSuperAdmin) {
+          navigate('/', { replace: true });
+          return;
+        }
         navigate(redirectUrl, { replace: true });
         return;
       }
 
-      const isAdmin = res.user.roles?.includes('ROLE_ADMIN') || res.user.roles?.includes('ROLE_SUPER_ADMIN');
-      if (isAdmin) {
+      if (isSuperAdmin) {
         navigate('/admin', { replace: true });
       } else {
         navigate('/', { replace: true });

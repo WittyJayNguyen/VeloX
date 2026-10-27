@@ -253,5 +253,135 @@
     "start_trial": "무료 체험 시작하기",
     "cta_banner_title": "놀라운 신체 변화를 경험할 준비가 되셨나요?",
     "cta_banner_desc": "지금 50만 명 이상의 회원들과 함께하세요. 7일 무료 체험으로 부담 없이 시작하세요."
+  },
+  "header": {
+    "quick_search": "빠른 검색",
+    "pricing": "요금제",
+    "notifications": "알림"
+  },
+  "menu": {
+    "topup_now": "충전",
+    "checkin_today": "오늘 출석체크",
+    "checkin_done": "오늘 출석 완료",
+    "checkin_success": "출석체크 성공! +50 크레딧 지급",
+    "already_checked_in": "오늘은 이미 출석체크를 완료하셨습니다!",
+    "section_account": "내 계정",
+    "section_billing": "구독 및 결제",
+    "section_earning": "수익 창출",
+    "section_advanced": "고급 기능",
+    "super_admin_panel": "슈퍼 관리자 패널",
+    "language": "언어 설정"
+  },
+  "client_menu": {
+    "profile": "프로필 및 설정",
+    "security": "보안 및 2단계 인증",
+    "team": "내 팀 관리",
+    "subscription": "요금제 관리",
+    "history": "이용 내역",
+    "orders": "구매 주문 내역",
+    "workflows": "내 워크플로우",
+    "sales": "크리에이터 판매 대시보드",
+    "referral": "친구 초대",
+    "developer": "API 및 MCP 프로토콜",
+    "downloads": "데스크톱 앱 다운로드"
+  },
+  "topup": {
+    "title": "계정 크레딧 충전",
+    "current_balance": "현재 잔액",
+    "choose_package": "1. 충전 패키지 선택",
+    "payment_info": "2. 계좌이체 및 QR 결제",
+    "bank": "입금 은행",
+    "account_no": "계좌 번호",
+    "account_name": "예금주",
+    "amount": "입금 금액",
+    "memo": "입금자명 / 메모",
+    "copy": "복사",
+    "copied": "복사 완료",
+    "confirm_paid": "입금을 완료했습니다",
+    "checking": "입금 확인 중...",
+    "success_title": "충전 완료!",
+    "success_desc": "계정에 크레딧이 성공적으로 충전되었습니다",
+    "qr_hint": "은행 앱으로 QR 코드를 스캔하세요"
+  },
+  "search": {
+    "placeholder": "기능, 페이지, 설정 빠른 검색... (Ctrl+K)",
+    "empty": "검색 결과가 없습니다.",
+    "hint_navigate": "이동",
+    "hint_select": "선택",
+    "hint_close": "닫기"
+  },
+  "profile": {
+    "subtitle": "회원 프로필 정보 및 VeloX 멤버십 상세 설정",
+    "save_success": "프로필 정보가 성공적으로 업데이트되었습니다!",
+    "balance_label": "크레딧 잔액",
+    "tier_label": "이용 등급",
+    "role_label": "계정 권한",
+    "personal_info": "기본 정보",
+    "full_name": "이름",
+    "email": "이메일 주소 (식별자)",
+    "avatar_url": "프로필 이미지 URL",
+    "created_at": "가입일",
+    "save_btn": "변경사항 저장"
+  },
+  "security": {
+    "subtitle": "2단계 인증 및 로그인 세션 감사를 통해 계정을 안전하게 보호하세요",
+    "2fa_title": "2단계 인증 (2FA Authenticator)",
+    "2fa_desc": "로그인 시 Google Authenticator 일회용 코드로 계정을 보호합니다.",
+    "status_active": "상태: 활성화됨",
+    "status_inactive": "상태: 비활성화됨",
+    "turn_on": "2FA 활성화",
+    "turn_off": "2FA 비활성화",
+    "2fa_enabled": "2단계 인증이 활성화되었습니다!",
+    "2fa_disabled": "2단계 인증이 해제되었습니다.",
+    "change_pass_title": "비밀번호 변경",
+    "old_pass": "현재 비밀번호",
+    "new_pass": "새 비밀번호",
+    "confirm_pass": "새 비밀번호 확인",
+    "save_pass_btn": "비밀번호 업데이트",
+    "err_mismatch": "새 비밀번호가 일치하지 않습니다!",
+    "err_short": "비밀번호는 6자 이상이어야 합니다!",
+    "success_pass": "비밀번호가 변경되었습니다!",
+    "sessions_title": "활성 로그인 세션"
+  },
+  "team": {
+    "subtitle": "워크스페이스 팀원과 크레딧을 공유하고 권한을 관리하세요",
+    "total_members": "총 팀원 수",
+    "pooled_credit": "팀 공유 크레딧",
+    "invite_title": "새 팀원 초대",
+    "email_label": "팀원 이메일",
+    "role_label": "권한 역할",
+    "send_invite": "초대장 발송",
+    "list_title": "팀원 목록",
+    "invited_success": "팀원 초대 메일을 발송했습니다!"
+  },
+  "subscription": {
+    "subtitle": "업무 및 AI 작업 규모에 최적화된 맞춤 요금제를 선택하세요",
+    "topup_btn": "지금 크레딧 충전",
+    "current_plan": "이용 중인 요금제"
+  },
+  "history": {
+    "subtitle": "AI 호출 요청 상세 내역, 토큰 처리량 및 크레딧 차감 기록"
+  },
+  "orders": {
+    "subtitle": "크레딧 충전 내역, 요금제 결제 및 전자 영수증 확인",
+    "new_topup": "신규 충전"
+  },
+  "workflows": {
+    "subtitle": "다단계 AI 파이프라인으로 복잡한 업무를 자동화하세요",
+    "create_new": "새 워크플로우 만들기"
+  },
+  "sales": {
+    "subtitle": "VeloX 마켓플레이스에서 판매 중인 AI 워크플로우 수익 현황",
+    "withdraw_btn": "출금 신청"
+  },
+  "referral": {
+    "subtitle": "친구를 초대하고 친구가 충전할 때마다 평생 20% 크레딧 리워드를 받으세요",
+    "copied_notice": "추천 링크가 클립보드에 복사되었습니다!"
+  },
+  "developer": {
+    "subtitle": "IDE, Claude Desktop, Cursor 및 백엔드 시스템과 간편하게 연동"
+  },
+  "downloads": {
+    "subtitle": "단축키로 즉시 호출하는 강력한 PC 전용 AI 게이트웨이"
   }
 }

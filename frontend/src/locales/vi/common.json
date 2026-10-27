@@ -329,5 +329,135 @@
     "start_trial": "Bắt Đầu Dùng Thử",
     "cta_banner_title": "Sẵn Sàng Thay Đổi Vóc Dáng & Thể Lực?",
     "cta_banner_desc": "Gia nhập hơn 500,000 thành viên tích cực hôm nay. Trải nghiệm 7 ngày hoàn toàn miễn phí."
+  },
+  "header": {
+    "quick_search": "Tìm nhanh",
+    "pricing": "Bảng giá",
+    "notifications": "Thông báo"
+  },
+  "menu": {
+    "topup_now": "Nạp",
+    "checkin_today": "Điểm danh hôm nay",
+    "checkin_done": "Đã điểm danh hôm nay",
+    "checkin_success": "Điểm danh thành công! +50 credit",
+    "already_checked_in": "Hôm nay bạn đã điểm danh rồi!",
+    "section_account": "TÀI KHOẢN",
+    "section_billing": "GÓI & THANH TOÁN",
+    "section_earning": "KIẾM TIỀN",
+    "section_advanced": "NÂNG CAO",
+    "super_admin_panel": "Bảng Quản Trị Super Admin",
+    "language": "Ngôn ngữ"
+  },
+  "client_menu": {
+    "profile": "Hồ sơ & cài đặt",
+    "security": "Bảo mật & 2FA",
+    "team": "Nhóm của bạn",
+    "subscription": "Quản lý gói",
+    "history": "Lịch sử sử dụng",
+    "orders": "Đơn đã mua",
+    "workflows": "Workflow của tôi",
+    "sales": "Bảng bán hàng",
+    "referral": "Giới thiệu bạn bè",
+    "developer": "API & MCP",
+    "downloads": "Phần mềm PC"
+  },
+  "topup": {
+    "title": "Nạp Credit Tài Khoản",
+    "current_balance": "Số dư hiện tại",
+    "choose_package": "1. Chọn Mức Nạp Credit",
+    "payment_info": "2. Quét Mã VietQR Chuyển Khoản",
+    "bank": "Ngân hàng",
+    "account_no": "Số tài khoản",
+    "account_name": "Chủ thụ hưởng",
+    "amount": "Số tiền",
+    "memo": "Nội dung CK",
+    "copy": "Chép",
+    "copied": "Đã chép",
+    "confirm_paid": "Tôi Đã Chuyển Khoản Xong",
+    "checking": "Đang xác thực hệ thống...",
+    "success_title": "Nạp Tiền Thành Công!",
+    "success_desc": "Tài khoản của bạn đã được cộng",
+    "qr_hint": "Mở ứng dụng ngân hàng quét mã"
+  },
+  "search": {
+    "placeholder": "Tìm nhanh tính năng, trang, cài đặt... (Ctrl+K)",
+    "empty": "Không tìm thấy kết quả phù hợp.",
+    "hint_navigate": "Di chuyển",
+    "hint_select": "Chọn",
+    "hint_close": "Đóng"
+  },
+  "profile": {
+    "subtitle": "Quản lý thông tin tài khoản cá nhân và thông tin thành viên VeloX",
+    "save_success": "Cập nhật thông tin tài khoản thành công!",
+    "balance_label": "Số Dư Credit",
+    "tier_label": "Gói Dịch Vụ",
+    "role_label": "Quyền Hạn",
+    "personal_info": "Thông Tin Cá Nhân",
+    "full_name": "Họ và tên",
+    "email": "Địa chỉ Email (Định danh)",
+    "avatar_url": "Link Ảnh Đại Diện (Avatar URL)",
+    "created_at": "Ngày Tham Gia",
+    "save_btn": "Lưu Thay Đổi"
+  },
+  "security": {
+    "subtitle": "Tăng cường an toàn tài khoản với xác thực hai yếu tố và quản lý phiên đăng nhập",
+    "2fa_title": "Xác Thực 2 Yếu Tố (2FA Authenticator)",
+    "2fa_desc": "Bảo vệ tài khoản bằng ứng dụng Google Authenticator hoặc Authy khi đăng nhập.",
+    "status_active": "Trạng thái: Đang Bật",
+    "status_inactive": "Trạng thái: Đang Tắt",
+    "turn_on": "Kích Hoạt 2FA",
+    "turn_off": "Tắt 2FA",
+    "2fa_enabled": "Đã kích hoạt xác thực 2 lớp (2FA)!",
+    "2fa_disabled": "Đã tắt xác thực 2 lớp.",
+    "change_pass_title": "Đổi Mật Khẩu",
+    "old_pass": "Mật khẩu hiện tại",
+    "new_pass": "Mật khẩu mới",
+    "confirm_pass": "Xác nhận mật khẩu mới",
+    "save_pass_btn": "Cập Nhật Mật Khẩu",
+    "err_mismatch": "Mật khẩu xác nhận không khớp!",
+    "err_short": "Mật khẩu phải từ 6 ký tự trở lên!",
+    "success_pass": "Đã đổi mật khẩu thành công!",
+    "sessions_title": "Phiên Đăng Nhập Hoạt Động"
+  },
+  "team": {
+    "subtitle": "Cộng tác làm việc, chia sẻ hạn ngạch Credit và quản lý quyền truy cập không gian làm việc",
+    "total_members": "Tổng Thành Viên",
+    "pooled_credit": "Quỹ Credit Nhóm",
+    "invite_title": "Mời Thành Viên Mới",
+    "email_label": "Email thành viên",
+    "role_label": "Vai trò",
+    "send_invite": "Gửi Lời Mời",
+    "list_title": "Danh Sách Thành Viên",
+    "invited_success": "Đã gửi lời mời tham gia nhóm tới email!"
+  },
+  "subscription": {
+    "subtitle": "Lựa chọn gói dịch vụ AI phù hợp nhất với nhu cầu sử dụng của bạn",
+    "topup_btn": "Nạp Credit Ngay",
+    "current_plan": "Gói Dịch Vụ Đang Dùng"
+  },
+  "history": {
+    "subtitle": "Chi tiết các yêu cầu AI, số token xử lý và lượng Credit đã tiêu thụ"
+  },
+  "orders": {
+    "subtitle": "Theo dõi lịch sử giao dịch nạp tiền, mua gói cước và xuất hóa đơn điện tử",
+    "new_topup": "Nạp Tiền Mới"
+  },
+  "workflows": {
+    "subtitle": "Tự động hóa các tác vụ AI phức tạp với chuỗi quy trình (AI Pipeline) đa bước",
+    "create_new": "Tạo Workflow Mới"
+  },
+  "sales": {
+    "subtitle": "Theo dõi thu nhập từ việc chia sẻ các Workflow AI, Prompt và tài nguyên lên VeloX Marketplace",
+    "withdraw_btn": "Yêu Cầu Rút Tiền"
+  },
+  "referral": {
+    "subtitle": "Mời bạn bè cùng trải nghiệm VeloX và nhận ngay 20% hoa hồng Credit trọn đời cho mỗi lượt nạp",
+    "copied_notice": "Đã sao chép liên kết giới thiệu vào bộ nhớ tạm!"
+  },
+  "developer": {
+    "subtitle": "Kết nối VeloX AI Gateway với các ứng dụng IDE, Claude Desktop, Cursor và hệ thống backend của bạn"
+  },
+  "downloads": {
+    "subtitle": "Trải nghiệm sức mạnh AI Gateway trực tiếp trên màn hình máy tính với phím tắt tức thời"
   }
 }
