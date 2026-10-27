@@ -164,7 +164,10 @@
       "stat_total_credited": "Tổng Tín Dụng Đã Cấp (+)",
       "stat_total_deducted": "Tổng Tín Dụng Đã Trừ (-)",
       "stat_net_balance": "Số Dư Biến Động Ròng",
+      "stat_tracked_ips": "Tổng IP Đang Giám Sát",
       "stat_banned_ips": "Tổng IP Bị Khóa",
+      "stat_suspicious_ips": "IP Nghi Vấn Bào Free (>= 3 Acc)",
+      "stat_farmed_credits": "Lượng Credit Nguy Cơ Bị Bào",
       "stat_violating_accs": "Tài Khoản Vi Phạm Bị Phạt",
       "stat_blocked_requests": "Yêu Cầu Spam Bị Chặn"
     },

@@ -162,7 +162,10 @@
       "stat_total_credited": "総付与クレジット (+)",
       "stat_total_deducted": "総控除クレジット (-)",
       "stat_net_balance": "純変動残高",
+      "stat_tracked_ips": "監視対象 IP 総数",
       "stat_banned_ips": "遮断された総 IP 数",
+      "stat_suspicious_ips": "不正疑い IP (>= 3 アカウント)",
+      "stat_farmed_credits": "リスク クレジット額",
       "stat_violating_accs": "違反ペナルティ対象アカウント",
       "stat_blocked_requests": "遮断されたスパムリクエスト"
     },

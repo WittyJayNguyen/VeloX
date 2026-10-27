@@ -1135,13 +1135,13 @@ async def list_ip_rules(
     rules_res = await db.execute(select(IPAccessRule))
     rules_map = {r.ip_address: r for r in rules_res.scalars().all()}
 
-    # 2. Group users by last_login_ip
+    # 2. Group non-admin users by last_login_ip (anti-farming is for customer abuse)
     user_q = select(
         User.last_login_ip,
         func.count(User.id).label("acc_count"),
         func.sum(User.credit_balance).label("total_credits"),
         func.max(User.last_login_at).label("last_active"),
-    ).where(User.last_login_ip.isnot(None)).group_by(User.last_login_ip)
+    ).where(User.last_login_ip.isnot(None), User.email != "admin@velox.ai").group_by(User.last_login_ip)
 
     user_ip_rows = (await db.execute(user_q)).all()
     user_ip_map = {row[0]: row for row in user_ip_rows}

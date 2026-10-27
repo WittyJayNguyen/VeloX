@@ -450,25 +450,25 @@ export const IpAbusePage: React.FC = () => {
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
         <StatCard
-          label={t('admin.audit.stat_banned_ips', 'Tổng IP Đang Giám Sát')}
+          label={t('admin.audit.stat_tracked_ips', 'Tổng IP Đang Giám Sát')}
           value={stats.totalTrackedIps.toLocaleString()}
           icon={<HiOutlineGlobeAlt />}
           color="#6366f1"
         />
         <StatCard
-          label={t('admin.audit.stat_violating_accs', 'Địa Chỉ IP Đã Bị Cấm')}
+          label={t('admin.audit.stat_banned_ips', 'Tổng IP Bị Khóa')}
           value={stats.bannedIps.toLocaleString()}
           icon={<HiOutlineNoSymbol />}
           color="#f43f5e"
         />
         <StatCard
-          label={t('admin.audit.stat_blocked_requests', 'IP Nghi Vấn Bào Free (>= 3 Acc)')}
+          label={t('admin.audit.stat_suspicious_ips', 'IP Nghi Vấn Bào Free (>= 3 Acc)')}
           value={stats.suspiciousIps.toLocaleString()}
           icon={<HiOutlineShieldExclamation />}
           color="#eab308"
         />
         <StatCard
-          label="Lượng Credit Nguy Cơ Bị Bào"
+          label={t('admin.audit.stat_farmed_credits', 'Lượng Credit Nguy Cơ Bị Bào')}
           value={`${stats.farmedCreditsAtRisk.toLocaleString()} pts`}
           icon={<HiOutlineBanknotes />}
           color="#ec4899"
