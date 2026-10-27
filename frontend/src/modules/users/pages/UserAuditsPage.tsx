@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   HiOutlineArrowPath,
   HiOutlineKey,
@@ -31,6 +32,7 @@ const actionBadges: Record<string, { variant: 'primary' | 'success' | 'warning' 
 };
 
 export const UserAuditsPage = () => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<SystemUserAuditItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -167,45 +169,45 @@ export const UserAuditsPage = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fafafa', margin: 0 }}>
-              Nhật Ký Kiểm Toán IAM & Bảo Mật
+              {t('admin.audit.iam_title', 'Nhật Ký Kiểm Toán IAM & Bảo Mật')}
             </h1>
             <Badge variant="purple" size="sm">
-              Immutable Log (Bất biến)
+              {t('admin.audit.immutable_badge', 'Immutable Log (Bất biến)')}
             </Badge>
           </div>
           <p style={{ color: '#71717a', fontSize: '0.84rem', margin: '4px 0 0 0' }}>
-            Giám sát toàn bộ các hành vi can thiệp tài khoản, thay đổi quyền hạn, đổi mật khẩu và sự kiện phòng thủ tấn công
+            {t('admin.audit.iam_desc', 'Giám sát toàn bộ các hành vi can thiệp tài khoản, thay đổi quyền hạn, đổi mật khẩu và sự kiện phòng thủ tấn công')}
           </p>
         </div>
 
         <Button variant="outline" size="sm" onClick={loadData} loading={loading}>
           <HiOutlineArrowPath size={16} style={{ marginRight: 6 }} />
-          Làm Mới Sổ Cái
+          {t('admin.audit.refresh_ledger', 'Làm Mới Sổ Cái')}
         </Button>
       </div>
 
       {/* Summary Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
         <StatCard
-          label="Tổng Sự Kiện Kiểm Toán"
+          label={t('admin.audit.stat_total_events', 'Tổng Sự Kiện Kiểm Toán')}
           value={stats.totalEvents.toLocaleString()}
           icon={<HiOutlineClipboardDocumentList />}
           color="#6366f1"
         />
         <StatCard
-          label="Sự Kiện Khóa Brute-Force"
+          label={t('admin.audit.stat_lockouts', 'Sự Kiện Khóa Brute-Force')}
           value={stats.securityLockouts.toLocaleString()}
           icon={<HiOutlineLockClosed />}
           color="#f43f5e"
         />
         <StatCard
-          label="Đặt Lại Mật Khẩu"
+          label={t('admin.audit.stat_resets', 'Đặt Lại Mật Khẩu')}
           value={stats.passwordResets.toLocaleString()}
           icon={<HiOutlineKey />}
           color="#eab308"
         />
         <StatCard
-          label="Tính Toàn Vẹn Sổ Cái"
+          label={t('admin.audit.stat_integrity', 'Tính Toàn Vẹn Sổ Cái')}
           value="100% Verified"
           icon={<HiOutlineCheckCircle />}
           color="#10b981"

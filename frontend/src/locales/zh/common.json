@@ -61,6 +61,60 @@
       "notifications": "通知中心",
       "settings": "系统设置"
     },
-    "dashboard": { "title": "系统概览", "total_users": "总用户数", "total_revenue": "今日收入", "total_credits_used": "已消耗积分", "pool_health": "池健康度", "revenue_chart": "收入图表", "consumption": "消耗明细" }
+    "dashboard": {
+      "title": "CRM 管理仪表盘",
+      "total_users": "总用户数",
+      "total_revenue": "今日充值收入",
+      "total_credits_used": "已消耗积分",
+      "pool_health": "池健康度",
+      "revenue_chart": "收入图表",
+      "consumption": "消耗明细"
+    },
+    "audit": {
+      "iam_title": "IAM 与安全审计日志",
+      "iam_desc": "监控所有账户干预、角色权限变更、密码修改与暴力破解封禁事件",
+      "credit_ledger_title": "积分变动明细账本 (Credit Ledger)",
+      "credit_ledger_desc": "不可篡改的审计账本，记录所有人工积分调整、余额核对及防欺诈干预",
+      "ip_abuse_title": "IP 滥用监控与防刷防火墙",
+      "ip_abuse_desc": "检测并拦截来自单一 IP/代理的批量注册刷取免费额度行为",
+      "refresh_ledger": "刷新账本",
+      "add_ip_blacklist": "添加 IP 到黑名单",
+      "immutable_badge": "不可篡改日志",
+      "stat_total_events": "总审计事件数",
+      "stat_lockouts": "暴力破解锁定",
+      "stat_resets": "密码重置次数",
+      "stat_integrity": "账本完整性验证",
+      "stat_total_adjustments": "总调整指令数",
+      "stat_total_credited": "总充值发放 (+)",
+      "stat_total_deducted": "总扣除核销 (-)",
+      "stat_net_balance": "净变动余额",
+      "stat_banned_ips": "已封禁 IP 总数",
+      "stat_violating_accs": "受处罚违规账号",
+      "stat_blocked_requests": "已拦截刷量请求"
+    },
+    "wallet": {
+      "available_balance": "钱包可用余额",
+      "total_deposited": "累计充值金额",
+      "total_consumed": "AI 累计消耗",
+      "success_tx": "成功充值交易",
+      "tab_topup": "充值明细",
+      "tab_cashflow": "资金流水",
+      "btn_manual_topup": "人工代充",
+      "tx_history_title": "充值交易与对账明细",
+      "cashflow_title": "现金流与余额变动账本"
+    },
+    "accounting": {
+      "header_title": "VeloX 财务核算与资产审计",
+      "header_subtitle": "财务管理体系、AI 账户资产审计、COGS 成本核算与现金流对账。",
+      "reconcile_btn": "重新对账",
+      "create_expense_btn": "新建支出凭单 / 采购账号"
+    },
+    "badge": {
+      "profit": "利润率",
+      "inventory": "盘点",
+      "expense": "支出单",
+      "cashflow": "资金流",
+      "my_library": "作品库"
+    }
   }
 }

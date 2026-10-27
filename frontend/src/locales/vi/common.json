@@ -145,6 +145,52 @@
       "balance_overview": "Cân Bằng Doanh Thu & Chi Phí Token",
       "deals_status": "Giao Dịch Nạp Tiền Gần Nhất",
       "pool_alerts": "Giám Sát Tình Trạng Pool"
+    },
+    "audit": {
+      "iam_title": "Nhật Ký Kiểm Toán IAM & Bảo Mật",
+      "iam_desc": "Giám sát toàn bộ các hành vi can thiệp tài khoản, thay đổi quyền hạn, đổi mật khẩu và sự kiện phòng thủ tấn công",
+      "credit_ledger_title": "Sổ Cái Biến Động Tín Dụng (Credit Ledger)",
+      "credit_ledger_desc": "Sổ cái kiểm toán bất biến theo dõi toàn bộ các lệnh can thiệp tín dụng thủ công, đối soát số dư và chống gian lận",
+      "ip_abuse_title": "Giám Sát IP & Chống Bào Free",
+      "ip_abuse_desc": "Phát hiện và ngăn chặn hành vi spam tạo nhiều tài khoản từ một IP/Proxy nhằm trục lợi hạn mức tín dụng miễn phí",
+      "refresh_ledger": "Làm Mới Sổ Cái",
+      "add_ip_blacklist": "Thêm IP Vào Danh Sách Đen",
+      "immutable_badge": "Immutable Log (Bất biến)",
+      "stat_total_events": "Tổng Sự Kiện Kiểm Toán",
+      "stat_lockouts": "Sự Kiện Khóa Brute-Force",
+      "stat_resets": "Đặt Lại Mật Khẩu",
+      "stat_integrity": "Tính Toàn Vẹn Sổ Cái",
+      "stat_total_adjustments": "Tổng Lệnh Điều Chỉnh",
+      "stat_total_credited": "Tổng Tín Dụng Đã Cấp (+)",
+      "stat_total_deducted": "Tổng Tín Dụng Đã Trừ (-)",
+      "stat_net_balance": "Số Dư Biến Động Ròng",
+      "stat_banned_ips": "Tổng IP Bị Khóa",
+      "stat_violating_accs": "Tài Khoản Vi Phạm Bị Phạt",
+      "stat_blocked_requests": "Yêu Cầu Spam Bị Chặn"
+    },
+    "wallet": {
+      "available_balance": "Số Dư Ví Khả Dụng",
+      "total_deposited": "Tổng Tiền Đã Nạp",
+      "total_consumed": "Tổng Tiêu Thụ AI",
+      "success_tx": "Giao Dịch Nạp Thành Công",
+      "tab_topup": "Lịch Sử Nạp Tiền",
+      "tab_cashflow": "Biến Động Dòng Tiền",
+      "btn_manual_topup": "Nạp Tiền Thủ Công",
+      "tx_history_title": "Lịch Sử Giao Dịch Nạp Tiền & Đối Soát",
+      "cashflow_title": "Sổ Cái Dòng Tiền & Biến Động Số Dư"
+    },
+    "accounting": {
+      "header_title": "Kế Toán & Kiểm Toán Tài Sản VeloX",
+      "header_subtitle": "Phân hệ quản trị tài chính, kiểm toán tài sản tài khoản AI, khấu hao giá vốn COGS và hạch toán dòng tiền.",
+      "reconcile_btn": "Đối Soát Lại",
+      "create_expense_btn": "Lập Phiếu Chi / Nhập Acc"
+    },
+    "badge": {
+      "profit": "Lợi Nhuận",
+      "inventory": "Kiểm Kê",
+      "expense": "Phiếu Chi",
+      "cashflow": "Dòng Tiền",
+      "my_library": "Kho Của Tôi"
     }
   }
 }

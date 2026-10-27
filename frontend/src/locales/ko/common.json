@@ -61,6 +61,60 @@
       "notifications": "알림 관리",
       "settings": "설정"
     },
-    "dashboard": { "title": "시스템 개요", "total_users": "총 사용자", "total_revenue": "오늘 수익", "total_credits_used": "사용 크레딧", "pool_health": "풀 상태", "revenue_chart": "수익 차트", "consumption": "소비 내역" }
+    "dashboard": {
+      "title": "CRM 관리 대시보드",
+      "total_users": "총 사용자",
+      "total_revenue": "오늘 충전 수익",
+      "total_credits_used": "사용 크레딧",
+      "pool_health": "풀 상태",
+      "revenue_chart": "수익 차트",
+      "consumption": "소비 내역"
+    },
+    "audit": {
+      "iam_title": "IAM 및 보안 감사 로그",
+      "iam_desc": "계정 개입, 권한 변경, 비밀번호 재설정 및 무차별 대입 방어 이벤트를 종합 모니터링",
+      "credit_ledger_title": "크레딧 변동 원장 (Credit Ledger)",
+      "credit_ledger_desc": "수동 크레딧 조정, 잔액 대사 및 부정 방지를 추적하는 불변의 감사 원장",
+      "ip_abuse_title": "IP 어뷰징 모니터링 및 방어 방화벽",
+      "ip_abuse_desc": "단일 IP/프록시에서의 다중 계정 생성 및 무료 크레딧 편취 행위를 탐지 및 차단",
+      "refresh_ledger": "원장 새로고침",
+      "add_ip_blacklist": "IP 블랙리스트 추가",
+      "immutable_badge": "불변 로그 (Immutable)",
+      "stat_total_events": "총 감사 이벤트 수",
+      "stat_lockouts": "무차별 대입 차단",
+      "stat_resets": "비밀번호 재설정",
+      "stat_integrity": "원장 무결성 검증",
+      "stat_total_adjustments": "총 조정 건수",
+      "stat_total_credited": "총 지급 크레딧 (+)",
+      "stat_total_deducted": "총 차감 크레딧 (-)",
+      "stat_net_balance": "순 변동 잔액",
+      "stat_banned_ips": "차단된 총 IP 수",
+      "stat_violating_accs": "제재된 위반 계정",
+      "stat_blocked_requests": "차단된 스팸 요청"
+    },
+    "wallet": {
+      "available_balance": "사용 가능한 지갑 잔액",
+      "total_deposited": "총 충전 금액",
+      "total_consumed": "AI 총 소비액",
+      "success_tx": "충전 성공 거래",
+      "tab_topup": "충전 내역",
+      "tab_cashflow": "자금 변동 내역",
+      "btn_manual_topup": "수동 충전",
+      "tx_history_title": "충전 거래 내역 및 대사",
+      "cashflow_title": "현금 흐름 원장 및 잔액 변동"
+    },
+    "accounting": {
+      "header_title": "VeloX 회계 & 자산 감사",
+      "header_subtitle": "재무 관리 모듈, AI 계정 자산 감사, COGS 원가 감가상각 및 현금 흐름 대사.",
+      "reconcile_btn": "재대사",
+      "create_expense_btn": "지출 결의서 작성 / 계정 입고"
+    },
+    "badge": {
+      "profit": "수익률",
+      "inventory": "재고 실사",
+      "expense": "지출 전표",
+      "cashflow": "자금 흐름",
+      "my_library": "내 보관함"
+    }
   }
 }

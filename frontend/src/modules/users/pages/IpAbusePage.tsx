@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@modules/core/design-system/Card';
 import Button from '@modules/core/design-system/Button';
 import { Table, type TableColumn } from '@modules/core/design-system/Table';
@@ -58,6 +59,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => (
 );
 
 export const IpAbusePage: React.FC = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<IpRuleDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -404,25 +406,25 @@ export const IpAbusePage: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fafafa', margin: 0 }}>
-              Giám Sát IP & Chống Bào Free
+              {t('admin.audit.ip_abuse_title', 'Giám Sát IP & Chống Bào Free')}
             </h1>
             <Badge variant="warning" size="sm">
               Anti-Farm Firewall
             </Badge>
           </div>
           <p style={{ color: '#71717a', fontSize: '0.84rem', margin: '4px 0 0 0' }}>
-            Phát hiện và ngăn chặn hành vi spam tạo nhiều tài khoản từ một IP/Proxy nhằm trục lợi hạn mức tín dụng miễn phí
+            {t('admin.audit.ip_abuse_desc', 'Phát hiện và ngăn chặn hành vi spam tạo nhiều tài khoản từ một IP/Proxy nhằm trục lợi hạn mức tín dụng miễn phí')}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <Button variant="outline" size="sm" onClick={loadData} loading={loading}>
             <HiOutlineArrowPath size={16} style={{ marginRight: 6 }} />
-            Làm Mới
+            {t('common.refresh', 'Làm Mới')}
           </Button>
           <Button variant="danger" size="sm" onClick={() => handleOpenBanModal()}>
             <HiOutlineShieldExclamation size={16} style={{ marginRight: 6 }} />
-            Thêm IP Vào Danh Sách Đen
+            {t('admin.audit.add_ip_blacklist', 'Thêm IP Vào Danh Sách Đen')}
           </Button>
         </div>
       </div>
@@ -448,19 +450,19 @@ export const IpAbusePage: React.FC = () => {
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
         <StatCard
-          label="Tổng IP Đang Giám Sát"
+          label={t('admin.audit.stat_banned_ips', 'Tổng IP Đang Giám Sát')}
           value={stats.totalTrackedIps.toLocaleString()}
           icon={<HiOutlineGlobeAlt />}
           color="#6366f1"
         />
         <StatCard
-          label="Địa Chỉ IP Đã Bị Cấm"
+          label={t('admin.audit.stat_violating_accs', 'Địa Chỉ IP Đã Bị Cấm')}
           value={stats.bannedIps.toLocaleString()}
           icon={<HiOutlineNoSymbol />}
           color="#f43f5e"
         />
         <StatCard
-          label="IP Nghi Vấn Bào Free (>= 3 Acc)"
+          label={t('admin.audit.stat_blocked_requests', 'IP Nghi Vấn Bào Free (>= 3 Acc)')}
           value={stats.suspiciousIps.toLocaleString()}
           icon={<HiOutlineShieldExclamation />}
           color="#eab308"

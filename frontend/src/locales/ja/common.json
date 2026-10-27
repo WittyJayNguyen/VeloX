@@ -143,6 +143,52 @@
       "balance_overview": "売上とトークン原価バランス",
       "deals_status": "最新の決済取引",
       "pool_alerts": "プールの状態と枯渇警告"
+    },
+    "audit": {
+      "iam_title": "IAM & セキュリティ監査ログ",
+      "iam_desc": "アカウント介入、ロール変更、パスワード再設定、攻撃防御イベントを包括的に監視",
+      "credit_ledger_title": "クレジット変動元帳 (Credit Ledger)",
+      "credit_ledger_desc": "手動クレジット付与、残高照合、不正防止対策を追跡する不変の監査元帳",
+      "ip_abuse_title": "IP 乱用監視 & 不正利用防止ファイアウォール",
+      "ip_abuse_desc": "同一 IP/プロキシからの複数アカウント作成による無料クレジット不正取得を検知・遮断",
+      "refresh_ledger": "元帳を更新",
+      "add_ip_blacklist": "IP をブラックリストに追加",
+      "immutable_badge": "不変ログ (Immutable)",
+      "stat_total_events": "総監査イベント数",
+      "stat_lockouts": "ブルートフォース遮断",
+      "stat_resets": "パスワードリセット",
+      "stat_integrity": "元帳の整合性検証",
+      "stat_total_adjustments": "総調整オーダー数",
+      "stat_total_credited": "総付与クレジット (+)",
+      "stat_total_deducted": "総控除クレジット (-)",
+      "stat_net_balance": "純変動残高",
+      "stat_banned_ips": "遮断された総 IP 数",
+      "stat_violating_accs": "違反ペナルティ対象アカウント",
+      "stat_blocked_requests": "遮断されたスパムリクエスト"
+    },
+    "wallet": {
+      "available_balance": "利用可能ウォレット残高",
+      "total_deposited": "累計チャージ総額",
+      "total_consumed": "AI 利用消費総額",
+      "success_tx": "チャージ成功取引",
+      "tab_topup": "チャージ履歴",
+      "tab_cashflow": "資金フロー履歴",
+      "btn_manual_topup": "手動チャージ",
+      "tx_history_title": "チャージ取引履歴 & 照合",
+      "cashflow_title": "キャッシュフロー元帳 & 残高変動"
+    },
+    "accounting": {
+      "header_title": "VeloX 会計 & 資産監査",
+      "header_subtitle": "財務管理スイート、AI アカウント資産監査、COGS 原価償却、キャッシュフロー照合。",
+      "reconcile_btn": "再照合",
+      "create_expense_btn": "支払伝票作成 / アカウント仕入"
+    },
+    "badge": {
+      "profit": "利益率",
+      "inventory": "棚卸",
+      "expense": "出金伝票",
+      "cashflow": "フロー",
+      "my_library": "マイ保管庫"
     }
   }
 }
