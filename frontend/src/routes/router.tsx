@@ -61,6 +61,7 @@ const router = createBrowserRouter([
 
           // Dịch Vụ
           { path: '/admin/services', element: <ServicePoolPage /> },
+          { path: '/admin/pools', element: <ServicePoolPage /> },
           { path: '/admin/keys', element: <ApiKeysPage /> },
           { path: '/admin/packages', element: <PackagesPage /> },
 
