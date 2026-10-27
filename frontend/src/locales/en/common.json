@@ -9,7 +9,9 @@
     "register": "Sign Up",
     "dashboard": "Dashboard",
     "logout": "Sign Out",
-    "workspace": "Workspace"
+    "workspace": "Workspace",
+    "studio": "Studio",
+    "models": "Model"
   },
   "hero": {
     "badge": "Next-Gen AI Gateway Platform",
@@ -459,5 +461,17 @@
   },
   "downloads": {
     "subtitle": "Experience native desktop AI Gateway with instant keyboard shortcuts"
+  },
+  "studio": {
+    "tools_title": "CREATIVE TOOLS",
+    "cat_chat": "Chat",
+    "cat_image": "Image",
+    "cat_video": "Video",
+    "open_full_studio": "Open Full Studio",
+    "available_models_for": "AVAILABLE MODELS",
+    "view_all_models": "Browse 100+ Models & Pricing"
+  },
+  "models_page": {
+    "subtitle": "Discover 100+ next-generation AI models for Chat, Image and Video at optimized rates"
   }
 }
