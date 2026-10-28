@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   HiOutlinePaperAirplane,
   HiOutlineTrash,
@@ -36,12 +37,14 @@ const PRESETS = [
   { label: '⚡ Test Uptime & Latency', prompt: 'Báo cáo trạng thái phản hồi máy ảo và độ trễ gateway hiện tại.', modelCode: 'meta-ai-chat' },
 ];
 
-const PlaygroundPage: React.FC = () => {
+export const PlaygroundPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const urlModel = searchParams.get('model');
 
   // Models & Keys state
   const [models, setModels] = useState<ModelCatalogItem[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>(() => {
-    return localStorage.getItem('velox_playground_model') || 'imagine-animate';
+    return urlModel || localStorage.getItem('velox_playground_model') || 'imagine-animate';
   });
   const [keys, setKeys] = useState<PlaygroundKeyOption[]>([]);
   const [selectedKeyId, setSelectedKeyId] = useState<string>(() => {
@@ -187,8 +190,22 @@ const PlaygroundPage: React.FC = () => {
       setModels(modelsData);
       setKeys(keysData);
 
-      // Check if previously selected model is in list; if so, keep it!
+      // Check if URL model or previously selected model is in list
       if (modelsData.length > 0) {
+        const paramModel = searchParams.get('model');
+        if (paramModel) {
+          const found = modelsData.find(
+            (m) =>
+              m.model_code.toLowerCase() === paramModel.toLowerCase() ||
+              m.model_code.toLowerCase().includes(paramModel.toLowerCase()) ||
+              paramModel.toLowerCase().includes(m.model_code.toLowerCase())
+          );
+          if (found) {
+            setSelectedModel(found.model_code);
+            return;
+          }
+        }
+
         const savedModel = localStorage.getItem('velox_playground_model');
         const exists = savedModel && modelsData.some((m) => m.model_code === savedModel);
         if (exists) {

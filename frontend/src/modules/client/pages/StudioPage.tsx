@@ -277,6 +277,32 @@ export const SoundWaveIcon: React.FC<{ size?: number }> = ({ size = 15 }) => (
   </svg>
 );
 
+const normalizeKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+export const matchModelCode = (rawCode: string, list: PublicModelItem[]): PublicModelItem | null => {
+  if (!rawCode || list.length === 0) return null;
+  // 1. Exact match
+  const exact = list.find((m) => m.model_code.toLowerCase() === rawCode.toLowerCase());
+  if (exact) return exact;
+
+  // 2. Normalized match (e.g. runwaygen3 vs runwaygen3alpha)
+  const normTarget = normalizeKey(rawCode);
+  const normMatch = list.find((m) => {
+    const normM = normalizeKey(m.model_code);
+    return normM.includes(normTarget) || normTarget.includes(normM);
+  });
+  if (normMatch) return normMatch;
+
+  // 3. Name match (e.g. Runway Gen-3)
+  const nameMatch = list.find((m) => {
+    const normName = normalizeKey(m.name);
+    return normName.includes(normTarget) || normTarget.includes(normName);
+  });
+  if (nameMatch) return nameMatch;
+
+  return null;
+};
+
 export const StudioPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { user, addCredits } = useAuthStore();
@@ -288,7 +314,6 @@ export const StudioPage: React.FC = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
 
   const urlCategory = searchParams.get('category') as 'image' | 'video' | 'audio' | null;
-  const urlModel = searchParams.get('model');
 
   // Studio Mode: 'image' | 'video' | 'audio'
   const [activeTab, setActiveTab] = useState<'image' | 'video' | 'audio'>(urlCategory || 'image');
@@ -430,7 +455,9 @@ export const StudioPage: React.FC = () => {
         { id: 'img-std-1', name: 'GPT Image 2.5 Sunburst', model_code: 'gpt-image-2.5-sunburst', provider: 'OpenAI', selling_credit_price: 35, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
         { id: 'img-std-2', name: 'FLUX.1 [dev/pro]', model_code: 'flux-1-dev', provider: 'Black Forest Labs', selling_credit_price: 25, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
         { id: 'img-std-3', name: 'Midjourney v6.1 Ultra', model_code: 'midjourney-v6.1', provider: 'Midjourney', selling_credit_price: 45, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'img-std-3b', name: 'Midjourney v6.1', model_code: 'midjourney-v6', provider: 'Midjourney', selling_credit_price: 35, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
         { id: 'img-std-4', name: 'DALL-E 3 Ultra', model_code: 'dall-e-3', provider: 'OpenAI', selling_credit_price: 30, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'img-std-5', name: 'Stable Diffusion 3.5 Large', model_code: 'sd-3-5-large', provider: 'Stability AI', selling_credit_price: 20, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
       ];
       const map = new Map<string, PublicModelItem>();
       standardImageModels.forEach((m) => map.set(m.model_code, m));
@@ -442,9 +469,12 @@ export const StudioPage: React.FC = () => {
       const dbVideoModels = dbModels.filter((m) => m.category?.toUpperCase() === 'VIDEO');
       const standardVideoModels: PublicModelItem[] = [
         { id: 'vid-std-1', name: 'Seedance 2.5', model_code: 'seedance-2.5', provider: 'ByteDance', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-2', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3-alpha', provider: 'Runway', selling_credit_price: 95, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-3', name: 'Minimax Video-01', model_code: 'minimax-video-01', provider: 'MiniMax', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-4', name: 'Kling AI v1.5 Pro', model_code: 'kling-v1.5-pro', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-2', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3', provider: 'Runway', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-2b', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3-alpha', provider: 'Runway', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-3', name: 'Minimax Video-01', model_code: 'minimax-video-01', provider: 'MiniMax', selling_credit_price: 65, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-4', name: 'Kling AI v1.5 Pro', model_code: 'kling-ai-1-5', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-4b', name: 'Kling AI v1.5 Pro', model_code: 'kling-v1.5-pro', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
+        { id: 'vid-std-6', name: 'Luma Dream Machine 1.5', model_code: 'luma-dream-machine', provider: 'Luma AI', selling_credit_price: 70, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
         { id: 'vid-std-5', name: 'Grok Imagine Video 1.5', model_code: 'grok-imagine-video-1.5', provider: 'OpenAI', selling_credit_price: 18, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
       ];
       const map = new Map<string, PublicModelItem>();
@@ -470,26 +500,29 @@ export const StudioPage: React.FC = () => {
     return Array.from(map.values());
   }, [activeTab, dbModels]);
 
-  // Sync selected model code when active tab changes or models load
+  // Unified sync from URL searchParams (handles menu clicks with instant mapping)
   useEffect(() => {
-    if (urlModel && availableModels.some((m) => m.model_code === urlModel)) {
-      setSelectedModelCode(urlModel);
-    } else if (availableModels.length > 0) {
+    const paramCategory = searchParams.get('category');
+    const paramModel = searchParams.get('model');
+
+    if (paramCategory && (paramCategory === 'image' || paramCategory === 'video' || paramCategory === 'audio')) {
+      setActiveTab(paramCategory);
+    }
+
+    if (availableModels.length > 0) {
+      if (paramModel) {
+        const matched = matchModelCode(paramModel, availableModels);
+        if (matched) {
+          setSelectedModelCode(matched.model_code);
+          return;
+        }
+      }
+      // If current selectedModelCode is not in available models, pick the first one
       if (!availableModels.some((m) => m.model_code === selectedModelCode)) {
         setSelectedModelCode(availableModels[0].model_code);
       }
     }
-  }, [availableModels, urlModel]);
-
-  // Sync with URL params
-  useEffect(() => {
-    if (urlCategory && ['image', 'video', 'audio'].includes(urlCategory)) {
-      setActiveTab(urlCategory);
-      if (urlCategory === 'image') setSelectedModelCode('gpt-image-2.5-sunburst');
-      else if (urlCategory === 'video') setSelectedModelCode('seedance-2.5');
-      else if (urlCategory === 'audio') setSelectedModelCode('eleven-multilingual-v3');
-    }
-  }, [urlCategory]);
+  }, [searchParams, availableModels]);
 
   // Tab switch handler that automatically picks the right primary model
   const handleTabChange = (newTab: 'image' | 'video' | 'audio') => {
