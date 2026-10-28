@@ -13,8 +13,10 @@ import time
 import json
 import base64
 import asyncio
+import tempfile
+import uuid
 import urllib.parse
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 try:
     from playwright.async_api import async_playwright
@@ -156,6 +158,76 @@ def parse_cookies_universal(cookies_raw: Any, target_url: str = "https://muse.ai
     return playwright_cookies, cookie_dict
 
 
+async def _save_reference_to_file(data_or_url: Optional[str], default_ext: str = "png") -> Optional[str]:
+    """
+    Decodes base64 data URLs or downloads remote media to a local temporary file
+    so it can be passed into Playwright's file chooser or file input.
+    """
+    if not data_or_url or not isinstance(data_or_url, str):
+        return None
+    data_or_url = data_or_url.strip()
+    if not data_or_url:
+        return None
+
+    temp_dir = tempfile.gettempdir()
+    file_id = uuid.uuid4().hex[:10]
+
+    # Case 1: Data URL (e.g. data:image/png;base64,.... or data:video/mp4;base64,....)
+    if data_or_url.startswith("data:"):
+        try:
+            header, b64_payload = data_or_url.split(",", 1)
+            ext = default_ext
+            if "image/jpeg" in header or "image/jpg" in header:
+                ext = "jpg"
+            elif "image/webp" in header:
+                ext = "webp"
+            elif "image/png" in header:
+                ext = "png"
+            elif "video/mp4" in header:
+                ext = "mp4"
+            elif "video/webm" in header:
+                ext = "webm"
+            elif "audio/mp3" in header or "audio/mpeg" in header:
+                ext = "mp3"
+            elif "audio/wav" in header:
+                ext = "wav"
+
+            file_path = os.path.join(temp_dir, f"velox_ref_{file_id}.{ext}")
+            raw_bytes = base64.b64decode(b64_payload)
+            with open(file_path, "wb") as f:
+                f.write(raw_bytes)
+            return file_path
+        except Exception as ex:
+            print(f"[Muse Ref Decode Error]: {ex}")
+            return None
+
+    # Case 2: Remote HTTP/HTTPS URL
+    if data_or_url.startswith("http://") or data_or_url.startswith("https://"):
+        try:
+            import httpx
+            ext = default_ext
+            for candidate_ext in [".png", ".jpg", ".jpeg", ".webp", ".mp4", ".mp3", ".wav"]:
+                if candidate_ext in data_or_url.lower():
+                    ext = candidate_ext.replace(".", "")
+                    break
+            file_path = os.path.join(temp_dir, f"velox_ref_{file_id}.{ext}")
+            async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+                resp = await client.get(data_or_url)
+                if resp.status_code == 200:
+                    with open(file_path, "wb") as f:
+                        f.write(resp.content)
+                    return file_path
+        except Exception as ex:
+            print(f"[Muse Ref Download Error]: {ex}")
+            return None
+
+    # Case 3: Local file path that already exists
+    if os.path.exists(data_or_url):
+        return data_or_url
+
+    return None
+
+
 async def generate_media_via_muse(
     prompt: str = "",
     cookies_json_or_list: Any = None,
@@ -167,6 +239,9 @@ async def generate_media_via_muse(
     num_outputs: int = 1,
     quality: str = "hd",
     reference_image: Optional[str] = None,
+    reference_video: Optional[str] = None,
+    reference_audio: Optional[str] = None,
+    end_frame: Optional[str] = None,
     timeout_sec: int = 60,
     target_url: str = "https://muse.ai",
     token: Optional[str] = None,
@@ -178,6 +253,8 @@ async def generate_media_via_muse(
     1. If target_url is an OpenAI-compatible reverse proxy, uses pure async HTTP.
     2. If target_url is muse.ai (or session pool), uses the Singleton Browser Pool
        with Semaphore(2) queue to safely render real AI media with user cookies.
+       Seamlessly handles reference images (Image-to-Video / Image-to-Image),
+       reference video, and audio attachments.
     """
     start_time = time.perf_counter()
     target_type = mode or media_type or "image"
@@ -240,7 +317,31 @@ async def generate_media_via_muse(
     # 2. OPTION B: Genuine Muse Web Session via Singleton Browser Pool
     if async_playwright and playwright_cookies:
         context = None
+        temp_files_to_cleanup = []
         try:
+            # Prepare reference attachments if provided
+            files_to_upload: List[str] = []
+            if reference_image:
+                p = await _save_reference_to_file(reference_image, "png")
+                if p:
+                    temp_files_to_cleanup.append(p)
+                    files_to_upload.append(p)
+            if end_frame:
+                p = await _save_reference_to_file(end_frame, "png")
+                if p:
+                    temp_files_to_cleanup.append(p)
+                    files_to_upload.append(p)
+            if reference_video:
+                p = await _save_reference_to_file(reference_video, "mp4")
+                if p:
+                    temp_files_to_cleanup.append(p)
+                    files_to_upload.append(p)
+            if reference_audio:
+                p = await _save_reference_to_file(reference_audio, "mp3")
+                if p:
+                    temp_files_to_cleanup.append(p)
+                    files_to_upload.append(p)
+
             async with MuseBrowserPool.get_semaphore():
                 browser = await MuseBrowserPool.get_browser()
                 if not browser:
@@ -265,20 +366,36 @@ async def generate_media_via_muse(
                         "latency_ms": round((time.perf_counter() - start_time) * 1000, 2),
                     }
 
-                # Record existing blob images
-                initial_blobs = await page.evaluate('''() => {
-                    return Array.from(document.querySelectorAll('img')).map(i => i.src).filter(s => s && s.startsWith('blob:'));
+                # Record existing media elements
+                initial_media = await page.evaluate('''() => {
+                    return {
+                        imgs: Array.from(document.querySelectorAll('img')).map(i => i.src).filter(s => s && s.startsWith('blob:')),
+                        videos: Array.from(document.querySelectorAll('video')).map(v => v.src || (v.querySelector('source') ? v.querySelector('source').src : '')).filter(s => s)
+                    };
                 }''')
 
+                # If reference files exist, upload them first
+                if files_to_upload:
+                    file_input = page.locator('input[type="file"]').first
+                    if await file_input.count() > 0:
+                        await file_input.set_input_files(files_to_upload)
+                        await page.wait_for_timeout(2000)
+
                 # Format prompt for image / video
-                formatted_prompt = prompt
-                if is_video and not formatted_prompt.lower().startswith("animate"):
-                    formatted_prompt = f"Animate: {formatted_prompt}"
-                elif not is_video and not formatted_prompt.lower().startswith("imagine"):
-                    formatted_prompt = f"Imagine: {formatted_prompt}"
+                clean_p = (prompt or "").strip()
+                if is_video:
+                    if not clean_p:
+                        clean_p = "Animate this into a smooth cinematic video"
+                    elif not clean_p.lower().startswith("animate"):
+                        clean_p = f"Animate: {clean_p}"
+                else:
+                    if not clean_p:
+                        clean_p = "Imagine high quality visual"
+                    elif not clean_p.lower().startswith("imagine"):
+                        clean_p = f"Imagine: {clean_p}"
 
                 await textarea.click()
-                await textarea.fill(formatted_prompt)
+                await textarea.fill(clean_p)
                 await page.wait_for_timeout(500)
 
                 send_btn = page.locator('button[aria-label="Send"]:not([disabled]), button[aria-label="Send message"]:not([disabled])').first
@@ -293,18 +410,50 @@ async def generate_media_via_muse(
                 while (time.perf_counter() - poll_start) < timeout_sec:
                     await page.wait_for_timeout(1500)
 
-                    # 1. Check for new generated blob image
+                    # 1. If video is requested, check for new video elements first
+                    if is_video:
+                        new_video_src = await page.evaluate('''(initial) => {
+                            const vids = Array.from(document.querySelectorAll('video'))
+                                .map(v => v.src || (v.querySelector('source') ? v.querySelector('source').src : ''))
+                                .filter(s => s && !initial.videos.includes(s));
+                            if (vids.length > 0) return vids[vids.length - 1];
+                            const dialog = document.querySelector('[role="dialog"]');
+                            if (dialog) {
+                                const dv = dialog.querySelector('video');
+                                if (dv && (dv.src || dv.currentSrc)) return dv.src || dv.currentSrc;
+                            }
+                            return null;
+                        }''', initial_media)
+
+                        if new_video_src:
+                            result_url = await page.evaluate('''async (vSrc) => {
+                                try {
+                                    const r = await fetch(vSrc);
+                                    const b = await r.blob();
+                                    const fr = new FileReader();
+                                    return await new Promise(res => { fr.onloadend = () => res(fr.result); fr.readAsDataURL(b); });
+                                } catch(e) { return vSrc; }
+                            }''', new_video_src)
+                            if result_url:
+                                break
+
+                    # 2. Check for new generated blob image (or image mode)
                     blob_data = await page.evaluate('''(initial) => {
                         const imgs = Array.from(document.querySelectorAll('img'));
                         for (const img of imgs) {
-                            if (img.src && img.src.startsWith('blob:') && !initial.includes(img.src)) {
+                            if (img.src && img.src.startsWith('blob:') && !initial.imgs.includes(img.src)) {
                                 return img.src;
                             }
                         }
+                        const dialog = document.querySelector('[role="dialog"]');
+                        if (dialog) {
+                            const di = dialog.querySelector('img');
+                            if (di && di.src) return di.src;
+                        }
                         return null;
-                    }''', initial_blobs)
+                    }''', initial_media)
 
-                    if blob_data:
+                    if blob_data and not is_video:
                         result_url = await page.evaluate('''async (blobUrl) => {
                             try {
                                 const r = await fetch(blobUrl);
@@ -313,28 +462,6 @@ async def generate_media_via_muse(
                                 return await new Promise(res => { fr.onloadend = () => res(fr.result); fr.readAsDataURL(b); });
                             } catch(e) { return null; }
                         }''', blob_data)
-                        if result_url:
-                            break
-
-                    # 2. Check for dialog media
-                    dialog_data = await page.evaluate('''async () => {
-                        const dialog = document.querySelector('[role="dialog"]');
-                        if (!dialog) return null;
-                        const v = dialog.querySelector('video');
-                        if (v && v.src) return { type: 'video/mp4', src: v.src };
-                        const img = dialog.querySelector('img');
-                        if (img && img.src) return { type: 'image/webp', src: img.src };
-                        return null;
-                    }''')
-                    if dialog_data and dialog_data.get("src"):
-                        result_url = await page.evaluate('''async (src) => {
-                            try {
-                                const r = await fetch(src);
-                                const b = await r.blob();
-                                const fr = new FileReader();
-                                return await new Promise(res => { fr.onloadend = () => res(fr.result); fr.readAsDataURL(b); });
-                            } catch(e) { return null; }
-                        }''', dialog_data["src"])
                         if result_url:
                             break
 
@@ -365,6 +492,12 @@ async def generate_media_via_muse(
             if context:
                 try:
                     await context.close()
+                except Exception:
+                    pass
+            for f in temp_files_to_cleanup:
+                try:
+                    if os.path.exists(f):
+                        os.remove(f)
                 except Exception:
                     pass
 
