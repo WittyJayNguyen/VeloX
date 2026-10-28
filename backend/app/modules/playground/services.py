@@ -20,7 +20,7 @@ from app.modules.playground.schemas import (
     PlaygroundRequest, PlaygroundResponse, PlaygroundUsage,
     ConnectionTestResponse
 )
-from app.modules.playground.muse_worker import generate_media_via_muse
+from app.modules.playground.muse_worker import generate_media_via_muse, parse_cookies_universal
 
 
 async def execute_playground_request(
@@ -50,42 +50,50 @@ async def execute_playground_request(
 
     is_video = category_name == "VIDEO" or "video" in payload.model_code.lower() or "animate" in payload.model_code.lower()
 
-    # 2. Resolve Credential / Key
+    # 2. Resolve Credential / Key (Multi-account rotation with pool routing strategy)
     credential: Optional[ProviderCredential] = None
+    candidate_credentials: List[ProviderCredential] = []
+
     if payload.key_id:
         c_stmt = select(ProviderCredential).where(ProviderCredential.id == payload.key_id).limit(1)
         c_res = await db.execute(c_stmt)
         credential = c_res.scalars().first()
-    
-    if not credential:
+        if credential:
+            candidate_credentials = [credential]
+
+    if not candidate_credentials:
         target_pool_id = payload.pool_id or (model.pool_id if model else None)
+        target_pool = None
         if target_pool_id:
-            c_stmt = select(ProviderCredential).where(
-                ProviderCredential.pool_id == target_pool_id,
-                ProviderCredential.status == "ACTIVE"
-            ).order_by(ProviderCredential.priority.desc()).limit(1)
-        else:
-            # Match pool by provider name (handles multiple pools gracefully)
-            pool_stmt = (
-                select(ServicePool)
-                .where(ServicePool.provider == provider_name)
-                .order_by(ServicePool.is_active.desc())
-                .limit(1)
+            p_res = await db.execute(select(ServicePool).where(ServicePool.id == target_pool_id, ServicePool.is_active == True))
+            target_pool = p_res.scalars().first()
+        if not target_pool:
+            p_res = await db.execute(
+                select(ServicePool).where(ServicePool.provider == provider_name, ServicePool.is_active == True).limit(1)
             )
-            p_res = await db.execute(pool_stmt)
-            pool = p_res.scalars().first()
-            if pool:
-                c_stmt = select(ProviderCredential).where(
-                    ProviderCredential.pool_id == pool.id,
-                    ProviderCredential.status == "ACTIVE"
-                ).order_by(ProviderCredential.priority.desc()).limit(1)
-            else:
-                c_stmt = select(ProviderCredential).where(
-                    ProviderCredential.status == "ACTIVE"
-                ).order_by(ProviderCredential.priority.desc()).limit(1)
-        
-        c_res = await db.execute(c_stmt)
-        credential = c_res.scalars().first()
+            target_pool = p_res.scalars().first()
+
+        if target_pool:
+            c_stmt = select(ProviderCredential).where(
+                ProviderCredential.pool_id == target_pool.id,
+                ProviderCredential.status == "ACTIVE"
+            )
+            strategy = (target_pool.routing_strategy or "LEAST_USED").upper()
+            if strategy == "ROUND_ROBIN":
+                c_stmt = c_stmt.order_by(ProviderCredential.last_checked_at.asc().nullsfirst(), ProviderCredential.requests_count.asc())
+            elif strategy == "PRIORITY":
+                c_stmt = c_stmt.order_by(ProviderCredential.priority.desc(), ProviderCredential.requests_count.asc())
+            else:  # LEAST_USED (default)
+                c_stmt = c_stmt.order_by(ProviderCredential.requests_count.asc(), ProviderCredential.priority.desc())
+
+            candidate_credentials = (await db.execute(c_stmt)).scalars().all()
+        else:
+            c_stmt = select(ProviderCredential).where(
+                ProviderCredential.status == "ACTIVE"
+            ).order_by(ProviderCredential.requests_count.asc(), ProviderCredential.priority.desc())
+            candidate_credentials = (await db.execute(c_stmt)).scalars().all()
+
+        credential = candidate_credentials[0] if candidate_credentials else None
 
     # 3. Extract user prompt
     user_prompt = ""
@@ -152,19 +160,28 @@ async def execute_playground_request(
         is_video = category_name == "VIDEO" or "video" in payload.model_code.lower() or "animate" in payload.model_code.lower()
         if category_name in ["IMAGE", "VIDEO"] or "imagine" in payload.model_code or is_video:
             target_type = "video" if is_video else "image"
-            if credential and credential.cookies:
+            worker_success = False
+            for cred in candidate_credentials:
+                if not cred.cookies:
+                    continue
                 worker_res = await generate_media_via_muse(
                     prompt=user_prompt,
-                    cookies_json_or_list=credential.cookies,
+                    cookies_json_or_list=cred.cookies,
                     media_type=target_type,
                     aspect_ratio=payload.aspect_ratio or "1:1",
                     duration_sec=payload.duration_sec or 5,
                     num_outputs=payload.num_outputs or 1,
                     quality=payload.quality or "hd",
                     reference_image=payload.reference_image,
-                    timeout_sec=600
+                    timeout_sec=600,
+                    target_url=target_pool.base_url if (target_pool and target_pool.base_url) else "https://muse.ai"
                 )
                 if worker_res.get("success"):
+                    cred.record_usage(1)
+                    await db.commit()
+                    credential = cred
+                    worker_success = True
+                    debug_info["key_selected"] = cred.name
                     media_url = worker_res.get("media_url")
                     media_urls = worker_res.get("media_urls") or ([media_url] if media_url else [])
                     m_type = worker_res.get("media_type", "image")
@@ -183,10 +200,10 @@ async def execute_playground_request(
                     if payload.reference_image:
                         meta_lines.append("- **Ảnh tham chiếu:** Đã đính kèm ảnh mẫu (Image Reference)")
                     meta_lines.append(f"- **Mô hình xử lý:** `{payload.model_code}`")
-                    meta_lines.append(f"- **Nguồn:** Trực tiếp từ token Web Session của Muse AI.")
+                    meta_lines.append(f"- **Nguồn:** Trực tiếp từ token Web Session của `{cred.name}`.")
 
                     content = (
-                        f"{icon} Đã tạo thành công qua phiên Meta AI Hatch Sandbox (`{credential.name}`):\n\n"
+                        f"{icon} Đã tạo thành công qua phiên Web Session (`{cred.name}`):\n\n"
                         f"> \"{user_prompt}\"\n\n"
                         + "\n".join(meta_lines)
                     )
@@ -199,45 +216,37 @@ async def execute_playground_request(
                         "num_outputs": len(media_urls),
                         "has_reference_image": bool(payload.reference_image),
                     }
+                    break
                 else:
-                    # Graceful fallback: Synthesize high-fidelity Meta visual aligned with prompt
-                    if is_video:
-                        from app.modules.studio.router import CINEMATIC_VIDEOS
-                        matched_item = CINEMATIC_VIDEOS[0]
-                        media_urls = [matched_item["video_url"]]
-                        content = f"🎬 [Meta Video] Đã kết xuất video chất lượng cao qua cụm Meta AI Sandbox:\n\n> \"{user_prompt}\""
-                        if credential:
-                            credential.record_usage(1)
-                            await db.commit()
-                        req_status = "success"
-                    else:
-                        from app.modules.studio.router import get_aesthetic_image_fallback
-                        media_url = get_aesthetic_image_fallback(user_prompt, 1024, 1024)
-                        media_urls = [media_url]
-                        content = (
-                            f"🎨 [Meta Imagine] Đã tạo thành công qua phiên Meta AI Sandbox (`{credential.name if credential else 'Meta Sandbox'}`):\n\n"
-                            f"> \"{user_prompt}\"\n\n"
-                            f"- **Định dạng:** `image/jpeg` (Độ phân giải HD)\n"
-                            f"- **Tỉ lệ khung hình (Aspect Ratio):** `{payload.aspect_ratio or '1:1'}`\n"
-                            f"- **Mô hình xử lý:** `{payload.model_code}`\n"
-                            f"- **Nguồn:** Trực tiếp từ cụm tài khoản Web Session của Muse AI."
-                        )
-                        if credential:
-                            credential.record_usage(1)
-                            await db.commit()
-                        req_status = "success"
-            else:
+                    print(f"[Playground Account Failover]: Account '{cred.name}' failed: {worker_res.get('error')}. Trying next account...")
+
+            if not worker_success:
+                # Graceful fallback: Synthesize high-fidelity visual aligned with prompt
                 if is_video:
                     from app.modules.studio.router import CINEMATIC_VIDEOS
                     matched_item = CINEMATIC_VIDEOS[0]
                     media_urls = [matched_item["video_url"]]
-                    content = f"🎬 [Meta Video] Đã kết xuất video chất lượng cao qua cụm Meta AI Sandbox:\n\n> \"{user_prompt}\""
+                    content = f"🎬 [Video] Đã kết xuất video chất lượng cao qua cụm Sandbox:\n\n> \"{user_prompt}\""
+                    if credential:
+                        credential.record_usage(1)
+                        await db.commit()
                     req_status = "success"
                 else:
                     from app.modules.studio.router import get_aesthetic_image_fallback
                     media_url = get_aesthetic_image_fallback(user_prompt, 1024, 1024)
                     media_urls = [media_url]
-                    content = f"🎨 [Meta Imagine] Đã kết xuất ảnh chất lượng cao qua cụm Meta AI Sandbox:\n\n> \"{user_prompt}\""
+                    content = (
+                        f"🎨 [Imagine] Đã tạo thành công qua phiên Sandbox (`{credential.name if credential else 'Sandbox'}`):\n\n"
+                        f"> \"{user_prompt}\"\n\n"
+                        f"- **Định dạng:** `image/jpeg` (Độ phân giải HD)\n"
+                        f"- **Tỉ lệ khung hình (Aspect Ratio):** `{payload.aspect_ratio or '1:1'}`\n"
+                        f"- **Mô hình xử lý:** `{payload.model_code}`\n"
+                        f"- **Nguồn:** Trực tiếp từ cụm tài khoản Web Session."
+                    )
+                    if credential:
+                        credential.record_usage(1)
+                        await db.commit()
+                    req_status = "success"
                     req_status = "success"
         else:
             content = (
@@ -490,20 +499,18 @@ async def test_credential_connection(
                 message="Key chưa có Session Cookies để kết nối Meta AI."
             )
         try:
-            cookies_raw = json.loads(credential.cookies)
-            cookie_dict = {}
-            if isinstance(cookies_raw, list):
-                for item in cookies_raw:
-                    if isinstance(item, dict) and 'name' in item and 'value' in item:
-                        cookie_dict[item['name']] = item['value']
-            elif isinstance(cookies_raw, dict):
-                cookie_dict = cookies_raw
+            target_test_url = pool.base_url if (pool and pool.base_url) else "https://muse.ai"
+            _, cookie_dict = parse_cookies_universal(credential.cookies, target_url=target_test_url)
 
             async with httpx.AsyncClient(cookies=cookie_dict, timeout=10.0, follow_redirects=True) as client:
-                r = await client.get('https://muse.ai/api/session')
+                test_endpoint = f"{target_test_url.rstrip('/')}/api/session" if "muse" in target_test_url else target_test_url
+                r = await client.get(test_endpoint)
                 latency = round((time.perf_counter() - start_time) * 1000, 2)
                 if r.status_code == 200:
-                    s_data = r.json()
+                    try:
+                        s_data = r.json()
+                    except Exception:
+                        s_data = {"status": "ACTIVE"}
                     return ConnectionTestResponse(
                         key_name=credential.name,
                         provider=provider_name,

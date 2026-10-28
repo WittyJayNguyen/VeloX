@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 class PoolKeyBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=128)
     auth_type: str = Field(default="API_KEY") # API_KEY | SESSION_TOKEN
-    key_val: str = Field(..., min_length=1)
+    key_val: Optional[str] = Field(default="", description="API Key hoặc Session Token của tài khoản")
     recap_token: Optional[str] = None
     cookies: Optional[str] = None
     metadata_json: Optional[str] = None
