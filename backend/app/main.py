@@ -61,6 +61,25 @@ async def lifespan(app: FastAPI):
                         if col_name not in cols:
                             sync_conn.execute(text(f"ALTER TABLE credit_packages ADD COLUMN {col_name} {col_type} DEFAULT {col_def}"))
                             print(f"[DB] Added '{col_name}' column to credit_packages")
+                if "users" in tables:
+                    cols = [c["name"] for c in inspector.get_columns("users")]
+                    if "user_code" not in cols:
+                        sync_conn.execute(text("ALTER TABLE users ADD COLUMN user_code VARCHAR(32)"))
+                        print("[DB] Added 'user_code' column to users")
+                    rows = sync_conn.execute(text("SELECT id, user_code FROM users ORDER BY created_at ASC")).fetchall()
+                    current_num = 10001
+                    for r in rows:
+                        uid, ucode = r[0], r[1]
+                        if not ucode:
+                            sync_conn.execute(text(f"UPDATE users SET user_code = '{current_num}' WHERE id = '{uid}'"))
+                            current_num += 1
+                        else:
+                            try:
+                                n = int(ucode)
+                                if n >= current_num:
+                                    current_num = n + 1
+                            except ValueError:
+                                pass
             await conn.run_sync(ensure_table_columns)
         print("[DB] Database tables initialized successfully")
         
