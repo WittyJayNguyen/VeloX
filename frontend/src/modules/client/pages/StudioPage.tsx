@@ -84,11 +84,38 @@ export interface GeneratedAudioItem {
   createdAt: string;
 }
 
-export const getFallbackModelConfig = (category: string): ModelConfig => {
+export const calculateVideoCreditCost = (basePrice: number, durationStr: string): number => {
+  if (!durationStr) return basePrice;
+  const match = durationStr.match(/(\d+)/);
+  const seconds = match ? parseInt(match[1], 10) : 5;
+  if (seconds <= 5) return basePrice;
+  if (seconds <= 6) return basePrice;
+  if (seconds <= 10) return Math.round(basePrice * 1.8);
+  if (seconds <= 15) return Math.round(basePrice * 2.5);
+  if (seconds <= 30) return Math.round(basePrice * 4.5);
+  return Math.round(basePrice * (seconds / 5));
+};
+
+export const getModelDurationBadge = (m: PublicModelItem): string | null => {
+  if (m.category !== 'VIDEO') return null;
+  if (m.model_code.includes('30s')) return '5s - 30s';
+  if (m.config && typeof m.config === 'object') {
+    const durs = (m.config as any).durations;
+    if (Array.isArray(durs) && durs.length > 0) {
+      if (durs.length > 1) return `${durs[0]} - ${durs[durs.length - 1]}`;
+      return durs[0];
+    }
+  }
+  if (m.model_code.includes('minimax')) return '6s';
+  return '5s - 10s';
+};
+
+export const getFallbackModelConfig = (category: string, modelCode?: string): ModelConfig => {
   const cat = (category || '').toUpperCase();
   if (cat === 'VIDEO') {
+    const is30s = (modelCode || '').includes('30s');
     return {
-      durations: ['5s', '10s'],
+      durations: is30s ? ['5s', '10s', '15s', '30s'] : ['5s', '10s'],
       resolutions: ['720p', '1080p', '4K'],
       aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
       defaultDuration: '5s',
@@ -696,10 +723,17 @@ export const StudioPage: React.FC = () => {
   // Model-specific capabilities & configs dynamically loaded from Admin DB
   const activeModelConfig = useMemo<ModelConfig>(() => {
     const dbConfig = currentModel?.config;
-    const fallback = getFallbackModelConfig(currentModel?.category || activeTab);
+    const fallback = getFallbackModelConfig(currentModel?.category || activeTab, currentModel?.model_code);
+    let durations = fallback.durations;
+    if (currentModel?.model_code?.includes('30s')) {
+      durations = ['5s', '10s', '15s', '30s'];
+    } else if (dbConfig && typeof dbConfig === 'object' && Array.isArray((dbConfig as any).durations) && (dbConfig as any).durations.length > 0) {
+      durations = (dbConfig as any).durations;
+    }
+
     if (dbConfig && typeof dbConfig === 'object' && Object.keys(dbConfig).length > 0) {
       return {
-        durations: Array.isArray(dbConfig.durations) && dbConfig.durations.length > 0 ? dbConfig.durations : fallback.durations,
+        durations: durations,
         resolutions: Array.isArray(dbConfig.resolutions) && dbConfig.resolutions.length > 0 ? dbConfig.resolutions : fallback.resolutions,
         aspectRatios: Array.isArray(dbConfig.aspectRatios) && dbConfig.aspectRatios.length > 0 ? dbConfig.aspectRatios : fallback.aspectRatios,
         qualities: Array.isArray(dbConfig.qualities) && dbConfig.qualities.length > 0 ? dbConfig.qualities : fallback.qualities,
@@ -743,8 +777,11 @@ export const StudioPage: React.FC = () => {
     }
   }, [selectedModelCode, activeTab, activeModelConfig]);
 
-  // Compute Credits Needed & User Credit Sufficiency
-  const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
+  // Compute Credits Needed & User Credit Sufficiency dynamically based on model and video duration
+  const baseModelPrice = currentModel?.selling_credit_price || (activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
+  const totalCreditsNeeded = activeTab === 'video'
+    ? calculateVideoCreditCost(baseModelPrice, videoDuration)
+    : baseModelPrice;
   const currentCredits = user?.credit_balance ?? 0;
   const hasInsufficientCredits = currentCredits < totalCreditsNeeded || currentCredits <= 0;
 
@@ -2107,6 +2144,11 @@ export const StudioPage: React.FC = () => {
                               <div style={{ fontSize: '0.68rem', color: '#71717a' }}>{m.provider}</div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {m.category === 'VIDEO' && getModelDurationBadge(m) && (
+                                <span className={styles.itemDurationBadge}>
+                                  ⏱ {getModelDurationBadge(m)}
+                                </span>
+                              )}
                               <span className={styles.itemCreditBadge}>
                                 {m.selling_credit_price} cr
                               </span>
@@ -2221,18 +2263,23 @@ export const StudioPage: React.FC = () => {
                             ))}
                           </div>
 
-                          <div className={styles.paramGroupTitle}>{t('studio.video_duration', 'Thời lượng video')} ({cleanModelDisplayName(currentModel?.name || '')})</div>
+                          <div className={styles.paramGroupTitle}>
+                            {t('studio.video_duration', 'Thời lượng video')} ({cleanModelDisplayName(currentModel?.name || '')})
+                          </div>
                           <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.durations || ['5s', '10s (Pro)']).map((dur) => (
-                              <button
-                                key={dur}
-                                type="button"
-                                className={`${styles.paramChip} ${videoDuration === dur ? styles.paramActive : ''}`}
-                                onClick={() => setVideoDuration(dur)}
-                              >
-                                {dur}
-                              </button>
-                            ))}
+                            {(activeModelConfig.durations || ['5s', '10s']).map((dur) => {
+                              const durCredits = calculateVideoCreditCost(baseModelPrice, dur);
+                              return (
+                                <button
+                                  key={dur}
+                                  type="button"
+                                  className={`${styles.paramChip} ${videoDuration === dur ? styles.paramActive : ''}`}
+                                  onClick={() => setVideoDuration(dur)}
+                                >
+                                  {dur} <span style={{ opacity: 0.8, fontSize: '0.68rem', marginLeft: '3px', color: '#2dd4bf' }}>({durCredits} cr)</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </>
                       )}
