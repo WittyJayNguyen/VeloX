@@ -370,51 +370,118 @@ async def get_my_usage_history(
 ):
     """Retrieves real aggregated AI usage logs for the currently authenticated user."""
     from app.modules.logs.models import MediaGenerationLog, ApiCallLog
+    from app.modules.users.models import CreditAuditLog
 
     # 1. Media generation logs (Studio / Playground)
     media_stmt = (
         select(MediaGenerationLog)
         .where(MediaGenerationLog.user_id == current_user.id)
         .order_by(desc(MediaGenerationLog.created_at))
-        .limit(50)
+        .limit(100)
     )
     media_res = await db.execute(media_stmt)
     media_logs = media_res.scalars().all()
+    media_by_time = {}
+    for m in media_logs:
+        t_key = m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else ""
+        media_by_time[t_key] = m
 
     # 2. API call logs
     api_stmt = (
         select(ApiCallLog)
         .where(ApiCallLog.user_id == current_user.id)
         .order_by(desc(ApiCallLog.created_at))
-        .limit(50)
+        .limit(100)
     )
     api_res = await db.execute(api_stmt)
     api_logs = api_res.scalars().all()
+    api_by_time = {}
+    for a in api_logs:
+        t_key = a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else ""
+        api_by_time[t_key] = a
+
+    # 3. Credit audit logs (ground truth for all credit deductions)
+    credit_stmt = (
+        select(CreditAuditLog)
+        .where(CreditAuditLog.user_id == current_user.id, CreditAuditLog.delta < 0)
+        .order_by(desc(CreditAuditLog.created_at))
+        .limit(100)
+    )
+    credit_res = await db.execute(credit_stmt)
+    credit_logs = credit_res.scalars().all()
 
     items = []
-    for m in media_logs:
-        items.append({
-            "id": f"gen_{m.id[:8]}",
-            "timestamp": m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else "",
-            "model": m.model_id or "AI Media Engine",
-            "taskType": f"{m.media_type.capitalize()} Generation",
-            "tokensUsed": 0,
-            "creditsDeducted": int(m.credits_charged or 0),
-            "status": "SUCCESS",
-            "prompt": m.prompt[:60] if m.prompt else "",
-        })
+    seen_timestamps = set()
 
-    for a in api_logs:
+    for c in credit_logs:
+        t_str = c.created_at.strftime("%Y-%m-%d %H:%M:%S") if c.created_at else ""
+        t_min = c.created_at.strftime("%Y-%m-%d %H:%M") if c.created_at else ""
+        reason = c.reason or ""
+
+        # Determine Model & Task Type
+        model_name = "VeloX AI"
+        task_type = "AI Request"
+        tokens = 0
+        prompt_info = reason
+
+        if "Chat: " in reason:
+            parts = reason.split("Chat: ")
+            if len(parts) > 1:
+                model_name = parts[1].split()[0]
+            task_type = "API Codex / Chat"
+        elif "Studio VIDEO" in reason or "VIDEO" in reason:
+            task_type = "Video Generation"
+            if ": " in reason:
+                model_name = reason.split(": ")[1].split()[0]
+            else:
+                model_name = "Video Gen"
+        elif "Studio IMAGE" in reason or "IMAGE" in reason:
+            task_type = "Image Generation"
+            model_name = "Image Gen"
+        elif "Playground" in reason:
+            task_type = "Playground Chat"
+
+        # Extract tokens if present in reason format: "(4403 in, 121 out"
+        if " in, " in reason and " out" in reason:
+            try:
+                sub = reason.split("(")[-1].split(")")[0]
+                p_in = int(sub.split(" in, ")[0].strip().split()[-1])
+                p_out = int(sub.split(" in, ")[1].split(" out")[0].strip().split()[0])
+                tokens = p_in + p_out
+            except Exception:
+                tokens = 0
+
+        # Attach original prompt if available from media_logs
+        if t_min in media_by_time and media_by_time[t_min].prompt:
+            prompt_info = media_by_time[t_min].prompt
+
         items.append({
-            "id": f"api_{a.id[:8]}",
-            "timestamp": a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else "",
-            "model": a.model_id or "AI Gateway API",
-            "taskType": "API Request",
-            "tokensUsed": (a.prompt_tokens or 0) + (a.completion_tokens or 0),
-            "creditsDeducted": int(a.total_credits_charged or 0),
-            "status": "SUCCESS" if a.status_code < 400 else "RATE_LIMITED",
-            "prompt": "",
+            "id": f"req_{c.id[:8]}",
+            "timestamp": t_str,
+            "model": model_name,
+            "taskType": task_type,
+            "tokensUsed": tokens,
+            "creditsDeducted": abs(int(c.delta or 0)),
+            "status": "SUCCESS",
+            "prompt": prompt_info[:120],
         })
+        seen_timestamps.add(t_min)
+
+    # Add any standalone media logs not matched in credit audits
+    for m in media_logs:
+        t_min = m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else ""
+        if t_min not in seen_timestamps:
+            items.append({
+                "id": f"gen_{m.id[:8]}",
+                "timestamp": m.created_at.strftime("%Y-%m-%d %H:%M:%S") if m.created_at else "",
+                "model": m.model_id or "AI Media Engine",
+                "taskType": f"{m.media_type.capitalize()} Studio",
+                "tokensUsed": 0,
+                "creditsDeducted": int(m.credits_charged or 0),
+                "status": "SUCCESS",
+                "prompt": m.prompt[:120] if m.prompt else "",
+            })
+            seen_timestamps.add(t_min)
 
     items.sort(key=lambda x: x["timestamp"], reverse=True)
     return ok(data=items)

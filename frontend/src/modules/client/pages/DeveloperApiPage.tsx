@@ -277,6 +277,96 @@ export const DeveloperApiPage: React.FC = () => {
         )}
       </div>
 
+      {/* Quick Connection Parameters Card */}
+      <div className={styles.contentCard} style={{ border: '1px solid rgba(56, 189, 248, 0.3)', background: 'linear-gradient(180deg, rgba(14, 23, 38, 0.9) 0%, rgba(10, 14, 23, 0.9) 100%)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.85rem' }}>
+          <span style={{ fontSize: '1.4rem' }}>⚡</span>
+          <h3 className={styles.cardTitle} style={{ margin: 0, color: '#38bdf8' }}>
+            Thông Số Kết Nối Nhanh (Open Code, Cursor, VS Code, Python SDK)
+          </h3>
+        </div>
+        <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0 0 1.25rem' }}>
+          Tất cả yêu cầu được định tuyến qua chuẩn <strong>OpenAI Compatible</strong>. Số dư Credit trong tài khoản của bạn sẽ tự động khấu trừ chính xác theo biểu phí niêm yết của từng model.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div style={{ background: '#070a10', padding: '1rem', borderRadius: '10px', border: '1px solid #1e293b' }}>
+            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '4px' }}>Base URL (OpenAI Endpoint):</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <code style={{ color: '#38bdf8', fontSize: '0.88rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                https://velox.nexoratech.com.vn/v1
+              </code>
+              <button
+                type="button"
+                className={styles.secondaryBtn}
+                onClick={() => handleCopy('https://velox.nexoratech.com.vn/v1')}
+                style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+              >
+                Sao Chép
+              </button>
+            </div>
+          </div>
+
+          <div style={{ background: '#070a10', padding: '1rem', borderRadius: '10px', border: '1px solid #1e293b' }}>
+            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '4px' }}>Mô Hình Sinh Code / Lập Trình (Models):</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              <span style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', padding: '2px 8px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: 600 }}>codex</span>
+              <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '2px 8px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: 600 }}>gpt-4o</span>
+              <span style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '2px 8px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: 600 }}>claude-sonnet-5-5-ccmax</span>
+              <span style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', padding: '2px 8px', borderRadius: '4px', fontSize: '0.82rem', fontWeight: 600 }}>gpt-6.1-sol</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Integration Instructions */}
+        <div style={{ background: 'rgba(30, 41, 59, 0.4)', padding: '1rem', borderRadius: '10px', borderLeft: '3px solid #ff6b35' }}>
+          <strong style={{ color: '#ffedd5', fontSize: '0.88rem' }}>💡 Hướng dẫn cấu hình Open Code / Cursor / Cline / VS Code:</strong>
+          <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.25rem', color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '1.6' }}>
+            <li>Trong phần <strong>Model Provider</strong>: Chọn <strong>OpenAI</strong> hoặc <strong>OpenAI Compatible</strong>.</li>
+            <li>Tại mục <strong>Base URL</strong>: Điền <code>https://velox.nexoratech.com.vn/v1</code></li>
+            <li>Tại mục <strong>API Key</strong>: Dán khóa <code>sk-velox-...</code> của bạn bên dưới.</li>
+            <li>Tại mục <strong>Model Name</strong>: Điền <code>codex</code> hoặc <code>gpt-4o</code>.</li>
+            <li>Mỗi tài khoản có thể tạo nhiều API Key riêng biệt cho từng công cụ mà không bị trùng lặp!</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Code Snippet Python / OpenAI SDK */}
+      <div className={styles.contentCard}>
+        <h3 className={styles.cardTitle}>Code Mẫu Sử Dụng Python (OpenAI SDK Chuẩn)</h3>
+        <pre
+          style={{
+            background: '#090d16',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            border: '1px solid #1c2638',
+            color: '#a7f3d0',
+            fontSize: '0.86rem',
+            overflowX: 'auto',
+            fontFamily: 'monospace',
+          }}
+        >
+{`from openai import OpenAI
+
+# Kết nối trực tiếp vào VeloX AI Gateway
+client = OpenAI(
+    api_key="${activeKeyString}",
+    base_url="https://velox.nexoratech.com.vn/v1"
+)
+
+# Gọi model codex hoặc gpt-4o để viết code
+response = client.chat.completions.create(
+    model="codex", # hoặc "gpt-4o"
+    messages=[
+        {"role": "user", "content": "Viết thuật toán QuickSort bằng Python"}
+    ],
+    temperature=0.3
+)
+
+print(response.choices[0].message.content)`}
+        </pre>
+      </div>
+
       {/* MCP Integration Card */}
       <div className={styles.contentCard}>
         <h3 className={styles.cardTitle}>
@@ -310,38 +400,6 @@ export const DeveloperApiPage: React.FC = () => {
             <HiOutlineDocumentDuplicate /> {copiedSnippet ? 'Đã Chép' : 'Sao Chép JSON'}
           </button>
         </div>
-      </div>
-
-      {/* Code Snippet Python / OpenAI SDK */}
-      <div className={styles.contentCard}>
-        <h3 className={styles.cardTitle}>Code Mẫu Sử Dụng Python (OpenAI SDK Chuẩn)</h3>
-        <pre
-          style={{
-            background: '#090d16',
-            padding: '1.25rem',
-            borderRadius: '12px',
-            border: '1px solid #1c2638',
-            color: '#a7f3d0',
-            fontSize: '0.86rem',
-            overflowX: 'auto',
-            fontFamily: 'monospace',
-          }}
-        >
-{`from openai import OpenAI
-
-# Tương thích 100% với OpenAI SDK, routing tự động qua pool VeloX High-Speed
-client = OpenAI(
-    api_key="${activeKeyString}",
-    base_url="https://api.velox.nexoratech.com.vn/v1"
-)
-
-response = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": "Xin chào VeloX AI!"}]
-)
-
-print(response.choices[0].message.content)`}
-        </pre>
       </div>
 
       {/* Modal Create Key */}

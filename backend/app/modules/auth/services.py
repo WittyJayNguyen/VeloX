@@ -135,6 +135,23 @@ async def register_user(
     )
     session.add(audit_log)
 
+    # Automatically generate 1 default API Key for the user
+    try:
+        from app.modules.developers.services import generate_secret_key
+        from app.modules.developers.models import UserApiKey
+        raw_key, prefix, key_hash = generate_secret_key()
+        default_api_key = UserApiKey(
+            user_id=user.id,
+            name="Default API Key",
+            key_prefix=prefix,
+            key_hash=key_hash,
+            is_active=True,
+            rate_limit_per_min=60,
+        )
+        session.add(default_api_key)
+    except Exception as ex:
+        print(f"[Auth Auto-Key Warning]: {ex}")
+
     await session.commit()
     await session.refresh(user)
     return user

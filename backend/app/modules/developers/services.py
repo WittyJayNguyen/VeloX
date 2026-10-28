@@ -74,7 +74,26 @@ async def list_developer_keys(
         .order_by(desc(UserApiKey.created_at))
     )
     res = await db.execute(stmt)
-    records = res.scalars().all()
+    records = list(res.scalars().all())
+
+    # If user has no API keys yet, automatically provision 1 default key
+    if not records:
+        try:
+            raw_key, prefix, key_hash = generate_secret_key()
+            default_key = UserApiKey(
+                user_id=user_id,
+                name="Default API Key",
+                key_prefix=prefix,
+                key_hash=key_hash,
+                is_active=True,
+                rate_limit_per_min=60,
+            )
+            db.add(default_key)
+            await db.commit()
+            await db.refresh(default_key)
+            records = [default_key]
+        except Exception as ex:
+            print(f"[List Keys Auto-Provision Error]: {ex}")
 
     return [
         ApiKeyResponse(
