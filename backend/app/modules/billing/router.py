@@ -685,32 +685,49 @@ async def sync_sepay_banks(
     if not token:
         raise HTTPException(status_code=400, detail="Vui lòng cung cấp SePay API Token.")
 
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-        "User-Agent": "VeloX-SePay-Client/1.0"
-    }
+    candidate_endpoints = [
+        ("https://userapi.sepay.vn/v2/bank-accounts", f"Bearer {token}"),
+        ("https://userapi.sepay.vn/v2/bank-accounts", f"Apikey {token}"),
+        ("https://my.sepay.vn/userapi/bankaccounts/list", f"Bearer {token}"),
+        ("https://my.sepay.vn/userapi/bankaccounts/list", f"Apikey {token}"),
+    ]
 
-    try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get("https://my.sepay.vn/userapi/bankaccounts/list", headers=headers)
-            if resp.status_code != 200:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Kết nối SePay thất bại ({resp.status_code}): Vui lòng kiểm tra lại API Token SePay."
-                )
-            data = resp.json()
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Lỗi khi kết nối đến SePay API: {str(e)}")
+    data = None
+    last_status = 400
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for url, auth_str in candidate_endpoints:
+            headers = {
+                "Authorization": auth_str,
+                "Content-Type": "application/json",
+                "User-Agent": "VeloX-SePay-Client/1.0",
+            }
+            try:
+                resp = await client.get(url, headers=headers)
+                last_status = resp.status_code
+                if resp.status_code == 200:
+                    try:
+                        data = resp.json()
+                        break
+                    except Exception:
+                        pass
+            except Exception:
+                continue
+
+    if not data:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Kết nối SePay thất bại ({last_status}): Vui lòng kiểm tra lại API Token SePay (lấy tại my.sepay.vn -> Cấu hình Công ty -> API Access)."
+        )
 
     sepay_accounts = data.get("bankaccounts", [])
     if not sepay_accounts and isinstance(data.get("data"), list):
         sepay_accounts = data.get("data", [])
+    if not sepay_accounts and isinstance(data.get("items"), list):
+        sepay_accounts = data.get("items", [])
 
     if not sepay_accounts:
-        return ok(data=[], message="Đã kết nối SePay nhưng chưa có tài khoản ngân hàng nào trong danh sách SePay.")
+        return ok(data=[], message="Đã kết nối SePay nhưng chưa tìm thấy tài khoản ngân hàng nào trong tài khoản SePay của bạn.")
 
     synced_banks = []
     existing_res = await db.execute(select(BankAccount))
@@ -718,13 +735,33 @@ async def sync_sepay_banks(
     is_first = len(existing_banks) == 0
 
     for idx, item in enumerate(sepay_accounts):
-        acc_num = str(item.get("account_number", "")).strip()
+        acc_num = str(item.get("account_number") or item.get("accountNumber") or "").strip()
         if not acc_num:
             continue
 
-        acc_holder = (item.get("account_holder_name") or item.get("label") or "CHỦ TÀI KHOẢN").strip().upper()
-        b_name = (item.get("bank_full_name") or item.get("bank_short_name") or item.get("bank_code") or "Ngân hàng").strip()
-        b_code = (item.get("bank_code") or item.get("bank_short_name") or "MB").strip().upper()
+        acc_holder = (
+            item.get("account_holder_name") or
+            item.get("accountHolderName") or
+            item.get("account_holder") or
+            item.get("label") or
+            "CHỦ TÀI KHOẢN"
+        ).strip().upper()
+
+        b_name = (
+            item.get("bank_full_name") or
+            item.get("bank_short_name") or
+            item.get("bank_name") or
+            item.get("bank_code") or
+            "Ngân hàng"
+        ).strip()
+
+        b_code = (
+            item.get("bank_code") or
+            item.get("bank_short_name") or
+            item.get("bankShortName") or
+            "MB"
+        ).strip().upper()
+
         b_branch = str(item.get("branch", "") or "")
 
         if acc_num in existing_banks:

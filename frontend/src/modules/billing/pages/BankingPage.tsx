@@ -450,8 +450,8 @@ const BankingPage = () => {
                     placeholder="Dán mã API Token của SePay vào đây"
                     required
                   />
-                  <span style={{ fontSize: '0.75rem', color: '#71717a', marginTop: '4px' }}>
-                    * Lấy mã token tại: <strong>my.sepay.vn</strong> &rarr; Cài đặt &rarr; <strong>API Tokens</strong>
+                  <span style={{ fontSize: '0.78rem', color: '#93c5fd', marginTop: '6px', lineHeight: '1.4', display: 'block' }}>
+                    * Cách lấy: Đăng nhập <strong>my.sepay.vn</strong> &rarr; Menu bên trái chọn <strong>Cấu hình Công ty</strong> &rarr; <strong>API Access</strong> &rarr; Nhấn <strong>+ Thêm API</strong> để tạo và sao chép mã Token.
                   </span>
                 </div>
 
