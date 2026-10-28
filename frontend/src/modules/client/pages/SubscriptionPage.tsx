@@ -111,14 +111,11 @@ export const SubscriptionPage: React.FC = () => {
 
   const getProductionCapability = (pkg: CreditPackageDto): string => {
     const cre = pkg.credits_given;
-    if (cre <= 150) return '⚡ ~50 câu chat AI hoặc 4 ảnh chất lượng cao';
-    if (cre <= 500) return '⚡ ~16 ảnh FLUX hoặc 5 video Kling 1080p';
-    if (cre <= 1200) return '⚡ ~50 ảnh FLUX hoặc 600 câu chat thông minh';
-    if (cre <= 2500) return '⚡ ~80 ảnh FLUX / 57 ảnh Midjourney 4K hoặc 26 video Kling';
-    if (cre <= 4000) return '⚡ ~108 ảnh Midjourney 4K hoặc 50 video Full HD 1080p';
-    if (cre <= 7000) return '⚡ ~150 ảnh 4K hoặc 73 video Full HD không chờ đợi';
-    if (cre <= 15000) return '⚡ ~350 ảnh 4K hoặc 166 video thương mại điện ảnh';
-    return '⚡ ~770 ảnh 4K hoặc 360 video AI băng thông riêng';
+    if (cre <= 1000) return '⚡ ~30 ảnh chất lượng cao hoặc 500 câu chat AI';
+    if (cre <= 2500) return '⚡ ~60 ảnh FLUX / Midjourney hoặc 800 câu chat chuyên sâu';
+    if (cre <= 6000) return '⚡ ~150 ảnh Midjourney 4K hoặc 65 video Full HD không chờ đợi';
+    if (cre <= 16000) return '⚡ ~400 ảnh Studio 4K hoặc 180 video thương mại điện ảnh';
+    return '⚡ ~950 ảnh 4K hoặc 420 video AI băng thông riêng';
   };
 
   return (
@@ -144,16 +141,16 @@ export const SubscriptionPage: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <div style={{ color: '#38bdf8', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {isAuthenticated ? t('subscription.current_plan', 'Gói Dịch Vụ Đang Dùng') : 'Ưu Đãi Trải Nghiệm Mới'}
+              {isAuthenticated ? t('subscription.current_plan', 'Gói Dịch Vụ Đang Dùng') : 'Cổng Kết Nối AI Gateway Chuyên Nghiệp'}
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
-              {isAuthenticated ? (user?.tier || 'Free Member') : 'Tặng Ngay 100 Credits Khi Đăng Ký'}
+              {isAuthenticated ? (user?.tier || 'Thành Viên VeloX') : 'Khám Phá Toàn Diện 150+ Mô Hình AI'}
             </div>
             <div style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '4px' }}>
               {isAuthenticated ? (
                 <>Số dư hiện tại: <strong style={{ color: '#38bdf8' }}>💎 {(user?.credit_balance ?? 0).toLocaleString()} Credits</strong></>
               ) : (
-                'Khởi tạo tài khoản trải nghiệm ngay 115+ mô hình AI hàng đầu thế giới (Claude 3.5, Midjourney, Kling, FLUX).'
+                'Nạp Credit linh hoạt, trải nghiệm các mô hình AI đỉnh cao thế giới (Claude 3.5 Sonnet, Midjourney, Kling, FLUX, Veo 3.1).'
               )}
             </div>
           </div>
@@ -195,7 +192,7 @@ export const SubscriptionPage: React.FC = () => {
             }}
           >
             <HiOutlineCalendarDays size={18} />
-            Gói Hội Viên Tháng (Tiết kiệm 40%)
+            Gói Hội Viên Tháng (Ưu đãi tới 30%)
           </button>
           <button
             type="button"
