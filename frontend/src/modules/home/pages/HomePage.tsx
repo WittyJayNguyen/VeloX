@@ -15,7 +15,7 @@ import {
   HiOutlineFilm,
   HiOutlineChatBubbleLeftRight,
 } from 'react-icons/hi2';
-import { RiOpenaiFill, RiSparklingFill } from 'react-icons/ri';
+import { RiOpenaiFill, RiSparklingFill, RiPlayFill } from 'react-icons/ri';
 import styles from '@assets/scss/home/home.module.scss';
 
 // Curated Models for Showcase Section
@@ -86,56 +86,178 @@ const showcaseModels: ShowcaseModel[] = [
   },
 ];
 
-// Interactive Widget State Demos
-const interactiveDemos = {
+// Interactive Widget State Demos with Real Generated Media
+interface DemoChip {
+  text: string;
+  img: string;
+  prompt: string;
+}
+
+interface DemoItem {
+  model: string;
+  category: 'IMAGE' | 'CHAT' | 'VIDEO';
+  previewImg: string;
+  creditCost: string;
+  resolution: string;
+  defaultPrompt: string;
+  chips: DemoChip[];
+  isVideo?: boolean;
+}
+
+const interactiveDemos: Record<'image' | 'chat' | 'video', DemoItem> = {
   image: {
-    model: 'FLUX.1 [dev]',
+    model: 'gpt-image-2',
     category: 'IMAGE',
-    previewImg: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000&h=650&fit=crop&q=85',
-    creditCost: '4.0 Credits',
-    resolution: '1024 × 1024 • 8K Textures',
-    defaultPrompt: 'Cyberpunk neon athlete sprinting in dark studio, cinematic rim lighting, 8k octane render',
+    previewImg: '/api/v1/studio/media/image_e40a67e8_63ce65ec8e36.jpg',
+    creditCost: '35.0 Credits',
+    resolution: '1024 × 1024 • 8K Portrait',
+    defaultPrompt: 'Tạo ảnh cô gái Việt Nam bận áo dài hoa sen bên hồ sen ngát hương, vẻ đẹp thuần khiết thanh tao 8K',
     chips: [
-      'Cyberpunk neon athlete',
-      'Studio Ghibli aesthetic village',
-      'Realistic architectural modern villa',
+      {
+        text: 'Áo dài hoa sen bên hồ sen (Bản 1)',
+        img: '/api/v1/studio/media/image_e40a67e8_63ce65ec8e36.jpg',
+        prompt: 'Tạo ảnh cô gái Việt Nam bận áo dài hoa sen bên hồ sen ngát hương, vẻ đẹp thuần khiết thanh tao 8K',
+      },
+      {
+        text: 'Áo dài hoa sen truyền thống (Bản 2)',
+        img: '/api/v1/studio/media/image_ac8928c1_8d8e2e02b6f3.jpg',
+        prompt: 'Tạo ảnh cô gái Việt Nam bận áo dài hoa sen, nón lá truyền thống, nụ cười rạng rỡ phong cách chân dung 8K',
+      },
     ],
   },
   chat: {
     model: 'Claude 3.5 Sonnet',
     category: 'CHAT',
-    previewImg: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1000&h=650&fit=crop&q=85',
+    previewImg: '/api/v1/studio/media/image_705030ff_0e01f1d89e70.jpg',
     creditCost: '0.015 Credits',
-    resolution: '200K Context Window',
-    defaultPrompt: 'Thiết kế kiến trúc Clean Architecture & Domain-Driven Design cho dự án TypeScript',
+    resolution: '200K Context • Smart Vision',
+    defaultPrompt: 'Thiết kế prompt chi tiết để vẽ chân dung cô gái Việt Nam mặc áo dài hoa sen đạt độ nét 8K',
     chips: [
-      'Clean Architecture TypeScript',
-      'Phân tích báo cáo tài chính sang JSON',
-      'Tối ưu câu lệnh SQL query',
+      {
+        text: 'Prompt tạo ảnh chân dung 8K',
+        img: '/api/v1/studio/media/image_705030ff_0e01f1d89e70.jpg',
+        prompt: 'Thiết kế prompt chi tiết để vẽ chân dung cô gái Việt Nam mặc áo dài hoa sen đạt độ nét 8K',
+      },
+      {
+        text: 'Thiết lập ánh sáng Studio thảm đỏ',
+        img: '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg',
+        prompt: 'Tối ưu thông số chiếu sáng studio, rim light và camera tracking cho nhân vật thảm đỏ sự kiện',
+      },
     ],
   },
   video: {
-    model: 'Runway Gen-3 Alpha',
+    model: 'imagine-animate',
     category: 'VIDEO',
-    previewImg: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1000&h=650&fit=crop&q=85',
-    creditCost: '45.0 Credits',
-    resolution: '1080p HD • 60 FPS • 5 Giây',
-    defaultPrompt: 'Cinematic camera orbiting futuristic sports car racing through neon rain city',
+    previewImg: '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg',
+    creditCost: '35.0 Credits',
+    resolution: '1080p HD • 60 FPS • Motion 6.0',
+    defaultPrompt: 'Cô gái Tây Ninh đi trên thảm đỏ sự kiện quốc tế, sải bước thanh lịch, camera tracking 60fps cinematic',
+    isVideo: true,
     chips: [
-      'Cinematic camera orbiting sports car',
-      'Slow motion drop of water in zero gravity',
-      'Drone flyover misty emerald mountain',
+      {
+        text: 'Cô gái Tây Ninh thảm đỏ (Animate 60FPS)',
+        img: '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg',
+        prompt: 'Cô gái Tây Ninh đi trên thảm đỏ sự kiện quốc tế, sải bước thanh lịch, camera tracking 60fps cinematic',
+      },
+      {
+        text: 'Khoảnh khắc thảm đỏ rạng ngời (Flash 1:1)',
+        img: '/api/v1/studio/media/image_705030ff_0e01f1d89e70.jpg',
+        prompt: 'Cô gái Tây Ninh đi trên thảm đỏ với tà áo dài trắng thướt tha, phóng viên săn đón rạng rỡ',
+      },
     ],
   },
 };
 
+// Continuous Marquee Models with Detailed Descriptions
+interface RunningModel {
+  name: string;
+  provider: string;
+  badge: string;
+  badgeColor: string;
+  desc: string;
+}
+
+const runningModels: RunningModel[] = [
+  {
+    name: 'OpenAI GPT-4o',
+    provider: 'OpenAI',
+    badge: 'Đa Thể Thức',
+    badgeColor: '#10a37f',
+    desc: 'Đỉnh cao thị giác AI, đọc hiểu hình ảnh, tài liệu và phản hồi giọng nói tự nhiên',
+  },
+  {
+    name: 'Claude 3.5 Sonnet',
+    provider: 'Anthropic',
+    badge: 'Vua Lập Trình',
+    badgeColor: '#c084fc',
+    desc: 'Khả năng viết code, suy luận logic vượt trội cùng bộ nhớ ngữ cảnh 200.000 tokens',
+  },
+  {
+    name: 'DeepSeek V3 / R1',
+    provider: 'DeepSeek',
+    badge: 'Chi Phí Tối Ưu',
+    badgeColor: '#ff6b35',
+    desc: 'Siêu trí tuệ tự suy luận toán học và logic từng bước với giá thành siêu rẻ',
+  },
+  {
+    name: 'Google Gemini 1.5 Pro',
+    provider: 'Google AI',
+    badge: 'Ngữ Cảnh 1M',
+    badgeColor: '#38bdf8',
+    desc: 'Xử lý video dài hàng giờ, đọc toàn bộ kho sách và tài liệu triệu tokens mượt mà',
+  },
+  {
+    name: 'FLUX.1 [dev]',
+    provider: 'Black Forest',
+    badge: 'Ảnh Siêu Thực',
+    badgeColor: '#f59e0b',
+    desc: 'Tái tạo ánh sáng điện ảnh, cấu trúc da và ngón tay chuẩn xác từng milimet',
+  },
+  {
+    name: 'Midjourney v6.1',
+    provider: 'Midjourney',
+    badge: 'Nghệ Thuật 8K',
+    badgeColor: '#ec4899',
+    desc: 'Tuyệt tác đồ họa thẩm mỹ và hội họa điện ảnh đỉnh cao cho Designer & Creator',
+  },
+  {
+    name: 'Runway Gen-3 Alpha',
+    provider: 'RunwayML',
+    badge: 'Video 60FPS',
+    badgeColor: '#a855f7',
+    desc: 'Sản xuất video AI chất lượng điện ảnh Hollywood với góc quay camera vật lý chân thực',
+  },
+  {
+    name: 'Kling AI 1.5',
+    provider: 'Kuaishou',
+    badge: 'Mô Phỏng Vật Lý',
+    badgeColor: '#06b6d4',
+    desc: 'Chuyển động nhân vật tự nhiên, biểu cảm chân thực và tính tương tác vật lý cao cấp',
+  },
+  {
+    name: 'Imagine Flash & Animate',
+    provider: 'VeloX Studio',
+    badge: 'Tốc Độ Cao',
+    badgeColor: '#10b981',
+    desc: 'Khởi tạo ảnh tức thì và biến ảnh tĩnh thành video cử động sống động trong chớp mắt',
+  },
+  {
+    name: 'Luma Dream Machine',
+    provider: 'Luma AI',
+    badge: 'Video 3D',
+    badgeColor: '#eab308',
+    desc: 'Dựng phối cảnh 3D không gian thực tế với tốc độ sinh video đột phá',
+  },
+];
+
 const HomePage = () => {
   const { t } = useTranslation();
 
-  // Interactive Hero Widget State
+  // Interactive Hero Widget State with Real Media
   const [activeMode, setActiveMode] = useState<'image' | 'chat' | 'video'>('image');
   const currentDemo = interactiveDemos[activeMode];
   const [currentPrompt, setCurrentPrompt] = useState<string>(currentDemo.defaultPrompt);
+  const [currentImg, setCurrentImg] = useState<string>(currentDemo.previewImg);
 
   // Model Showcase Category Tab
   const [activeCategory, setActiveCategory] = useState<'ALL' | 'CHAT' | 'IMAGE' | 'VIDEO'>('ALL');
@@ -147,6 +269,12 @@ const HomePage = () => {
   const handleModeChange = (mode: 'image' | 'chat' | 'video') => {
     setActiveMode(mode);
     setCurrentPrompt(interactiveDemos[mode].defaultPrompt);
+    setCurrentImg(interactiveDemos[mode].previewImg);
+  };
+
+  const handleSelectChip = (chip: DemoChip) => {
+    setCurrentPrompt(chip.prompt);
+    setCurrentImg(chip.img);
   };
 
   const handleCopyCode = (text: string) => {
@@ -325,19 +453,33 @@ console.log(response.choices[0].message.content);`;
                     <button
                       key={idx}
                       type="button"
-                      className={styles.promptChip}
-                      onClick={() => setCurrentPrompt(chip)}
-                      title="Bấm để thử prompt này"
+                      className={`${styles.promptChip} ${currentPrompt === chip.prompt ? styles.activeChip : ''}`}
+                      onClick={() => handleSelectChip(chip)}
+                      title="Bấm để xem mẫu này"
                     >
-                      {chip}
+                      {chip.text}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Visual Preview Frame */}
+              {/* Visual Preview Frame with Real Media */}
               <div className={styles.previewFrame}>
-                <img src={currentDemo.previewImg} alt={currentDemo.model} />
+                <img
+                  key={currentImg}
+                  src={currentImg}
+                  alt={currentDemo.model}
+                  className={styles.previewImageAnim}
+                />
+
+                {currentDemo.isVideo && (
+                  <div className={styles.videoPlayOverlay}>
+                    <div className={styles.videoPlayBtnPulse}>
+                      <RiPlayFill size={26} color="#ffffff" />
+                    </div>
+                  </div>
+                )}
+
                 <div className={styles.previewOverlay}>
                   <div className={styles.modelBadgeTag}>
                     <RiSparklingFill size={13} color="#2dd4bf" />
@@ -364,41 +506,38 @@ console.log(response.choices[0].message.content);`;
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          2. PROVIDERS & FOUNDATIONAL MODELS RIBBON
+          2. PROVIDERS & FOUNDATIONAL MODELS RIBBON (1 ROW INFINITE MARQUEE)
       ══════════════════════════════════════════════════════════════ */}
       <section className={styles.providersSection}>
         <div className={styles.providersContainer}>
-          <div className={styles.providersLabel}>
-            {t('hero.providers_label', 'Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu')}
+          <div className={styles.providersHeaderRow}>
+            <div className={styles.providersLabel}>
+              <span className={styles.livePulseDot} />
+              {t('hero.providers_label', 'Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu')}
+            </div>
+            <span className={styles.tickerHint}>Cuộn tự động • Rê chuột để tạm dừng</span>
           </div>
-          <div className={styles.providersGrid}>
-            <div className={styles.providerItem}>
-              <RiOpenaiFill size={20} color="#10a37f" />
-              <span>OpenAI (GPT-4o)</span>
-            </div>
-            <div className={styles.providerItem}>
-              <HiOutlineCpuChip size={20} color="#c084fc" />
-              <span>Anthropic (Claude 3.5)</span>
-            </div>
-            <div className={styles.providerItem}>
-              <HiOutlineSparkles size={20} color="#38bdf8" />
-              <span>Google (Gemini 1.5)</span>
-            </div>
-            <div className={styles.providerItem}>
-              <HiOutlineBolt size={20} color="#ff6b35" />
-              <span>DeepSeek (V3 / R1)</span>
-            </div>
-            <div className={styles.providerItem}>
-              <HiOutlinePhoto size={20} color="#e879f9" />
-              <span>Midjourney v6.1</span>
-            </div>
-            <div className={styles.providerItem}>
-              <HiOutlineSparkles size={20} color="#f59e0b" />
-              <span>FLUX.1 Dev</span>
-            </div>
-            <div className={styles.providerItem}>
-              <HiOutlineFilm size={20} color="#a855f7" />
-              <span>Runway Gen-3</span>
+
+          <div className={styles.marqueeTrackWrapper}>
+            <div className={styles.marqueeTrack}>
+              {[...runningModels, ...runningModels].map((model, idx) => (
+                <div key={idx} className={styles.marqueeModelCard}>
+                  <div className={styles.marqueeCardTop}>
+                    <span className={styles.modelNameText}>{model.name}</span>
+                    <span
+                      className={styles.modelBadgePill}
+                      style={{
+                        color: model.badgeColor,
+                        borderColor: `${model.badgeColor}55`,
+                        background: `${model.badgeColor}18`,
+                      }}
+                    >
+                      {model.badge}
+                    </span>
+                  </div>
+                  <div className={styles.modelDescText}>{model.desc}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -695,38 +834,42 @@ console.log(response.choices[0].message.content);`;
               <h3 className={styles.planName}>Gói Khởi Động (Starter)</h3>
               <p className={styles.planDesc}>Phù hợp cho cá nhân trải nghiệm và thử nghiệm các mô hình AI.</p>
               <div className={styles.priceRow}>
-                <span className={styles.priceNumber}>50.000đ</span>
+                <span className={styles.priceNumber}>100.000đ</span>
                 <span className={styles.pricePeriod}>/ lần nạp</span>
               </div>
               <div className={styles.planCreditsHighlight}>
                 <RiSparklingFill size={14} />
-                <span>Nhận ngay 50 Credits</span>
+                <span>Nhận ngay 1.000 Credits</span>
               </div>
 
               <ul className={styles.planFeaturesList}>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Truy cập đầy đủ 100+ mô hình AI</span>
+                  <span>1.000 Credits sử dụng vĩnh viễn không hết hạn</span>
                 </li>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tạo ~12 ảnh FLUX.1 hoặc 16M token DeepSeek</span>
+                  <span>Tạo ~30 ảnh chất lượng cao hoặc 500 câu chat AI</span>
                 </li>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tín dụng không giới hạn thời gian sử dụng</span>
+                  <span>Truy cập đầy đủ 100+ mô hình AI đỉnh cao</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Kích hoạt tự động qua VietQR trong 3 giây</span>
                 </li>
               </ul>
             </div>
 
-            <Link to="/subscription" className={styles.btnPlanSelect}>
+            <Link to="/subscription?tab=topup" className={styles.btnPlanSelect}>
               Nạp Ngay Qua VietQR
             </Link>
           </div>
 
           {/* Plan 2: Popular */}
           <div className={`${styles.pricingCard} ${styles.popular}`}>
-            <div className={styles.popularBadge}>PHỔ BIẾN NHẤT (+10% THƯỞNG)</div>
+            <div className={styles.popularBadge}>PHỔ BIẾN NHẤT (+2.5% THƯỞNG)</div>
             <div>
               <h3 className={styles.planName}>Gói Sáng Tạo (Pro Creator)</h3>
               <p className={styles.planDesc}>Dành cho Creator, Designer và Developer xây dựng sản phẩm.</p>
@@ -736,17 +879,21 @@ console.log(response.choices[0].message.content);`;
               </div>
               <div className={styles.planCreditsHighlight} style={{ background: 'rgba(255, 107, 53, 0.15)', borderColor: 'rgba(255, 107, 53, 0.35)', color: '#ffedd5' }}>
                 <RiSparklingFill size={14} color="#ff6b35" />
-                <span>Nhận 220 Credits (Tặng 10%)</span>
+                <span>Nhận 2.050 Credits (Tặng 50 Credits)</span>
               </div>
 
               <ul className={styles.planFeaturesList}>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Ưu tiên băng thông và tốc độ xử lý hàng chờ</span>
+                  <span>2.050 Credits (Đã gồm 50 credits thưởng thêm)</span>
                 </li>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tạo ~55 ảnh FLUX.1 hoặc 5 video Runway 60FPS</span>
+                  <span>Tạo ~60 ảnh FLUX / Midjourney 4K hoặc 26 video điện ảnh</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Ưu tiên băng thông cao và tốc độ xử lý hàng chờ</span>
                 </li>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
@@ -759,15 +906,18 @@ console.log(response.choices[0].message.content);`;
               </ul>
             </div>
 
-            <Link to="/subscription" className={`${styles.btnPlanSelect} ${styles.popularBtn}`}>
+            <Link to="/subscription?tab=topup" className={`${styles.btnPlanSelect} ${styles.popularBtn}`}>
               Nạp Gói Sáng Tạo
             </Link>
           </div>
 
           {/* Plan 3 */}
           <div className={styles.pricingCard}>
+            <div className={styles.popularBadge} style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}>
+              TIẾT KIỆM (+10% THƯỞNG)
+            </div>
             <div>
-              <h3 className={styles.planName}>Gói Doanh Nghiệp (Studio)</h3>
+              <h3 className={styles.planName}>Gói Doanh Nghiệp (VIP Studio)</h3>
               <p className={styles.planDesc}>Giải pháp tối ưu cho doanh nghiệp và đội ngũ cần tích hợp API liên tục.</p>
               <div className={styles.priceRow}>
                 <span className={styles.priceNumber}>1.000.000đ</span>
@@ -775,26 +925,30 @@ console.log(response.choices[0].message.content);`;
               </div>
               <div className={styles.planCreditsHighlight}>
                 <RiSparklingFill size={14} />
-                <span>Nhận 1.200 Credits (Tặng 20%)</span>
+                <span>Nhận 11.000 Credits (Tặng 1.000 Credits)</span>
               </div>
 
               <ul className={styles.planFeaturesList}>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Hạ tầng Dedicated Pool & Custom Rate Limit</span>
+                  <span>11.000 Credits (Đã gồm 1.000 credits thưởng lớn 10%)</span>
                 </li>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tạo ~300 ảnh FLUX.1 hoặc 26 video Runway</span>
+                  <span>Tạo ~300 ảnh 4K hoặc 140 video AI chất lượng cao</span>
                 </li>
                 <li className={styles.planFeatureItem}>
                   <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Hỗ trợ xuất hóa đơn VAT và hợp đồng dịch vụ</span>
+                  <span>Hạ tầng Dedicated Pool & Custom Rate Limit riêng biệt</span>
+                </li>
+                <li className={styles.planFeatureItem}>
+                  <HiOutlineCheck size={16} className={styles.checkIcon} />
+                  <span>Kênh hỗ trợ VIP 1-1 với đội ngũ kỹ sư VeloX</span>
                 </li>
               </ul>
             </div>
 
-            <Link to="/subscription" className={styles.btnPlanSelect}>
+            <Link to="/subscription?tab=topup" className={styles.btnPlanSelect}>
               Nạp Gói Doanh Nghiệp
             </Link>
           </div>
