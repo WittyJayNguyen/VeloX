@@ -147,8 +147,8 @@ async def execute_playground_request(
 
     req_status = "success"
 
-    # CASE A: Meta AI / Muse Web Session Key
-    if provider_name in ["Meta AI", "Muse", "Meta"] or "muse" in (credential.name.lower() if credential else ""):
+    # CASE A: Meta AI / Muse Web Session Key (Only for media tasks: IMAGE & VIDEO)
+    if (provider_name in ["Meta AI", "Muse", "Meta"] or "muse" in (credential.name.lower() if credential else "")) and is_media:
         vm_state = "UNKNOWN"
         http_status = None
         cookies_count = 0
@@ -421,7 +421,9 @@ async def execute_playground_request(
 
                     for m_cand in unique_models:
                         try:
-                            async with httpx.AsyncClient(timeout=8.0) as client:
+                            # 5.0s connect timeout for instant failover, 60.0s read timeout for rich LLM responses
+                            req_timeout = httpx.Timeout(connect=5.0, read=60.0, write=10.0, pool=10.0)
+                            async with httpx.AsyncClient(timeout=req_timeout) as client:
                                 chat_req = {
                                     "model": m_cand,
                                     "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
