@@ -93,6 +93,19 @@ export const billingService = {
   refundTransaction: async (id: string): Promise<void> => {
     await apiClient.post(`/billing/transactions/${id}/refund`);
   },
+
+  checkPaymentStatus: async (params?: { since?: string; expected_amount?: number }): Promise<{
+    paid: boolean;
+    transaction_code?: string;
+    amount_vnd?: number;
+    credits_credited?: number;
+    created_at?: string;
+    credit_balance?: number;
+    tier?: string;
+  }> => {
+    const res = await apiClient.get('/billing/check-payment-status', { params });
+    return res.data?.data || res.data || { paid: false };
+  },
 };
 
 export default billingService;
