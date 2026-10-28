@@ -225,6 +225,16 @@ async def authenticate_user(
             )
         else:
             remaining = max_attempts - user.failed_login_attempts
+            failed_log = UserAuditLog(
+                target_user_id=user.id,
+                actor_id=user.id,
+                actor_email=user.email,
+                action="LOGIN_FAILED",
+                details=f"Đăng nhập thất bại ({user.failed_login_attempts}/{max_attempts} lần sai mật khẩu)",
+                reason="Nhập sai mật khẩu tài khoản",
+                ip_address=client_ip,
+            )
+            session.add(failed_log)
             await session.commit()
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -236,6 +246,17 @@ async def authenticate_user(
     user.locked_until = None
     user.last_login_at = now_utc.isoformat()
     user.last_login_ip = client_ip
+
+    login_log = UserAuditLog(
+        target_user_id=user.id,
+        actor_id=user.id,
+        actor_email=user.email,
+        action="LOGIN_SUCCESS",
+        details="Đăng nhập thành công vào hệ thống",
+        reason="Xác thực danh tính thành công",
+        ip_address=client_ip,
+    )
+    session.add(login_log)
     await session.commit()
 
     return user

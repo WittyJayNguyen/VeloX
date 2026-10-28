@@ -993,7 +993,8 @@ async def list_system_user_audits(
     # Stats
     total_events_res = await db.execute(select(func.count(UserAuditLog.id)))
     lockouts_res = await db.execute(select(func.count(UserAuditLog.id)).where(UserAuditLog.action == "SECURITY_LOCKOUT"))
-    pass_resets_res = await db.execute(select(func.count(UserAuditLog.id)).where(UserAuditLog.action == "PASSWORD_RESET"))
+    pass_resets_res = await db.execute(select(func.count(UserAuditLog.id)).where(UserAuditLog.action.in_(["PASSWORD_RESET", "PASSWORD_CHANGE"])))
+    failed_logins_res = await db.execute(select(func.count(UserAuditLog.id)).where(UserAuditLog.action == "LOGIN_FAILED"))
 
     # Pagination & Sort
     query = query.order_by(UserAuditLog.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
@@ -1002,14 +1003,27 @@ async def list_system_user_audits(
 
     items = []
     for log, t_email, t_name in rows:
+        display_email = t_email
+        display_name = t_name
+
+        # If user was deleted, attempt to retrieve email/name from details JSON
+        if not display_email and log.details:
+            try:
+                parsed_d = json.loads(log.details)
+                if isinstance(parsed_d, dict):
+                    display_email = parsed_d.get("email") or parsed_d.get("target_email")
+                    display_name = parsed_d.get("full_name") or parsed_d.get("name")
+            except Exception:
+                pass
+
         items.append({
             "id": log.id,
             "action": log.action,
             "actorEmail": log.actor_email or "Hệ thống",
             "actorId": log.actor_id,
             "targetUserId": log.target_user_id,
-            "targetEmail": t_email or "Tài khoản đã xóa",
-            "targetName": t_name or log.target_user_id,
+            "targetEmail": display_email or "Tài khoản đã xóa",
+            "targetName": display_name or (log.target_user_id if log.target_user_id else "Hệ thống"),
             "details": log.details,
             "reason": log.reason,
             "ipAddress": log.ip_address or "127.0.0.1",
@@ -1030,6 +1044,7 @@ async def list_system_user_audits(
             "totalEvents": total_events_res.scalar() or 0,
             "securityLockouts": lockouts_res.scalar() or 0,
             "passwordResets": pass_resets_res.scalar() or 0,
+            "failedLogins": failed_logins_res.scalar() or 0,
         }
     })
 
