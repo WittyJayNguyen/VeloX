@@ -334,7 +334,7 @@ async def delete_studio_history_item(
     return ok(message="Đã xóa tác phẩm khỏi lịch sử thành công.")
 
 
-@router.get("/media/{filename}")
+@router.api_route("/media/{filename}", methods=["GET", "HEAD"])
 async def get_studio_media_file(filename: str):
     """Serves generated media files with immutable caching."""
     safe_name = os.path.basename(filename)
