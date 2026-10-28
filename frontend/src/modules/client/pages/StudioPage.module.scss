@@ -1032,11 +1032,84 @@
   }
 }
 
-// Right Group: Mic + Pink Submit
+// Right Group: Credit Cost Badge + Mic + Pink Submit
 .toolbarRight {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.creditCostBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #38bdf8;
+  cursor: default;
+  user-select: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  .costSparkleIcon {
+    color: #38bdf8;
+    animation: sparkleBlink 2.5s infinite ease-in-out;
+  }
+
+  .costValue {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: -0.02em;
+  }
+
+  .costUnit {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+  }
+
+  &:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+  }
+
+  &.creditCostWarning {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.38);
+    color: #f87171;
+    cursor: pointer;
+
+    .costSparkleIcon {
+      color: #ef4444;
+    }
+
+    .costValue {
+      color: #fca5a5;
+    }
+
+    .costUnit {
+      color: #f87171;
+    }
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.6);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+    }
+  }
+}
+
+@keyframes sparkleBlink {
+  0%, 100% { opacity: 0.6; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.15); }
 }
 
 .micBtn {

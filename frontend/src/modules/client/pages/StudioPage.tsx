@@ -875,6 +875,13 @@ export const StudioPage: React.FC = () => {
       return;
     }
 
+    const MAX_CONCURRENT_JOBS = 5;
+    if (activeJobs.length >= MAX_CONCURRENT_JOBS) {
+      setToastMsg(`⚡ ${t('studio.max_concurrency_reached', `Đang có ${activeJobs.length} tác phẩm xử lý song song. Vui lòng chờ hoàn tất để tạo thêm!`)}`);
+      setTimeout(() => setToastMsg(null), 3500);
+      return;
+    }
+
     // Capture snapshot of current inputs
     const submittedPrompt = prompt.trim();
     const targetTab = activeTab;
@@ -2122,8 +2129,26 @@ export const StudioPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Right: Microphone & Neon Pink Circular Submit */}
+              {/* Right: Credit Cost Badge, Microphone & Neon Pink Circular Submit */}
               <div className={styles.toolbarRight}>
+                {/* Credit Cost Badge */}
+                <div
+                  className={`${styles.creditCostBadge} ${hasInsufficientCredits ? styles.creditCostWarning : ''}`}
+                  title={
+                    hasInsufficientCredits
+                      ? `Cần ${totalCreditsNeeded} Credits, số dư hiện có ${currentCredits.toLocaleString()} Credits. Nhấp để nạp thêm!`
+                      : `Chi phí: ${totalCreditsNeeded} Credits / lần tạo`
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (hasInsufficientCredits) setTopupOpen(true);
+                  }}
+                >
+                  <RiSparklingFill size={11} className={styles.costSparkleIcon} />
+                  <span className={styles.costValue}>-{totalCreditsNeeded}</span>
+                  <span className={styles.costUnit}>cr</span>
+                </div>
+
                 <button
                   type="button"
                   className={`${styles.micBtn} ${isSpeechRecording ? styles.micActive : ''}`}
