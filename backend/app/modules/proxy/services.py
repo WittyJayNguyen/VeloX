@@ -373,6 +373,7 @@ async def proxy_chat_completion(
     content = ""
     p_tokens = max(1, len(last_user_msg.split()) * 2)
     c_tokens = 0
+    cache_tokens = 0
 
     if target_pool and target_pool.base_url and target_cred and target_cred.key_val:
         for cand in unique_candidates:
@@ -402,6 +403,9 @@ async def proxy_chat_completion(
                             if "usage" in c_data and c_data["usage"]:
                                 p_tokens = c_data["usage"].get("prompt_tokens", p_tokens)
                                 c_tokens = c_data["usage"].get("completion_tokens", c_tokens)
+                                p_details = c_data["usage"].get("prompt_tokens_details") or {}
+                                if isinstance(p_details, dict):
+                                    cache_tokens = p_details.get("cached_tokens", 0)
                             break
             except Exception as ex:
                 print(f"[Proxy Upstream Chat Error] with model '{cand}': {ex}")
@@ -439,7 +443,7 @@ async def proxy_chat_completion(
             detail={"error": {"message": f"Số dư không đủ cho model {model_code}. Yêu cầu {cost} credits, hiện có: {user.credit_balance}", "code": "insufficient_credits"}}
         )
 
-    await _deduct_user_credits(user, cost, f"Proxy API Key [{api_key.name}] Chat: {model_code} ({p_tokens} in, {c_tokens} out @ {cost} cr)", db)
+    await _deduct_user_credits(user, cost, f"Proxy API Key [{api_key.name}] Chat: {model_code} ({p_tokens} in, {c_tokens} out, {cache_tokens} cache @ {cost} cr)", db)
 
     # Record API transaction audit log
     from app.modules.logs.services import record_api_call
