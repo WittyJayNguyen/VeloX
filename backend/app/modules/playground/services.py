@@ -232,16 +232,25 @@ async def execute_playground_request(
                         await db.commit()
                     req_status = "success"
                 else:
-                    from app.modules.studio.router import get_aesthetic_image_fallback
-                    media_url = get_aesthetic_image_fallback(user_prompt, 1024, 1024)
+                    from app.modules.studio.router import generate_image_from_upstream, get_aesthetic_image_fallback
+                    upstream_img = await generate_image_from_upstream(
+                        model_code=payload.model_code,
+                        prompt=user_prompt,
+                        w=1024,
+                        h=1024,
+                        pool_id=pool.id if pool else None,
+                        provider=provider_name,
+                        db=db,
+                    )
+                    media_url = upstream_img or get_aesthetic_image_fallback(user_prompt, 1024, 1024)
                     media_urls = [media_url]
                     content = (
-                        f"🎨 [Imagine] Đã tạo thành công qua phiên Sandbox (`{credential.name if credential else 'Sandbox'}`):\n\n"
+                        f"🎨 [Imagine] Đã tạo thành công qua AI Gateway:\n\n"
                         f"> \"{user_prompt}\"\n\n"
                         f"- **Định dạng:** `image/jpeg` (Độ phân giải HD)\n"
                         f"- **Tỉ lệ khung hình (Aspect Ratio):** `{payload.aspect_ratio or '1:1'}`\n"
                         f"- **Mô hình xử lý:** `{payload.model_code}`\n"
-                        f"- **Nguồn:** Trực tiếp từ cụm tài khoản Web Session."
+                        f"- **Nguồn:** AI Generation Gateway."
                     )
                     if credential:
                         credential.record_usage(1)
@@ -305,7 +314,8 @@ async def execute_playground_request(
                             if generated_url:
                                 break
                 if not generated_url:
-                    generated_url = "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1024&h=1024&q=80"
+                    from app.modules.studio.router import get_aesthetic_image_fallback
+                    generated_url = get_aesthetic_image_fallback(user_prompt, 1024, 1024)
                 media_url = generated_url
                 media_urls = [media_url]
                 content = f"🎨 Đã tạo thành công qua AI Gateway với model `{payload.model_code}` ({provider_name}):\n\n> \"{user_prompt}\""

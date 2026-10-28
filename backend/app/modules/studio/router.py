@@ -322,15 +322,13 @@ async def _call_upstream_image(base_url: str, key_val: str, payload: dict) -> Op
 
 
 def get_aesthetic_image_fallback(clean_prompt: str, w: int = 1024, h: int = 1024) -> str:
-    """Provides high-resolution, prompt-aligned aesthetic image fallback."""
-    prompt_lower = (clean_prompt or "").lower()
-    if any(k in prompt_lower for k in ["gái", "girl", "woman", "nữ", "áo dài", "ao dai", "người", "portrait", "chân dung", "model"]):
-        return f"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w={w}&h={h}&q=80"
-    elif any(k in prompt_lower for k in ["tech", "cyber", "ai", "robot", "tương lai", "code"]):
-        return f"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w={w}&h={h}&q=80"
-    elif any(k in prompt_lower for k in ["núi", "biển", "rừng", "thiên nhiên", "landscape", "nature"]):
-        return f"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w={w}&h={h}&q=80"
-    return f"https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w={w}&h={h}&q=80"
+    """Provides high-resolution, prompt-aligned dynamic AI image generation fallback (never static stock photos)."""
+    import urllib.parse
+    import random
+    prompt_text = (clean_prompt or "high quality cinematic masterpiece 8k").strip()
+    encoded_prompt = urllib.parse.quote(prompt_text[:300])
+    seed = random.randint(10000, 999999)
+    return f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={w}&height={h}&nologo=true&model=flux&seed={seed}"
 
 
 async def generate_image_from_upstream(
@@ -364,7 +362,31 @@ async def generate_image_from_upstream(
 
         stmt = stmt.order_by(ProviderCredential.priority.desc())
         res = await db.execute(stmt)
-        pairs = res.all()
+        raw_pairs = res.all()
+
+        pairs = [
+            (c, p) for c, p in raw_pairs
+            if p.base_url and c.key_val and (c.key_val.startswith("sk-") or "tuansu" in (p.base_url or "").lower())
+        ]
+
+        if not pairs:
+            # Fallback to any active OpenAI-compatible API pool across the gateway (e.g. TuanSu01)
+            fallback_stmt = (
+                select(ProviderCredential, ServicePool)
+                .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
+                .where(
+                    ProviderCredential.status == "ACTIVE",
+                    ServicePool.is_active == True,
+                    ProviderCredential.auth_type == "API_KEY",
+                )
+                .order_by(ProviderCredential.priority.desc())
+            )
+            res2 = await db.execute(fallback_stmt)
+            pairs = [
+                (c, p) for c, p in res2.all()
+                if p.base_url and c.key_val and (c.key_val.startswith("sk-") or "tuansu" in (p.base_url or "").lower())
+            ]
+
         if not pairs:
             return None
 
@@ -532,28 +554,22 @@ async def generate_studio_media(
                         timeout_sec=120,
                         target_url=target_pool.base_url if target_pool else "https://muse.ai",
                     )
-                    if worker_res.get("success") and worker_res.get("media_url"):
+                    media_url = worker_res.get("media_url")
+                    if worker_res.get("success") and media_url and not media_url.startswith("https://images.unsplash.com"):
                         cred.record_usage(1)
                         await db.commit()
                         return {
-                            "output_url": worker_res["media_url"],
+                            "output_url": media_url,
                             "poster_url": None,
                             "render_seconds": round(worker_res.get("latency_ms", 3000) / 1000, 1),
                             "media_type": "IMAGE",
                         }
                     else:
-                        print(f"[Studio Account Failover]: Account '{cred.name}' failed: {worker_res.get('error')}. Trying next account...")
+                        print(f"[Studio Account Failover]: Account '{cred.name}' did not produce direct AI media. Trying next account...")
                 except Exception as ex:
                     print(f"[Studio Account Error]: Account '{cred.name}' error: {ex}. Trying next account...")
 
-            # If all accounts in pool failed, fallback to aesthetic image
-            fallback_img = get_aesthetic_image_fallback(clean_prompt, w, h)
-            return {
-                "output_url": fallback_img,
-                "poster_url": None,
-                "render_seconds": 2.5,
-                "media_type": "IMAGE",
-            }
+            print("[Studio Session Pool]: Session accounts did not produce direct AI media. Falling through to upstream AI gateway...")
 
         # 1. Attempt generation from upstream AI pool providers (OpenAI / Tuân Sử / etc.)
         upstream_img = await generate_image_from_upstream(

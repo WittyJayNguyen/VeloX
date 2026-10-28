@@ -206,7 +206,7 @@ async def generate_media_via_muse(
         except Exception as ex:
             print(f"[Reverse Proxy Error]: {ex}")
 
-    # 4. Fallback prompt-aligned visual synthesizer (instant, 0% CPU, 0% RAM spike)
+    # 4. If reverse proxy did not produce media, signal failure so caller falls back to real AI upstream
     latency = round((time.perf_counter() - start_time) * 1000, 2)
     if is_video:
         from app.modules.studio.router import CINEMATIC_VIDEOS
@@ -222,13 +222,11 @@ async def generate_media_via_muse(
             "size_bytes": 102400,
         }
     else:
-        from app.modules.studio.router import get_aesthetic_image_fallback
-        img_url = get_aesthetic_image_fallback(prompt, 1024, 1024)
         return {
-            "success": True,
-            "media_url": img_url,
-            "media_urls": [img_url],
+            "success": False,
+            "error": "No reverse proxy response from session account",
+            "media_url": None,
+            "media_urls": [],
             "media_type": "image",
             "latency_ms": latency,
-            "size_bytes": 51200,
         }
