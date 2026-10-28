@@ -214,6 +214,42 @@ export interface PromptPresetGroup {
 }
 
 export const PROMPT_PRESET_GROUPS: Record<string, PromptPresetGroup[]> = {
+  chat: [
+    {
+      groupName: 'LẬP TRÌNH & CÔNG NGHỆ',
+      items: [
+        {
+          title: 'Viết code và giải thuật tối ưu',
+          prompt: 'Hãy giúp tôi xây dựng hàm tối ưu hóa thuật toán và phân tích độ phức tạp thời gian/không gian chi tiết.',
+        },
+        {
+          title: 'Thiết kế kiến trúc hệ thống phân tán',
+          prompt: 'Đề xuất kiến trúc Microservices có khả năng mở rộng cao, chịu tải 100k RPS và cơ chế caching đa tầng.',
+        },
+        {
+          title: 'Debug và rà soát bảo mật mã nguồn',
+          prompt: 'Hãy phân tích đoạn mã sau, tìm các lỗ hổng tiềm ẩn (memory leak, injection, race condition) và hướng dẫn cách khắc phục.',
+        },
+      ],
+    },
+    {
+      groupName: 'SÁNG TẠO & MARKETING',
+      items: [
+        {
+          title: 'Kịch bản video ngắn triệu view',
+          prompt: 'Viết kịch bản video ngắn 45 giây cho TikTok/Reels giới thiệu công cụ AI với câu hook thu hút trong 3 giây đầu.',
+        },
+        {
+          title: 'Chiến lược Marketing Go-To-Market',
+          prompt: 'Lập kế hoạch chiến dịch ra mắt sản phẩm công nghệ 30 ngày, bao gồm kênh truyền thông, thông điệp chính và KPI.',
+        },
+        {
+          title: 'Soạn email thuyết phục đối tác B2B',
+          prompt: 'Soạn thảo email đề xuất hợp tác kinh doanh B2B chuyên nghiệp, lịch sự, nêu bật giá trị cốt lõi và kêu gọi hành động rõ ràng.',
+        },
+      ],
+    },
+  ],
   image: [
     {
       groupName: 'TẠO ẢNH',
@@ -508,7 +544,7 @@ export const translateParamOption = (val: string, tFn: any) => {
 
 export const StudioPage: React.FC = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, addCredits } = useAuthStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -767,30 +803,39 @@ export const StudioPage: React.FC = () => {
     const paramModel = searchParams.get('model');
 
     if (paramCategory && (paramCategory === 'chat' || paramCategory === 'image' || paramCategory === 'video' || paramCategory === 'audio')) {
-      setActiveTab(paramCategory);
+      setActiveTab((prev) => (prev !== paramCategory ? paramCategory : prev));
     }
 
-    if (availableModels.length > 0) {
-      if (paramModel) {
-        const matched = matchModelCode(paramModel, availableModels);
-        if (matched) {
-          setSelectedModelCode(matched.model_code);
-          return;
-        }
-      }
-      // If current selectedModelCode is not in available models, pick the first one
-      if (!availableModels.some((m) => m.model_code === selectedModelCode)) {
-        setSelectedModelCode(availableModels[0].model_code);
+    if (paramModel && availableModels.length > 0) {
+      const matched = matchModelCode(paramModel, availableModels);
+      if (matched) {
+        setSelectedModelCode(matched.model_code);
       }
     }
-  }, [searchParams, availableModels]);
+  }, [searchParams]);
 
-  // Tab switch handler that automatically picks the right primary model
+  // Ensure selectedModelCode is always valid for the active available models list
+  useEffect(() => {
+    if (availableModels.length > 0 && !availableModels.some((m) => m.model_code === selectedModelCode)) {
+      setSelectedModelCode(availableModels[0].model_code);
+    }
+  }, [availableModels, selectedModelCode]);
+
+  // Tab switch handler that automatically picks the right primary model and updates URL
   const handleTabChange = (newTab: 'chat' | 'image' | 'video' | 'audio') => {
     setActiveTab(newTab);
     setIsModelMenuOpen(false);
     setIsParamsMenuOpen(false);
     setIsInspireMenuOpen(false);
+
+    // Sync URL search params cleanly without reload
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('category', newTab);
+      next.delete('model');
+      return next;
+    }, { replace: true });
+
     if (newTab === 'chat') {
       setSelectedModelCode('gpt-4o');
     } else if (newTab === 'image') {
@@ -1446,7 +1491,6 @@ export const StudioPage: React.FC = () => {
           <div
             className={`${styles.promptInputBox} ${textareaShake ? styles.shakeBox : ''}`}
             onPaste={handlePasteEvent}
-            onClick={() => promptTextareaRef.current?.focus()}
           >
             {/* TOP BAR: Slots Attachment & Inspire Me */}
             <div className={styles.promptTopBar}>
@@ -1776,7 +1820,10 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'chat' ? styles.modeTabActive : ''}`}
-                    onClick={() => handleTabChange('chat')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTabChange('chat');
+                    }}
                     title={t('studio.tab_chat', 'Chat')}
                   >
                     <HiOutlineChatBubbleLeftRight size={15} />
@@ -1786,7 +1833,10 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'image' ? styles.modeTabActive : ''}`}
-                    onClick={() => handleTabChange('image')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTabChange('image');
+                    }}
                     title={t('studio.tab_image', 'Ảnh')}
                   >
                     <HiOutlinePhoto size={15} />
@@ -1796,7 +1846,10 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'video' ? styles.modeTabActive : ''}`}
-                    onClick={() => handleTabChange('video')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTabChange('video');
+                    }}
                     title={t('studio.tab_video', 'Video')}
                   >
                     <HiOutlineFilm size={15} />
@@ -1806,7 +1859,10 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'audio' ? styles.modeTabActive : ''}`}
-                    onClick={() => handleTabChange('audio')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTabChange('audio');
+                    }}
                     title={t('studio.tab_audio', 'Âm thanh')}
                   >
                     <SoundWaveIcon size={14} />
@@ -2097,7 +2153,10 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.speakerToolbarBtn} ${isAudioMuted ? styles.speakerMuted : ''}`}
-                    onClick={() => setIsAudioMuted(!isAudioMuted)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsAudioMuted(!isAudioMuted);
+                    }}
                     title={isAudioMuted ? t('studio.unmute', 'Bật âm thanh') : t('studio.mute', 'Tắt âm thanh')}
                   >
                     {isAudioMuted ? <HiOutlineSpeakerXMark size={16} /> : <HiOutlineSpeakerWave size={16} />}
@@ -2110,7 +2169,10 @@ export const StudioPage: React.FC = () => {
                 <button
                   type="button"
                   className={`${styles.micBtn} ${isSpeechRecording ? styles.micActive : ''}`}
-                  onClick={toggleVoiceInput}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleVoiceInput();
+                  }}
                   title={t('studio.voice_input', 'Nhập bằng giọng nói')}
                 >
                   <HiOutlineMicrophone size={20} />
@@ -2119,7 +2181,10 @@ export const StudioPage: React.FC = () => {
                 <button
                   type="button"
                   className={`${styles.pinkNeonSubmitBtn} ${!prompt.trim() ? styles.submitBtnReady : ''}`}
-                  onClick={handleGenerate}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleGenerate();
+                  }}
                   disabled={isGenerating}
                   title={`${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`}
                 >
