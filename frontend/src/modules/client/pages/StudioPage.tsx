@@ -1222,6 +1222,18 @@ export const StudioPage: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Speaker Toggle Button for Video Mode */}
+                {activeTab === 'video' && (
+                  <button
+                    type="button"
+                    className={`${styles.speakerToolbarBtn} ${isAudioMuted ? styles.speakerMuted : ''}`}
+                    onClick={() => setIsAudioMuted(!isAudioMuted)}
+                    title={isAudioMuted ? 'Bật âm thanh video' : 'Tắt âm thanh video'}
+                  >
+                    {isAudioMuted ? <HiOutlineSpeakerXMark size={16} /> : <HiOutlineSpeakerWave size={16} />}
+                  </button>
+                )}
               </div>
 
               {/* Right: Microphone & Neon Pink Circular Submit */}
@@ -1247,18 +1259,6 @@ export const StudioPage: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Standalone Speaker Button for Video Mode */}
-          {activeTab === 'video' && (
-            <button
-              type="button"
-              className={styles.standaloneSpeakerBtn}
-              onClick={() => setIsAudioMuted(!isAudioMuted)}
-              title={isAudioMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-            >
-              {isAudioMuted ? <HiOutlineSpeakerXMark size={18} /> : <HiOutlineSpeakerWave size={18} />}
-            </button>
-          )}
         </div>
       </div>
 
