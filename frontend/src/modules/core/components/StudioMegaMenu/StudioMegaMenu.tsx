@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  HiOutlineChatBubbleLeftRight,
   HiOutlinePhoto,
   HiOutlineFilm,
   HiOutlineChevronDown,
@@ -35,7 +34,7 @@ export interface ModelItem {
 }
 
 export interface StudioCategory {
-  id: 'chat' | 'image' | 'video';
+  id: 'image' | 'video';
   label: string;
   icon: React.ReactNode;
   desc: string;
@@ -43,57 +42,6 @@ export interface StudioCategory {
 }
 
 export const STUDIO_CATEGORIES: StudioCategory[] = [
-  {
-    id: 'chat',
-    label: 'Chat',
-    icon: <HiOutlineChatBubbleLeftRight size={20} />,
-    desc: 'Hội thoại AI, lập trình, viết lách & giải quyết logic',
-    models: [
-      {
-        id: 'gpt-4o',
-        name: 'GPT-4o (Omni)',
-        provider: 'OpenAI',
-        badge: 'HOT',
-        description: 'Flagship đa phương thức, suy luận logic và kiến thức chuyên sâu đỉnh cao',
-        credits: '15 cr/1k tokens',
-        tag: 'Đa nhiệm cao cấp',
-      },
-      {
-        id: 'claude-3-5-sonnet',
-        name: 'Claude 3.5 Sonnet',
-        provider: 'Anthropic',
-        badge: 'TOP CODE',
-        description: 'Mô hình viết code & phân tích logic sắc bén nhất hiện nay',
-        credits: '18 cr/1k tokens',
-        tag: 'Lập trình & Viết lách',
-      },
-      {
-        id: 'gemini-1-5-pro',
-        name: 'Gemini 1.5 Pro',
-        provider: 'Google DeepMind',
-        description: 'Cửa sổ ngữ cảnh khổng lồ 2M token, đọc trọn tài liệu và video lớn',
-        credits: '12 cr/1k tokens',
-        tag: '2M Context',
-      },
-      {
-        id: 'deepseek-r1',
-        name: 'DeepSeek-R1',
-        provider: 'DeepSeek',
-        badge: 'REASONING',
-        description: 'Mô hình suy luận chuỗi tư duy (Chain of Thought), giải toán & logic',
-        credits: '10 cr/1k tokens',
-        tag: 'Tư duy logic',
-      },
-      {
-        id: 'llama-3-3-70b',
-        name: 'Llama 3.3 (70B)',
-        provider: 'Meta AI',
-        description: 'Mã nguồn mở tốc độ cao, độ trễ cực thấp, tối ưu chi phí',
-        credits: '6 cr/1k tokens',
-        tag: 'Tốc độ cao',
-      },
-    ],
-  },
   {
     id: 'image',
     label: 'Hình Ảnh',
@@ -188,17 +136,13 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeCatId, setActiveCatId] = useState<'chat' | 'image' | 'video'>('chat');
+  const [activeCatId, setActiveCatId] = useState<'image' | 'video'>('image');
 
   const isStudioActive = location.pathname.startsWith('/studio');
   const currentCategory = STUDIO_CATEGORIES.find((c) => c.id === activeCatId) || STUDIO_CATEGORIES[0];
 
   const handleSelectModel = (catId: string, modelId: string) => {
-    if (catId === 'chat') {
-      navigate(`/chat?model=${modelId}`);
-    } else {
-      navigate(`/studio?category=${catId}&model=${modelId}`);
-    }
+    navigate(`/studio?category=${catId}&model=${modelId}`);
     if (onCloseMenu) onCloseMenu();
   };
 
@@ -237,11 +181,7 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
                     onMouseEnter={() => setActiveCatId(cat.id)}
                     onClick={() => {
                       setActiveCatId(cat.id);
-                      if (cat.id === 'chat') {
-                        navigate('/chat');
-                      } else {
-                        navigate(`/studio?category=${cat.id}`);
-                      }
+                      navigate(`/studio?category=${cat.id}`);
                       if (onCloseMenu) onCloseMenu();
                     }}
                   >
