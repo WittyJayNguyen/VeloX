@@ -413,9 +413,11 @@ export const ModelPricingPage: React.FC = () => {
       header: 'LỢI NHUẬN & BIÊN LỜI',
       width: '200px',
       render: (m) => {
-        const margin = m.profit_margin_pct ?? 0;
+        const rawMargin = m.profit_margin_pct ?? 0;
         const profit = m.profit_vnd ?? 0;
-        const isPositive = margin >= 0;
+        const isPositive = rawMargin >= 0;
+        // Cap excessive margin (> 100%) to clean 100% (Pool nội bộ / Sàn 1💎)
+        const displayMargin = rawMargin > 100 ? 100 : (rawMargin > 0 ? Number(rawMargin.toFixed(1)) : 0);
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -433,7 +435,7 @@ export const ModelPricingPage: React.FC = () => {
                 border: `1px solid ${isPositive ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`
               }}>
                 <HiOutlineArrowTrendingUp size={14} />
-                +{margin > 0 ? margin : 0}% Lời
+                +{displayMargin}% Lời
               </span>
             </div>
             <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
