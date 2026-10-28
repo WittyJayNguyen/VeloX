@@ -523,20 +523,36 @@ async def seed_default_models(db: AsyncSession):
         existing_codes.add(item["model_code"])
         added_count += 1
 
-    # Backfill config for existing models in database if missing
+    # Backfill config and reconcile categories for existing models in database
     all_models_res = await db.execute(select(AIModel))
     all_models = all_models_res.scalars().all()
     updated_config_count = 0
+    updated_category_count = 0
     for m in all_models:
-        if not m.config or m.config.strip() in ("", "{}", "null"):
+        code_l = (m.model_code or "").lower()
+        new_cat = m.category
+        if any(w in code_l for w in ["tts", "whisper", "audio", "voice", "speech"]):
+            new_cat = "AUDIO"
+        elif any(w in code_l for w in ["gen3", "gen-2", "video", "luma", "sora", "runway", "seedance", "veo", "kling", "minimax-video"]):
+            new_cat = "VIDEO"
+        elif any(w in code_l for w in ["dall-e", "midjourney", "flux", "image", "sd-", "imagine"]):
+            new_cat = "IMAGE"
+
+        if new_cat != m.category:
+            m.category = new_cat
+            updated_category_count += 1
+
+        if not m.config or m.config.strip() in ("", "{}", "null") or new_cat != m.category:
             cfg = get_model_config({"model_code": m.model_code, "category": m.category})
             m.config = json.dumps(cfg, ensure_ascii=False)
             updated_config_count += 1
 
-    if added_count > 0 or updated_config_count > 0:
+    if added_count > 0 or updated_config_count > 0 or updated_category_count > 0:
         await db.commit()
         if added_count > 0:
             print(f"[DB] Seeded {added_count} new standard AI models into catalog")
+        if updated_category_count > 0:
+            print(f"[DB] Reconciled categories for {updated_category_count} AI models into AUDIO/VIDEO/IMAGE/CHAT")
         if updated_config_count > 0:
             print(f"[DB] Updated configurations for {updated_config_count} existing AI models")
 

@@ -23,3 +23,9 @@ class UserApiKey(Base, UUIDMixin, TimestampMixin):
 
     # Relationship back to User
     user = relationship("User", backref="api_keys", lazy="selectin")
+
+    def record_usage(self) -> None:
+        """Updates total requests count and last used timestamp."""
+        from datetime import datetime, timezone
+        self.total_requests = (self.total_requests or 0) + 1
+        self.last_used_at = datetime.now(timezone.utc)
