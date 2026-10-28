@@ -18,12 +18,16 @@ export const LoginForm = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+  const [accountLockedNotice, setAccountLockedNotice] = useState(false);
   const [cooldown, setCooldown] = useState<number>(0);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('session_expired') === '1') {
       setSessionExpiredNotice(true);
+    }
+    if (params.get('account_locked') === '1') {
+      setAccountLockedNotice(true);
     }
   }, [location]);
 
@@ -112,6 +116,24 @@ export const LoginForm = () => {
           }}>
             <HiOutlineExclamationCircle size={18} />
             <span>Phiên làm việc đã hết hạn hoặc bị hủy bảo mật. Vui lòng đăng nhập lại.</span>
+          </div>
+        )}
+
+        {accountLockedNotice && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: 8,
+            padding: '12px 14px',
+            color: '#fca5a5',
+            fontSize: '0.84rem',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}>
+            <HiOutlineExclamationCircle size={20} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span>Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa bởi Ban Quản Trị. Vui lòng liên hệ hỗ trợ!</span>
           </div>
         )}
 

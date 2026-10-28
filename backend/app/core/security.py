@@ -215,7 +215,7 @@ async def get_current_user(
 
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Tài khoản của bạn đã bị tạm khóa hoặc vô hiệu hóa bởi Ban Quản Trị"
         )
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HiOutlineCreditCard, HiOutlineReceiptPercent } from 'react-icons/hi2';
+import apiClient from '@modules/core/lib/apiClient';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
 import styles from '@assets/scss/client/client-pages.module.scss';
 
@@ -14,29 +15,32 @@ interface OrderItem {
   paymentMethod: string;
 }
 
-const DEFAULT_ORDERS: OrderItem[] = [
-  { id: 'ORD-991201', packageName: 'Nạp 1,100 Credit', amount: 100000, credits: 1100, status: 'COMPLETED', createdAt: '2026-10-27 14:20', paymentMethod: 'VietQR Banking' },
-  { id: 'ORD-882109', packageName: 'Nạp 2,400 Credit', amount: 200000, credits: 2400, status: 'COMPLETED', createdAt: '2026-10-25 10:15', paymentMethod: 'VietQR Banking' },
-  { id: 'ORD-771024', packageName: 'Khởi tạo tài khoản tặng Credit', amount: 0, credits: 500, status: 'COMPLETED', createdAt: '2026-10-20 09:00', paymentMethod: 'Hệ thống tặng' },
-];
-
 export const OrdersPage: React.FC = () => {
   const { t } = useTranslation();
-  const [orders, setOrders] = useState<OrderItem[]>(DEFAULT_ORDERS);
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [topupOpen, setTopupOpen] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('velox_user_orders');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setOrders(parsed);
+    let isMounted = true;
+    setLoading(true);
+    apiClient
+      .get('/billing/my-orders')
+      .then((res) => {
+        if (isMounted && res.data?.data) {
+          setOrders(res.data.data);
         }
-      } catch {
-        // ignore
-      }
-    }
+      })
+      .catch((err) => {
+        console.error('Failed to load orders:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [topupOpen]);
 
   const totalSpent = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
@@ -105,19 +109,35 @@ export const OrdersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((o) => (
-                <tr key={o.id}>
-                  <td><code style={{ color: '#38bdf8' }}>{o.id}</code></td>
-                  <td><strong>{o.packageName}</strong></td>
-                  <td>{o.amount.toLocaleString()} đ</td>
-                  <td><span style={{ color: '#2dd4bf', fontWeight: 700 }}>+{o.credits.toLocaleString()} 💎</span></td>
-                  <td>{o.paymentMethod}</td>
-                  <td>{new Date(o.createdAt).toLocaleString()}</td>
-                  <td>
-                    <span className={styles.badgeSuccess}>Thành Công</span>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                    Đang tải danh sách đơn hàng...
                   </td>
                 </tr>
-              ))}
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                    Chưa có giao dịch nạp tiền nào. Hãy chọn một gói Credit để bắt đầu sử dụng!
+                  </td>
+                </tr>
+              ) : (
+                orders.map((o) => (
+                  <tr key={o.id}>
+                    <td><code style={{ color: '#38bdf8' }}>{o.id}</code></td>
+                    <td><strong>{o.packageName}</strong></td>
+                    <td>{o.amount.toLocaleString()} đ</td>
+                    <td><span style={{ color: '#2dd4bf', fontWeight: 700 }}>+{o.credits.toLocaleString()} 💎</span></td>
+                    <td>{o.paymentMethod}</td>
+                    <td>{o.createdAt || 'Gần đây'}</td>
+                    <td>
+                      <span className={o.status === 'COMPLETED' ? styles.badgeSuccess : styles.badgeWarning}>
+                        {o.status === 'COMPLETED' ? 'Thành Công' : o.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

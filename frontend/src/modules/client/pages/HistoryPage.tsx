@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HiOutlineClock, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import apiClient from '@modules/core/lib/apiClient';
 import styles from '@assets/scss/client/client-pages.module.scss';
 
 interface UsageRecord {
@@ -11,25 +12,39 @@ interface UsageRecord {
   tokensUsed: number;
   creditsDeducted: number;
   status: 'SUCCESS' | 'RATE_LIMITED';
+  prompt?: string;
 }
-
-const SAMPLE_USAGE: UsageRecord[] = [
-  { id: 'req_881', timestamp: '2026-10-27 22:45', model: 'gpt-4o', taskType: 'Chat Completion', tokensUsed: 1450, creditsDeducted: 15, status: 'SUCCESS' },
-  { id: 'req_880', timestamp: '2026-10-27 21:12', model: 'claude-3-5-sonnet', taskType: 'Code Generation', tokensUsed: 3200, creditsDeducted: 32, status: 'SUCCESS' },
-  { id: 'req_879', timestamp: '2026-10-27 18:30', model: 'midjourney-v6', taskType: 'Image Generation', tokensUsed: 0, creditsDeducted: 45, status: 'SUCCESS' },
-  { id: 'req_878', timestamp: '2026-10-27 15:04', model: 'gemini-1.5-pro', taskType: 'Fitness Plan Analysis', tokensUsed: 2100, creditsDeducted: 18, status: 'SUCCESS' },
-  { id: 'req_877', timestamp: '2026-10-26 19:22', model: 'gpt-4o-mini', taskType: 'Translation', tokensUsed: 800, creditsDeducted: 5, status: 'SUCCESS' },
-  { id: 'req_876', timestamp: '2026-10-26 14:10', model: 'runway-gen3', taskType: 'Video Generation', tokensUsed: 0, creditsDeducted: 80, status: 'SUCCESS' },
-];
 
 export const HistoryPage: React.FC = () => {
   const { t } = useTranslation();
   const [filterModel, setFilterModel] = useState('ALL');
-  const [records] = useState<UsageRecord[]>(SAMPLE_USAGE);
+  const [records, setRecords] = useState<UsageRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = records.filter(r => filterModel === 'ALL' || r.model.includes(filterModel));
+  useEffect(() => {
+    let isMounted = true;
+    apiClient
+      .get('/users/me/usage-history')
+      .then((res) => {
+        if (isMounted && res.data?.data) {
+          setRecords(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load usage history:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
 
-  const totalCreditsUsed = records.reduce((acc, cur) => acc + cur.creditsDeducted, 0);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filtered = records.filter(r => filterModel === 'ALL' || r.model.toLowerCase().includes(filterModel.toLowerCase()));
+
+  const totalCreditsUsed = records.reduce((acc, cur) => acc + (cur.creditsDeducted || 0), 0);
 
   return (
     <div className={styles.clientContainer}>
@@ -105,21 +120,35 @@ export const HistoryPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((item) => (
-                <tr key={item.id}>
-                  <td><code style={{ color: '#38bdf8' }}>{item.id}</code></td>
-                  <td>{item.timestamp}</td>
-                  <td><strong>{item.model}</strong></td>
-                  <td>{item.taskType}</td>
-                  <td>{item.tokensUsed ? item.tokensUsed.toLocaleString() : 'N/A'}</td>
-                  <td><strong style={{ color: '#ff6b35' }}>-{item.creditsDeducted} 💎</strong></td>
-                  <td>
-                    <span className={styles.badgeSuccess}>
-                      {item.status}
-                    </span>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                    Đang tải nhật ký sử dụng...
                   </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                    Chưa có nhật ký sử dụng nào. Hãy bắt đầu trải nghiệm tại AI Studio hoặc Playground!
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((item) => (
+                  <tr key={item.id}>
+                    <td><code style={{ color: '#38bdf8' }}>{item.id}</code></td>
+                    <td>{item.timestamp}</td>
+                    <td><strong>{item.model}</strong></td>
+                    <td>{item.taskType}</td>
+                    <td>{item.tokensUsed ? item.tokensUsed.toLocaleString() : 'N/A'}</td>
+                    <td><strong style={{ color: '#ff6b35' }}>-{item.creditsDeducted} 💎</strong></td>
+                    <td>
+                      <span className={styles.badgeSuccess}>
+                        {item.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

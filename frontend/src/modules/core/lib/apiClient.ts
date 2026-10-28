@@ -25,12 +25,19 @@ apiClient.interceptors.response.use(
     const url = error.config?.url || '';
     const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
 
-    // Only redirect on 401 if it's NOT an authentication attempt
-    if (status === 401 && !isAuthEndpoint) {
+    const detail = error.response?.data?.detail;
+    const detailStr = typeof detail === 'string' ? detail : detail?.message || '';
+    const isLocked = detailStr.includes('khóa') || detailStr.includes('vô hiệu') || detail?.code === 'account_locked';
+
+    // Kick out user immediately if unauthorized or account is locked
+    if ((status === 401 || (status === 403 && isLocked)) && !isAuthEndpoint) {
       localStorage.removeItem('velox_token');
       localStorage.removeItem('velox_user');
+      localStorage.removeItem('velox_users_cache');
+      localStorage.removeItem('velox_roles_cache');
       if (window.location.pathname !== '/login') {
-        window.location.href = `/login?session_expired=1&redirect=${encodeURIComponent(window.location.pathname)}`;
+        const queryParam = isLocked ? 'account_locked=1' : 'session_expired=1';
+        window.location.href = `/login?${queryParam}&redirect=${encodeURIComponent(window.location.pathname)}`;
       }
     }
     return Promise.reject(error);

@@ -264,9 +264,17 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
               <HiOutlineCommandLine className={styles.itemIcon} />
               <span>{t('client_menu.developer', 'API & MCP')}</span>
             </div>
-            <div className={styles.menuItem} onClick={() => handleNavigate('/downloads')}>
+            <div
+              className={styles.menuItem}
+              style={{ opacity: 0.55, cursor: 'not-allowed', filter: 'grayscale(0.5)' }}
+              title="Tính năng Phần mềm PC đang phát triển và tạm thời vô hiệu hóa"
+              onClick={() => handleNavigate('/downloads')}
+            >
               <HiOutlineArrowDownTray className={styles.itemIcon} />
-              <span>{t('client_menu.downloads', 'Phần mềm PC')}</span>
+              <span className={styles.flexItem}>{t('client_menu.downloads', 'Phần mềm PC')}</span>
+              <span className={styles.itemBadgeGray} style={{ fontSize: '0.68rem', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}>
+                {t('common.disabled', 'Tạm khóa')}
+              </span>
             </div>
           </div>
 

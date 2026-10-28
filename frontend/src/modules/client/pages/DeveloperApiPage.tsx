@@ -1,25 +1,123 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HiOutlineCommandLine, HiOutlineKey, HiOutlineDocumentDuplicate, HiOutlineCheckCircle, HiOutlinePlus } from 'react-icons/hi2';
+import {
+  HiOutlineCommandLine,
+  HiOutlineKey,
+  HiOutlineDocumentDuplicate,
+  HiOutlineCheckCircle,
+  HiOutlinePlus,
+  HiOutlineTrash,
+  HiOutlineExclamationTriangle,
+} from 'react-icons/hi2';
+import apiClient from '@modules/core/lib/apiClient';
 import styles from '@assets/scss/client/client-pages.module.scss';
+
+interface ApiKeyItem {
+  id: string;
+  name: string;
+  key_prefix: string;
+  is_active: boolean;
+  rate_limit_per_min: number;
+  total_requests: number;
+  last_used_at?: string;
+  created_at?: string;
+}
 
 export const DeveloperApiPage: React.FC = () => {
   const { t } = useTranslation();
-  const [apiKey, setApiKey] = useState('vlx-live-9a8b7c6d5e4f3a2b1c0d9e8f');
-  const [copiedKey, setCopiedKey] = useState(false);
+  const [keys, setKeys] = useState<ApiKeyItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
+  // Create Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [rateLimit, setRateLimit] = useState(60);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createdSecret, setCreatedSecret] = useState<string | null>(null);
+
+  // Active key for snippet preview
+  const [activeKeyString, setActiveKeyString] = useState<string>('sk-velox-YOUR-API-KEY');
+  const [copiedSnippet, setCopiedSnippet] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+
+  const fetchKeys = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient.get<ApiKeyItem[]>('/developer/keys');
+      const list = res.data || [];
+      setKeys(list);
+      if (list.length > 0 && activeKeyString === 'sk-velox-YOUR-API-KEY') {
+        setActiveKeyString(`${list[0].key_prefix}...`);
+      }
+    } catch {
+      // Fallback
+      setKeys([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegenerate = () => {
-    const newKey = `vlx-live-${Math.random().toString(36).substring(2)}${Math.random().toString(36).substring(2)}`;
-    setApiKey(newKey);
-    setToast('Đã tạo mới API Key thành công!');
-    setTimeout(() => setToast(null), 3000);
+  useEffect(() => {
+    fetchKeys();
+  }, []);
+
+  const handleCopy = (text: string, isKey = false) => {
+    navigator.clipboard.writeText(text);
+    if (isKey) {
+      setCopiedKey(true);
+      setTimeout(() => setCopiedKey(false), 2000);
+    } else {
+      setCopiedSnippet(true);
+      setTimeout(() => setCopiedSnippet(false), 2000);
+    }
+  };
+
+  const handleCreateKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+    try {
+      setIsCreating(true);
+      const res = await apiClient.post<{ secret_key: string } & ApiKeyItem>('/developer/keys', {
+        name: newKeyName.trim(),
+        rate_limit_per_min: Number(rateLimit) || 60,
+      });
+
+      setCreatedSecret(res.data.secret_key);
+      setActiveKeyString(res.data.secret_key);
+      setToast('Đã tạo API Key mới thành công!');
+      setTimeout(() => setToast(null), 3500);
+      await fetchKeys();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Không thể tạo API Key. Vui lòng thử lại.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleToggle = async (keyItem: ApiKeyItem) => {
+    try {
+      await apiClient.patch(`/developer/keys/${keyItem.id}/toggle?is_active=${!keyItem.is_active}`);
+      setKeys((prev) =>
+        prev.map((k) => (k.id === keyItem.id ? { ...k, is_active: !k.is_active } : k))
+      );
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Không thể thay đổi trạng thái key.');
+    }
+  };
+
+  const handleRevoke = async (keyId: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn thu hồi (xóa) API Key này? Tất cả ứng dụng đang sử dụng key này sẽ bị ngắt kết nối ngay lập tức!')) {
+      return;
+    }
+    try {
+      await apiClient.delete(`/developer/keys/${keyId}`);
+      setKeys((prev) => prev.filter((k) => k.id !== keyId));
+      setToast('Đã thu hồi API Key thành công.');
+      setTimeout(() => setToast(null), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Không thể thu hồi API Key.');
+    }
   };
 
   const mcpConfig = JSON.stringify(
@@ -29,7 +127,7 @@ export const DeveloperApiPage: React.FC = () => {
           command: 'npx',
           args: ['-y', '@velox/mcp-server'],
           env: {
-            VELOX_API_KEY: apiKey,
+            VELOX_API_KEY: activeKeyString,
             VELOX_BASE_URL: 'https://api.velox.nexoratech.com.vn/v1',
           },
         },
@@ -47,12 +145,25 @@ export const DeveloperApiPage: React.FC = () => {
             <span className={styles.pageIcon}>💻</span>
             {t('client_menu.developer', 'API & Giao Thức MCP (Model Context Protocol)')}
           </h1>
-          <p>{t('developer.subtitle', 'Kết nối VeloX AI Gateway với các ứng dụng IDE, Claude Desktop, Cursor và hệ thống backend của bạn')}</p>
+          <p>
+            {t(
+              'developer.subtitle',
+              'Kết nối VeloX AI Gateway với các ứng dụng IDE, Claude Desktop, Cursor và hệ thống backend của bạn'
+            )}
+          </p>
         </div>
 
         <div className={styles.headerActions}>
-          <button type="button" className={styles.primaryBtn} onClick={handleRegenerate}>
-            <HiOutlinePlus /> Tạo Lại API Key
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            onClick={() => {
+              setNewKeyName('');
+              setCreatedSecret(null);
+              setIsModalOpen(true);
+            }}
+          >
+            <HiOutlinePlus /> Tạo API Key Mới
           </button>
         </div>
       </div>
@@ -64,25 +175,109 @@ export const DeveloperApiPage: React.FC = () => {
         </div>
       )}
 
-      {/* API Key Management */}
+      {/* Keys Table Card */}
       <div className={styles.contentCard}>
-        <h3 className={styles.cardTitle}>
-          <HiOutlineKey /> VeloX Secret API Key
-        </h3>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#0d121c', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #243048', marginBottom: '1rem' }}>
-          <code style={{ flex: 1, color: '#38bdf8', fontSize: '0.95rem', letterSpacing: '0.04em' }}>{apiKey}</code>
-          <button type="button" className={styles.primaryBtn} onClick={() => handleCopy(apiKey)} style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
-            <HiOutlineDocumentDuplicate /> {copiedKey ? 'Đã Chép' : 'Sao Chép'}
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 className={styles.cardTitle} style={{ margin: 0 }}>
+            <HiOutlineKey /> Danh Sách Khóa Bí Mật API (Secret Keys)
+          </h3>
+          <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+            Tổng số: <strong>{keys.length}</strong> khóa
+          </span>
         </div>
 
-        <p style={{ color: '#94a3b8', fontSize: '0.86rem', margin: 0 }}>
-          🔒 Giữ bí mật API Key của bạn. Không commit lên GitHub hoặc chia sẻ công khai. Tương thích 100% với định dạng OpenAI SDK.
-        </p>
+        {loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+            Đang tải danh sách API Keys...
+          </div>
+        ) : keys.length === 0 ? (
+          <div style={{ padding: '2.5rem', textAlign: 'center', background: '#0a0e17', borderRadius: '12px', border: '1px dashed #243048' }}>
+            <HiOutlineKey size={40} style={{ color: '#475569', marginBottom: '0.75rem' }} />
+            <h4 style={{ color: '#e2e8f0', margin: '0 0 0.5rem' }}>Bạn chưa có API Key nào</h4>
+            <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0 0 1.25rem' }}>
+              Tạo khóa API đầu tiên để tích hợp VeloX Gateway vào Claude Desktop, Cursor IDE hoặc backend ứng dụng.
+            </p>
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={() => {
+                setNewKeyName('');
+                setCreatedSecret(null);
+                setIsModalOpen(true);
+              }}
+            >
+              <HiOutlinePlus /> Tạo Khóa API Đầu Tiên
+            </button>
+          </div>
+        ) : (
+          <div className={styles.tableWrapper}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tên Định Danh</th>
+                  <th>Tiền Tố Khóa (Prefix)</th>
+                  <th>Giới Hạn</th>
+                  <th>Số Request</th>
+                  <th>Ngày Tạo</th>
+                  <th>Trạng Thái</th>
+                  <th>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {keys.map((k) => (
+                  <tr key={k.id}>
+                    <td>
+                      <strong style={{ color: '#f1f5f9' }}>{k.name}</strong>
+                    </td>
+                    <td>
+                      <code style={{ color: '#38bdf8', background: '#0e1726', padding: '3px 8px', borderRadius: '4px' }}>
+                        {k.key_prefix}...
+                      </code>
+                    </td>
+                    <td>{k.rate_limit_per_min} req/phút</td>
+                    <td>{k.total_requests.toLocaleString()}</td>
+                    <td>{k.created_at ? new Date(k.created_at).toLocaleDateString('vi-VN') : '—'}</td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(k)}
+                        className={k.is_active ? styles.badgeSuccess : styles.badgeDanger}
+                        style={{ border: 'none', cursor: 'pointer' }}
+                        title="Bấm để bật/tắt kích hoạt khóa này"
+                      >
+                        {k.is_active ? 'Đang hoạt động' : 'Tạm khóa'}
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => handleRevoke(k.id)}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          color: '#ef4444',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.8rem',
+                        }}
+                        title="Thu hồi khóa"
+                      >
+                        <HiOutlineTrash /> Xóa
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* MCP Integration */}
+      {/* MCP Integration Card */}
       <div className={styles.contentCard}>
         <h3 className={styles.cardTitle}>
           <HiOutlineCommandLine /> Tích Hợp MCP (Claude Desktop / Cursor / Windsurf)
@@ -110,16 +305,16 @@ export const DeveloperApiPage: React.FC = () => {
             type="button"
             className={styles.secondaryBtn}
             onClick={() => handleCopy(mcpConfig)}
-            style={{ position: 'absolute', top: '10px', right: '10px', padding: '4px 10px', fontSize: '0.75rem' }}
+            style={{ position: 'absolute', top: '10px', right: '10px', padding: '6px 12px', fontSize: '0.78rem' }}
           >
-            <HiOutlineDocumentDuplicate /> Sao Chép JSON
+            <HiOutlineDocumentDuplicate /> {copiedSnippet ? 'Đã Chép' : 'Sao Chép JSON'}
           </button>
         </div>
       </div>
 
-      {/* Code Snippet Python / Curl */}
+      {/* Code Snippet Python / OpenAI SDK */}
       <div className={styles.contentCard}>
-        <h3 className={styles.cardTitle}>Code Mẫu Sử Dụng Python (OpenAI SDK)</h3>
+        <h3 className={styles.cardTitle}>Code Mẫu Sử Dụng Python (OpenAI SDK Chuẩn)</h3>
         <pre
           style={{
             background: '#090d16',
@@ -134,19 +329,191 @@ export const DeveloperApiPage: React.FC = () => {
         >
 {`from openai import OpenAI
 
+# Tương thích 100% với OpenAI SDK, routing tự động qua pool VeloX High-Speed
 client = OpenAI(
-    api_key="${apiKey}",
+    api_key="${activeKeyString}",
     base_url="https://api.velox.nexoratech.com.vn/v1"
 )
 
 response = client.chat.completions.create(
     model="gpt-4o",
-    messages=[{"role": "user", "content": "Tạo lịch tập gym 4 ngày/tuần"}]
+    messages=[{"role": "user", "content": "Xin chào VeloX AI!"}]
 )
 
 print(response.choices[0].message.content)`}
         </pre>
       </div>
+
+      {/* Modal Create Key */}
+      {isModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem',
+          }}
+        >
+          <div
+            style={{
+              background: '#0f172a',
+              border: '1px solid #334155',
+              borderRadius: '14px',
+              maxWidth: '520px',
+              width: '100%',
+              padding: '1.75rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            {createdSecret ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', marginBottom: '1rem' }}>
+                  <HiOutlineCheckCircle size={28} />
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff' }}>Tạo API Key Thành Công!</h3>
+                </div>
+
+                <div
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '0.85rem 1rem',
+                    borderRadius: '8px',
+                    color: '#fca5a5',
+                    fontSize: '0.85rem',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                  }}
+                >
+                  <HiOutlineExclamationTriangle size={22} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong>Lưu ý quan trọng:</strong> Vì lý do bảo mật, bạn sẽ không thể nhìn thấy lại toàn bộ khóa này sau khi đóng hộp thoại. Hãy lưu vào nơi an toàn ngay!
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                    Khóa Bí Mật Của Bạn (Secret Key):
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      readOnly
+                      value={createdSecret}
+                      style={{
+                        flex: 1,
+                        background: '#090d16',
+                        border: '1px solid #22c55e',
+                        color: '#4ade80',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        fontFamily: 'monospace',
+                        fontSize: '0.9rem',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className={styles.primaryBtn}
+                      onClick={() => handleCopy(createdSecret, true)}
+                    >
+                      <HiOutlineDocumentDuplicate /> {copiedKey ? 'Đã Chép' : 'Sao Chép'}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    className={styles.primaryBtn}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setCreatedSecret(null);
+                    }}
+                  >
+                    Tôi Đã Lưu Khóa Này
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleCreateKey}>
+                <h3 style={{ margin: '0 0 0.5rem', color: '#fff', fontSize: '1.2rem' }}>
+                  Tạo API Key Mới
+                </h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.86rem', margin: '0 0 1.25rem' }}>
+                  Khóa API cho phép hệ thống hoặc IDE của bạn gửi request trực tiếp đến VeloX AI Gateway.
+                </p>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '6px' }}>
+                    Tên định danh khóa *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="vd: Claude Desktop, Cursor IDE, App Backend..."
+                    value={newKeyName}
+                    onChange={(e) => setNewKeyName(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: '#090d16',
+                      border: '1px solid #334155',
+                      color: '#fff',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.9rem',
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '6px' }}>
+                    Giới hạn số request / phút (Rate Limit)
+                  </label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={1000}
+                    value={rateLimit}
+                    onChange={(e) => setRateLimit(Number(e.target.value))}
+                    style={{
+                      width: '100%',
+                      background: '#090d16',
+                      border: '1px solid #334155',
+                      color: '#fff',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.9rem',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className={styles.secondaryBtn}
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={isCreating}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.primaryBtn}
+                    disabled={isCreating || !newKeyName.trim()}
+                  >
+                    {isCreating ? 'Đang tạo...' : 'Tạo Khóa Bí Mật'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
