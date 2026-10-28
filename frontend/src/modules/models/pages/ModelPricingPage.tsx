@@ -41,6 +41,13 @@ export const ModelPricingPage: React.FC = () => {
   const [providerFilter, setProviderFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'margin_desc' | 'margin_asc' | 'selling_desc' | 'name_asc'>('margin_desc');
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 15;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, providerFilter, searchTerm, sortBy]);
 
   // Bulk Markup Toolbar
   const [bulkPercent, setBulkPercent] = useState<number>(30);
@@ -801,7 +808,9 @@ export const ModelPricingPage: React.FC = () => {
           data={processedModels}
           rowKey={(m) => m.id}
           loading={loading}
-          pageSize={15}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
           emptyText="Không tìm thấy model nào phù hợp với bộ lọc."
         />
       </Card>

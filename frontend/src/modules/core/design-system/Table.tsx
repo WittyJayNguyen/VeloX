@@ -26,10 +26,28 @@ interface TableProps<T> {
 
 export function Table<T>({
   columns, data, rowKey, emptyText = 'Không có dữ liệu', loading,
-  page = 1, pageSize = 10, onPageChange, totalItems, showPagination = true,
+  page: externalPage, pageSize = 10, onPageChange, totalItems, showPagination = true,
 }: TableProps<T>) {
+  const [internalPage, setInternalPage] = React.useState(1);
+  const isControlled = externalPage !== undefined && onPageChange !== undefined;
+  const page = isControlled ? externalPage : (externalPage !== undefined ? externalPage : internalPage);
+
+  const handlePageChange = (newPage: number) => {
+    if (!isControlled) {
+      setInternalPage(newPage);
+    }
+    onPageChange?.(newPage);
+  };
+
   const total = totalItems ?? data.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  // Reset internal page if total items change and current page is out of bounds
+  React.useEffect(() => {
+    if (!isControlled && internalPage > totalPages) {
+      setInternalPage(1);
+    }
+  }, [totalPages, internalPage, isControlled]);
 
   const pagedData = useMemo(() => {
     if (totalItems !== undefined) return data; // server-side pagination
@@ -86,13 +104,13 @@ export function Table<T>({
             Hiển thị {Math.min((page - 1) * pageSize + 1, total)}–{Math.min(page * pageSize, total)} / {total}
           </span>
           <div className={styles.pageButtons}>
-            <button type="button" className={styles.pageBtn} disabled={page <= 1} onClick={() => onPageChange?.(page - 1)}>‹</button>
+            <button type="button" className={styles.pageBtn} disabled={page <= 1} onClick={() => handlePageChange(page - 1)}>‹</button>
             {pageNumbers.map((p, i) => typeof p === 'number' ? (
-              <button key={p} type="button" className={`${styles.pageBtn} ${p === page ? styles.pageActive : ''}`} onClick={() => onPageChange?.(p)}>{p}</button>
+              <button key={p} type="button" className={`${styles.pageBtn} ${p === page ? styles.pageActive : ''}`} onClick={() => handlePageChange(p)}>{p}</button>
             ) : (
               <span key={`dots-${i}`} className={styles.pageDots}>…</span>
             ))}
-            <button type="button" className={styles.pageBtn} disabled={page >= totalPages} onClick={() => onPageChange?.(page + 1)}>›</button>
+            <button type="button" className={styles.pageBtn} disabled={page >= totalPages} onClick={() => handlePageChange(page + 1)}>›</button>
           </div>
         </div>
       )}
