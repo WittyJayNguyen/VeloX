@@ -532,7 +532,9 @@
     "tab_chat": "Chat",
     "clear_chat": "Xoá hội thoại",
     "chat_title": "Phiên Trò Chuyện Trí Tuệ Nhân Tạo",
-    "chat_thinking": "AI đang suy nghĩ và tổng hợp câu trả lời..."
+    "chat_thinking": "AI đang suy nghĩ và tổng hợp câu trả lời...",
+    "no_images_yet": "Chưa có tác phẩm ảnh nào. Hãy nhập mô tả ý tưởng bên dưới để tạo bức ảnh AI đầu tiên!",
+    "no_videos_yet": "Chưa có tác phẩm video nào. Hãy nhập kịch bản bên dưới để tạo video AI chuyển động sống động!"
   },
   "models_page": {
     "title": "Thư Viện Mô Hình AI (AI Models Catalog)",
@@ -568,4 +570,3 @@
     "btn_home": "Trang Chủ"
   }
 }
-

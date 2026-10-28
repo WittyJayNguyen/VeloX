@@ -530,7 +530,9 @@
     "tab_chat": "チャット",
     "clear_chat": "履歴を消去",
     "chat_title": "AI対話セッション",
-    "chat_thinking": "AIが思考中..."
+    "chat_thinking": "AIが思考中...",
+    "no_images_yet": "画像作品はまだありません。下部にプロンプトを入力して最初のAIアートを作成しましょう！",
+    "no_videos_yet": "動画作品はまだありません。下部にスクリプトを入力して躍動感あるAI動画を作成しましょう！"
   },
   "models_page": {
     "title": "AIモデルカタログ (AI Models Catalog)",

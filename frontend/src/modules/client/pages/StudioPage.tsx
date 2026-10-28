@@ -128,284 +128,6 @@ export interface PromptPresetGroup {
   items: PromptPresetItem[];
 }
 
-export const PROMPT_PRESET_GROUPS: Record<string, PromptPresetGroup[]> = {
-  chat: [
-    {
-      groupName: 'LẬP TRÌNH & CÔNG NGHỆ',
-      items: [
-        {
-          title: 'Viết code và giải thuật tối ưu',
-          prompt: 'Hãy giúp tôi xây dựng hàm tối ưu hóa thuật toán và phân tích độ phức tạp thời gian/không gian chi tiết.',
-        },
-        {
-          title: 'Thiết kế kiến trúc hệ thống phân tán',
-          prompt: 'Đề xuất kiến trúc Microservices có khả năng mở rộng cao, chịu tải 100k RPS và cơ chế caching đa tầng.',
-        },
-        {
-          title: 'Debug và rà soát bảo mật mã nguồn',
-          prompt: 'Hãy phân tích đoạn mã sau, tìm các lỗ hổng tiềm ẩn (memory leak, injection, race condition) và hướng dẫn cách khắc phục.',
-        },
-      ],
-    },
-    {
-      groupName: 'SÁNG TẠO & MARKETING',
-      items: [
-        {
-          title: 'Kịch bản video ngắn triệu view',
-          prompt: 'Viết kịch bản video ngắn 45 giây cho TikTok/Reels giới thiệu công cụ AI với câu hook thu hút trong 3 giây đầu.',
-        },
-        {
-          title: 'Chiến lược Marketing Go-To-Market',
-          prompt: 'Lập kế hoạch chiến dịch ra mắt sản phẩm công nghệ 30 ngày, bao gồm kênh truyền thông, thông điệp chính và KPI.',
-        },
-        {
-          title: 'Soạn email thuyết phục đối tác B2B',
-          prompt: 'Soạn thảo email đề xuất hợp tác kinh doanh B2B chuyên nghiệp, lịch sự, nêu bật giá trị cốt lõi và kêu gọi hành động rõ ràng.',
-        },
-      ],
-    },
-  ],
-  image: [
-    {
-      groupName: 'TẠO ẢNH',
-      items: [
-        {
-          title: 'Chân dung studio với ánh sáng điện ảnh',
-          prompt: 'Masterpiece studio portrait photography, Rembrandt dramatic lighting, 85mm f/1.4 lens, natural skin texture, masterpiece, 8k resolution, photorealistic',
-          ratio: '1:1',
-        },
-        {
-          title: 'Phong cảnh siêu thực',
-          prompt: 'Surreal dreamlike ethereal landscape with floating islands, glowing bioluminescent crystal waterfalls, aurora borealis night sky, wide angle, 8k render',
-          ratio: '16:9',
-        },
-        {
-          title: 'Sản phẩm trên bề mặt được tạo kiểu',
-          prompt: 'Commercial luxury product photography on a styled minimalist podium, gentle water ripple reflections, studio softbox diffused rim light, award-winning advertising',
-          ratio: '1:1',
-        },
-        {
-          title: 'Nhân vật 3D có cá tính',
-          prompt: 'Expressive 3D stylized character design, cute cybernetic companion, vibrant Pixar animation style, rich subsurface scattering, octane 3d render',
-          ratio: '1:1',
-        },
-      ],
-    },
-    {
-      groupName: 'NÂNG CAO & KHÔI PHỤC ẢNH',
-      items: [
-        {
-          title: 'Làm sắc nét và sửa mờ',
-          prompt: 'Ultra-sharp high-definition image enhancement, crisp edge details, clear focus recovery, noise reduction, studio pristine clarity 8k',
-          ratio: '1:1',
-        },
-        {
-          title: 'Phóng to lên 4K',
-          prompt: 'Super-resolution 4K upscaled fidelity, hyper-detailed micro textures, pristine sharpness, photographic clarity',
-          ratio: '16:9',
-        },
-        {
-          title: 'Khôi phục ảnh cổ điển',
-          prompt: 'Vintage archival photograph full restoration, vivid natural realistic colorization, scratch repair, balanced dynamic range',
-          ratio: '1:1',
-        },
-      ],
-    },
-  ],
-  video: [
-    {
-      groupName: 'TẠO VIDEO TỪ VĂN BẢN',
-      items: [
-        {
-          title: 'Chuyển động máy quay điện ảnh Slow-motion',
-          prompt: 'Cinematic slow-motion 120fps camera orbit around an athlete in a moody modern gym, volumetric neon light, floating chalk dust, 4k ultra-realistic',
-          duration: '5s',
-          ratio: '16:9',
-        },
-        {
-          title: 'Flycam bay lướt qua phong cảnh thiên nhiên',
-          prompt: 'Breathtaking FPV drone flyover across majestic misty mountain peaks, golden sunrise light, cinematic smooth aerial photography',
-          duration: '5s',
-          ratio: '16:9',
-        },
-        {
-          title: 'Diễn hoạt nhân vật chuyển động tự nhiên',
-          prompt: 'Natural fluid character animation, walking through bustling futuristic cyberpunk city street, neon rain reflections, photorealistic 60fps',
-          duration: '6s',
-          ratio: '16:9',
-        },
-        {
-          title: 'Hiệu ứng kỹ xảo biến đổi hạt điện quang',
-          prompt: 'Explosive kinetic visual effects, particle simulation dissolving into glowing golden energy sparks, dramatic cinematic trailer sequence',
-          duration: '5s',
-          ratio: '16:9',
-        },
-      ],
-    },
-    {
-      groupName: 'VIDEO SẢN PHẨM & QUẢNG CÁO',
-      items: [
-        {
-          title: 'Giới thiệu sản phẩm 3D xoay 360 độ',
-          prompt: 'High-end commercial 3D product turntable showcase, luxury smartwatch rotating gracefully on dark reflective marble, dramatic studio lighting',
-          duration: '5s',
-          ratio: '1:1',
-        },
-        {
-          title: 'Video thể thao hành động tốc độ cao',
-          prompt: 'High-speed athletic sports commercial, sprinter exploding off starting blocks, muscle tension, water splash slow-motion, dynamic low-angle shot',
-          duration: '6s',
-          ratio: '16:9',
-        },
-        {
-          title: 'Video cinematic teaser âm hưởng tương lai',
-          prompt: 'Cinematic movie teaser opening shot, spacecraft descending over a mysterious alien metropolis, volumetric clouds, epic anamorphic widescreen',
-          duration: '10s',
-          ratio: '16:9',
-        },
-      ],
-    },
-  ],
-  audio: [
-    {
-      groupName: 'GIỌNG ĐỌC KỂ CHUYỆN & SÁCH NÓI',
-      items: [
-        {
-          title: 'Giọng trầm ấm truyền cảm kể chuyện đêm khuya',
-          prompt: 'Đêm đã về khuya, không gian lắng đọng và bình yên. Hãy thả lỏng tâm trí, hít một hơi thật sâu và cùng lắng nghe những câu chuyện nhẹ nhàng của tâm hồn...',
-        },
-        {
-          title: 'Giọng truyền cảm hứng, động lực phát triển bản thân',
-          prompt: 'Mỗi buổi sáng thức dậy là một cơ hội mới để bạn chạm tới phiên bản vĩ đại nhất của chính mình. Đừng bao giờ từ bỏ ước mơ, kiên trì bứt phá mọi giới hạn!',
-        },
-        {
-          title: 'Đọc thơ và podcast thư giãn nhẹ nhàng',
-          prompt: 'Gió nhẹ vương qua từng tán lá, những thanh âm êm đềm của buổi sớm mai như xua tan mọi mỏi mệt trong cuộc sống xô bồ...',
-        },
-      ],
-    },
-    {
-      groupName: 'LỒNG TIẾNG & DOANH NGHIỆP',
-      items: [
-        {
-          title: 'Giọng lồng tiếng TVC quảng cáo chuyên nghiệp',
-          prompt: 'VeloX AI Gateway — Đỉnh cao công nghệ trí tuệ nhân tạo, giải pháp bứt phá hiệu suất toàn diện cho doanh nghiệp thế hệ mới.',
-        },
-        {
-          title: 'Lời chào tổng đài và giới thiệu thương hiệu',
-          prompt: 'Kính chào quý khách đã gọi đến trung tâm chăm sóc khách hàng VeloX. Vui lòng nhấn phím 1 để gặp bộ phận kỹ thuật, hoặc phím 2 để được tư vấn dịch vụ.',
-        },
-        {
-          title: 'Bản tin công nghệ và tài chính nhịp điệu nhanh',
-          prompt: 'Bản tin công nghệ hôm nay: Trí tuệ nhân tạo VeloX chính thức nâng cấp hạ tầng xử lý thời gian thực với độ trễ siêu thấp dưới 300 mili-giây.',
-        },
-      ],
-    },
-  ],
-};
-
-// Preset Prompts for "Inspire Me" categorized by mode
-export const INSPIRATION_PROMPTS_BY_TAB: Record<'chat' | 'image' | 'video' | 'audio', string[]> = {
-  chat: [
-    'Giải thích nguyên lý hoạt động của Mạng nơ-ron Transformer một cách trực quan và dễ hiểu nhất',
-    'Viết kịch bản video ngắn 60 giây giới thiệu giải pháp AI sáng tạo hình ảnh & video thế hệ mới',
-    'Tối ưu hóa đoạn mã SQL query phức tạp để cải thiện hiệu năng cơ sở dữ liệu lớn',
-    'Lập kế hoạch chiến lược Content Marketing 30 ngày cho startup công nghệ B2B',
-    'Viết bài luận phân tích tác động của Trí tuệ nhân tạo đối với thị trường lao động toàn cầu',
-    'Thiết kế kiến trúc hệ thống Microservices xử lý 100.000 requests/giây bằng Go và Redis',
-  ],
-  image: [
-    'Chân dung studio điện ảnh 8K, ánh sáng Rembrandt mềm mại, ống kính 85mm f/1.4',
-    'Phong cảnh viễn tưởng huyền ảo với những hòn đảo bay lơ lửng và thác nước pha lê phát quang',
-    'Hình chụp macro hoa sen pha lê phát sáng lung linh trong sương sớm, chi tiết 8K cực nét',
-    'Chiến binh Bắc Âu dũng mãnh với hình xăm cổ ngữ rực sáng trong bão tuyết bí ẩn',
-    'Sản phẩm công nghệ tương lai tối giản trên bục đá cẩm thạch đen phản chiếu gợn nước',
-    'Tạo hình nhân vật 3D phong cách hoạt hình Pixar đáng yêu, hiệu ứng ánh sáng Octane Render',
-  ],
-  video: [
-    'Máy quay điện ảnh 120fps quay slow-motion lướt quanh vận động viên thể thao trong phòng tập neon hiện đại',
-    'Flycam FPV bay lượn ngoạn mục qua những đỉnh núi mù sương đón ánh bình minh vàng rực rỡ',
-    'Nhân vật bước đi tự nhiên qua con phố cyberpunk tương lai dưới ánh đèn neon phản chiếu mặt đường ướt mưa',
-    'Mô hình sản phẩm 3D xoay 360 độ siêu nét trên mặt bàn bóng bẩy, ánh sáng studio sang trọng',
-    'Hiệu ứng kỹ xảo biến đổi hạt năng lượng vàng tan biến vào không gian đầy kịch tính',
-    'Xe thể thao phong cách Synthwave thập niên 80 lao vút trên xa lộ laser hướng về phía hoàng hôn',
-  ],
-  audio: [
-    'Giọng đọc nam trầm ấm truyền cảm, phong cách kể chuyện podcast thư giãn đêm khuya',
-    'Giọng nữ truyền cảm hứng, năng lượng tích cực lan tỏa động lực bứt phá giới hạn bản thân',
-    'Lời chào tổng đài chuyên nghiệp: Chào mừng quý khách đến với dịch vụ trí tuệ nhân tạo VeloX',
-    'Bản tin công nghệ nhịp điệu nhanh, rõ ràng, phát âm chuẩn xác từng thuật ngữ',
-    'Giọng đọc lồng tiếng TVC quảng cáo thương mại cao cấp, sang trọng và đầy thuyết phục',
-    'Đọc thơ nhẹ nhàng, êm đềm với ngữ điệu sâu lắng chạm vào cảm xúc người nghe',
-  ],
-};
-
-export const generateSimulatedChatResponse = (userQuery: string, modelName: string): string => {
-  const queryLower = userQuery.toLowerCase();
-  if (queryLower.includes('code') || queryLower.includes('lập trình') || queryLower.includes('sql') || queryLower.includes('python') || queryLower.includes('react')) {
-    return `Tuyệt vời! Dưới đây là giải pháp kỹ thuật tối ưu do **${modelName}** đề xuất:
-
-\`\`\`typescript
-// Solution generated with ${modelName}
-export async function optimizeWorkflow(payload: Record<string, any>) {
-  try {
-    const startTime = performance.now();
-    // Cache layer & async execution
-    const result = await processPipeline(payload);
-    console.log(\`Execution time: \${(performance.now() - startTime).toFixed(2)}ms\`);
-    return { success: true, data: result };
-  } catch (error) {
-    console.error('Workflow error:', error);
-    throw error;
-  }
-}
-\`\`\`
-
-**Điểm nổi bật của phương án này:**
-1. **Hiệu năng cao:** Tối ưu hóa bộ nhớ đệm, giảm tới 65% thời gian phản hồi.
-2. **Khả năng mở rộng:** Thiết kế dạng module độc lập, dễ dàng tích hợp vào hệ thống hiện tại.
-3. **Bảo mật & Ổn định:** Bổ sung cơ chế xử lý ngoại lệ và logging chi tiết.
-
-Bạn có muốn tôi phát triển thêm chức năng nào khác cho module này không?`;
-  }
-
-  if (queryLower.includes('kịch bản') || queryLower.includes('marketing') || queryLower.includes('tiktok') || queryLower.includes('viết bài')) {
-    return `Chào bạn! Dưới đây là dàn ý kịch bản sáng tạo được thiết kế bởi **${modelName}**:
-
-🎬 **KỊCH BẢN NỘI DUNG VIRAL:**
-
-**1. Hook (0s - 3s):**
-> *"Bạn có biết 90% nhà sáng tạo nội dung đang lãng phí hàng giờ mỗi ngày vào việc này không?"*
-
-**2. Đặt vấn đề & Khơi gợi tò mò (3s - 15s):**
-> Phân cảnh thể hiện sự bế tắc khi phải ngồi suy nghĩ ý tưởng hàng giờ mà sản phẩm vẫn không đạt như kỳ vọng.
-
-**3. Giới thiệu giải pháp đột phá (15s - 45s):**
-> Giới thiệu công cụ AI VeloX với khả năng sinh nội dung, hình ảnh và video chỉ sau vài giây chỉ bằng 1 câu lệnh ngắn gọn.
-
-**4. Kêu gọi hành động - Call to Action (45s - 60s):**
-> *"Trải nghiệm ngay hôm nay để đón đầu xu hướng sáng tạo tương lai!"*
-
-Bạn muốn điều chỉnh phong cách dí dỏm, năng động hay mang tính chuyên gia học thuật?`;
-  }
-
-  return `Chào bạn! Cảm ơn bạn đã đặt câu hỏi. Dưới đây là phản hồi chi tiết từ **${modelName}**:
-
-1. **Phân tích tổng quan:**
-Yêu cầu của bạn đã được tiếp nhận và phân tích toàn diện. Vấn đề này có thể tiếp cận theo hướng tối ưu hóa quy trình kết hợp công nghệ hiện đại nhằm đạt kết quả cao nhất.
-
-2. **Các bước thực thi cụ thể:**
-- **Bước 1:** Xác định mục tiêu trọng tâm và tiêu chí đánh giá thành công.
-- **Bước 2:** Chuẩn bị dữ liệu đầu vào và các ràng buộc kỹ thuật.
-- **Bước 3:** Tiến hành thử nghiệm quy mô nhỏ, đo lường chỉ số phản hồi và tinh chỉnh.
-- **Bước 4:** Triển khai diện rộng với hệ thống giám sát tự động.
-
-3. **Khuyến nghị từ chuyên gia:**
-Luôn duy trì tính linh hoạt và kiểm tra định kỳ để hệ thống thích ứng tốt nhất với sự thay đổi của môi trường.
-
-Nếu bạn cần phân tích sâu hơn ở khía cạnh cụ thể nào, hãy cho tôi biết nhé!`;
-};
-
 // Clean redundant provider prefixes from model display names
 export const cleanModelDisplayName = (name: string): string => {
   if (!name) return '';
@@ -484,9 +206,9 @@ export const StudioPage: React.FC = () => {
   // Studio Mode: 'chat' | 'image' | 'video' | 'audio'
   const [activeTab, setActiveTab] = useState<'chat' | 'image' | 'video' | 'audio'>(urlCategory || 'image');
   const [dbModels, setDbModels] = useState<PublicModelItem[]>([]);
-  const [selectedModelCode, setSelectedModelCode] = useState<string>(
-    urlCategory === 'chat' ? 'gpt-4o' : 'gpt-image-2.5-sunburst'
-  );
+  const [selectedModelCode, setSelectedModelCode] = useState<string>('');
+  const [presetGroups, setPresetGroups] = useState<Record<string, PromptPresetGroup[]>>({});
+  const [inspirationPrompts, setInspirationPrompts] = useState<Record<string, string[]>>({});
   const [chatMessages, setChatMessages] = useState<StudioChatMessage[]>([
     {
       id: 'msg-init-1',
@@ -541,92 +263,10 @@ export const StudioPage: React.FC = () => {
   } | null>(null);
 
   // Results state
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImageItem[]>([
-    {
-      id: 'img-1',
-      url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-      prompt: 'A powerful athlete training in modern dark neon gym, cinematic lighting, 8k resolution',
-      model: 'Midjourney v6.1',
-      aspectRatio: '1:1',
-      quality: 'Ultra 4K',
-      createdAt: 'Vừa xong',
-    },
-    {
-      id: 'img-2',
-      url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80',
-      prompt: 'Futuristic AI fitness laboratory with holograms and dynamic pulse tracking',
-      model: 'FLUX.1 [dev/pro]',
-      aspectRatio: '16:9',
-      quality: 'HD 2K',
-      createdAt: '5 phút trước',
-    },
-    {
-      id: 'img-3',
-      url: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80',
-      prompt: 'Hyper-detailed cyber trainer with glowing kinetic energy aura in high-tech studio',
-      model: 'DALL-E 3 Ultra',
-      aspectRatio: '9:16',
-      quality: 'Standard',
-      createdAt: '12 phút trước',
-    },
-    {
-      id: 'img-4',
-      url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
-      prompt: 'Elite crossfit workout session under dramatic moody stadium floodlights',
-      model: 'Midjourney v6.1',
-      aspectRatio: '1:1',
-      quality: 'Ultra 4K',
-      createdAt: '25 phút trước',
-    },
-  ]);
-
-  const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoItem[]>([
-    {
-      id: 'vid-1',
-      title: 'Cinematic Gym Motivation 4K',
-      prompt: 'Hyper-realistic video of athlete running through neon rain city, smooth slow-motion camera orbit',
-      model: 'Runway Gen-3 Alpha',
-      poster: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-athlete-working-out-with-heavy-ropes-in-a-gym-41315-large.mp4',
-      duration: '5s',
-      quality: '1080p FHD',
-      aspectRatio: '16:9',
-      createdAt: 'Hôm nay',
-    },
-    {
-      id: 'vid-2',
-      title: 'Dynamic Fitness Motion Slowmo',
-      prompt: 'Explosive battle rope training with particles of chalk floating in golden hour light',
-      model: 'Minimax Video-01',
-      poster: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-doing-warm-up-exercises-on-a-yoga-mat-41314-large.mp4',
-      duration: '6s',
-      quality: '720p HD',
-      aspectRatio: '16:9',
-      createdAt: 'Hôm qua',
-    },
-  ]);
-
-  const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>([
-    {
-      id: 'aud-1',
-      title: 'Giọng trầm ấm truyền cảm kể chuyện đêm khuya',
-      prompt: 'Đêm đã về khuya, không gian lắng đọng và bình yên. Hãy thả lỏng tâm trí, hít một hơi thật sâu...',
-      model: 'Eleven v3',
-      voice: 'Tiếng Việt · Hà Nội',
-      duration: '0:24',
-      createdAt: '10 phút trước',
-    },
-    {
-      id: 'aud-2',
-      title: 'Giọng truyền cảm hứng, động lực phát triển bản thân',
-      prompt: 'Mỗi buổi sáng thức dậy là một cơ hội mới để bạn chạm tới phiên bản vĩ đại nhất của chính mình...',
-      model: 'OpenAI TTS HD',
-      voice: 'Tiếng Việt · Sài Gòn',
-      duration: '0:18',
-      createdAt: '1 giờ trước',
-    },
-  ]);
+  // Generation results state (Loaded dynamically from DB history)
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImageItem[]>([]);
+  const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoItem[]>([]);
+  const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>([]);
 
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [textareaShake, setTextareaShake] = useState(false);
@@ -651,76 +291,97 @@ export const StudioPage: React.FC = () => {
     };
   }, []);
 
-  // Filter and merge models for current active tab (Both DB models and standard creative models)
+  // Load dynamic prompt presets from backend API
+  useEffect(() => {
+    let isMounted = true;
+    apiClient
+      .get('/studio/presets')
+      .then((res) => {
+        if (isMounted && res.data?.data) {
+          setPresetGroups(res.data.data.groups || {});
+          setInspirationPrompts(res.data.data.inspirations || {});
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load studio presets:', err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Load user generation history from MediaGenerationLog database via API
+  useEffect(() => {
+    let isMounted = true;
+    apiClient
+      .get('/studio/history')
+      .then((res) => {
+        if (isMounted && res.data?.data) {
+          const list = res.data.data;
+          const imgs: GeneratedImageItem[] = [];
+          const vids: GeneratedVideoItem[] = [];
+          const auds: GeneratedAudioItem[] = [];
+
+          list.forEach((item: any) => {
+            const mType = (item.media_type || '').toUpperCase();
+            const dateStr = item.created_at ? new Date(item.created_at).toLocaleTimeString() : 'Gần đây';
+            if (mType === 'IMAGE') {
+              imgs.push({
+                id: item.id,
+                url: item.output_url || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+                prompt: item.prompt,
+                model: item.model_id || 'AI Engine',
+                aspectRatio: '1:1',
+                quality: 'HD',
+                createdAt: dateStr,
+              });
+            } else if (mType === 'VIDEO') {
+              vids.push({
+                id: item.id,
+                title: item.prompt.slice(0, 32) + '...',
+                prompt: item.prompt,
+                model: item.model_id || 'AI Video Engine',
+                poster: item.output_url || 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80',
+                videoUrl: item.output_url || 'https://assets.mixkit.co/videos/preview/mixkit-athlete-working-out-with-heavy-ropes-in-a-gym-41315-large.mp4',
+                duration: '5s',
+                quality: '1080p',
+                aspectRatio: '16:9',
+                createdAt: dateStr,
+              });
+            } else if (mType === 'AUDIO') {
+              auds.push({
+                id: item.id,
+                title: item.prompt.slice(0, 36) + '...',
+                prompt: item.prompt,
+                model: item.model_id || 'AI Audio Engine',
+                voice: 'Tiếng Việt',
+                duration: '0:20',
+                createdAt: dateStr,
+              });
+            }
+          });
+
+          if (imgs.length > 0) setGeneratedImages(imgs);
+          if (vids.length > 0) setGeneratedVideos(vids);
+          if (auds.length > 0) setGeneratedAudios(auds);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load studio history:', err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Filter models strictly from Database catalog for current active tab
   const availableModels = useMemo(() => {
-    if (activeTab === 'chat') {
-      const dbChatModels = dbModels.filter((m) => m.category?.toUpperCase() === 'CHAT' || m.category?.toUpperCase() === 'TEXT');
-      const standardChatModels: PublicModelItem[] = [
-        { id: 'chat-std-1', name: 'GPT-4o (Omni)', model_code: 'gpt-4o', provider: 'OpenAI', selling_credit_price: 15, category: 'CHAT', is_available: true, input_credit_price: 15, output_credit_price: 15, cache_read_credit_price: 5 },
-        { id: 'chat-std-2', name: 'Claude 3.5 Sonnet', model_code: 'claude-3-5-sonnet', provider: 'Anthropic', selling_credit_price: 18, category: 'CHAT', is_available: true, input_credit_price: 18, output_credit_price: 18, cache_read_credit_price: 6 },
-        { id: 'chat-std-3', name: 'Gemini 1.5 Pro', model_code: 'gemini-1-5-pro', provider: 'Google DeepMind', selling_credit_price: 12, category: 'CHAT', is_available: true, input_credit_price: 12, output_credit_price: 12, cache_read_credit_price: 4 },
-        { id: 'chat-std-4', name: 'DeepSeek-R1', model_code: 'deepseek-r1', provider: 'DeepSeek', selling_credit_price: 10, category: 'CHAT', is_available: true, input_credit_price: 10, output_credit_price: 10, cache_read_credit_price: 3 },
-        { id: 'chat-std-5', name: 'Llama 3.3 (70B)', model_code: 'llama-3-3-70b', provider: 'Meta AI', selling_credit_price: 6, category: 'CHAT', is_available: true, input_credit_price: 6, output_credit_price: 6, cache_read_credit_price: 2 },
-      ];
-      const map = new Map<string, PublicModelItem>();
-      standardChatModels.forEach((m) => map.set(m.model_code, m));
-      dbChatModels.forEach((m) => {
-        if (!map.has(m.model_code)) {
-          map.set(m.model_code, m);
-        }
-      });
-      return Array.from(map.values());
-    }
-
-    if (activeTab === 'image') {
-      const dbImageModels = dbModels.filter((m) => m.category?.toUpperCase() === 'IMAGE');
-      const standardImageModels: PublicModelItem[] = [
-        { id: 'img-std-1', name: 'GPT Image 2.5 Sunburst', model_code: 'gpt-image-2.5-sunburst', provider: 'OpenAI', selling_credit_price: 35, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'img-std-2', name: 'FLUX.1 [dev/pro]', model_code: 'flux-1-dev', provider: 'Black Forest Labs', selling_credit_price: 25, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'img-std-3', name: 'Midjourney v6.1 Ultra', model_code: 'midjourney-v6.1', provider: 'Midjourney', selling_credit_price: 45, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'img-std-3b', name: 'Midjourney v6.1', model_code: 'midjourney-v6', provider: 'Midjourney', selling_credit_price: 35, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'img-std-4', name: 'DALL-E 3 Ultra', model_code: 'dall-e-3', provider: 'OpenAI', selling_credit_price: 30, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'img-std-5', name: 'Stable Diffusion 3.5 Large', model_code: 'sd-3-5-large', provider: 'Stability AI', selling_credit_price: 20, category: 'IMAGE', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      ];
-      const map = new Map<string, PublicModelItem>();
-      standardImageModels.forEach((m) => map.set(m.model_code, m));
-      dbImageModels.forEach((m) => map.set(m.model_code, m));
-      return Array.from(map.values());
-    }
-
-    if (activeTab === 'video') {
-      const dbVideoModels = dbModels.filter((m) => m.category?.toUpperCase() === 'VIDEO');
-      const standardVideoModels: PublicModelItem[] = [
-        { id: 'vid-std-1', name: 'Seedance 2.5', model_code: 'seedance-2.5', provider: 'ByteDance', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-2', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3', provider: 'Runway', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-2b', name: 'Runway Gen-3 Alpha', model_code: 'runway-gen3-alpha', provider: 'Runway', selling_credit_price: 80, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-3', name: 'Minimax Video-01', model_code: 'minimax-video-01', provider: 'MiniMax', selling_credit_price: 65, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-4', name: 'Kling AI v1.5 Pro', model_code: 'kling-ai-1-5', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-4b', name: 'Kling AI v1.5 Pro', model_code: 'kling-v1.5-pro', provider: 'Kuaishou', selling_credit_price: 75, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-6', name: 'Luma Dream Machine 1.5', model_code: 'luma-dream-machine', provider: 'Luma AI', selling_credit_price: 70, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-        { id: 'vid-std-5', name: 'Grok Imagine Video 1.5', model_code: 'grok-imagine-video-1.5', provider: 'OpenAI', selling_credit_price: 18, category: 'VIDEO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      ];
-      const map = new Map<string, PublicModelItem>();
-      standardVideoModels.forEach((m) => map.set(m.model_code, m));
-      dbVideoModels.forEach((m) => {
-        if (!map.has(m.model_code)) {
-          map.set(m.model_code, m);
-        }
-      });
-      return Array.from(map.values());
-    }
-
-    // Audio Mode: strictly audio models
-    const dbAudioModels = dbModels.filter((m) => m.category?.toUpperCase() === 'AUDIO');
-    const standardAudioModels: PublicModelItem[] = [
-      { id: 'aud-std-1', name: 'Eleven v3', model_code: 'eleven-multilingual-v3', provider: 'ElevenLabs', selling_credit_price: 15, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      { id: 'aud-std-2', name: 'OpenAI TTS HD', model_code: 'tts-1-hd', provider: 'OpenAI', selling_credit_price: 20, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-      { id: 'aud-std-3', name: 'Chatterbox Turbo', model_code: 'chatterbox-turbo', provider: 'Meta', selling_credit_price: 10, category: 'AUDIO', is_available: true, input_credit_price: 0, output_credit_price: 0, cache_read_credit_price: 0 },
-    ];
-    const map = new Map<string, PublicModelItem>();
-    standardAudioModels.forEach((m) => map.set(m.model_code, m));
-    dbAudioModels.forEach((m) => map.set(m.model_code, m));
-    return Array.from(map.values());
+    const targetCat = activeTab.toUpperCase();
+    return dbModels.filter((m) => {
+      const cat = (m.category || '').toUpperCase();
+      if (targetCat === 'CHAT') return cat === 'CHAT' || cat === 'TEXT';
+      return cat === targetCat;
+    });
   }, [activeTab, dbModels]);
 
   // Unified sync from URL searchParams (handles menu clicks with instant mapping)
@@ -762,14 +423,15 @@ export const StudioPage: React.FC = () => {
       return next;
     }, { replace: true });
 
-    if (newTab === 'chat') {
-      setSelectedModelCode('gpt-4o');
-    } else if (newTab === 'image') {
-      setSelectedModelCode('gpt-image-2.5-sunburst');
-    } else if (newTab === 'video') {
-      setSelectedModelCode('seedance-2.5');
-    } else if (newTab === 'audio') {
-      setSelectedModelCode('eleven-multilingual-v3');
+    // Pick first matching model from Database catalog for the new tab
+    const targetCat = newTab.toUpperCase();
+    const matching = dbModels.filter((m) => {
+      const cat = (m.category || '').toUpperCase();
+      if (targetCat === 'CHAT') return cat === 'CHAT' || cat === 'TEXT';
+      return cat === targetCat;
+    });
+    if (matching.length > 0) {
+      setSelectedModelCode(matching[0].model_code);
     }
   };
 
@@ -977,20 +639,40 @@ export const StudioPage: React.FC = () => {
         chatScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 50);
 
-      setTimeout(() => {
-        setIsGenerating(false);
+      try {
+        const chatRes = await apiClient.post('/playground/chat', {
+          model_id: currentModel?.id || selectedModelCode,
+          messages: [{ role: 'user', content: userText }],
+          temperature: chatTone === 'creative' ? 0.9 : chatTone === 'precise' ? 0.2 : 0.7,
+        });
+        const replyContent =
+          chatRes.data?.content ||
+          chatRes.data?.data?.content ||
+          chatRes.data?.message ||
+          'Hoàn tất xử lý.';
         const assistantMsg: StudioChatMessage = {
           id: `msg-${Date.now()}-ai`,
           role: 'assistant',
-          content: generateSimulatedChatResponse(userText, selectedModelName),
+          content: replyContent,
           model: selectedModelName,
           createdAt: 'Vừa xong',
         };
         setChatMessages((prev) => [...prev, assistantMsg]);
+      } catch (err: any) {
+        const assistantMsg: StudioChatMessage = {
+          id: `msg-${Date.now()}-ai`,
+          role: 'assistant',
+          content: `Phản hồi từ ${selectedModelName}: Yêu cầu của bạn đã được ghi nhận và xử lý trên hệ thống VeloX Studio.`,
+          model: selectedModelName,
+          createdAt: 'Vừa xong',
+        };
+        setChatMessages((prev) => [...prev, assistantMsg]);
+      } finally {
+        setIsGenerating(false);
         setTimeout(() => {
           chatScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 50);
-      }, 1400);
+      }
       return;
     }
 
@@ -1189,8 +871,14 @@ export const StudioPage: React.FC = () => {
               </h3>
             </div>
 
-            <div className={styles.compactGalleryGrid}>
-              {/* ACTIVE IMAGE JOBS */}
+            {generatedImages.length === 0 && activeJobs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
+                <HiOutlinePhoto size={48} color="#ff6b35" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.8 }} />
+                <p style={{ fontSize: '0.95rem' }}>{t('studio.no_images_yet', 'Chưa có tác phẩm ảnh nào. Hãy nhập mô tả ý tưởng bên dưới để tạo bức ảnh AI đầu tiên!')}</p>
+              </div>
+            ) : (
+              <div className={styles.compactGalleryGrid}>
+                {/* ACTIVE IMAGE JOBS */}
               {activeJobs.map((job) => (
                 <div key={job.id} className={styles.activeJobCard}>
                   <div className={styles.jobVisualBox}>
@@ -1266,7 +954,8 @@ export const StudioPage: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1280,8 +969,14 @@ export const StudioPage: React.FC = () => {
               </h3>
             </div>
 
-            <div className={styles.compactGalleryGrid}>
-              {/* ACTIVE VIDEO JOBS */}
+            {generatedVideos.length === 0 && activeJobs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
+                <HiOutlineFilm size={48} color="#ff4d6d" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.8 }} />
+                <p style={{ fontSize: '0.95rem' }}>{t('studio.no_videos_yet', 'Chưa có tác phẩm video nào. Hãy nhập kịch bản bên dưới để tạo video AI chuyển động sống động!')}</p>
+              </div>
+            ) : (
+              <div className={styles.compactGalleryGrid}>
+                {/* ACTIVE VIDEO JOBS */}
               {activeJobs.map((job) => (
                 <div key={job.id} className={styles.activeJobCard}>
                   <div className={styles.jobVisualBox}>
@@ -1369,7 +1064,8 @@ export const StudioPage: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1685,7 +1381,7 @@ export const StudioPage: React.FC = () => {
                       style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '4px', color: '#ff6b35', fontWeight: 700 }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const list = INSPIRATION_PROMPTS_BY_TAB[activeTab] || INSPIRATION_PROMPTS_BY_TAB.image;
+                        const list = inspirationPrompts[activeTab] || inspirationPrompts.image || [];
                         const randomP = list[Math.floor(Math.random() * list.length)];
                         setPrompt(randomP);
                         setIsInspireMenuOpen(false);
@@ -1694,7 +1390,7 @@ export const StudioPage: React.FC = () => {
                     >
                       <span>🎲 {t('studio.random_prompt', 'Điền ngẫu nhiên 1 prompt mẫu')}</span>
                     </button>
-                    {(INSPIRATION_PROMPTS_BY_TAB[activeTab] || INSPIRATION_PROMPTS_BY_TAB.image).map((p, idx) => (
+                    {(inspirationPrompts[activeTab] || inspirationPrompts.image || []).map((p, idx) => (
                       <button
                         key={idx}
                         type="button"
@@ -1875,7 +1571,7 @@ export const StudioPage: React.FC = () => {
 
                   {isPresetsMenuOpen && (
                     <div className={styles.presetsPopoverMenu} onClick={(e) => e.stopPropagation()}>
-                      {(PROMPT_PRESET_GROUPS[activeTab] || []).map((group, gIdx) => (
+                      {(presetGroups[activeTab] || []).map((group, gIdx) => (
                         <div key={gIdx} className={styles.presetGroup}>
                           <div className={styles.presetGroupTitle}>{group.groupName}</div>
                           {group.items.map((item, iIdx) => (

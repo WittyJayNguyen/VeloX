@@ -532,7 +532,9 @@
     "tab_chat": "Chat",
     "clear_chat": "Clear Chat",
     "chat_title": "AI Conversational Studio",
-    "chat_thinking": "AI is thinking and drafting a response..."
+    "chat_thinking": "AI is thinking and drafting a response...",
+    "no_images_yet": "No image artworks yet. Enter an idea prompt below to generate your first AI artwork!",
+    "no_videos_yet": "No video artworks yet. Enter a motion script below to generate vivid AI videos!"
   },
   "models_page": {
     "title": "AI Models Catalog",
@@ -568,4 +570,3 @@
     "btn_home": "Home Page"
   }
 }
-
