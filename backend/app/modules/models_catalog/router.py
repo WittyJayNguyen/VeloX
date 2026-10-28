@@ -377,7 +377,7 @@ async def sync_models_from_keys(
                 category = "VIDEO"
             elif any(w in code_lower for w in ["tts", "whisper", "audio", "voice", "speech"]):
                 category = "AUDIO"
-            elif any(w in code_lower for w in ["agent", "coder", "dev", "cursor"]):
+            elif any(w in code_lower for w in ["agent", "coder", "dev", "cursor", "codex", "code", "embedding", "ccmax"]):
                 category = "DEV_REQ"
             else:
                 category = "CHAT"
