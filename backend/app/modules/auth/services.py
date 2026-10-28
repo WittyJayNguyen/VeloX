@@ -65,8 +65,8 @@ async def register_user(
         )
 
     # 3. Dynamic Starter Credits:
-    # 1st account: 50,000 credits
-    # 2nd account: 10,000 credits
+    # 1st account: 100 credits (sufficient for 50 chats or 4-5 test images)
+    # 2nd account: 20 credits
     # 3rd+ account: 0 credits (stops free-quota farming abuse)
     if existing_ip_accounts >= 2:
         starter_credits = 0
@@ -80,9 +80,9 @@ async def register_user(
             )
             session.add(ip_rule)
     elif existing_ip_accounts == 1:
-        starter_credits = 10000
+        starter_credits = 20
     else:
-        starter_credits = 50000
+        starter_credits = 100
 
     now_iso = datetime.now(timezone.utc).isoformat()
 
