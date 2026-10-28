@@ -16,6 +16,9 @@ import {
   HiOutlineCubeTransparent,
   HiOutlineShieldCheck,
   HiOutlineMagnifyingGlass,
+  HiOutlineArrowLeft,
+  HiOutlineArrowRight,
+  HiOutlineChevronRight,
 } from 'react-icons/hi2';
 import { modelService, type PublicModelItem } from '@modules/models/services/modelService';
 import styles from './ApiDocsPage.module.scss';
@@ -23,12 +26,33 @@ import styles from './ApiDocsPage.module.scss';
 export const ApiDocsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialLang = (searchParams.get('lang') || 'vi').toLowerCase() === 'en' ? 'en' : 'vi';
+  const initialSection = searchParams.get('section') || 'part-1';
 
   const [docLang, setDocLang] = useState<'vi' | 'en'>(initialLang);
   const [models, setModels] = useState<PublicModelItem[]>([]);
   const [modelsLoading, setModelsLoading] = useState<boolean>(true);
   const [copiedMap, setCopiedMap] = useState<Record<string, boolean>>({});
-  const [activeSection, setActiveSection] = useState<string>('part-1');
+  const [activeSection, setActiveSection] = useState<string>(initialSection);
+
+  // Sync section with URL param when URL changes (back/forward button)
+  useEffect(() => {
+    const s = searchParams.get('section');
+    if (s && s !== activeSection) {
+      setActiveSection(s);
+    }
+  }, [searchParams]);
+
+  // Handler to switch section and sync with URL
+  const handleSectionChange = (sectionId: string) => {
+    setActiveSection(sectionId);
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('section', sectionId);
+      return p;
+    });
+    // Smooth scroll up to top of content
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
 
   // Filters for models pricing table
   const [pricingCategory, setPricingCategory] = useState<string>('ALL');
@@ -64,7 +88,11 @@ export const ApiDocsPage: React.FC = () => {
   // Sync lang with URL
   const handleLangChange = (newLang: 'vi' | 'en') => {
     setDocLang(newLang);
-    setSearchParams({ lang: newLang });
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('lang', newLang);
+      return p;
+    });
   };
 
   // 1-Click Copy helper
@@ -126,6 +154,11 @@ export const ApiDocsPage: React.FC = () => {
     ];
   }, [docLang]);
 
+  // Determine previous and next topics for footer navigation
+  const currentIndex = tocItems.findIndex((item) => item.id === activeSection);
+  const prevSection = currentIndex > 0 ? tocItems[currentIndex - 1] : null;
+  const nextSection = currentIndex >= 0 && currentIndex < tocItems.length - 1 ? tocItems[currentIndex + 1] : null;
+
   return (
     <div className={styles.docsContainer}>
       {/* Top Banner Header */}
@@ -181,17 +214,21 @@ export const ApiDocsPage: React.FC = () => {
             {docLang === 'en' ? 'Table of Contents' : 'Mục Lục Tài Liệu'}
           </div>
           <ul className={styles.tocList}>
-            {tocItems.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={`#${item.id}`}
-                  className={`${styles.tocItem} ${activeSection === item.id ? styles.tocActive : ''}`}
-                  onClick={() => setActiveSection(item.id)}
-                >
-                  {item.title}
-                </a>
-              </li>
-            ))}
+            {tocItems.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className={`${styles.tocItem} ${isActive ? styles.tocActive : ''}`}
+                    onClick={() => handleSectionChange(item.id)}
+                  >
+                    <span>{item.title}</span>
+                    {isActive && <HiOutlineChevronRight style={{ flexShrink: 0, fontSize: '0.85rem' }} />}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </aside>
 
@@ -200,7 +237,10 @@ export const ApiDocsPage: React.FC = () => {
           {/* ══════════════════════════════════════════════════════════════
               PART 1: BASE URLS & AUTHENTICATION
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-1" className={styles.docSection}>
+          <section
+            id="part-1"
+            className={`${styles.docSection} ${activeSection === 'part-1' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineServerStack className={styles.sectionIcon} />
@@ -272,7 +312,10 @@ export const ApiDocsPage: React.FC = () => {
           {/* ══════════════════════════════════════════════════════════════
               PART 2: MODEL CATALOG & DYNAMIC CREDIT PRICING
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-2" className={styles.docSection}>
+          <section
+            id="part-2"
+            className={`${styles.docSection} ${activeSection === 'part-2' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineCircleStack className={styles.sectionIcon} />
@@ -405,7 +448,10 @@ export const ApiDocsPage: React.FC = () => {
           {/* ══════════════════════════════════════════════════════════════
               PART 3: CHAT / REASONING (TEXT & CODE)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-3" className={styles.docSection}>
+          <section
+            id="part-3"
+            className={`${styles.docSection} ${activeSection === 'part-3' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineCommandLine className={styles.sectionIcon} />
@@ -557,7 +603,10 @@ main();`}
           {/* ══════════════════════════════════════════════════════════════
               PART 4: MULTIMODAL VISION (IMAGE ANALYSIS)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-4" className={styles.docSection}>
+          <section
+            id="part-4"
+            className={`${styles.docSection} ${activeSection === 'part-4' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlinePhoto className={styles.sectionIcon} />
@@ -618,7 +667,10 @@ print(res.choices[0].message.content)`}
           {/* ══════════════════════════════════════════════════════════════
               PART 5: TEXT-TO-IMAGE GENERATIONS
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-5" className={styles.docSection}>
+          <section
+            id="part-5"
+            className={`${styles.docSection} ${activeSection === 'part-5' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineSparkles className={styles.sectionIcon} />
@@ -708,7 +760,10 @@ if "data" in res and len(res["data"]) > 0:
           {/* ══════════════════════════════════════════════════════════════
               PART 6: IMAGE-TO-IMAGE EDITING (1 REFERENCE)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-6" className={styles.docSection}>
+          <section
+            id="part-6"
+            className={`${styles.docSection} ${activeSection === 'part-6' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlinePhoto className={styles.sectionIcon} />
@@ -755,7 +810,10 @@ if "data" in res and len(res["data"]) > 0:
           {/* ══════════════════════════════════════════════════════════════
               PART 7: MULTI-REFERENCE IMAGE MERGING (2+ IMAGES)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-7" className={styles.docSection}>
+          <section
+            id="part-7"
+            className={`${styles.docSection} ${activeSection === 'part-7' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineCubeTransparent className={styles.sectionIcon} />
@@ -817,7 +875,10 @@ print("Kết quả ảnh ghép:", res["data"][0]["url"])`}
           {/* ══════════════════════════════════════════════════════════════
               PART 8: AI VIDEO GENERATIONS (/v1/videos)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-8" className={styles.docSection}>
+          <section
+            id="part-8"
+            className={`${styles.docSection} ${activeSection === 'part-8' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineFilm className={styles.sectionIcon} />
@@ -905,7 +966,10 @@ print("Đã lưu video thành công vào output_video.mp4!")`
           {/* ══════════════════════════════════════════════════════════════
               PART 9: TEXT-TO-SPEECH (TTS) & SPEECH-TO-TEXT (STT)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-9" className={styles.docSection}>
+          <section
+            id="part-9"
+            className={`${styles.docSection} ${activeSection === 'part-9' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineMusicalNote className={styles.sectionIcon} />
@@ -964,7 +1028,10 @@ print("Nội dung bóc băng:", transcript.text)`}
           {/* ══════════════════════════════════════════════════════════════
               PART 10: QUICK CONFIGURATION ON POPULAR AI CLIENTS
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-10" className={styles.docSection}>
+          <section
+            id="part-10"
+            className={`${styles.docSection} ${activeSection === 'part-10' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineBolt className={styles.sectionIcon} />
@@ -1031,7 +1098,10 @@ print("Nội dung bóc băng:", transcript.text)`}
           {/* ══════════════════════════════════════════════════════════════
               PART 11: TECHNICAL BEST PRACTICES & PROMPT CACHING
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-11" className={styles.docSection}>
+          <section
+            id="part-11"
+            className={`${styles.docSection} ${activeSection === 'part-11' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineShieldCheck className={styles.sectionIcon} />
@@ -1064,7 +1134,10 @@ print("Nội dung bóc băng:", transcript.text)`}
           {/* ══════════════════════════════════════════════════════════════
               PART 12: BALANCE & QUOTA API (/v1/balance)
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-12" className={styles.docSection}>
+          <section
+            id="part-12"
+            className={`${styles.docSection} ${activeSection === 'part-12' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineWallet className={styles.sectionIcon} />
@@ -1114,7 +1187,10 @@ print("Nội dung bóc băng:", transcript.text)`}
           {/* ══════════════════════════════════════════════════════════════
               PART 13: FAQ
           ══════════════════════════════════════════════════════════════ */}
-          <section id="part-13" className={styles.docSection}>
+          <section
+            id="part-13"
+            className={`${styles.docSection} ${activeSection === 'part-13' ? styles.activeSection : styles.hiddenSection}`}
+          >
             <div className={styles.sectionHeaderRow}>
               <div className={styles.sectionTitleBox}>
                 <HiOutlineQuestionMarkCircle className={styles.sectionIcon} />
@@ -1146,6 +1222,41 @@ print("Nội dung bóc băng:", transcript.text)`}
               </div>
             </div>
           </section>
+
+          {/* Section Navigation Footer */}
+          <div className={styles.sectionNavFooter}>
+            {prevSection ? (
+              <button
+                type="button"
+                className={styles.prevSectionBtn}
+                onClick={() => handleSectionChange(prevSection.id)}
+              >
+                <HiOutlineArrowLeft style={{ fontSize: '1.1rem', flexShrink: 0 }} />
+                <div>
+                  <span className={styles.navSubLabel}>{docLang === 'en' ? 'Previous Topic' : 'Mục trước'}</span>
+                  <span className={styles.navMainLabel}>{prevSection.title}</span>
+                </div>
+              </button>
+            ) : <div />}
+
+            <div className={styles.navProgressBadge}>
+              {currentIndex + 1} / {tocItems.length}
+            </div>
+
+            {nextSection ? (
+              <button
+                type="button"
+                className={styles.nextSectionBtn}
+                onClick={() => handleSectionChange(nextSection.id)}
+              >
+                <div>
+                  <span className={styles.navSubLabel}>{docLang === 'en' ? 'Next Topic' : 'Mục tiếp theo'}</span>
+                  <span className={styles.navMainLabel}>{nextSection.title}</span>
+                </div>
+                <HiOutlineArrowRight style={{ fontSize: '1.1rem', flexShrink: 0 }} />
+              </button>
+            ) : <div />}
+          </div>
         </main>
       </div>
     </div>
