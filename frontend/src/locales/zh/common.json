@@ -452,8 +452,12 @@
     "withdraw_btn": "申请提现"
   },
   "referral": {
-    "subtitle": "邀请好友加入 VeloX，永久享受其每笔充值 20% 算力返佣奖励",
-    "copied_notice": "邀请链接已复制到剪贴板！"
+    "subtitle": "邀请好友体验 VeloX：好友首次充值套餐立赠 100 积分，您享每笔充值 20% 终身佣金",
+    "copied_notice": "邀请链接已复制到剪贴板！",
+    "reward_mechanism_title": "奖励机制：",
+    "reward_mechanism_desc": "当用户通过您的链接注册并首次成功充值套餐后，即可获得 100 体验积分，且每次充值您都将获得 20% 积分佣金！",
+    "empty_hint": "分享您的推荐码 {{refCode}}，好友首次充值立得 100 积分，您享 20% 终身佣金！",
+    "share_caption": "体验 VeloX AI Gateway - 高速多模型 AI 平台。通过链接注册并首次充值即可获得 100 体验积分："
   },
   "developer": {
     "subtitle": "将 VeloX AI Gateway 与主流 IDE、Claude Desktop、Cursor 及后端集成"

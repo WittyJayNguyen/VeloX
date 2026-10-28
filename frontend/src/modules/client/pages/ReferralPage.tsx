@@ -67,7 +67,9 @@ export const ReferralPage: React.FC = () => {
   };
 
   const handleShareSocial = (platform: 'telegram' | 'facebook') => {
-    const text = encodeURIComponent('Trải nghiệm VeloX AI Gateway - Nền tảng AI tốc độ cao đa mô hình. Nhận ngay 100 Credit miễn phí khi đăng ký:');
+    const text = encodeURIComponent(
+      t('referral.share_caption', 'Trải nghiệm VeloX AI Gateway - Nền tảng AI tốc độ cao đa mô hình. Đăng ký qua link và nạp gói đầu tiên để nhận ngay 100 Credit trải nghiệm:')
+    );
     const url = encodeURIComponent(refLink);
     if (platform === 'telegram') {
       window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
@@ -86,7 +88,7 @@ export const ReferralPage: React.FC = () => {
             <span className={styles.pageIcon}>🎁</span>
             {t('client_menu.referral', 'Giới Thiệu Bạn Bè & Nhận Thưởng')}
           </h1>
-          <p>{t('referral.subtitle', 'Mời bạn bè cùng trải nghiệm VeloX và nhận ngay 20% hoa hồng Credit trọn đời cho mỗi lượt nạp')}</p>
+          <p>{t('referral.subtitle', 'Mời bạn bè cùng trải nghiệm VeloX: nhận ngay 100 Credit khi nạp gói đầu tiên và bạn nhận ngay 20% hoa hồng Credit trọn đời cho mỗi lượt nạp')}</p>
         </div>
       </div>
 
@@ -184,7 +186,8 @@ export const ReferralPage: React.FC = () => {
         </div>
 
         <div style={{ padding: '1rem', background: 'rgba(255, 107, 53, 0.08)', borderRadius: '10px', border: '1px dashed #ff6b35', fontSize: '0.88rem', color: '#ffd7c2' }}>
-          <strong>💡 Cơ chế trả thưởng:</strong> Khi người dùng đăng ký qua link của bạn, họ nhận ngay 100 Credit trải nghiệm và bạn nhận 20% số credit mỗi lần họ nạp tiền thành công!
+          <strong>💡 {t('referral.reward_mechanism_title', 'Cơ chế trả thưởng:')}</strong>{' '}
+          {t('referral.reward_mechanism_desc', 'Khi người dùng đăng ký qua link của bạn và hoàn tất nạp gói lần đầu tiên, họ nhận ngay 100 Credit trải nghiệm và bạn nhận 20% số credit mỗi lần họ nạp tiền thành công!')}
         </div>
       </div>
 
@@ -224,7 +227,7 @@ export const ReferralPage: React.FC = () => {
             <HiOutlineGift size={40} style={{ color: '#475569', marginBottom: '0.75rem' }} />
             <h4 style={{ color: '#e2e8f0', margin: '0 0 0.5rem' }}>Chưa có bạn bè nào đăng ký</h4>
             <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0 }}>
-              Hãy chia sẻ mã giới thiệu <strong>{refCode}</strong> của bạn để bạn bè nhận 100 Credit và bạn nhận ngay 20% hoa hồng trọn đời!
+              {t('referral.empty_hint', 'Hãy chia sẻ mã giới thiệu {{refCode}} của bạn để bạn bè nhận 100 Credit khi nạp gói đầu tiên và bạn nhận ngay 20% hoa hồng trọn đời!', { refCode })}
             </p>
           </div>
         ) : (

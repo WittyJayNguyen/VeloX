@@ -452,8 +452,12 @@
     "withdraw_btn": "출금 신청"
   },
   "referral": {
-    "subtitle": "친구를 초대하고 친구가 충전할 때마다 평생 20% 크레딧 리워드를 받으세요",
-    "copied_notice": "추천 링크가 클립보드에 복사되었습니다!"
+    "subtitle": "VeloX 친구 초대: 첫 패키지 충전 시 100 크레딧 증정 및 매 충전마다 20% 평생 커미션 지급",
+    "copied_notice": "추천 링크가 클립보드에 복사되었습니다!",
+    "reward_mechanism_title": "보상 메커니즘:",
+    "reward_mechanism_desc": "사용자가 추천 링크를 통해 가입하고 첫 패키지 충전을 완료하면 100 체험 크레딧을 받고, 매 충전 성공 시마다 20%의 크레딧을 받습니다!",
+    "empty_hint": "추천 코드 {{refCode}}를 공유하여 친구가 첫 패키지 충전 시 100 크레딧을 받고 평생 20% 커미션을 받으세요!",
+    "share_caption": "VeloX AI Gateway 체험하기 - 초고속 다중 모델 AI 플랫폼. 가입 후 첫 패키지 충전 시 100 체험 크레딧 지급:"
   },
   "developer": {
     "subtitle": "IDE, Claude Desktop, Cursor 및 백엔드 시스템과 간편하게 연동"

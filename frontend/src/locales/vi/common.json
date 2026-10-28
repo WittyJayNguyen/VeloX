@@ -467,8 +467,12 @@
     "withdraw_btn": "Yêu Cầu Rút Tiền"
   },
   "referral": {
-    "subtitle": "Mời bạn bè cùng trải nghiệm VeloX và nhận ngay 20% hoa hồng Credit trọn đời cho mỗi lượt nạp",
-    "copied_notice": "Đã sao chép liên kết giới thiệu vào bộ nhớ tạm!"
+    "subtitle": "Mời bạn bè cùng trải nghiệm VeloX: nhận ngay 100 Credit khi nạp gói đầu tiên và bạn nhận ngay 20% hoa hồng Credit trọn đời cho mỗi lượt nạp",
+    "copied_notice": "Đã sao chép liên kết giới thiệu vào bộ nhớ tạm!",
+    "reward_mechanism_title": "Cơ chế trả thưởng:",
+    "reward_mechanism_desc": "Khi người dùng đăng ký qua link của bạn và hoàn tất nạp gói lần đầu tiên, họ nhận ngay 100 Credit trải nghiệm và bạn nhận 20% số credit mỗi lần họ nạp tiền thành công!",
+    "empty_hint": "Hãy chia sẻ mã giới thiệu {{refCode}} của bạn để bạn bè nhận 100 Credit khi nạp gói đầu tiên và bạn nhận ngay 20% hoa hồng trọn đời!",
+    "share_caption": "Trải nghiệm VeloX AI Gateway - Nền tảng AI tốc độ cao đa mô hình. Đăng ký qua link và nạp gói đầu tiên để nhận ngay 100 Credit trải nghiệm:"
   },
   "developer": {
     "subtitle": "Kết nối VeloX AI Gateway với các ứng dụng IDE, Claude Desktop, Cursor và hệ thống backend của bạn"
