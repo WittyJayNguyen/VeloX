@@ -210,24 +210,24 @@ async def bulk_markup_models(
     models = result.scalars().all()
 
     for m in models:
-        # Token rates
+        # Token rates (Convert VND cost / 1000 to standard credit units if in VND)
         if m.input_cost_per_1m and m.input_cost_per_1m > 0:
-            m.input_credit_price = int(round(m.input_cost_per_1m * mult))
+            base_in = m.input_cost_per_1m / 1000.0 if m.input_cost_per_1m > 1000 else m.input_cost_per_1m
+            m.input_credit_price = max(1, int(round(base_in * mult)))
         if m.output_cost_per_1m and m.output_cost_per_1m > 0:
-            m.output_credit_price = int(round(m.output_cost_per_1m * mult))
+            base_out = m.output_cost_per_1m / 1000.0 if m.output_cost_per_1m > 1000 else m.output_cost_per_1m
+            m.output_credit_price = max(1, int(round(base_out * mult)))
         if m.cache_read_cost_per_1m and m.cache_read_cost_per_1m > 0:
-            m.cache_read_credit_price = int(round(m.cache_read_cost_per_1m * mult))
+            base_cache = m.cache_read_cost_per_1m / 1000.0 if m.cache_read_cost_per_1m > 1000 else m.cache_read_cost_per_1m
+            m.cache_read_credit_price = max(1, int(round(base_cache * mult)))
 
         # Media & Per-request rates
         if m.category in ["IMAGE", "VIDEO"]:
             base_cost = m.cost_per_req_or_1k_tok or (2.0 if m.category == "IMAGE" else 10.0)
             m.selling_credit_price = max(1, int(round(base_cost * mult)))
         else:
-            if m.input_credit_price or m.output_credit_price:
-                m.selling_credit_price = max(1, int(round(((m.input_credit_price or 0) + (m.output_credit_price or 0)) / 2000.0)))
-            else:
-                base_c = m.cost_per_req_or_1k_tok or 1.0
-                m.selling_credit_price = max(1, int(round(base_c * mult)))
+            # For Chat/Text models, the minimum request floor should be 1 credit (or 2 for heavy reasoning models)
+            m.selling_credit_price = 2 if "o1" in m.model_code.lower() else 1
 
     await db.commit()
     markup_pct = round((mult - 1.0) * 100.0, 1)

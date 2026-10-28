@@ -379,7 +379,7 @@ export const ApiDocsPage: React.FC = () => {
                     <th>Input Tokens (cr/1M)</th>
                     <th>Output Tokens (cr/1M)</th>
                     <th>Đọc Cache (cr/1M)</th>
-                    <th>Đơn Giá / Lượt (Min)</th>
+                    <th>Chi Phí / Lượt (Ước Tính)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -432,9 +432,16 @@ export const ApiDocsPage: React.FC = () => {
                               : 'Theo token'}
                           </td>
                           <td className={styles.minCostCell}>
-                            {isMedia
-                              ? `${m.selling_credit_price} cr / ${m.category === 'IMAGE' ? 'ảnh' : 'video'}`
-                              : `${m.selling_credit_price || 15} cr / req`}
+                            {isMedia ? (
+                              <span style={{ color: '#ff6b35', fontWeight: 700 }}>
+                                {m.selling_credit_price} cr / {m.category === 'IMAGE' ? 'ảnh' : 'video'}
+                              </span>
+                            ) : (
+                              <span>
+                                <strong style={{ color: '#2dd4bf' }}>~0.05 cr</strong>{' '}
+                                <small style={{ color: '#64748b' }}>(Sàn: {m.selling_credit_price || 1} cr)</small>
+                              </span>
+                            )}
                           </td>
                         </tr>
                       );
