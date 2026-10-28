@@ -61,6 +61,17 @@ async def _deduct_user_credits(user: User, amount: int, reason: str, db: AsyncSe
         reason=reason,
     )
     db.add(audit)
+
+    try:
+        from app.modules.billing.models import UserWallet
+        w_res = await db.execute(select(UserWallet).where(UserWallet.user_id == user.id))
+        wallet = w_res.scalar_one_or_none()
+        if wallet:
+            wallet.balance_credits = user.credit_balance
+            wallet.total_spent = (wallet.total_spent or 0) + amount
+    except Exception:
+        pass
+
     await db.commit()
 
 
@@ -278,6 +289,7 @@ async def proxy_chat_completion(
     db: AsyncSession
 ) -> ChatCompletionResponse:
     """Executes chat completion via VeloX Gateway models, forwarding to upstream AI pools and deducting credits."""
+    start_time = time.time()
     model_code = payload.model or "gpt-4o"
     m_stmt = select(AIModel).where(AIModel.model_code == model_code)
     m_res = await db.execute(m_stmt)
@@ -404,6 +416,12 @@ async def proxy_chat_completion(
         c_tokens = max(1, len(content.split()) * 2)
 
     # 4. Determine selling price (credits) for chat completion
+    if not model_obj:
+        alias_code = "gpt-4o" if any(k in model_code.lower() for k in ["codex", "code", "gpt"]) else "gpt-4o-mini"
+        m_stmt2 = select(AIModel).where(AIModel.model_code == alias_code)
+        m_res2 = await db.execute(m_stmt2)
+        model_obj = m_res2.scalar_one_or_none()
+
     if model_obj and (model_obj.input_credit_price > 0 or model_obj.output_credit_price > 0):
         in_sell = model_obj.input_credit_price or (model_obj.selling_credit_price * 1000) or 250
         out_sell = model_obj.output_credit_price or (model_obj.selling_credit_price * 1000) or 500
@@ -422,6 +440,22 @@ async def proxy_chat_completion(
         )
 
     await _deduct_user_credits(user, cost, f"Proxy API Key [{api_key.name}] Chat: {model_code} ({p_tokens} in, {c_tokens} out @ {cost} cr)", db)
+
+    # Record API transaction audit log
+    from app.modules.logs.services import record_api_call
+    render_time = max(0.1, time.time() - start_time)
+    await record_api_call(
+        user_id=user.id,
+        model_id=model_code,
+        credential_id=target_cred.id if target_cred else None,
+        prompt_tokens=p_tokens,
+        completion_tokens=c_tokens,
+        total_credits_charged=cost,
+        duration_ms=int(render_time * 1000),
+        status_code=200,
+        ip_address=None,
+        db=db
+    )
 
     try:
         if target_cred:

@@ -97,11 +97,12 @@ export const HistoryPage: React.FC = () => {
               value={filterModel}
               onChange={(e) => setFilterModel(e.target.value)}
             >
-              <option value="ALL">Tất cả Mô hình</option>
+              <option value="ALL">Tất cả Mô hình & Tác vụ</option>
+              <option value="codex">Codex / Code</option>
               <option value="gpt">OpenAI GPT</option>
               <option value="claude">Anthropic Claude</option>
-              <option value="midjourney">Midjourney</option>
-              <option value="gemini">Google Gemini</option>
+              <option value="video">Video Generation</option>
+              <option value="image">Image Generation</option>
             </select>
           </div>
         </div>
@@ -113,7 +114,7 @@ export const HistoryPage: React.FC = () => {
                 <th>Mã Yêu Cầu</th>
                 <th>Thời Gian</th>
                 <th>Mô Hình</th>
-                <th>Tác Vụ</th>
+                <th>Tác Vụ & Chi Tiết</th>
                 <th>Tokens</th>
                 <th>Credit Trừ</th>
                 <th>Trạng Thái</th>
@@ -129,7 +130,7 @@ export const HistoryPage: React.FC = () => {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
-                    Chưa có nhật ký sử dụng nào. Hãy bắt đầu trải nghiệm tại AI Studio hoặc Playground!
+                    Chưa có nhật ký sử dụng nào. Hãy bắt đầu trải nghiệm tại AI Studio hoặc qua API Gateway!
                   </td>
                 </tr>
               ) : (
@@ -137,9 +138,31 @@ export const HistoryPage: React.FC = () => {
                   <tr key={item.id}>
                     <td><code style={{ color: '#38bdf8' }}>{item.id}</code></td>
                     <td>{item.timestamp}</td>
-                    <td><strong>{item.model}</strong></td>
-                    <td>{item.taskType}</td>
-                    <td>{item.tokensUsed ? item.tokensUsed.toLocaleString() : 'N/A'}</td>
+                    <td>
+                      <span style={{ padding: '3px 8px', borderRadius: '6px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', fontSize: '0.85rem', fontWeight: 600 }}>
+                        {item.model}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 500, color: '#f1f5f9' }}>{item.taskType}</div>
+                      {item.prompt && (
+                        <div
+                          style={{
+                            fontSize: '0.78rem',
+                            color: '#94a3b8',
+                            marginTop: '2px',
+                            maxWidth: '320px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                          title={item.prompt}
+                        >
+                          {item.prompt}
+                        </div>
+                      )}
+                    </td>
+                    <td>{item.tokensUsed ? item.tokensUsed.toLocaleString() : '—'}</td>
                     <td><strong style={{ color: '#ff6b35' }}>-{item.creditsDeducted} 💎</strong></td>
                     <td>
                       <span className={styles.badgeSuccess}>
