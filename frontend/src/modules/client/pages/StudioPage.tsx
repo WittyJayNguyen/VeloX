@@ -611,6 +611,73 @@ export const StudioPage: React.FC = () => {
     }
   };
 
+  // Safe media download helper (handles both base64 data URLs and remote asset URLs)
+  const handleDownloadMedia = async (url: string | undefined | null, filename: string) => {
+    if (!url) return;
+    try {
+      if (url.startsWith('data:')) {
+        const arr = url.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/octet-stream';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.target = '_blank';
+        a.rel = 'noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      setToastMsg(t('common.download', 'Tải về') + ' thành công!');
+      setTimeout(() => setToastMsg(null), 2500);
+    } catch (err) {
+      console.error('Download error:', err);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
+
+  // Delete media item from DB history and update local state
+  const handleDeleteMedia = async (id: string, type: 'image' | 'video' | 'audio') => {
+    if (!window.confirm(t('common.confirm_delete', 'Bạn có chắc chắn muốn xóa tác phẩm này khỏi lịch sử không?'))) {
+      return;
+    }
+    try {
+      await apiClient.delete(`/studio/history/${id}`);
+    } catch (err) {
+      console.warn('Backend delete sync warning (possibly local session ID):', err);
+    }
+    if (type === 'image') {
+      setGeneratedImages((prev) => prev.filter((item) => item.id !== id));
+    } else if (type === 'video') {
+      setGeneratedVideos((prev) => prev.filter((item) => item.id !== id));
+    } else if (type === 'audio') {
+      setGeneratedAudios((prev) => prev.filter((item) => item.id !== id));
+    }
+    setToastMsg(t('common.delete', 'Đã xóa') + ' thành công!');
+    setTimeout(() => setToastMsg(null), 2500);
+  };
+
   // Generate / Submit Job
   const handleGenerate = async () => {
     if (isGenerating) return;
@@ -975,6 +1042,17 @@ export const StudioPage: React.FC = () => {
                       <button
                         type="button"
                         className={styles.actionBtn}
+                        title={t('common.download', 'Tải ảnh')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadMedia(img.url, `velox-img-${img.id.slice(0, 8)}.jpg`);
+                        }}
+                      >
+                        <HiOutlineArrowDownTray size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
                         title={t('studio.fullscreen', 'Xem toàn màn hình')}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -987,7 +1065,18 @@ export const StudioPage: React.FC = () => {
                           });
                         }}
                       >
-                        <HiOutlineArrowsPointingOut size={16} />
+                        <HiOutlineArrowsPointingOut size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.actionBtn} ${styles.deleteActionBtn}`}
+                        title={t('common.delete', 'Xóa ảnh')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMedia(img.id, 'image');
+                        }}
+                      >
+                        <HiOutlineTrash size={15} />
                       </button>
                     </div>
                   </div>
@@ -996,6 +1085,24 @@ export const StudioPage: React.FC = () => {
                     <div className={styles.metaRow}>
                       <span className={styles.mediaModelBadge}>{img.model}</span>
                       {img.aspectRatio && <span className={styles.ratioPill}>{translateParamOption(img.aspectRatio, t)}</span>}
+                      <div className={styles.cardQuickActions}>
+                        <button
+                          type="button"
+                          className={styles.quickIconBtn}
+                          title={t('common.download', 'Tải ảnh')}
+                          onClick={() => handleDownloadMedia(img.url, `velox-img-${img.id.slice(0, 8)}.jpg`)}
+                        >
+                          <HiOutlineArrowDownTray size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.quickIconBtn} ${styles.quickDeleteBtn}`}
+                          title={t('common.delete', 'Xóa ảnh')}
+                          onClick={() => handleDeleteMedia(img.id, 'image')}
+                        >
+                          <HiOutlineTrash size={13} />
+                        </button>
+                      </div>
                     </div>
                     <p className={styles.mediaPrompt} title={img.prompt}>
                       {img.prompt}
@@ -1056,33 +1163,39 @@ export const StudioPage: React.FC = () => {
               {/* COMPLETED VIDEOS */}
               {generatedVideos.map((vid) => (
                 <div key={vid.id} className={styles.compactMediaCard}>
-                  <div
-                    className={styles.videoThumbnailBox}
-                    onClick={() =>
-                      setPreviewMedia({
-                        type: 'video',
-                        url: vid.videoUrl || vid.poster,
-                        videoUrl: vid.videoUrl,
-                        poster: vid.poster,
-                        title: vid.title,
-                        prompt: vid.prompt,
-                        model: vid.model,
-                      })
-                    }
-                  >
-                    <img
-                      src={vid.poster}
-                      alt={vid.title}
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(vid.title.slice(0, 10))}/1280/720`;
-                      }}
-                    />
-                    <div className={styles.playIconOverlay}>
-                      <HiOutlinePlay size={24} />
-                    </div>
+                  <div className={styles.videoPlayerBox}>
+                    {vid.videoUrl ? (
+                      <video
+                        src={vid.videoUrl}
+                        poster={vid.poster}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className={styles.cardVideoPlayer}
+                      />
+                    ) : (
+                      <img
+                        src={vid.poster}
+                        alt={vid.title}
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(vid.title.slice(0, 10))}/1280/720`;
+                        }}
+                      />
+                    )}
                     <div className={styles.overlayActions}>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        title={t('common.download', 'Tải video')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadMedia(vid.videoUrl, `velox-video-${vid.id.slice(0, 8)}.mp4`);
+                        }}
+                      >
+                        <HiOutlineArrowDownTray size={15} />
+                      </button>
                       <button
                         type="button"
                         className={styles.actionBtn}
@@ -1100,7 +1213,18 @@ export const StudioPage: React.FC = () => {
                           });
                         }}
                       >
-                        <HiOutlineArrowsPointingOut size={16} />
+                        <HiOutlineArrowsPointingOut size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.actionBtn} ${styles.deleteActionBtn}`}
+                        title={t('common.delete', 'Xóa video')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMedia(vid.id, 'video');
+                        }}
+                      >
+                        <HiOutlineTrash size={15} />
                       </button>
                     </div>
                   </div>
@@ -1113,6 +1237,24 @@ export const StudioPage: React.FC = () => {
                           <HiOutlineClock size={11} /> {vid.duration}
                         </span>
                       )}
+                      <div className={styles.cardQuickActions}>
+                        <button
+                          type="button"
+                          className={styles.quickIconBtn}
+                          title={t('common.download', 'Tải video')}
+                          onClick={() => handleDownloadMedia(vid.videoUrl, `velox-video-${vid.id.slice(0, 8)}.mp4`)}
+                        >
+                          <HiOutlineArrowDownTray size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.quickIconBtn} ${styles.quickDeleteBtn}`}
+                          title={t('common.delete', 'Xóa video')}
+                          onClick={() => handleDeleteMedia(vid.id, 'video')}
+                        >
+                          <HiOutlineTrash size={13} />
+                        </button>
+                      </div>
                     </div>
                     <h4 className={styles.videoTitle}>{vid.title}</h4>
                     <p className={styles.mediaPrompt} title={vid.prompt}>
@@ -1193,6 +1335,24 @@ export const StudioPage: React.FC = () => {
                           <span className={styles.audioVoiceBadge}>{aud.voice}</span>
                           <span className={styles.audioDurationBadge}>{aud.duration || '0:18'}</span>
                         </div>
+                      </div>
+                      <div className={styles.audioActionGroup}>
+                        <button
+                          type="button"
+                          className={styles.audioActionBtn}
+                          title={t('common.download', 'Tải âm thanh')}
+                          onClick={() => handleDownloadMedia(aud.audioUrl, `velox-audio-${aud.id.slice(0, 8)}.mp3`)}
+                        >
+                          <HiOutlineArrowDownTray size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.audioActionBtn} ${styles.deleteAudioBtn}`}
+                          title={t('common.delete', 'Xóa âm thanh')}
+                          onClick={() => handleDeleteMedia(aud.id, 'audio')}
+                        >
+                          <HiOutlineTrash size={15} />
+                        </button>
                       </div>
                     </div>
                     <p className={styles.audioPromptSnippet}>{aud.prompt}</p>
@@ -1975,15 +2135,18 @@ export const StudioPage: React.FC = () => {
             <div className={styles.lightboxMeta}>
               <div className={styles.lightboxModelRow}>
                 <span className={styles.lightboxModelBadge}>{previewMedia.model}</span>
-                <a
-                  href={previewMedia.videoUrl || previewMedia.url}
-                  download={previewMedia.type === 'video' ? 'velox-video.mp4' : 'velox-asset.jpg'}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleDownloadMedia(
+                      previewMedia.videoUrl || previewMedia.url,
+                      previewMedia.type === 'video' ? 'velox-video.mp4' : 'velox-asset.jpg'
+                    )
+                  }
                   className={styles.lightboxDownloadBtn}
                 >
                   <HiOutlineArrowDownTray size={15} /> {t('common.download', 'Tải bản gốc')} Ultra 4K
-                </a>
+                </button>
               </div>
               <p className={styles.lightboxPrompt}>{previewMedia.prompt}</p>
             </div>

@@ -263,6 +263,30 @@ async def get_studio_history(
     ])
 
 
+@router.delete("/history/{item_id}")
+async def delete_studio_history_item(
+    item_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Deletes a generated media record from user's history."""
+    stmt = select(MediaGenerationLog).where(
+        MediaGenerationLog.id == item_id,
+        MediaGenerationLog.user_id == current_user.id
+    )
+    res = await db.execute(stmt)
+    record = res.scalar_one_or_none()
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy mục cần xóa hoặc bạn không có quyền sở hữu mục này."
+        )
+
+    await db.delete(record)
+    await db.commit()
+    return ok(message="Đã xóa tác phẩm khỏi lịch sử thành công.")
+
+
 CINEMATIC_VIDEOS = [
     {
         "keywords": ["tech", "cyber", "ai", "robot", "neon", "future", "digital", "code", "network", "city", "hacker", "xe", "car"],
