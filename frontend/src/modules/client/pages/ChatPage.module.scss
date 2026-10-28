@@ -1,12 +1,14 @@
 .chatContainer {
   display: flex;
-  height: calc(100vh - 65px);
+  height: 100%;
+  max-height: 100%;
   width: 100%;
   background: #080c14;
   color: #f1f5f9;
   overflow: hidden;
   position: relative;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 /* ── LEFT SIDEBAR (HISTORY & NEW CHAT) ── */
@@ -15,12 +17,15 @@
   min-width: 290px;
   max-width: 290px;
   height: 100%;
+  max-height: 100%;
   background: #0b1120;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   transition: width 0.25s ease, min-width 0.25s ease, transform 0.25s ease;
   z-index: 20;
+  box-sizing: border-box;
 
   &.collapsed {
     width: 0;
@@ -37,6 +42,7 @@
   align-items: center;
   gap: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
 .newChatBtn {
@@ -89,6 +95,7 @@
 .searchBox {
   padding: 10px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
 
   .searchInputWrapper {
     position: relative;
@@ -126,7 +133,9 @@
 
 .historyList {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 12px 10px;
 
   &::-webkit-scrollbar {
@@ -238,6 +247,8 @@
   align-items: center;
   justify-content: space-between;
   background: rgba(11, 17, 32, 0.8);
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .creditBalancePill {
@@ -278,17 +289,21 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  max-height: 100%;
+  min-height: 0;
   position: relative;
   background: radial-gradient(circle at 85% 15%, rgba(16, 163, 127, 0.05) 0%, transparent 60%),
               radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.03) 0%, transparent 50%),
               #080c14;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Top Navigation Bar */
 .topBar {
   height: 56px;
   min-height: 56px;
+  max-height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -297,6 +312,7 @@
   background: rgba(11, 17, 32, 0.7);
   backdrop-filter: blur(14px);
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .topBarLeft {
@@ -427,11 +443,14 @@
 /* ── MESSAGES SCROLL PANE ── */
 .messagesPane {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 24px 20px 10px 20px;
   display: flex;
   flex-direction: column;
   gap: 22px;
+  scroll-behavior: smooth;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -439,6 +458,10 @@
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.12);
     border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
   }
 }
 
@@ -729,10 +752,12 @@
 
 /* ── BOTTOM INPUT & MODEL SELECTOR AREA ── */
 .bottomArea {
-  padding: 10px 20px 20px 20px;
+  padding: 10px 20px 16px 20px;
   max-width: 880px;
   width: 100%;
   margin: 0 auto;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .controlsBar {

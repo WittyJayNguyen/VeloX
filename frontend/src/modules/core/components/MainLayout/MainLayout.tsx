@@ -68,12 +68,24 @@ const MainLayout = () => {
     setMobileMenuOpen(false);
   };
 
+  // Lock body overflow on /chat so the viewport never scrolls
+  useEffect(() => {
+    if (location.pathname.startsWith('/chat')) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [location.pathname]);
+
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
 
+  const isChatRoute = location.pathname.startsWith('/chat');
+
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} ${isChatRoute ? styles.chatLayoutMode : ''}`}>
       {/* ── FIXED TOP NAVIGATION ── */}
       <header className={styles.header}>
         <div className={styles.headerContainer}>
@@ -325,7 +337,7 @@ const MainLayout = () => {
       </header>
 
       {/* Main Content View */}
-      <main className={styles.main}>
+      <main className={`${styles.main} ${isChatRoute ? styles.chatMainLayout : ''}`}>
         <Outlet />
       </main>
 
