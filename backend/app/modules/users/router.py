@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, text
+from sqlalchemy import select, func, or_, text, desc
 from pydantic import BaseModel, EmailStr, Field
 
 from app.core.database import get_db
