@@ -392,11 +392,11 @@ async def generate_image_from_upstream(
             resp_data = await _call_upstream_image(base_url, cred.key_val, payload)
             if resp_data and resp_data.get("data"):
                 first = resp_data["data"][0]
-                if first.get("b64_json"):
-                    cred.requests_count = (cred.requests_count or 0) + 1
-                    return f"data:image/jpeg;base64,{first['b64_json']}"
-                elif first.get("url"):
-                    cred.requests_count = (cred.requests_count or 0) + 1
+                if first.get("b64_json") or first.get("url"):
+                    cred.record_usage(1)
+                    await db.commit()
+                    if first.get("b64_json"):
+                        return f"data:image/jpeg;base64,{first['b64_json']}"
                     return first["url"]
     except Exception as ex:
         print(f"[Studio Upstream Query Error]: {ex}")
@@ -603,6 +603,18 @@ async def create_studio_job(
             render_seconds=render_seconds,
         )
         db.add(log_entry)
+
+        if cat_lookup in ["VIDEO", "AUDIO"]:
+            c_stmt = (
+                select(ProviderCredential)
+                .where(ProviderCredential.status == "ACTIVE")
+                .order_by(ProviderCredential.requests_count.asc())
+            )
+            c_res = await db.execute(c_stmt)
+            p_cred = c_res.scalars().first()
+            if p_cred:
+                p_cred.record_usage(1)
+
         await db.commit()
 
     return ok(

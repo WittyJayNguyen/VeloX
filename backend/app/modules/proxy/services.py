@@ -167,6 +167,12 @@ async def proxy_generate_image(
         db=db
     )
 
+    if cred:
+        cred.record_usage(n_outputs)
+    if api_key:
+        api_key.record_usage()
+    await db.commit()
+
     return ImageGenerationResponse(
         created=int(datetime.now(timezone.utc).timestamp()),
         data=[ImageData(url=u) for u in cdn_media_urls]
@@ -248,6 +254,12 @@ async def proxy_generate_video(
         db=db
     )
 
+    if cred:
+        cred.record_usage(1)
+    if api_key:
+        api_key.record_usage()
+    await db.commit()
+
     return VideoGenerationResponse(
         id=f"vid_{str(job_entry.id)[:12]}",
         created=int(datetime.now(timezone.utc).timestamp()),
@@ -294,6 +306,21 @@ async def proxy_chat_completion(
         )
 
     await _deduct_user_credits(user, cost, f"Proxy API Key [{api_key.name}] Chat: {model_code} ({p_tokens} in, {c_tokens} out @ {cost} cr)", db)
+
+    try:
+        cred_res = await db.execute(
+            select(ProviderCredential)
+            .where(ProviderCredential.status == "ACTIVE")
+            .order_by(ProviderCredential.requests_count.asc())
+        )
+        cred = cred_res.scalars().first()
+        if cred:
+            cred.record_usage(1)
+        if api_key:
+            api_key.record_usage()
+        await db.commit()
+    except Exception:
+        pass
 
     return ChatCompletionResponse(
         id=f"chatcmpl-{uuid.uuid4().hex[:12]}",

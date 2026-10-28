@@ -59,6 +59,31 @@ class ProviderCredential(Base, TimestampMixin):
 
     pool = relationship("ServicePool", back_populates="credentials")
 
+    def record_usage(self, units: int = 1) -> None:
+        """Atomically updates daily/monthly quota usage, request count, and status on this provider credential."""
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        if self.last_checked_at:
+            try:
+                last_dt = self.last_checked_at
+                if isinstance(last_dt, str):
+                    last_dt = datetime.fromisoformat(last_dt)
+                if last_dt.date() < now.date():
+                    self.quota_daily_used = 0
+                if last_dt.year < now.year or last_dt.month < now.month:
+                    self.quota_monthly_used = 0
+            except Exception:
+                pass
+        self.quota_daily_used = (self.quota_daily_used or 0) + units
+        self.quota_monthly_used = (self.quota_monthly_used or 0) + units
+        self.requests_count = (self.requests_count or 0) + 1
+        self.last_checked_at = now
+
+        if self.quota_daily and self.quota_daily_used >= self.quota_daily:
+            self.status = "QUOTA_EXCEEDED"
+        elif self.quota_monthly and self.quota_monthly_used >= self.quota_monthly:
+            self.status = "QUOTA_EXCEEDED"
+
 
 class RecaptchaSolver(Base, TimestampMixin):
     __tablename__ = "recaptcha_solvers"

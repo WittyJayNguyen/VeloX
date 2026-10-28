@@ -402,10 +402,27 @@ export const StudioPage: React.FC = () => {
   }, []);
 
   // Filter models strictly from Database catalog for current active tab
+  const getNormalizedCategory = (m: PublicModelItem): string => {
+    let cat = (m.category || '').toUpperCase();
+    const code = (m.model_code || '').toLowerCase();
+    if (cat === 'CHAT') {
+      if (code.includes('tts') || code.includes('whisper') || code.includes('audio') || code.includes('voice') || code.includes('speech')) {
+        return 'AUDIO';
+      }
+      if (code.includes('video') || code.includes('veo') || code.includes('seedance') || code.includes('gen3') || code.includes('sora') || code.includes('luma') || code.includes('kling') || code.includes('minimax-video')) {
+        return 'VIDEO';
+      }
+      if (code.includes('image') || code.includes('imagine') || code.includes('flux') || code.includes('dall') || code.includes('midjourney')) {
+        return 'IMAGE';
+      }
+    }
+    return cat;
+  };
+
   const availableModels = useMemo(() => {
     const targetCat = activeTab.toUpperCase();
     return dbModels.filter((m) => {
-      const cat = (m.category || '').toUpperCase();
+      const cat = getNormalizedCategory(m);
       if (targetCat === 'CHAT') return cat === 'CHAT' || cat === 'TEXT';
       return cat === targetCat;
     });
@@ -453,7 +470,7 @@ export const StudioPage: React.FC = () => {
     // Pick first matching model from Database catalog for the new tab
     const targetCat = newTab.toUpperCase();
     const matching = dbModels.filter((m) => {
-      const cat = (m.category || '').toUpperCase();
+      const cat = getNormalizedCategory(m);
       if (targetCat === 'CHAT') return cat === 'CHAT' || cat === 'TEXT';
       return cat === targetCat;
     });

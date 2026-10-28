@@ -371,10 +371,12 @@ async def sync_models_from_keys(
                 continue
 
             code_lower = code.lower()
-            if any(w in code_lower for w in ["dall-e", "midjourney", "flux", "image", "sd-"]):
+            if any(w in code_lower for w in ["dall-e", "midjourney", "flux", "image", "sd-", "imagine"]):
                 category = "IMAGE"
-            elif any(w in code_lower for w in ["gen3", "gen-2", "video", "luma", "sora", "runway"]):
+            elif any(w in code_lower for w in ["gen3", "gen-2", "video", "luma", "sora", "runway", "seedance", "veo", "kling", "minimax-video"]):
                 category = "VIDEO"
+            elif any(w in code_lower for w in ["tts", "whisper", "audio", "voice", "speech"]):
+                category = "AUDIO"
             elif any(w in code_lower for w in ["agent", "coder", "dev", "cursor"]):
                 category = "DEV_REQ"
             else:
