@@ -125,10 +125,22 @@ async def change_password(
 
 @router.post("/logout", response_model=dict)
 async def logout(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Invalidate current user session token on backend by incrementing token version."""
     current_user.token_version = (getattr(current_user, "token_version", 1) or 1) + 1
+    client_ip = get_client_ip(request)
+    logout_log = UserAuditLog(
+        target_user_id=current_user.id,
+        actor_id=current_user.id,
+        actor_email=current_user.email,
+        action="LOGOUT",
+        details="Người dùng đăng xuất an toàn khỏi hệ thống",
+        reason="Đăng xuất phiên làm việc",
+        ip_address=client_ip,
+    )
+    db.add(logout_log)
     await db.commit()
     return ok(message="Đăng xuất an toàn thành công")

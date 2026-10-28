@@ -223,6 +223,7 @@ export interface SystemUserAuditResponse {
     totalEvents: number;
     securityLockouts: number;
     passwordResets: number;
+    failedLogins?: number;
   };
 }
 

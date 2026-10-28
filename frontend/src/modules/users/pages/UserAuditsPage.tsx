@@ -6,7 +6,6 @@ import {
   HiOutlineLockClosed,
   HiOutlineClipboardDocumentList,
   HiOutlineEye,
-  HiOutlineCheckCircle,
 } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Select } from '@modules/core/design-system/Select';
@@ -21,13 +20,18 @@ import {
 } from '../services/userManagementService';
 
 const actionBadges: Record<string, { variant: 'primary' | 'success' | 'warning' | 'danger' | 'neutral' | 'purple'; label: string }> = {
+  LOGIN_SUCCESS: { variant: 'success', label: 'Đăng Nhập Thành Công' },
+  LOGIN_FAILED: { variant: 'danger', label: 'Đăng Nhập Thất Bại' },
+  LOGOUT: { variant: 'neutral', label: 'Đăng Xuất An Toàn' },
+  SECURITY_LOCKOUT: { variant: 'danger', label: 'Khóa Tự Động (Brute-Force)' },
+  ROLE_CHANGE: { variant: 'purple', label: 'Phân Quyền / Vai Trò' },
+  CREDIT_ADJUST: { variant: 'primary', label: 'Điều Chỉnh Credit' },
   CREATE_USER: { variant: 'primary', label: 'Tạo Thành Viên' },
   REGISTER: { variant: 'success', label: 'Tự Đăng Ký' },
   UPDATE_USER: { variant: 'neutral', label: 'Cập Nhật Hồ Sơ' },
   STATUS_CHANGE: { variant: 'warning', label: 'Khóa / Mở Khóa' },
   PASSWORD_RESET: { variant: 'purple', label: 'Đặt Lại Mật Khẩu' },
   PASSWORD_CHANGE: { variant: 'purple', label: 'Tự Đổi Mật Khẩu' },
-  SECURITY_LOCKOUT: { variant: 'danger', label: 'Khóa Tự Động (Brute-Force)' },
   DELETE_USER: { variant: 'danger', label: 'Xóa Tài Khoản' },
 };
 
@@ -46,6 +50,7 @@ export const UserAuditsPage = () => {
     totalEvents: 0,
     securityLockouts: 0,
     passwordResets: 0,
+    failedLogins: 0,
   });
 
   // Modal for detail / JSON diff
@@ -63,7 +68,12 @@ export const UserAuditsPage = () => {
       setLogs(res.items);
       setTotalPages(res.pagination.totalPages);
       setTotalCount(res.pagination.total);
-      setStats(res.stats);
+      setStats({
+        totalEvents: res.stats.totalEvents,
+        securityLockouts: res.stats.securityLockouts,
+        passwordResets: res.stats.passwordResets,
+        failedLogins: res.stats.failedLogins || 0,
+      });
     } catch {
       // ignore
     } finally {
@@ -77,13 +87,19 @@ export const UserAuditsPage = () => {
 
   const actionOptions = [
     { value: 'ALL', label: 'Tất cả hành động' },
+    { value: 'LOGIN_SUCCESS', label: 'Đăng Nhập Thành Công' },
+    { value: 'LOGIN_FAILED', label: 'Đăng Nhập Thất Bại' },
+    { value: 'SECURITY_LOCKOUT', label: 'Khóa Tự Động (Brute-Force)' },
+    { value: 'ROLE_CHANGE', label: 'Phân Quyền / Vai Trò' },
+    { value: 'CREDIT_ADJUST', label: 'Điều Chỉnh Credit' },
     { value: 'CREATE_USER', label: 'Tạo Thành Viên' },
     { value: 'REGISTER', label: 'Tự Đăng Ký' },
     { value: 'UPDATE_USER', label: 'Cập Nhật Hồ Sơ' },
     { value: 'STATUS_CHANGE', label: 'Khóa / Mở Khóa' },
     { value: 'PASSWORD_RESET', label: 'Đặt Lại Mật Khẩu' },
-    { value: 'SECURITY_LOCKOUT', label: 'Khóa Tự Động (Brute-Force)' },
+    { value: 'PASSWORD_CHANGE', label: 'Tự Đổi Mật Khẩu' },
     { value: 'DELETE_USER', label: 'Xóa Tài Khoản' },
+    { value: 'LOGOUT', label: 'Đăng Xuất An Toàn' },
   ];
 
   const columns: TableColumn<SystemUserAuditItem>[] = [
@@ -195,22 +211,22 @@ export const UserAuditsPage = () => {
           color="#6366f1"
         />
         <StatCard
+          label={t('admin.audit.stat_failed_logins', 'Cảnh Báo Đăng Nhập Sai')}
+          value={(stats.failedLogins ?? 0).toLocaleString()}
+          icon={<HiOutlineLockClosed />}
+          color="#f59e0b"
+        />
+        <StatCard
           label={t('admin.audit.stat_lockouts', 'Sự Kiện Khóa Brute-Force')}
           value={stats.securityLockouts.toLocaleString()}
           icon={<HiOutlineLockClosed />}
           color="#f43f5e"
         />
         <StatCard
-          label={t('admin.audit.stat_resets', 'Đặt Lại Mật Khẩu')}
+          label={t('admin.audit.stat_resets', 'Đổi / Đặt Lại Mật Khẩu')}
           value={stats.passwordResets.toLocaleString()}
           icon={<HiOutlineKey />}
           color="#eab308"
-        />
-        <StatCard
-          label={t('admin.audit.stat_integrity', 'Tính Toàn Vẹn Sổ Cái')}
-          value="100% Verified"
-          icon={<HiOutlineCheckCircle />}
-          color="#10b981"
         />
       </div>
 
