@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import {
@@ -8,9 +8,14 @@ import {
   HiOutlineCreditCard,
   HiOutlineBolt,
   HiOutlineCalendarDays,
+  HiOutlineServerStack,
+  HiOutlineMagnifyingGlass,
+  HiOutlineArrowRight,
+  HiOutlineCommandLine,
 } from 'react-icons/hi2';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
 import { billingService, type CreditPackageDto } from '@modules/billing/services/billingService';
+import { modelService, type PublicModelItem } from '@modules/models/services/modelService';
 import styles from '@assets/scss/client/client-pages.module.scss';
 
 export const SubscriptionPage: React.FC = () => {
@@ -18,12 +23,22 @@ export const SubscriptionPage: React.FC = () => {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const tabParam = searchParams.get('tab');
+  const initialTab = tabParam === 'models' || tabParam === 'model' ? 'MODELS' : tabParam === 'topup' ? 'TOPUP' : 'SUBSCRIPTION';
 
   const [topupOpen, setTopupOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>();
   const [packages, setPackages] = useState<CreditPackageDto[]>([]);
-  const [activeTab, setActiveTab] = useState<'SUBSCRIPTION' | 'TOPUP'>('SUBSCRIPTION');
+  const [activeTab, setActiveTab] = useState<'SUBSCRIPTION' | 'TOPUP' | 'MODELS'>(initialTab);
   const [isLoading, setIsLoading] = useState(true);
+
+  // AI Models state for Models tab
+  const [models, setModels] = useState<PublicModelItem[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelCategory, setModelCategory] = useState<string>('ALL');
+  const [searchModel, setSearchModel] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
@@ -44,6 +59,42 @@ export const SubscriptionPage: React.FC = () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (activeTab === 'MODELS' && models.length === 0) {
+      setModelsLoading(true);
+      modelService
+        .getPublicModels()
+        .then((data) => {
+          if (isMounted && data) {
+            setModels(data);
+          }
+        })
+        .catch((err) => console.error('Failed to load models catalog:', err))
+        .finally(() => {
+          if (isMounted) setModelsLoading(false);
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTab, models.length]);
+
+  const filteredModels = useMemo(() => {
+    return models.filter((m) => {
+      const matchCat =
+        modelCategory === 'ALL' ||
+        (m.category && m.category.toUpperCase() === modelCategory.toUpperCase());
+      const q = searchModel.trim().toLowerCase();
+      const matchQuery =
+        !q ||
+        m.name.toLowerCase().includes(q) ||
+        m.model_code.toLowerCase().includes(q) ||
+        (m.provider && m.provider.toLowerCase().includes(q));
+      return matchCat && matchQuery;
+    });
+  }, [models, modelCategory, searchModel]);
 
   const handleAction = (pkgId?: string) => {
     if (!isAuthenticated) {
@@ -168,151 +219,419 @@ export const SubscriptionPage: React.FC = () => {
             <HiOutlineBolt size={18} />
             Nạp Credit VietQR (Vĩnh viễn không hết hạn)
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('MODELS')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              fontSize: '0.92rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              border: 'none',
+              background: activeTab === 'MODELS' ? 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)' : 'transparent',
+              color: activeTab === 'MODELS' ? '#fff' : '#94a3b8',
+              boxShadow: activeTab === 'MODELS' ? '0 4px 12px rgba(255, 107, 53, 0.3)' : 'none',
+            }}
+          >
+            <HiOutlineServerStack size={18} />
+            Bảng Giá 150+ Model AI
+          </button>
         </div>
       </div>
 
-      {/* Plans Grid */}
-      {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '3.5rem', color: '#94a3b8' }}>
-          Đang tải thông tin bảng giá cập nhật từ hệ thống...
+      {/* Tab: BẢNG GIÁ MODEL AI */}
+      {activeTab === 'MODELS' ? (
+        <div style={{ marginTop: '1.5rem' }}>
+          {/* Header Info Banner */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #0e1526 0%, #151e36 100%)',
+              border: '1px solid #1f2c4a',
+              borderRadius: '14px',
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+            }}
+          >
+            <div>
+              <div style={{ color: '#ff6b35', fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                QUY ĐỔI MINH BẠCH & TIẾT KIỆM 50-70%
+              </div>
+              <div style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 800, marginTop: '4px' }}>
+                Bảng Giá Tín Dụng Chi Tiết Từng Model (1 Credit = 100 VNĐ)
+              </div>
+              <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px' }}>
+                Áp dụng tính cước linh hoạt theo Token hoặc Lượt sinh ảnh/video. Nạp bao nhiêu dùng bấy nhiêu, không ép cam kết tháng.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Link
+                to="/models"
+                className={styles.secondaryBtn}
+                style={{ fontSize: '0.85rem', padding: '8px 16px', textDecoration: 'none' }}
+              >
+                Khám Phá Models <HiOutlineArrowRight size={14} />
+              </Link>
+              <Link
+                to="/docs"
+                className={styles.primaryBtn}
+                style={{ fontSize: '0.85rem', padding: '8px 16px', textDecoration: 'none' }}
+              >
+                <HiOutlineCommandLine size={16} /> API Docs
+              </Link>
+            </div>
+          </div>
+
+          {/* Filter Bar & Search */}
+          <div className={styles.pricingFilterRow}>
+            <div className={styles.filterTabs}>
+              {[
+                { id: 'ALL', label: 'Tất Cả' },
+                { id: 'CHAT', label: 'Chat & Code' },
+                { id: 'IMAGE', label: 'Hình Ảnh AI' },
+                { id: 'VIDEO', label: 'Video AI' },
+                { id: 'AUDIO', label: 'Giọng Nói & TTS' },
+                { id: 'DEV_REQ', label: 'Agent & Dev' },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`${styles.tabBtn} ${modelCategory === cat.id ? styles.tabActive : ''}`}
+                  onClick={() => setModelCategory(cat.id)}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.searchBox}>
+              <HiOutlineMagnifyingGlass size={16} color="#94a3b8" />
+              <input
+                type="text"
+                placeholder="Tìm model, nhà phát triển..."
+                value={searchModel}
+                onChange={(e) => setSearchModel(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className={styles.tableWrapper}>
+            <table className={styles.pricingTable}>
+              <thead>
+                <tr>
+                  <th>Mã Model (API ID)</th>
+                  <th>Tên Model & Hãng</th>
+                  <th>Loại</th>
+                  <th>Input Tokens (1M)</th>
+                  <th>Output Tokens (1M)</th>
+                  <th>Đọc Cache (1M)</th>
+                  <th>Giá Mỗi Lượt</th>
+                  <th style={{ textAlign: 'center' }}>Sử Dụng</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modelsLoading ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#94a3b8' }}>
+                      Đang đồng bộ bảng giá thời gian thực từ máy chủ VeloX...
+                    </td>
+                  </tr>
+                ) : filteredModels.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#94a3b8' }}>
+                      Không tìm thấy model nào phù hợp với bộ lọc hiện tại.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredModels.map((m) => {
+                    const isMedia = m.category === 'IMAGE' || m.category === 'VIDEO' || m.category === 'AUDIO';
+                    return (
+                      <tr key={m.id || m.model_code}>
+                        <td className={styles.modelCodeCell}>
+                          <span style={{ color: '#ff8c42' }}>{m.model_code}</span>
+                        </td>
+                        <td>
+                          <div style={{ color: '#fff', fontWeight: 600 }}>{m.name}</div>
+                          <span className={styles.providerCell}>{m.provider}</span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              fontSize: '0.74rem',
+                              background: '#1c2538',
+                              color: '#38bdf8',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {m.category}
+                          </span>
+                        </td>
+                        <td className={styles.rateCell}>
+                          {isMedia ? (
+                            <span style={{ color: '#64748b' }}>—</span>
+                          ) : m.input_credit_price ? (
+                            <div>
+                              <span>{m.input_credit_price.toLocaleString()} cr</span>
+                              <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                ~{(m.input_credit_price * 100).toLocaleString()} ₫
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ color: '#10b981' }}>Theo lượt</span>
+                          )}
+                        </td>
+                        <td className={styles.rateCell}>
+                          {isMedia ? (
+                            <span style={{ color: '#64748b' }}>—</span>
+                          ) : m.output_credit_price ? (
+                            <div>
+                              <span>{m.output_credit_price.toLocaleString()} cr</span>
+                              <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                ~{(m.output_credit_price * 100).toLocaleString()} ₫
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ color: '#10b981' }}>Theo lượt</span>
+                          )}
+                        </td>
+                        <td className={styles.cacheCell}>
+                          {isMedia ? (
+                            <span style={{ color: '#64748b' }}>—</span>
+                          ) : m.cache_read_credit_price ? (
+                            <div>
+                              <span>{m.cache_read_credit_price.toLocaleString()} cr</span>
+                              <div style={{ fontSize: '0.72rem', color: '#10b981' }}>Giảm 80%</div>
+                            </div>
+                          ) : (
+                            <span style={{ color: '#64748b' }}>—</span>
+                          )}
+                        </td>
+                        <td className={styles.minCostCell}>
+                          {isMedia ? (
+                            <span style={{ color: '#2dd4bf', fontWeight: 700 }}>
+                              {m.selling_credit_price} cr{' '}
+                              <small style={{ color: '#64748b' }}>
+                                (~{(m.selling_credit_price * 100).toLocaleString()} ₫)
+                              </small>
+                            </span>
+                          ) : (
+                            <span>
+                              <strong style={{ color: '#2dd4bf' }}>~0.05 cr</strong>{' '}
+                              <small style={{ color: '#64748b' }}>(Sàn: {m.selling_credit_price || 1} cr)</small>
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => navigate('/studio')}
+                            style={{
+                              background: '#1a2338',
+                              border: '1px solid #283758',
+                              color: '#fff',
+                              borderRadius: '6px',
+                              padding: '5px 10px',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            Dùng Thử
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer note for Developers */}
+          <div
+            style={{
+              marginTop: '1.5rem',
+              padding: '1rem 1.25rem',
+              background: '#090d16',
+              border: '1px solid #1a2234',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              fontSize: '0.86rem',
+              color: '#94a3b8',
+            }}
+          >
+            <div>
+              💡 Dành cho lập trình viên: Endpoint bảng giá tự động JSON có sẵn tại:{' '}
+              <code style={{ color: '#38bdf8', background: '#131b2e', padding: '2px 8px', borderRadius: '4px' }}>
+                GET /v1/pricing
+              </code>
+            </div>
+            <Link to="/docs" style={{ color: '#ff6b35', fontWeight: 600, textDecoration: 'none' }}>
+              Xem hướng dẫn tích hợp API &rarr;
+            </Link>
+          </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
-          {displayedPackages.map((tier) => {
-            const isUserCurrent =
-              isAuthenticated &&
-              activeTab === 'SUBSCRIPTION' &&
-              (user?.tier || 'Free Member').toLowerCase().includes(tier.name.toLowerCase());
-            const discountPercent =
-              tier.original_price_vnd && tier.original_price_vnd > tier.price_vnd
-                ? Math.round(((tier.original_price_vnd - tier.price_vnd) / tier.original_price_vnd) * 100)
-                : 0;
+        /* Plans Grid: SUBSCRIPTION & TOPUP */
+        isLoading ? (
+          <div style={{ textAlign: 'center', padding: '3.5rem', color: '#94a3b8' }}>
+            Đang tải thông tin bảng giá cập nhật từ hệ thống...
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
+            {displayedPackages.map((tier) => {
+              const isUserCurrent =
+                isAuthenticated &&
+                activeTab === 'SUBSCRIPTION' &&
+                (user?.tier || 'Free Member').toLowerCase().includes(tier.name.toLowerCase());
+              const discountPercent =
+                tier.original_price_vnd && tier.original_price_vnd > tier.price_vnd
+                  ? Math.round(((tier.original_price_vnd - tier.price_vnd) / tier.original_price_vnd) * 100)
+                  : 0;
 
-            return (
-              <div
-                key={tier.id}
-                className={styles.contentCard}
-                style={{
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderColor: tier.is_popular ? '#ff6b35' : '#1e2638',
-                  background: tier.is_popular
-                    ? 'linear-gradient(180deg, rgba(255, 107, 53, 0.05) 0%, rgba(17, 24, 39, 1) 100%)'
-                    : undefined,
-                  boxShadow: tier.is_popular ? '0 12px 36px rgba(255, 107, 53, 0.18)' : undefined,
-                }}
-              >
-                {/* Popular or Custom Badge */}
-                {tier.is_popular && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '-12px',
-                      right: '20px',
-                      background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
-                      color: '#fff',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                      padding: '4px 12px',
-                      borderRadius: '999px',
-                      letterSpacing: '0.5px',
-                    }}
-                  >
-                    {tier.tag_badge || 'KHUYÊN DÙNG'}
-                  </span>
-                )}
-
-                {/* Non-popular badge */}
-                {!tier.is_popular && tier.tag_badge && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '-10px',
-                      right: '20px',
-                      background: '#1e293b',
-                      color: '#38bdf8',
-                      border: '1px solid #334155',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      padding: '2px 10px',
-                      borderRadius: '999px',
-                    }}
-                  >
-                    {tier.tag_badge}
-                  </span>
-                )}
-
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>{tier.name}</div>
-                <div style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '0.35rem 0 1rem', minHeight: '38px' }}>
-                  {tier.description || 'Gói dịch vụ AI Gateway VeloX'}
-                </div>
-
-                {/* Pricing Area */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '0.75rem' }}>
-                  <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#fff' }}>
-                    {tier.price_vnd > 0 ? `${tier.price_vnd.toLocaleString()} đ` : '0 đ'}
-                  </span>
-                  {tier.original_price_vnd && tier.original_price_vnd > tier.price_vnd && (
-                    <span style={{ color: '#64748b', textDecoration: 'line-through', fontSize: '0.9rem' }}>
-                      {tier.original_price_vnd.toLocaleString()} đ
-                    </span>
-                  )}
-                  {discountPercent > 0 && (
-                    <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.68rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
-                      -{discountPercent}%
-                    </span>
-                  )}
-                  <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-                    {tier.category === 'TOPUP' ? '' : tier.price_vnd === 0 ? '/vĩnh viễn' : '/tháng'}
-                  </span>
-                </div>
-
-                {/* Credit Quota & Production Capacity */}
+              return (
                 <div
+                  key={tier.id}
+                  className={styles.contentCard}
                   style={{
-                    padding: '0.75rem 0.9rem',
-                    background: '#090d16',
-                    border: '1px solid #1a2234',
-                    borderRadius: '8px',
-                    marginBottom: '1.25rem',
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderColor: tier.is_popular ? '#ff6b35' : '#1e2638',
+                    background: tier.is_popular
+                      ? 'linear-gradient(180deg, rgba(255, 107, 53, 0.05) 0%, rgba(17, 24, 39, 1) 100%)'
+                      : undefined,
+                    boxShadow: tier.is_popular ? '0 12px 36px rgba(255, 107, 53, 0.18)' : undefined,
                   }}
                 >
-                  <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '0.95rem' }}>
-                    💎 {tier.credits_given.toLocaleString()} Credits {tier.category === 'TOPUP' ? 'vĩnh viễn' : '/tháng'}
-                  </div>
-                  <div style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '4px', fontWeight: 500 }}>
-                    {getProductionCapability(tier)}
-                  </div>
-                </div>
+                  {/* Popular or Custom Badge */}
+                  {tier.is_popular && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-12px',
+                        right: '20px',
+                        background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                        color: '#fff',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        padding: '4px 12px',
+                        borderRadius: '999px',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      {tier.tag_badge || 'KHUYÊN DÙNG'}
+                    </span>
+                  )}
 
-                {/* Feature List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem', flex: 1 }}>
-                  {(tier.features || []).map((f, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
-                      <HiOutlineCheck color="#10b981" size={17} style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <span>{f}</span>
+                  {/* Non-popular badge */}
+                  {!tier.is_popular && tier.tag_badge && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        right: '20px',
+                        background: '#1e293b',
+                        color: '#38bdf8',
+                        border: '1px solid #334155',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        padding: '2px 10px',
+                        borderRadius: '999px',
+                      }}
+                    >
+                      {tier.tag_badge}
+                    </span>
+                  )}
+
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>{tier.name}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '0.35rem 0 1rem', minHeight: '38px' }}>
+                    {tier.description || 'Gói dịch vụ AI Gateway VeloX'}
+                  </div>
+
+                  {/* Pricing Area */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#fff' }}>
+                      {tier.price_vnd > 0 ? `${tier.price_vnd.toLocaleString()} đ` : '0 đ'}
+                    </span>
+                    {tier.original_price_vnd && tier.original_price_vnd > tier.price_vnd && (
+                      <span style={{ color: '#64748b', textDecoration: 'line-through', fontSize: '0.9rem' }}>
+                        {tier.original_price_vnd.toLocaleString()} đ
+                      </span>
+                    )}
+                    {discountPercent > 0 && (
+                      <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.68rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
+                        -{discountPercent}%
+                      </span>
+                    )}
+                    <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                      {tier.category === 'TOPUP' ? '' : tier.price_vnd === 0 ? '/vĩnh viễn' : '/tháng'}
+                    </span>
+                  </div>
+
+                  {/* Credit Quota & Production Capacity */}
+                  <div
+                    style={{
+                      padding: '0.75rem 0.9rem',
+                      background: '#090d16',
+                      border: '1px solid #1a2234',
+                      borderRadius: '8px',
+                      marginBottom: '1.25rem',
+                    }}
+                  >
+                    <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '0.95rem' }}>
+                      💎 {tier.credits_given.toLocaleString()} Credits {tier.category === 'TOPUP' ? 'vĩnh viễn' : '/tháng'}
                     </div>
-                  ))}
-                </div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '4px', fontWeight: 500 }}>
+                      {getProductionCapability(tier)}
+                    </div>
+                  </div>
 
-                {/* Action CTA Button */}
-                <button
-                  type="button"
-                  className={isUserCurrent ? styles.secondaryBtn : styles.primaryBtn}
-                  style={{
-                    width: '100%',
-                    justifyContent: 'center',
-                    background: tier.is_popular ? 'linear-gradient(135deg, #ff6b35 0%, #e0531c 100%)' : undefined,
-                  }}
-                  onClick={() => handleAction(tier.id)}
-                >
-                  {isAuthenticated ? (isUserCurrent ? 'Gói Hiện Tại' : 'Chọn Gói Này') : 'Bắt Đầu Ngay'}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  {/* Feature List */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem', flex: 1 }}>
+                    {(tier.features || []).map((f, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                        <HiOutlineCheck color="#10b981" size={17} style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Action CTA Button */}
+                  <button
+                    type="button"
+                    className={isUserCurrent ? styles.secondaryBtn : styles.primaryBtn}
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      background: tier.is_popular ? 'linear-gradient(135deg, #ff6b35 0%, #e0531c 100%)' : undefined,
+                    }}
+                    onClick={() => handleAction(tier.id)}
+                  >
+                    {isAuthenticated ? (isUserCurrent ? 'Gói Hiện Tại' : 'Chọn Gói Này') : 'Bắt Đầu Ngay'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )
       )}
 
       <TopupModal isOpen={topupOpen} onClose={() => setTopupOpen(false)} initialPackageId={selectedPackageId} />
