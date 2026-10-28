@@ -194,7 +194,11 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
   const currentCategory = STUDIO_CATEGORIES.find((c) => c.id === activeCatId) || STUDIO_CATEGORIES[0];
 
   const handleSelectModel = (catId: string, modelId: string) => {
-    navigate(`/studio?category=${catId}&model=${modelId}`);
+    if (catId === 'chat') {
+      navigate(`/chat?model=${modelId}`);
+    } else {
+      navigate(`/studio?category=${catId}&model=${modelId}`);
+    }
     if (onCloseMenu) onCloseMenu();
   };
 
@@ -233,7 +237,11 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
                     onMouseEnter={() => setActiveCatId(cat.id)}
                     onClick={() => {
                       setActiveCatId(cat.id);
-                      navigate(`/studio?category=${cat.id}`);
+                      if (cat.id === 'chat') {
+                        navigate('/chat');
+                      } else {
+                        navigate(`/studio?category=${cat.id}`);
+                      }
                       if (onCloseMenu) onCloseMenu();
                     }}
                   >
