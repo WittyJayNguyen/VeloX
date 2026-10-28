@@ -460,7 +460,7 @@ async def generate_studio_media(
             is_meta = True
 
         if is_meta:
-            # Route strictly to Meta AI pool without calling other providers
+            # Route strictly to Meta AI pool via Playwright session worker
             if db:
                 target_pool_id = model_obj.pool_id if model_obj else None
                 if target_pool_id:
@@ -486,9 +486,25 @@ async def generate_studio_media(
                     )
                 c_res = await db.execute(c_stmt)
                 muse_cred = c_res.scalars().first()
-                if muse_cred:
-                    muse_cred.record_usage(1)
-                    await db.commit()
+                if muse_cred and muse_cred.cookies:
+                    from app.modules.playground.muse_worker import generate_media_via_muse
+                    worker_res = await generate_media_via_muse(
+                        prompt=clean_prompt,
+                        cookies_json_or_list=muse_cred.cookies,
+                        media_type="image",
+                        aspect_ratio=aspect_ratio if aspect_ratio != "auto" else "1:1",
+                        quality=options.get("quality", "hd"),
+                        timeout_sec=120,
+                    )
+                    if worker_res.get("success") and worker_res.get("media_url"):
+                        muse_cred.record_usage(1)
+                        await db.commit()
+                        return {
+                            "output_url": worker_res["media_url"],
+                            "poster_url": None,
+                            "render_seconds": round(worker_res.get("latency_ms", 3000) / 1000, 1),
+                            "media_type": "IMAGE",
+                        }
 
             fallback_img = get_aesthetic_image_fallback(clean_prompt, w, h)
             return {
@@ -526,6 +542,57 @@ async def generate_studio_media(
         }
 
     elif job_type == "video":
+        is_meta = False
+        if model_obj and model_obj.provider in ["Meta AI", "Muse", "Meta"]:
+            is_meta = True
+        elif any(k in model_code.lower() for k in ["meta", "imagine", "muse"]):
+            is_meta = True
+
+        if is_meta and db:
+            target_pool_id = model_obj.pool_id if model_obj else None
+            if target_pool_id:
+                c_stmt = (
+                    select(ProviderCredential)
+                    .where(
+                        ProviderCredential.pool_id == target_pool_id,
+                        ProviderCredential.status == "ACTIVE"
+                    )
+                    .order_by(ProviderCredential.priority.desc())
+                    .limit(1)
+                )
+            else:
+                c_stmt = (
+                    select(ProviderCredential)
+                    .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
+                    .where(
+                        ServicePool.provider == "Meta AI",
+                        ProviderCredential.status == "ACTIVE"
+                    )
+                    .order_by(ProviderCredential.priority.desc())
+                    .limit(1)
+                )
+            c_res = await db.execute(c_stmt)
+            muse_cred = c_res.scalars().first()
+            if muse_cred and muse_cred.cookies:
+                from app.modules.playground.muse_worker import generate_media_via_muse
+                worker_res = await generate_media_via_muse(
+                    prompt=clean_prompt,
+                    cookies_json_or_list=muse_cred.cookies,
+                    media_type="video",
+                    aspect_ratio=aspect_ratio if aspect_ratio != "auto" else "16:9",
+                    duration_sec=int(str(options.get("duration", 5)).replace("s", "")),
+                    timeout_sec=180,
+                )
+                if worker_res.get("success") and worker_res.get("media_url"):
+                    muse_cred.record_usage(1)
+                    await db.commit()
+                    return {
+                        "output_url": worker_res["media_url"],
+                        "poster_url": None,
+                        "render_seconds": round(worker_res.get("latency_ms", 5000) / 1000, 1),
+                        "media_type": "VIDEO",
+                    }
+
         prompt_lower = clean_prompt.lower()
         matched_item = None
         for item in CINEMATIC_VIDEOS:
