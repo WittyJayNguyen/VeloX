@@ -1,12 +1,75 @@
 {
   "app_name": "VeloX AI",
-  "nav": { "home": "首页", "features": "功能", "pricing": "价格", "docs": "API文档", "login": "登录", "register": "注册", "dashboard": "仪表盘", "logout": "退出", "workspace": "工作区", "studio": "Studio", "models": "AI 模型" },
-  "hero": { "badge": "新一代AI网关平台", "title_1": "统一AI中心", "title_highlight": "人工智能", "subtitle": "以最低成本连接OpenAI、Claude、Gemini、Midjourney等100多个AI模型。一个API密钥即可使用所有模型。", "cta_start": "免费开始", "cta_docs": "查看文档" },
-  "features": { "title": "为什么选择VeloX？", "multi_model": "多模型AI", "multi_model_desc": "通过单一平台访问100多个用于聊天、图像、视频和代码的AI模型。", "pool_system": "智能池系统", "pool_system_desc": "自动轮换API密钥和账户令牌，确保99.9%的正常运行时间和最佳价格。", "security": "企业级安全", "security_desc": "端到端加密、RBAC访问控制和全面的审计日志。", "i18n": "多语言支持", "i18n_desc": "支持5种语言：越南语、英语、日语、韩语和中文。" },
-  "stats": { "models": "AI模型", "users": "用户", "requests": "请求/天", "uptime": "正常运行" },
-  "footer": { "rights": "© 2026 VeloX AI. 版权所有。", "terms": "条款", "privacy": "隐私" },
-  "auth": { "login_title": "登录账户", "register_title": "创建账户", "email": "邮箱", "password": "密码", "full_name": "姓名", "confirm_password": "确认密码", "login_btn": "登录", "register_btn": "注册", "no_account": "还没有账户？", "has_account": "已有账户？", "or": "或" },
-  "common": { "loading": "加载中...", "save": "保存", "cancel": "取消", "delete": "删除", "edit": "编辑", "search": "搜索...", "actions": "操作", "status": "状态", "active": "活跃", "inactive": "停用", "confirm_delete": "确定要删除吗？", "no_data": "暂无数据" },
+  "nav": {
+    "home": "首页",
+    "features": "功能",
+    "pricing": "价格",
+    "docs": "API文档",
+    "login": "登录",
+    "register": "注册",
+    "dashboard": "仪表盘",
+    "logout": "退出",
+    "workspace": "工作区",
+    "studio": "Studio",
+    "models": "AI 模型"
+  },
+  "hero": {
+    "badge": "新一代AI网关平台",
+    "title_1": "统一AI中心",
+    "title_highlight": "人工智能",
+    "subtitle": "以最低成本连接OpenAI、Claude、Gemini、Midjourney等100多个AI模型。一个API密钥即可使用所有模型。",
+    "cta_start": "免费开始",
+    "cta_docs": "查看文档"
+  },
+  "features": {
+    "title": "为什么选择VeloX？",
+    "multi_model": "多模型AI",
+    "multi_model_desc": "通过单一平台访问100多个用于聊天、图像、视频和代码的AI模型。",
+    "pool_system": "智能池系统",
+    "pool_system_desc": "自动轮换API密钥和账户令牌，确保99.9%的正常运行时间和最佳价格。",
+    "security": "企业级安全",
+    "security_desc": "端到端加密、RBAC访问控制和全面的审计日志。",
+    "i18n": "多语言支持",
+    "i18n_desc": "支持5种语言：越南语、英语、日语、韩语和中文。"
+  },
+  "stats": {
+    "models": "AI模型",
+    "users": "用户",
+    "requests": "请求/天",
+    "uptime": "正常运行"
+  },
+  "footer": {
+    "rights": "© 2026 VeloX AI. 版权所有。",
+    "terms": "条款",
+    "privacy": "隐私"
+  },
+  "auth": {
+    "login_title": "登录账户",
+    "register_title": "创建账户",
+    "email": "邮箱",
+    "password": "密码",
+    "full_name": "姓名",
+    "confirm_password": "确认密码",
+    "login_btn": "登录",
+    "register_btn": "注册",
+    "no_account": "还没有账户？",
+    "has_account": "已有账户？",
+    "or": "或"
+  },
+  "common": {
+    "loading": "加载中...",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "search": "搜索...",
+    "actions": "操作",
+    "status": "状态",
+    "active": "活跃",
+    "inactive": "停用",
+    "confirm_delete": "确定要删除吗？",
+    "no_data": "暂无数据"
+  },
   "admin": {
     "search_placeholder": "搜索全局内容...",
     "workspace_label": "工作区",
@@ -454,7 +517,9 @@
     "tab_chat": "对话",
     "clear_chat": "清除对话",
     "chat_title": "AI 智能对话会话",
-    "chat_thinking": "AI 正在思考并整理回答..."
+    "chat_thinking": "AI 正在思考并整理回答...",
+    "no_images_yet": "暂无图像作品。在下方输入创意提示词以生成您的第一张 AI 画作！",
+    "no_videos_yet": "暂无视频作品。在下方输入动态脚本以生成生动的 AI 视频！"
   },
   "models_page": {
     "title": "AI 模型库 (AI Models Catalog)",
