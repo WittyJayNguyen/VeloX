@@ -17,7 +17,6 @@ import {
   HiOutlineChevronDown,
   HiOutlineMusicalNote,
   HiOutlineCheck,
-  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { modelService, type PublicModelItem } from '@modules/models/services/modelService';
@@ -179,74 +178,155 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   },
 };
 
-// Preset Prompts & Templates per model/category
-export const PROMPT_PRESETS: Record<string, Array<{ title: string; prompt: string; tag: string; ratio?: string; duration?: string }>> = {
-  video: [
-    {
-      title: 'Quay quỹ đạo điện ảnh Slow-motion',
-      prompt: 'Cinematic slow-motion 120fps camera orbit around an elite athlete lifting heavy barbell in a modern moody gym, volumetric neon light, floating chalk dust, 4k ultra-realistic',
-      tag: 'Điện ảnh',
-      ratio: '16:9',
-      duration: '5s',
-    },
-    {
-      title: 'Chuyển động Drone tốc độ cao',
-      prompt: 'Dynamic FPV drone shot following runner sprinting through neon rain cyber street, water splashes, anamorphic lens flare, motion blur, hyper-realistic',
-      tag: 'Hành động',
-      ratio: '16:9',
-      duration: '10s',
-    },
-    {
-      title: 'Yoga Bình minh Thiên nhiên',
-      prompt: 'Serene woman practicing yoga flow on a breathtaking mountain peak during golden hour sunrise, smooth gimbal tracking shot, volumetric clouds, photorealistic',
-      tag: 'Nghệ thuật',
-      ratio: '9:16',
-      duration: '5s',
-    },
-    {
-      title: 'Crossfit Battle Ropes bùng nổ',
-      prompt: 'Explosive high-intensity battle rope workout, extreme close-up of muscles and sweat in dramatic stadium rim lighting, slow-motion 60fps',
-      tag: 'Fitness',
-      ratio: '16:9',
-      duration: '6s',
-    },
-  ],
+// Preset Prompt Groups per category matching user request mockup exactly
+export interface PromptPresetItem {
+  title: string;
+  prompt: string;
+  ratio?: string;
+  duration?: string;
+}
+
+export interface PromptPresetGroup {
+  groupName: string;
+  items: PromptPresetItem[];
+}
+
+export const PROMPT_PRESET_GROUPS: Record<string, PromptPresetGroup[]> = {
   image: [
     {
-      title: 'Chân dung Studio Hyper-Realistic 8K',
-      prompt: 'Masterpiece portrait of athlete in studio lighting, extreme detail on skin texture, 85mm f/1.4 lens, Rembrandt lighting, photorealistic 8k octane render',
-      tag: 'Chân thực',
-      ratio: '1:1',
+      groupName: 'TẠO ẢNH',
+      items: [
+        {
+          title: 'Chân dung studio với ánh sáng điện ảnh',
+          prompt: 'Masterpiece studio portrait photography, Rembrandt dramatic lighting, 85mm f/1.4 lens, natural skin texture, masterpiece, 8k resolution, photorealistic',
+          ratio: '1:1',
+        },
+        {
+          title: 'Phong cảnh siêu thực',
+          prompt: 'Surreal dreamlike ethereal landscape with floating islands, glowing bioluminescent crystal waterfalls, aurora borealis night sky, wide angle, 8k render',
+          ratio: '16:9',
+        },
+        {
+          title: 'Sản phẩm trên bề mặt được tạo kiểu',
+          prompt: 'Commercial luxury product photography on a styled minimalist podium, gentle water ripple reflections, studio softbox diffused rim light, award-winning advertising',
+          ratio: '1:1',
+        },
+        {
+          title: 'Nhân vật 3D có cá tính',
+          prompt: 'Expressive 3D stylized character design, cute cybernetic companion, vibrant Pixar animation style, rich subsurface scattering, octane 3d render',
+          ratio: '1:1',
+        },
+      ],
     },
     {
-      title: 'Phòng tập tương lai Cyberpunk',
-      prompt: 'Futuristic AI fitness laboratory with biometric neon holograms, sleek dark aesthetic, glass floors, cyberpunk gym aesthetic, unreal engine 5 render',
-      tag: 'Sci-Fi',
-      ratio: '16:9',
+      groupName: 'NÂNG CAO & KHÔI PHỤC ẢNH',
+      items: [
+        {
+          title: 'Làm sắc nét và sửa mờ',
+          prompt: 'Ultra-sharp high-definition image enhancement, crisp edge details, clear focus recovery, noise reduction, studio pristine clarity 8k',
+          ratio: '1:1',
+        },
+        {
+          title: 'Phóng to lên 4K',
+          prompt: 'Super-resolution 4K upscaled fidelity, hyper-detailed micro textures, pristine sharpness, photographic clarity',
+          ratio: '16:9',
+        },
+        {
+          title: 'Khôi phục ảnh cổ điển',
+          prompt: 'Vintage archival photograph full restoration, vivid natural realistic colorization, scratch repair, balanced dynamic range',
+          ratio: '1:1',
+        },
+      ],
+    },
+  ],
+  video: [
+    {
+      groupName: 'TẠO VIDEO TỪ VĂN BẢN',
+      items: [
+        {
+          title: 'Chuyển động máy quay điện ảnh Slow-motion',
+          prompt: 'Cinematic slow-motion 120fps camera orbit around an athlete in a moody modern gym, volumetric neon light, floating chalk dust, 4k ultra-realistic',
+          duration: '5s',
+          ratio: '16:9',
+        },
+        {
+          title: 'Flycam bay lướt qua phong cảnh thiên nhiên',
+          prompt: 'Breathtaking FPV drone flyover across majestic misty mountain peaks, golden sunrise light, cinematic smooth aerial photography',
+          duration: '5s',
+          ratio: '16:9',
+        },
+        {
+          title: 'Diễn hoạt nhân vật chuyển động tự nhiên',
+          prompt: 'Natural fluid character animation, walking through bustling futuristic cyberpunk city street, neon rain reflections, photorealistic 60fps',
+          duration: '6s',
+          ratio: '16:9',
+        },
+        {
+          title: 'Hiệu ứng kỹ xảo biến đổi hạt điện quang',
+          prompt: 'Explosive kinetic visual effects, particle simulation dissolving into glowing golden energy sparks, dramatic cinematic trailer sequence',
+          duration: '5s',
+          ratio: '16:9',
+        },
+      ],
     },
     {
-      title: 'Kiến trúc Gym Tối giản Đẳng cấp',
-      prompt: 'Modern architectural luxury fitness studio with floor-to-ceiling panoramic windows overlooking pine forest mist, soft diffused daylight, architectural digest',
-      tag: 'Kiến trúc',
-      ratio: '16:9',
-    },
-    {
-      title: 'Chiến binh Runic huyền thoại',
-      prompt: 'Ancient Nordic athletic warrior with glowing cyan runic energy markings, dramatic moody stadium spotlights, photorealistic concept art',
-      tag: 'Concept Art',
-      ratio: '9:16',
+      groupName: 'VIDEO SẢN PHẨM & QUẢNG CÁO',
+      items: [
+        {
+          title: 'Giới thiệu sản phẩm 3D xoay 360 độ',
+          prompt: 'High-end commercial 3D product turntable showcase, luxury smartwatch rotating gracefully on dark reflective marble, dramatic studio lighting',
+          duration: '5s',
+          ratio: '1:1',
+        },
+        {
+          title: 'Video thể thao hành động tốc độ cao',
+          prompt: 'High-speed athletic sports commercial, sprinter exploding off starting blocks, muscle tension, water splash slow-motion, dynamic low-angle shot',
+          duration: '6s',
+          ratio: '16:9',
+        },
+        {
+          title: 'Video cinematic teaser âm hưởng tương lai',
+          prompt: 'Cinematic movie teaser opening shot, spacecraft descending over a mysterious alien metropolis, volumetric clouds, epic anamorphic widescreen',
+          duration: '10s',
+          ratio: '16:9',
+        },
+      ],
     },
   ],
   audio: [
     {
-      title: 'Giọng đọc Động lực & Năng lượng',
-      prompt: 'Chào bạn! Đây là trợ lý giọng nói VeloX. Hãy kiên trì rèn luyện và bứt phá mọi giới hạn mỗi ngày để chạm tới phiên bản tốt nhất của chính mình!',
-      tag: 'Động lực',
+      groupName: 'GIỌNG ĐỌC KỂ CHUYỆN & SÁCH NÓI',
+      items: [
+        {
+          title: 'Giọng trầm ấm truyền cảm kể chuyện đêm khuya',
+          prompt: 'Đêm đã về khuya, không gian lắng đọng và bình yên. Hãy thả lỏng tâm trí, hít một hơi thật sâu và cùng lắng nghe những câu chuyện nhẹ nhàng của tâm hồn...',
+        },
+        {
+          title: 'Giọng truyền cảm hứng, động lực phát triển bản thân',
+          prompt: 'Mỗi buổi sáng thức dậy là một cơ hội mới để bạn chạm tới phiên bản vĩ đại nhất của chính mình. Đừng bao giờ từ bỏ ước mơ, kiên trì bứt phá mọi giới hạn!',
+        },
+        {
+          title: 'Đọc thơ và podcast thư giãn nhẹ nhàng',
+          prompt: 'Gió nhẹ vương qua từng tán lá, những thanh âm êm đềm của buổi sớm mai như xua tan mọi mỏi mệt trong cuộc sống xô bồ...',
+        },
+      ],
     },
     {
-      title: 'Bản tin Công nghệ AI Tức thì',
-      prompt: 'Bản tin công nghệ VeloX: Nền tảng vừa cập nhật hệ thống mô hình thế hệ mới bao gồm Seedance 2.5 và Runway Gen-3 Alpha với tốc độ render vượt trội.',
-      tag: 'Tin tức',
+      groupName: 'LỒNG TIẾNG & DOANH NGHIỆP',
+      items: [
+        {
+          title: 'Giọng lồng tiếng TVC quảng cáo chuyên nghiệp',
+          prompt: 'VeloX AI Gateway — Đỉnh cao công nghệ trí tuệ nhân tạo, giải pháp bứt phá hiệu suất toàn diện cho doanh nghiệp thế hệ mới.',
+        },
+        {
+          title: 'Lời chào tổng đài và giới thiệu thương hiệu',
+          prompt: 'Kính chào quý khách đã gọi đến trung tâm chăm sóc khách hàng VeloX. Vui lòng nhấn phím 1 để gặp bộ phận kỹ thuật, hoặc phím 2 để được tư vấn dịch vụ.',
+        },
+        {
+          title: 'Bản tin công nghệ và tài chính nhịp điệu nhanh',
+          prompt: 'Bản tin công nghệ hôm nay: Trí tuệ nhân tạo VeloX chính thức nâng cấp hạ tầng xử lý thời gian thực với độ trễ siêu thấp dưới 300 mili-giây.',
+        },
+      ],
     },
   ],
 };
@@ -1342,33 +1422,28 @@ export const StudioPage: React.FC = () => {
 
                   {isPresetsMenuOpen && (
                     <div className={styles.presetsPopoverMenu} onClick={(e) => e.stopPropagation()}>
-                      <div className={styles.presetsHeader}>
-                        <HiOutlineSparkles size={14} color="#ff6b35" />
-                        <span>Mẫu Prompt Chuẩn ({activeTab === 'image' ? 'Ảnh' : activeTab === 'video' ? 'Video' : 'Âm thanh'})</span>
-                      </div>
-                      <div className={styles.presetsList}>
-                        {(PROMPT_PRESETS[activeTab] || []).map((preset, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            className={styles.presetItemBtn}
-                            onClick={() => {
-                              setPrompt(preset.prompt);
-                              if (preset.ratio) setAspectRatio(preset.ratio);
-                              if (preset.duration && activeTab === 'video') setVideoDuration(preset.duration);
-                              setIsPresetsMenuOpen(false);
-                              setToastMsg(`Đã nạp mẫu "${preset.title}" và cấu hình tối ưu!`);
-                              setTimeout(() => setToastMsg(null), 2500);
-                            }}
-                          >
-                            <div className={styles.presetItemTop}>
-                              <span className={styles.presetItemTitle}>{preset.title}</span>
-                              <span className={styles.presetTag}>{preset.tag}</span>
-                            </div>
-                            <p className={styles.presetItemSnippet}>{preset.prompt}</p>
-                          </button>
-                        ))}
-                      </div>
+                      {(PROMPT_PRESET_GROUPS[activeTab] || []).map((group, gIdx) => (
+                        <div key={gIdx} className={styles.presetGroup}>
+                          <div className={styles.presetGroupTitle}>{group.groupName}</div>
+                          {group.items.map((item, iIdx) => (
+                            <button
+                              key={iIdx}
+                              type="button"
+                              className={styles.presetItemBtn}
+                              onClick={() => {
+                                setPrompt(item.prompt);
+                                if (item.ratio) setAspectRatio(item.ratio);
+                                if (item.duration && activeTab === 'video') setVideoDuration(item.duration);
+                                setIsPresetsMenuOpen(false);
+                                setToastMsg(`Đã áp dụng mẫu: "${item.title}"`);
+                                setTimeout(() => setToastMsg(null), 2500);
+                              }}
+                            >
+                              {item.title}
+                            </button>
+                          ))}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
