@@ -465,6 +465,12 @@ console.log(response.choices[0].message.content);`;
 
               {/* Visual Preview Frame with Real Media */}
               <div className={styles.previewFrame}>
+                {/* Ambient Blurred Backdrop */}
+                <div
+                  className={styles.previewBackdrop}
+                  style={{ backgroundImage: `url(${currentImg})` }}
+                />
+
                 <img
                   key={currentImg}
                   src={currentImg}
