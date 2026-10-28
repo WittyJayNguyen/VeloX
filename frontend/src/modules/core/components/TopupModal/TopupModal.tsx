@@ -74,10 +74,21 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
 
   if (!isOpen) return null;
 
-  const bankName = 'MB BANK (Ngân hàng Quân Đội)';
-  const accountNumber = '0988776655';
-  const accountHolder = 'VELOX AI GATEWAY';
-  const transferContent = `VELOX ${user?.id ? user.id.slice(-6).toUpperCase() : 'VIP888'}`;
+  const defaultBank = (() => {
+    try {
+      const s = localStorage.getItem('velox_banks');
+      if (s) {
+        const list = JSON.parse(s);
+        return list.find((b: any) => b.is_default) || list[0];
+      }
+    } catch {}
+    return null;
+  })();
+
+  const bankName = defaultBank?.bank_name || 'MB BANK (Ngân hàng Quân Đội)';
+  const accountNumber = defaultBank?.account_number || '0988776655';
+  const accountHolder = defaultBank?.account_holder || 'VELOX AI GATEWAY';
+  const transferContent = `VELOX ${user?.id ? user.id.slice(-8).toUpperCase() : '888888'}`;
 
   // VietQR URL
   const qrUrl = `https://img.vietqr.io/image/MB-${accountNumber}-compact2.png?amount=${selectedOption.priceVnd}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountHolder)}`;

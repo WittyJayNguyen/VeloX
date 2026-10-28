@@ -226,6 +226,168 @@ async def process_topup(
     )
 
 
+# ── SePay Automated Banking Webhook ──
+@router.post("/webhook/sepay")
+async def sepay_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Automated SePay Banking Webhook Handler.
+    Receives bank transaction notification, verifies payment, credits user, and upgrades tier.
+    URL: https://velox.nexoratech.com.vn/api/v1/billing/webhook/sepay
+    """
+    import re
+    try:
+        body_bytes = await request.body()
+        payload = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {e}")
+
+    # Extract fields from SePay format
+    transfer_type = str(payload.get("transferType", "in")).lower()
+    transfer_amount = int(payload.get("transferAmount", 0) or 0)
+    content = str(payload.get("content", "") or "")
+    gateway = str(payload.get("gateway", "SePay Banking") or "SePay Banking")
+    tx_code = str(payload.get("code") or payload.get("referenceCode") or payload.get("id") or "")
+    sepay_tx_id = f"SEPAY-{tx_code}" if tx_code else f"SEPAY-{uuid.uuid4().hex[:8].upper()}"
+
+    # Only process incoming money (Tiền vào)
+    if transfer_type != "in" or transfer_amount <= 0:
+        return {"success": True, "message": "Ignored non-incoming transaction"}
+
+    # Idempotency check: don't process duplicate transaction
+    existing_tx_stmt = select(PaymentTransaction).where(
+        or_(
+            PaymentTransaction.transaction_code == sepay_tx_id,
+            PaymentTransaction.transaction_code == tx_code,
+        )
+    )
+    existing_tx_res = await db.execute(existing_tx_stmt)
+    if existing_tx_res.scalar_one_or_none():
+        return {"success": True, "message": "Transaction already processed"}
+
+    # Extract user identifier from content (e.g. "VELOX 3B57B1" or "VELOX3B57B1")
+    user_match = re.search(r"VELOX\s*([A-Za-z0-9\-_]+)", content, re.IGNORECASE)
+    user_code = user_match.group(1).strip() if user_match else ""
+
+    user_obj = None
+    if user_code:
+        # 1. Try finding by ID suffix or exact ID
+        user_stmt = select(User).where(
+            or_(
+                User.id == user_code,
+                User.id.ilike(f"%{user_code}%")
+            )
+        )
+        user_res = await db.execute(user_stmt)
+        user_candidates = user_res.scalars().all()
+        if user_candidates:
+            for cand in user_candidates:
+                if cand.id.lower().endswith(user_code.lower()) or cand.id.replace("-", "").lower().endswith(user_code.lower()):
+                    user_obj = cand
+                    break
+            if not user_obj:
+                user_obj = user_candidates[0]
+
+    # If still not found, search if user email is present in content
+    if not user_obj:
+        email_match = re.search(r"[\w\.-]+@[\w\.-]+", content)
+        if email_match:
+            email_stmt = select(User).where(User.email.ilike(email_match.group(0)))
+            email_res = await db.execute(email_stmt)
+            user_obj = email_res.scalar_one_or_none()
+
+    if not user_obj:
+        # Record unassigned transaction so admin can reconcile manually
+        unassigned_tx = PaymentTransaction(
+            transaction_code=sepay_tx_id,
+            amount_vnd=transfer_amount,
+            credits_credited=0,
+            payment_gateway=gateway,
+            status="UNASSIGNED",
+        )
+        db.add(unassigned_tx)
+        await db.commit()
+        return {
+            "success": True,
+            "message": f"Transaction recorded as UNASSIGNED. Could not match user from content '{content}'"
+        }
+
+    # Match credit package by exact price
+    pkg_stmt = select(CreditPackage).where(CreditPackage.price_vnd == transfer_amount)
+    pkg_res = await db.execute(pkg_stmt)
+    pkg = pkg_res.scalar_one_or_none()
+
+    if pkg:
+        added_credits = int(pkg.credits_given)
+        pkg_category = pkg.category
+        pkg_name = pkg.name
+    else:
+        # Proportional rate: 100 VND = 1 Credit
+        added_credits = max(1, transfer_amount // 100)
+        pkg_category = "TOPUP"
+        pkg_name = f"Nạp {transfer_amount:,} VNĐ"
+
+    # Dynamic tier upgrade
+    old_tier = (user_obj.tier or "FREE").upper()
+    new_tier = old_tier
+    if pkg_category == "STARTER":
+        if old_tier == "FREE":
+            new_tier = "STARTER"
+    elif pkg_category == "PRO":
+        new_tier = "PRO"
+    elif pkg_category == "ENTERPRISE":
+        new_tier = "ENTERPRISE"
+    elif pkg_category == "TOPUP":
+        if transfer_amount >= 1000000:
+            new_tier = "ENTERPRISE"
+        elif transfer_amount >= 200000 and old_tier in ("FREE", "STARTER"):
+            new_tier = "PRO"
+        elif transfer_amount >= 50000 and old_tier == "FREE":
+            new_tier = "STARTER"
+
+    user_obj.tier = new_tier
+    balance_before = user_obj.credit_balance or 0
+    new_balance = balance_before + added_credits
+    user_obj.credit_balance = new_balance
+
+    client_ip = get_client_ip(request)
+
+    audit = CreditAuditLog(
+        user_id=user_obj.id,
+        actor_id=user_obj.id,
+        actor_email=user_obj.email,
+        delta=added_credits,
+        balance_before=balance_before,
+        balance_after=new_balance,
+        reason=f"SePay Auto Webhook: +{added_credits:,} Credits ({transfer_amount:,} VNĐ qua {gateway}). Nâng hạng: [{new_tier}]",
+        ip_address=client_ip,
+    )
+    db.add(audit)
+
+    tx = PaymentTransaction(
+        transaction_code=sepay_tx_id,
+        user_id=user_obj.id,
+        package_id=pkg.id if pkg else None,
+        amount_vnd=transfer_amount,
+        credits_credited=added_credits,
+        payment_gateway=gateway,
+        status="COMPLETED",
+    )
+    db.add(tx)
+
+    await db.commit()
+
+    return {
+        "success": True,
+        "message": f"Successfully credited {added_credits:,} credits to user {user_obj.email}",
+        "user_email": user_obj.email,
+        "new_balance": new_balance,
+        "tier": new_tier,
+    }
+
+
 # ── Admin CRUD Endpoints ──
 @router.get("/admin/packages")
 async def admin_list_packages(
