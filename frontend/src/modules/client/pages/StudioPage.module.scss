@@ -79,6 +79,37 @@
       border-radius: 999px;
     }
   }
+
+  .headerActionGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .refreshHistoryBtn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 107, 53, 0.12);
+        color: #ff6b35;
+        border-color: rgba(255, 107, 53, 0.3);
+      }
+
+      &.isRefreshing .refreshIcon {
+        animation: spinBtn 0.8s linear infinite;
+      }
+    }
+  }
 }
 
 .compactGalleryGrid {
@@ -108,16 +139,102 @@
   }
 }
 
+// ── Skeleton Shimmer Loading Cards ──
+.skeletonCard {
+  background: #0d1322;
+  border: 1px solid #172134;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  .skeletonThumbnailBox {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 11;
+    min-height: 160px;
+    background: #080d17;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .skeletonCenterIcon {
+      color: rgba(56, 189, 248, 0.25);
+      animation: pulseIconGlow 2s ease-in-out infinite alternate;
+    }
+  }
+
+  .skeletonShimmerSweep {
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.03) 20%,
+      rgba(56, 189, 248, 0.09) 50%,
+      rgba(255, 107, 53, 0.06) 75%,
+      transparent 100%
+    );
+    animation: shimmerSweep 1.6s infinite ease-in-out;
+    pointer-events: none;
+  }
+
+  .skeletonDetails {
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    background: #0d1322;
+
+    .skeletonLineTop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .skeletonTagPill {
+        width: 55px;
+        height: 14px;
+        border-radius: 4px;
+        background: #172236;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .skeletonRatioPill {
+        width: 32px;
+        height: 14px;
+        border-radius: 4px;
+        background: #172236;
+        position: relative;
+        overflow: hidden;
+      }
+    }
+
+    .skeletonPromptLine {
+      width: 85%;
+      height: 12px;
+      border-radius: 4px;
+      background: #172236;
+      position: relative;
+      overflow: hidden;
+    }
+  }
+}
+
 // ── Active Generation Job Card ──
 .activeJobCard {
   background: #0f1523;
   border: 1px solid #ff6b35;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(255, 107, 53, 0.2);
+  box-shadow: 0 0 24px rgba(255, 107, 53, 0.25);
   display: flex;
   flex-direction: column;
-  animation: jobCardPulse 2s infinite alternate;
+  animation: jobCardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both, jobCardPulse 2s infinite alternate;
 
   .jobVisualBox {
     position: relative;
@@ -232,10 +349,23 @@
       margin-top: 4px;
 
       .progressBarFill {
+        position: relative;
         height: 100%;
         background: linear-gradient(90deg, #ff6b35 0%, #38bdf8 100%);
         border-radius: 2px;
         transition: width 0.3s ease;
+        overflow: hidden;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 50px;
+          height: 100%;
+          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.75) 50%, transparent 100%);
+          animation: progressGleam 1.8s infinite linear;
+        }
       }
     }
   }
@@ -247,14 +377,17 @@
   border: 1px solid #1a2538;
   border-radius: 14px;
   overflow: hidden;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
   display: flex;
   flex-direction: column;
+  animation: cardStaggerIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   &:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255, 107, 53, 0.5);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 107, 53, 0.15);
+    transform: translateY(-4px) scale(1.01);
+    border-color: rgba(255, 107, 53, 0.55);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 107, 53, 0.16);
   }
 
   .mediaThumbnailBox,
@@ -268,15 +401,52 @@
     background: #080c14;
     overflow: hidden;
 
+    .imageShimmerPlaceholder {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, #10192d 0%, #070a12 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease;
+      z-index: 1;
+
+      .shimmerGlaze {
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(56, 189, 248, 0.08) 50%,
+          transparent 100%
+        );
+        animation: shimmerSweep 1.5s infinite ease-in-out;
+      }
+    }
+
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.35s ease;
       cursor: pointer;
+      position: relative;
+      z-index: 2;
+      opacity: 0;
+      filter: blur(8px);
+      transform: scale(1.04);
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+
+      &.imgLoaded {
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+      }
     }
 
-    &:hover img {
+    &:hover img.imgLoaded {
       transform: scale(1.04);
     }
 
@@ -1308,6 +1478,45 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmerSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes cardStaggerIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseIconGlow {
+  0% { opacity: 0.25; transform: scale(0.95); }
+  100% { opacity: 0.65; transform: scale(1.08); }
+}
+
+@keyframes jobCardEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.94);
+    box-shadow: 0 0 0 rgba(255, 107, 53, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 25px rgba(255, 107, 53, 0.3);
+  }
+}
+
+@keyframes progressGleam {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }
 
 // ── Audio List Grid & Compact Audio Card ──
