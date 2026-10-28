@@ -131,6 +131,108 @@ def trim_video_bytes(raw_bytes: bytes, target_seconds: int) -> bytes:
     return raw_bytes
 
 
+def parse_cookies_universal(cookies_raw: Any, target_url: str = "https://muse.ai") -> tuple[list, dict]:
+    """
+    Universally parses cookies from any format:
+    1. JSON array exported from browser extensions: [{"name": "...", "value": "..."}, ...]
+    2. Key-value JSON dictionary: {"cookie_name": "val", ...}
+    3. HTTP Cookie header string: "cookie1=val1; cookie2=val2"
+    4. Netscape format / tab-separated lines
+    Returns (playwright_cookies_list, cookie_dict).
+    """
+    from urllib.parse import urlparse
+    parsed_url = urlparse(target_url)
+    domain = parsed_url.hostname or "muse.ai"
+    cookie_dict = {}
+    playwright_cookies = []
+
+    if not cookies_raw:
+        return playwright_cookies, cookie_dict
+
+    parsed_obj = None
+    if isinstance(cookies_raw, (dict, list)):
+        parsed_obj = cookies_raw
+    elif isinstance(cookies_raw, str):
+        c_str = cookies_raw.strip()
+        if (c_str.startswith("[") and c_str.endswith("]")) or (c_str.startswith("{") and c_str.endswith("}")):
+            try:
+                parsed_obj = json.loads(c_str)
+            except Exception:
+                parsed_obj = None
+
+        if parsed_obj is None:
+            # Parse header format: "key=val; key2=val2" or Netscape lines
+            for line in c_str.split("\n"):
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                # Tab separated Netscape format
+                if "\t" in line:
+                    parts = line.split("\t")
+                    if len(parts) >= 7:
+                        c_name = parts[5].strip()
+                        c_val = parts[6].strip()
+                        c_dom = parts[0].strip() or domain
+                        cookie_dict[c_name] = c_val
+                        playwright_cookies.append({
+                            "name": c_name,
+                            "value": c_val,
+                            "domain": c_dom if c_dom.startswith(".") else f".{c_dom}",
+                            "path": parts[2].strip() or "/",
+                        })
+                    continue
+                # Semicolon separated header
+                for part in line.split(";"):
+                    part = part.strip()
+                    if "=" in part:
+                        k, v = part.split("=", 1)
+                        k = k.strip()
+                        v = v.strip()
+                        if k and not k.lower() in ("path", "domain", "expires", "samesite"):
+                            cookie_dict[k] = v
+                            playwright_cookies.append({
+                                "name": k,
+                                "value": v,
+                                "url": target_url,
+                            })
+
+    if isinstance(parsed_obj, list):
+        for item in parsed_obj:
+            if isinstance(item, dict) and "name" in item and "value" in item:
+                c_name = str(item["name"])
+                c_val = str(item["value"])
+                cookie_dict[c_name] = c_val
+                c_data = {
+                    "name": c_name,
+                    "value": c_val,
+                    "url": target_url,
+                }
+                if "domain" in item and item["domain"]:
+                    c_data["domain"] = item["domain"]
+                if "path" in item and item["path"]:
+                    c_data["path"] = item["path"]
+                playwright_cookies.append(c_data)
+            elif isinstance(item, dict):
+                for k, v in item.items():
+                    if k not in ["domain", "path", "expires", "httpOnly", "secure", "sameSite"]:
+                        cookie_dict[str(k)] = str(v)
+                        playwright_cookies.append({
+                            "name": str(k),
+                            "value": str(v),
+                            "url": target_url,
+                        })
+    elif isinstance(parsed_obj, dict):
+        for k, v in parsed_obj.items():
+            cookie_dict[str(k)] = str(v)
+            playwright_cookies.append({
+                "name": str(k),
+                "value": str(v),
+                "url": target_url,
+            })
+
+    return playwright_cookies, cookie_dict
+
+
 async def generate_media_via_muse(
     prompt: str,
     cookies_json_or_list: Any,
@@ -140,44 +242,23 @@ async def generate_media_via_muse(
     num_outputs: int = 1,
     quality: str = "hd",
     reference_image: Optional[str] = None,
-    timeout_sec: int = 600
+    timeout_sec: int = 600,
+    target_url: str = "https://muse.ai",
 ) -> Dict[str, Any]:
     """
-    Executes an async Playwright session on muse.ai to submit a prompt and wait
-    until either media (image/video) or a notification/message is returned.
+    Executes an async Playwright session on muse.ai (or target pool platform) to submit
+    a prompt and wait until either media (image/video) or a notification/message is returned.
     Supports aspect_ratio, video duration, image quality, and reference image attachment.
     """
     start_time = time.perf_counter()
 
-    # 1. Parse and format cookies
-    cookies_raw = cookies_json_or_list
-    if isinstance(cookies_raw, str):
-        try:
-            cookies_raw = json.loads(cookies_raw)
-        except Exception:
-            cookies_raw = []
-
-    playwright_cookies = []
-    if isinstance(cookies_raw, list):
-        for item in cookies_raw:
-            if isinstance(item, dict) and 'name' in item and 'value' in item:
-                playwright_cookies.append({
-                    'name': str(item['name']),
-                    'value': str(item['value']),
-                    'url': 'https://muse.ai',
-                })
-    elif isinstance(cookies_raw, dict):
-        for k, v in cookies_raw.items():
-            playwright_cookies.append({
-                'name': str(k),
-                'value': str(v),
-                'url': 'https://muse.ai',
-            })
+    # 1. Parse and format cookies universally
+    playwright_cookies, _ = parse_cookies_universal(cookies_json_or_list, target_url=target_url)
 
     if not playwright_cookies:
         return {
             "success": False,
-            "error": "Không tìm thấy cookies hợp lệ cho phiên Muse.",
+            "error": "Không tìm thấy cookies hợp lệ cho phiên đăng nhập.",
             "latency_ms": 0.0,
         }
 

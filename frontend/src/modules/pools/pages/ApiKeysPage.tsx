@@ -185,8 +185,9 @@ const ApiKeysPage = () => {
   // ⚡ Nhận diện & Lấy Quota Tự Động Từ NCC qua API
   const handleAutoDetectFromProvider = async (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    if (!formKeyVal.trim() && !formCookies.trim()) {
-      alert('Vui lòng nhập API Key hoặc Session Token / Cookies trước khi nhận diện NCC.');
+    const testKeyVal = formKeyVal.trim() || (formCookies.trim() ? 'sess_autodetect' : '');
+    if (!testKeyVal && !formCookies.trim()) {
+      alert('Vui lòng nhập API Key hoặc dán Session Cookies của tài khoản trước khi nhận diện NCC.');
       return;
     }
 
@@ -199,7 +200,7 @@ const ApiKeysPage = () => {
 
     try {
       const res = await poolService.detectKeyModels(
-        formKeyVal.trim(),
+        testKeyVal,
         provider,
         formPoolId,
         baseUrl,
@@ -228,18 +229,30 @@ const ApiKeysPage = () => {
 
   const handleSaveKey = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formPoolId || !formKeyVal.trim()) {
-      alert('Vui lòng chọn cụm Pool và nhập giá trị Key/Token.');
+    if (!formPoolId) {
+      alert('Vui lòng chọn cụm Pool.');
       return;
+    }
+
+    const isSession = formAuthType === 'SESSION_TOKEN' || formCookies.trim().length > 0;
+    let finalKeyVal = formKeyVal.trim();
+    if (!finalKeyVal) {
+      if (isSession && formCookies.trim()) {
+        const cleanName = (formName.trim() || 'acc').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+        finalKeyVal = `${cleanName}_${Date.now().toString(36)}`;
+      } else {
+        alert('Vui lòng nhập API Key hoặc dán Cookies của tài khoản.');
+        return;
+      }
     }
 
     setSaving(true);
     try {
       const payload: Partial<PoolKeyItem> = {
         pool_id: formPoolId,
-        name: formName.trim() || `Key #${Date.now().toString(36).toUpperCase()}`,
+        name: formName.trim() || `Acc #${Date.now().toString(36).toUpperCase()}`,
         auth_type: formAuthType,
-        key_val: formKeyVal.trim(),
+        key_val: finalKeyVal,
         recap_token: formRecapToken.trim() || undefined,
         cookies: formCookies.trim() || undefined,
         metadata_json: formMetadataJson.trim() || undefined,
@@ -729,7 +742,7 @@ const ApiKeysPage = () => {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e4e4e7' }}>
-                {formAuthType === 'API_KEY' ? 'Khóa API Key Chính Thức (sk-...)' : 'Session Token / Access Token'} <span style={{ color: '#f43f5e' }}>*</span>
+                {formAuthType === 'API_KEY' ? 'Khóa API Key Chính Thức (sk-...)' : 'Mã Định Danh / Key Token (Tự sinh nếu bỏ trống)'} {formAuthType === 'API_KEY' && <span style={{ color: '#f43f5e' }}>*</span>}
               </label>
               <Button
                 type="button"
@@ -746,8 +759,8 @@ const ApiKeysPage = () => {
             <Input
               value={formKeyVal}
               onChange={(e) => setFormKeyVal(e.target.value)}
-              placeholder={formAuthType === 'API_KEY' ? 'sk-proj-xxxxxxxxxxxx...' : 'sess-xxxxxxxxxxxx...'}
-              required
+              placeholder={formAuthType === 'API_KEY' ? 'sk-proj-xxxxxxxxxxxx...' : 'sess-account-id... (tự sinh nếu bỏ trống)'}
+              required={formAuthType === 'API_KEY' && !formCookies.trim()}
             />
             {detectSuccessMessage && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#34d399', marginTop: 4 }}>
@@ -801,27 +814,30 @@ const ApiKeysPage = () => {
           {formAuthType === 'SESSION_TOKEN' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.85rem', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid #27272a' }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <HiOutlineShieldCheck size={16} /> Cấu Hình Vượt Captcha & Cookies (Session Token Node)
+                <HiOutlineShieldCheck size={16} /> Cấu Hình Tài Khoản Qua Session & Cookies (Multi-Account Node)
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.5, background: 'rgba(251, 191, 36, 0.08)', padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(251, 191, 36, 0.25)' }}>
+                💡 <strong>Mỗi Key là 1 tài khoản:</strong> Bạn chỉ cần dán Cookie của tài khoản vào ô bên dưới. Khi người dùng tạo ảnh/video, hệ thống sẽ tự động điều phối xoay vòng (Least Used) và tự động Failover sang tài khoản kế tiếp nếu một tài khoản bị hết phiên.
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', color: '#a1a1aa', marginBottom: 2 }}>
-                  Recaptcha Token / Solver Task ID
+                  Cookies Tài Khoản (Hỗ trợ định dạng JSON [&#123;name, value&#125;] từ Cookie-Editor hoặc chuỗi header a=b; c=d) <span style={{ color: '#f43f5e' }}>*</span>
+                </label>
+                <Textarea
+                  value={formCookies}
+                  onChange={(e) => setFormCookies(e.target.value)}
+                  placeholder='Dán toàn bộ Cookie JSON [ {"name": "session", "value": "..."} ] hoặc chuỗi Header "cookie1=val1; cookie2=val2"'
+                  rows={4}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: '#a1a1aa', marginBottom: 2 }}>
+                  Recaptcha Token / Solver Task ID (Tuỳ chọn nếu cần vượt captcha)
                 </label>
                 <Input
                   value={formRecapToken}
                   onChange={(e) => setFormRecapToken(e.target.value)}
                   placeholder="Token từ 2Captcha, CapSolver hoặc solver nội bộ..."
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#a1a1aa', marginBottom: 2 }}>
-                  Cookies Chuỗi Header (__Secure-next-auth.session-token=...)
-                </label>
-                <Textarea
-                  value={formCookies}
-                  onChange={(e) => setFormCookies(e.target.value)}
-                  placeholder="__Secure-next-auth.session-token=...; cf_clearance=..."
-                  rows={2}
                 />
               </div>
             </div>

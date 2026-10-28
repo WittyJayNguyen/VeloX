@@ -696,11 +696,18 @@ async def create_pool_key(
         detected_list = detection_res.get("detected_models", [])
         pricings_map = detection_res.get("model_pricings")
 
+    final_key_val = (payload.key_val or "").strip()
+    if not final_key_val:
+        if payload.cookies or payload.auth_type == "SESSION_TOKEN":
+            final_key_val = f"acc_sess_{uuid.uuid4().hex[:10]}"
+        else:
+            final_key_val = f"key_{uuid.uuid4().hex[:10]}"
+
     key = ProviderCredential(
         pool_id=payload.pool_id,
         name=payload.name,
         auth_type=payload.auth_type,
-        key_val=payload.key_val,
+        key_val=final_key_val,
         recap_token=payload.recap_token,
         cookies=payload.cookies,
         metadata_json=payload.metadata_json,

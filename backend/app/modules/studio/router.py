@@ -422,6 +422,56 @@ async def generate_image_from_upstream(
     return None
 
 
+async def _get_active_pool_credentials(
+    db: AsyncSession,
+    pool_id: Optional[str] = None,
+    provider: Optional[str] = None,
+    model_code: Optional[str] = None,
+    require_cookies: bool = False,
+) -> tuple[Optional[ServicePool], List[ProviderCredential]]:
+    """
+    Finds the matching ServicePool and retrieves all ACTIVE credentials,
+    ordered according to the pool's routing strategy (LEAST_USED, ROUND_ROBIN, or PRIORITY).
+    """
+    target_pool = None
+    if pool_id:
+        p_res = await db.execute(select(ServicePool).where(ServicePool.id == pool_id, ServicePool.is_active == True))
+        target_pool = p_res.scalars().first()
+
+    if not target_pool and provider:
+        p_res = await db.execute(select(ServicePool).where(ServicePool.provider == provider, ServicePool.is_active == True).limit(1))
+        target_pool = p_res.scalars().first()
+
+    if not target_pool and model_code:
+        # Fallback by model pattern
+        if any(k in model_code.lower() for k in ["meta", "imagine", "muse"]):
+            p_res = await db.execute(select(ServicePool).where(ServicePool.provider.in_(["Meta AI", "Muse", "Meta"]), ServicePool.is_active == True).limit(1))
+            target_pool = p_res.scalars().first()
+
+    if not target_pool:
+        return None, []
+
+    c_query = select(ProviderCredential).where(
+        ProviderCredential.pool_id == target_pool.id,
+        ProviderCredential.status == "ACTIVE"
+    )
+    if require_cookies:
+        c_query = c_query.where(ProviderCredential.cookies.isnot(None))
+
+    strategy = (target_pool.routing_strategy or "LEAST_USED").upper()
+    if strategy == "ROUND_ROBIN":
+        c_query = c_query.order_by(ProviderCredential.last_checked_at.asc().nullsfirst(), ProviderCredential.requests_count.asc())
+    elif strategy == "PRIORITY":
+        c_query = c_query.order_by(ProviderCredential.priority.desc(), ProviderCredential.requests_count.asc())
+    else:  # LEAST_USED (default)
+        c_query = c_query.order_by(ProviderCredential.requests_count.asc(), ProviderCredential.priority.desc())
+
+    creds = (await db.execute(c_query)).scalars().all()
+    if require_cookies:
+        creds = [c for c in creds if c.cookies and len(c.cookies.strip()) > 5]
+    return target_pool, creds
+
+
 async def generate_studio_media(
     job_type: str,
     model_code: str,
@@ -452,52 +502,38 @@ async def generate_studio_media(
     w, h = dim_map.get(aspect_ratio, (1024, 1024))
 
     if job_type == "image":
-        # Check if this model is from Meta AI / Muse pool
-        is_meta = False
-        if model_obj and model_obj.provider in ["Meta AI", "Muse", "Meta"]:
-            is_meta = True
-        elif any(k in model_code.lower() for k in ["meta", "imagine", "muse"]):
-            is_meta = True
+        # Check if model/pool is a session-based account pool (e.g. Meta AI, Muse, or future session accounts)
+        is_session_pool = False
+        target_pool = None
+        candidate_creds: List[ProviderCredential] = []
 
-        if is_meta:
-            # Route strictly to Meta AI pool via Playwright session worker
-            if db:
-                target_pool_id = model_obj.pool_id if model_obj else None
-                if target_pool_id:
-                    c_stmt = (
-                        select(ProviderCredential)
-                        .where(
-                            ProviderCredential.pool_id == target_pool_id,
-                            ProviderCredential.status == "ACTIVE"
-                        )
-                        .order_by(ProviderCredential.priority.desc())
-                        .limit(1)
-                    )
-                else:
-                    c_stmt = (
-                        select(ProviderCredential)
-                        .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
-                        .where(
-                            ServicePool.provider == "Meta AI",
-                            ProviderCredential.status == "ACTIVE"
-                        )
-                        .order_by(ProviderCredential.priority.desc())
-                        .limit(1)
-                    )
-                c_res = await db.execute(c_stmt)
-                muse_cred = c_res.scalars().first()
-                if muse_cred and muse_cred.cookies:
-                    from app.modules.playground.muse_worker import generate_media_via_muse
+        if db:
+            target_pool, candidate_creds = await _get_active_pool_credentials(
+                db,
+                pool_id=model_obj.pool_id if model_obj else None,
+                provider=model_obj.provider if model_obj else None,
+                model_code=model_code,
+                require_cookies=True,
+            )
+            if target_pool and (target_pool.auth_type in ["TOKEN_ACCOUNT", "HYBRID"] or candidate_creds):
+                is_session_pool = True
+
+        if is_session_pool and candidate_creds:
+            from app.modules.playground.muse_worker import generate_media_via_muse
+            # Multi-account rotation with automatic failover
+            for cred in candidate_creds:
+                try:
                     worker_res = await generate_media_via_muse(
                         prompt=clean_prompt,
-                        cookies_json_or_list=muse_cred.cookies,
+                        cookies_json_or_list=cred.cookies,
                         media_type="image",
                         aspect_ratio=aspect_ratio if aspect_ratio != "auto" else "1:1",
                         quality=options.get("quality", "hd"),
                         timeout_sec=120,
+                        target_url=target_pool.base_url if target_pool else "https://muse.ai",
                     )
                     if worker_res.get("success") and worker_res.get("media_url"):
-                        muse_cred.record_usage(1)
+                        cred.record_usage(1)
                         await db.commit()
                         return {
                             "output_url": worker_res["media_url"],
@@ -505,7 +541,12 @@ async def generate_studio_media(
                             "render_seconds": round(worker_res.get("latency_ms", 3000) / 1000, 1),
                             "media_type": "IMAGE",
                         }
+                    else:
+                        print(f"[Studio Account Failover]: Account '{cred.name}' failed: {worker_res.get('error')}. Trying next account...")
+                except Exception as ex:
+                    print(f"[Studio Account Error]: Account '{cred.name}' error: {ex}. Trying next account...")
 
+            # If all accounts in pool failed, fallback to aesthetic image
             fallback_img = get_aesthetic_image_fallback(clean_prompt, w, h)
             return {
                 "output_url": fallback_img,
@@ -542,56 +583,48 @@ async def generate_studio_media(
         }
 
     elif job_type == "video":
-        is_meta = False
-        if model_obj and model_obj.provider in ["Meta AI", "Muse", "Meta"]:
-            is_meta = True
-        elif any(k in model_code.lower() for k in ["meta", "imagine", "muse"]):
-            is_meta = True
+        is_session_pool = False
+        target_pool = None
+        candidate_creds: List[ProviderCredential] = []
 
-        if is_meta and db:
-            target_pool_id = model_obj.pool_id if model_obj else None
-            if target_pool_id:
-                c_stmt = (
-                    select(ProviderCredential)
-                    .where(
-                        ProviderCredential.pool_id == target_pool_id,
-                        ProviderCredential.status == "ACTIVE"
+        if db:
+            target_pool, candidate_creds = await _get_active_pool_credentials(
+                db,
+                pool_id=model_obj.pool_id if model_obj else None,
+                provider=model_obj.provider if model_obj else None,
+                model_code=model_code,
+                require_cookies=True,
+            )
+            if target_pool and (target_pool.auth_type in ["TOKEN_ACCOUNT", "HYBRID"] or candidate_creds):
+                is_session_pool = True
+
+        if is_session_pool and candidate_creds:
+            from app.modules.playground.muse_worker import generate_media_via_muse
+            # Multi-account rotation with automatic failover
+            for cred in candidate_creds:
+                try:
+                    worker_res = await generate_media_via_muse(
+                        prompt=clean_prompt,
+                        cookies_json_or_list=cred.cookies,
+                        media_type="video",
+                        aspect_ratio=aspect_ratio if aspect_ratio != "auto" else "16:9",
+                        duration_sec=int(str(options.get("duration", 5)).replace("s", "")),
+                        timeout_sec=180,
+                        target_url=target_pool.base_url if target_pool else "https://muse.ai",
                     )
-                    .order_by(ProviderCredential.priority.desc())
-                    .limit(1)
-                )
-            else:
-                c_stmt = (
-                    select(ProviderCredential)
-                    .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
-                    .where(
-                        ServicePool.provider == "Meta AI",
-                        ProviderCredential.status == "ACTIVE"
-                    )
-                    .order_by(ProviderCredential.priority.desc())
-                    .limit(1)
-                )
-            c_res = await db.execute(c_stmt)
-            muse_cred = c_res.scalars().first()
-            if muse_cred and muse_cred.cookies:
-                from app.modules.playground.muse_worker import generate_media_via_muse
-                worker_res = await generate_media_via_muse(
-                    prompt=clean_prompt,
-                    cookies_json_or_list=muse_cred.cookies,
-                    media_type="video",
-                    aspect_ratio=aspect_ratio if aspect_ratio != "auto" else "16:9",
-                    duration_sec=int(str(options.get("duration", 5)).replace("s", "")),
-                    timeout_sec=180,
-                )
-                if worker_res.get("success") and worker_res.get("media_url"):
-                    muse_cred.record_usage(1)
-                    await db.commit()
-                    return {
-                        "output_url": worker_res["media_url"],
-                        "poster_url": None,
-                        "render_seconds": round(worker_res.get("latency_ms", 5000) / 1000, 1),
-                        "media_type": "VIDEO",
-                    }
+                    if worker_res.get("success") and worker_res.get("media_url"):
+                        cred.record_usage(1)
+                        await db.commit()
+                        return {
+                            "output_url": worker_res["media_url"],
+                            "poster_url": None,
+                            "render_seconds": round(worker_res.get("latency_ms", 5000) / 1000, 1),
+                            "media_type": "VIDEO",
+                        }
+                    else:
+                        print(f"[Studio Video Failover]: Account '{cred.name}' failed: {worker_res.get('error')}. Trying next account...")
+                except Exception as ex:
+                    print(f"[Studio Video Error]: Account '{cred.name}' error: {ex}. Trying next account...")
 
         prompt_lower = clean_prompt.lower()
         matched_item = None
