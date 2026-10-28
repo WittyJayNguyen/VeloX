@@ -7,10 +7,33 @@ import './assets/scss/global.scss';
 
 const App = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
+  const syncProfile = useAuthStore((s) => s.syncProfile);
 
   useEffect(() => {
     hydrate();
-  }, [hydrate]);
+    if (localStorage.getItem('velox_token')) {
+      syncProfile().catch(() => {});
+    }
+
+    // Background heartbeat to verify user status in real-time (kicks out locked users immediately)
+    const interval = setInterval(() => {
+      if (localStorage.getItem('velox_token')) {
+        syncProfile().catch(() => {});
+      }
+    }, 15000);
+
+    const onFocus = () => {
+      if (localStorage.getItem('velox_token')) {
+        syncProfile().catch(() => {});
+      }
+    };
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [hydrate, syncProfile]);
 
   return (
     <Suspense

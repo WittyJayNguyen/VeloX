@@ -6,10 +6,6 @@ import styles from '@assets/scss/client/client-pages.module.scss';
 export const DownloadsPage: React.FC = () => {
   const { t } = useTranslation();
 
-  const handleDownload = (platform: string) => {
-    alert(`Đang khởi tạo tải xuống bản cài đặt VeloX Desktop cho ${platform}! (v2.4.0)`);
-  };
-
   return (
     <div className={styles.clientContainer}>
       <div className={styles.pageHeader}>
@@ -22,30 +18,48 @@ export const DownloadsPage: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{
+        background: 'rgba(245, 158, 11, 0.12)',
+        border: '1px solid rgba(245, 158, 11, 0.35)',
+        borderRadius: 12,
+        padding: '14px 18px',
+        color: '#fde68a',
+        fontSize: '0.9rem',
+        marginBottom: '1.75rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      }}>
+        <span style={{ fontSize: '1.3rem' }}>⚠️</span>
+        <div>
+          <strong>Thông báo bảo trì tính năng:</strong> Bản cài đặt VeloX Desktop (PC & Mac) đang được nâng cấp lõi Gateway và tạm thời vô hiệu hóa tải xuống. Toàn bộ tính năng AI đều hoạt động đầy đủ trên trình duyệt Web!
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem', opacity: 0.65 }}>
         {/* Windows */}
         <div className={styles.contentCard} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🪟</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', margin: '0 0 0.35rem' }}>Windows 10 / 11</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 1rem' }}>Bản cài đặt 64-bit chính thức (.exe / .msi)</p>
-            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>Phiên bản v2.4.0 • 85 MB</div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>Phiên bản v2.4.0 • 85 MB (Tạm khóa)</div>
           </div>
-          <button type="button" className={styles.primaryBtn} onClick={() => handleDownload('Windows')} style={{ width: '100%', justifyContent: 'center' }}>
-            <HiOutlineArrowDownTray /> Tải Cho Windows (.exe)
+          <button type="button" className={styles.secondaryBtn} disabled style={{ width: '100%', justifyContent: 'center', cursor: 'not-allowed', opacity: 0.6 }}>
+            <HiOutlineArrowDownTray /> Tạm Khóa Tải Về (Disabled)
           </button>
         </div>
 
         {/* macOS */}
-        <div className={styles.contentCard} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderColor: '#38bdf8' }}>
+        <div className={styles.contentCard} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🍎</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', margin: '0 0 0.35rem' }}>macOS (Apple Silicon & Intel)</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 1rem' }}>Hỗ trợ tối ưu cho chip M1/M2/M3/M4 & Intel</p>
-            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>Phiên bản v2.4.0 Universal • 92 MB</div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>Phiên bản v2.4.0 Universal • 92 MB (Tạm khóa)</div>
           </div>
-          <button type="button" className={styles.primaryBtn} onClick={() => handleDownload('macOS')} style={{ width: '100%', justifyContent: 'center' }}>
-            <HiOutlineArrowDownTray /> Tải Cho macOS (.dmg)
+          <button type="button" className={styles.secondaryBtn} disabled style={{ width: '100%', justifyContent: 'center', cursor: 'not-allowed', opacity: 0.6 }}>
+            <HiOutlineArrowDownTray /> Tạm Khóa Tải Về (Disabled)
           </button>
         </div>
 
@@ -55,10 +69,10 @@ export const DownloadsPage: React.FC = () => {
             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🐧</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', margin: '0 0 0.35rem' }}>Linux (Ubuntu / Fedora / Arch)</h3>
             <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 1rem' }}>Đóng gói AppImage & .deb độc lập</p>
-            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>Phiên bản v2.4.0 • 78 MB</div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>Phiên bản v2.4.0 • 78 MB (Tạm khóa)</div>
           </div>
-          <button type="button" className={styles.secondaryBtn} onClick={() => handleDownload('Linux')} style={{ width: '100%', justifyContent: 'center' }}>
-            <HiOutlineArrowDownTray /> Tải Bản AppImage (.bin)
+          <button type="button" className={styles.secondaryBtn} disabled style={{ width: '100%', justifyContent: 'center', cursor: 'not-allowed', opacity: 0.6 }}>
+            <HiOutlineArrowDownTray /> Tạm Khóa Tải Về (Disabled)
           </button>
         </div>
       </div>

@@ -363,6 +363,63 @@ async def delete_role(
     return ok(message="Đã xóa vai trò thành công")
 
 
+@router.get("/users/me/usage-history")
+async def get_my_usage_history(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieves real aggregated AI usage logs for the currently authenticated user."""
+    from app.modules.logs.models import MediaGenerationLog, ApiCallLog
+
+    # 1. Media generation logs (Studio / Playground)
+    media_stmt = (
+        select(MediaGenerationLog)
+        .where(MediaGenerationLog.user_id == current_user.id)
+        .order_by(desc(MediaGenerationLog.created_at))
+        .limit(50)
+    )
+    media_res = await db.execute(media_stmt)
+    media_logs = media_res.scalars().all()
+
+    # 2. API call logs
+    api_stmt = (
+        select(ApiCallLog)
+        .where(ApiCallLog.user_id == current_user.id)
+        .order_by(desc(ApiCallLog.created_at))
+        .limit(50)
+    )
+    api_res = await db.execute(api_stmt)
+    api_logs = api_res.scalars().all()
+
+    items = []
+    for m in media_logs:
+        items.append({
+            "id": f"gen_{m.id[:8]}",
+            "timestamp": m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else "",
+            "model": m.model_id or "AI Media Engine",
+            "taskType": f"{m.media_type.capitalize()} Generation",
+            "tokensUsed": 0,
+            "creditsDeducted": int(m.credits_charged or 0),
+            "status": "SUCCESS",
+            "prompt": m.prompt[:60] if m.prompt else "",
+        })
+
+    for a in api_logs:
+        items.append({
+            "id": f"api_{a.id[:8]}",
+            "timestamp": a.created_at.strftime("%Y-%m-%d %H:%M") if a.created_at else "",
+            "model": a.model_id or "AI Gateway API",
+            "taskType": "API Request",
+            "tokensUsed": (a.prompt_tokens or 0) + (a.completion_tokens or 0),
+            "creditsDeducted": int(a.total_credits_charged or 0),
+            "status": "SUCCESS" if a.status_code < 400 else "RATE_LIMITED",
+            "prompt": "",
+        })
+
+    items.sort(key=lambda x: x["timestamp"], reverse=True)
+    return ok(data=items)
+
+
 # ── Production User Endpoints (Full Flow & Anti-Exploit) ──
 @router.get("/users")
 async def list_users(

@@ -150,6 +150,36 @@ async def list_packages(
     return ok(data=[serialize_package(p) for p in packages])
 
 
+@router.get("/my-orders")
+async def get_my_orders(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List real payment transactions / top-up orders for the currently authenticated user."""
+    stmt = (
+        select(PaymentTransaction)
+        .where(PaymentTransaction.user_id == current_user.id)
+        .order_by(desc(PaymentTransaction.created_at))
+        .limit(50)
+    )
+    res = await db.execute(stmt)
+    records = res.scalars().all()
+
+    orders = []
+    for r in records:
+        orders.append({
+            "id": r.id,
+            "packageName": f"Nạp {r.credits:,} Credit" if r.credits else "Nạp Credit",
+            "amount": int(r.amount_vnd or 0),
+            "credits": r.credits or 0,
+            "status": r.status or "COMPLETED",
+            "createdAt": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "",
+            "paymentMethod": r.payment_method or "VietQR Banking",
+        })
+
+    return ok(data=orders)
+
+
 @router.get("/check-payment-status")
 async def check_payment_status(
     since: Optional[str] = None,
