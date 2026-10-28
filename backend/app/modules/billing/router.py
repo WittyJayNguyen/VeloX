@@ -8,6 +8,7 @@ import json
 import uuid
 import logging
 from typing import Optional, List
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 logger = logging.getLogger(__name__)
@@ -16,10 +17,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, or_
 
 from app.core.database import get_db
-from app.core.security import get_current_user, require_super_admin
+from app.core.security import get_current_user, require_super_admin, require_permission
 from app.common.responses import ok
 from app.modules.users.models import User, CreditAuditLog
-from app.modules.billing.models import CreditPackage, PaymentTransaction
+from app.modules.billing.models import CreditPackage, PaymentTransaction, BankAccount
 from app.modules.users.router import get_client_ip
 
 router = APIRouter(prefix="/billing", tags=["Billing & Top-Up"])
@@ -87,6 +88,48 @@ def serialize_package(p: CreditPackage) -> dict:
         "features": parsed_features,
         "created_at": p.created_at.isoformat() if p.created_at else None,
         "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+    }
+
+
+class BankAccountCreateRequest(BaseModel):
+    bank_name: str = Field(..., min_length=2, max_length=128)
+    bank_code: str = Field(..., min_length=2, max_length=32)
+    account_number: str = Field(..., min_length=2, max_length=64)
+    account_holder: str = Field(..., min_length=2, max_length=128)
+    branch: Optional[str] = ""
+    is_default: Optional[bool] = False
+    qr_enabled: Optional[bool] = True
+    is_active: Optional[bool] = True
+
+
+class BankAccountUpdateRequest(BaseModel):
+    bank_name: Optional[str] = None
+    bank_code: Optional[str] = None
+    account_number: Optional[str] = None
+    account_holder: Optional[str] = None
+    branch: Optional[str] = None
+    is_default: Optional[bool] = None
+    qr_enabled: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+
+class SePaySyncRequest(BaseModel):
+    sepay_token: str = Field(..., min_length=5, description="User API Token từ my.sepay.vn")
+
+
+def serialize_bank(b: BankAccount) -> dict:
+    return {
+        "id": b.id,
+        "bank_name": b.bank_name,
+        "bank_code": b.bank_code,
+        "account_number": b.account_number,
+        "account_holder": b.account_holder,
+        "branch": b.branch or "",
+        "is_default": b.is_default,
+        "qr_enabled": b.qr_enabled,
+        "is_active": b.is_active,
+        "created_at": b.created_at.isoformat() if b.created_at else None,
+        "updated_at": b.updated_at.isoformat() if b.updated_at else None,
     }
 
 
@@ -526,3 +569,193 @@ async def admin_delete_package(
     await db.delete(pkg)
     await db.commit()
     return ok(message="Đã xóa gói thành công!")
+
+
+# ── Bank Accounts & QR Endpoints ──
+@router.get("/banks")
+async def list_banks(
+    db: AsyncSession = Depends(get_db),
+):
+    """List active bank accounts for payments & VietQR generation."""
+    stmt = select(BankAccount).where(BankAccount.is_active == True).order_by(BankAccount.is_default.desc(), BankAccount.created_at.asc())
+    res = await db.execute(stmt)
+    banks = res.scalars().all()
+    return ok(data=[serialize_bank(b) for b in banks])
+
+
+@router.post("/banks")
+async def create_bank(
+    body: BankAccountCreateRequest,
+    db: AsyncSession = Depends(get_db),
+    _user: User = Depends(require_permission("banking.manage")),
+):
+    """Create a new bank account."""
+    if body.is_default:
+        all_banks_res = await db.execute(select(BankAccount))
+        for b in all_banks_res.scalars().all():
+            b.is_default = False
+
+    bank = BankAccount(
+        bank_name=body.bank_name.strip(),
+        bank_code=body.bank_code.strip().upper(),
+        account_number=body.account_number.strip(),
+        account_holder=body.account_holder.strip().upper(),
+        branch=body.branch.strip() if body.branch else "",
+        is_default=body.is_default or False,
+        qr_enabled=body.qr_enabled if body.qr_enabled is not None else True,
+        is_active=body.is_active if body.is_active is not None else True,
+    )
+    db.add(bank)
+    await db.commit()
+    await db.refresh(bank)
+    return ok(data=serialize_bank(bank), message="Thêm tài khoản ngân hàng thành công!")
+
+
+@router.put("/banks/{bank_id}")
+async def update_bank(
+    bank_id: str,
+    body: BankAccountUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    _user: User = Depends(require_permission("banking.manage")),
+):
+    """Update bank account details."""
+    stmt = select(BankAccount).where(BankAccount.id == bank_id)
+    res = await db.execute(stmt)
+    bank = res.scalar_one_or_none()
+    if not bank:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản ngân hàng này.")
+
+    if body.is_default:
+        all_banks_res = await db.execute(select(BankAccount))
+        for b in all_banks_res.scalars().all():
+            if b.id != bank.id:
+                b.is_default = False
+
+    if body.bank_name is not None:
+        bank.bank_name = body.bank_name.strip()
+    if body.bank_code is not None:
+        bank.bank_code = body.bank_code.strip().upper()
+    if body.account_number is not None:
+        bank.account_number = body.account_number.strip()
+    if body.account_holder is not None:
+        bank.account_holder = body.account_holder.strip().upper()
+    if body.branch is not None:
+        bank.branch = body.branch.strip()
+    if body.is_default is not None:
+        bank.is_default = body.is_default
+    if body.qr_enabled is not None:
+        bank.qr_enabled = body.qr_enabled
+    if body.is_active is not None:
+        bank.is_active = body.is_active
+
+    await db.commit()
+    await db.refresh(bank)
+    return ok(data=serialize_bank(bank), message="Cập nhật tài khoản ngân hàng thành công!")
+
+
+@router.delete("/banks/{bank_id}")
+async def delete_bank(
+    bank_id: str,
+    db: AsyncSession = Depends(get_db),
+    _user: User = Depends(require_permission("banking.manage")),
+):
+    """Delete a bank account."""
+    stmt = select(BankAccount).where(BankAccount.id == bank_id)
+    res = await db.execute(stmt)
+    bank = res.scalar_one_or_none()
+    if not bank:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản ngân hàng.")
+
+    await db.delete(bank)
+    await db.commit()
+    return ok(message="Đã xóa tài khoản ngân hàng thành công!")
+
+
+@router.post("/banks/sync-sepay")
+async def sync_sepay_banks(
+    body: SePaySyncRequest,
+    db: AsyncSession = Depends(get_db),
+    _user: User = Depends(require_permission("banking.manage")),
+):
+    """
+    Sync bank accounts directly from SePay User API.
+    Calls https://my.sepay.vn/userapi/bankaccounts/list using SePay Token.
+    """
+    token = body.sepay_token.strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Vui lòng cung cấp SePay API Token.")
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "User-Agent": "VeloX-SePay-Client/1.0"
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get("https://my.sepay.vn/userapi/bankaccounts/list", headers=headers)
+            if resp.status_code != 200:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Kết nối SePay thất bại ({resp.status_code}): Vui lòng kiểm tra lại API Token SePay."
+                )
+            data = resp.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi khi kết nối đến SePay API: {str(e)}")
+
+    sepay_accounts = data.get("bankaccounts", [])
+    if not sepay_accounts and isinstance(data.get("data"), list):
+        sepay_accounts = data.get("data", [])
+
+    if not sepay_accounts:
+        return ok(data=[], message="Đã kết nối SePay nhưng chưa có tài khoản ngân hàng nào trong danh sách SePay.")
+
+    synced_banks = []
+    existing_res = await db.execute(select(BankAccount))
+    existing_banks = {b.account_number: b for b in existing_res.scalars().all()}
+    is_first = len(existing_banks) == 0
+
+    for idx, item in enumerate(sepay_accounts):
+        acc_num = str(item.get("account_number", "")).strip()
+        if not acc_num:
+            continue
+
+        acc_holder = (item.get("account_holder_name") or item.get("label") or "CHỦ TÀI KHOẢN").strip().upper()
+        b_name = (item.get("bank_full_name") or item.get("bank_short_name") or item.get("bank_code") or "Ngân hàng").strip()
+        b_code = (item.get("bank_code") or item.get("bank_short_name") or "MB").strip().upper()
+        b_branch = str(item.get("branch", "") or "")
+
+        if acc_num in existing_banks:
+            b_obj = existing_banks[acc_num]
+            b_obj.bank_name = b_name
+            b_obj.bank_code = b_code
+            b_obj.account_holder = acc_holder
+            b_obj.qr_enabled = True
+            b_obj.is_active = True
+        else:
+            b_obj = BankAccount(
+                bank_name=b_name,
+                bank_code=b_code,
+                account_number=acc_num,
+                account_holder=acc_holder,
+                branch=b_branch,
+                is_default=(is_first and idx == 0),
+                qr_enabled=True,
+                is_active=True,
+            )
+            db.add(b_obj)
+            existing_banks[acc_num] = b_obj
+
+        synced_banks.append(b_obj)
+
+    await db.commit()
+    for b in synced_banks:
+        await db.refresh(b)
+
+    return ok(
+        data=[serialize_bank(b) for b in synced_banks],
+        message=f"Đồng bộ thành công {len(synced_banks)} tài khoản ngân hàng từ SePay!"
+    )
+

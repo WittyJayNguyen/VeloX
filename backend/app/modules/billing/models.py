@@ -38,3 +38,16 @@ class PaymentTransaction(Base, UUIDMixin, TimestampMixin):
     credits_credited = Column(Numeric(14, 4), nullable=False)
     payment_gateway = Column(String(32), nullable=False)   # BANK_TRANSFER, MOMO, STRIPE
     status = Column(String(32), default="PENDING", nullable=False)
+
+
+class BankAccount(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "bank_accounts"
+    bank_name = Column(String(128), nullable=False)        # VD: MBBank, Vietcombank, Techcombank
+    bank_code = Column(String(32), nullable=False)         # VD: MB, VCB, TCB
+    account_number = Column(String(64), nullable=False)    # Số tài khoản
+    account_holder = Column(String(128), nullable=False)   # Tên chủ tài khoản
+    branch = Column(String(128), nullable=True)            # Chi nhánh
+    is_default = Column(Boolean, default=False)
+    qr_enabled = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
+
