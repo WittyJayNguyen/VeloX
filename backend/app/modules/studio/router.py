@@ -289,6 +289,31 @@ async def delete_studio_history_item(
 
 CINEMATIC_VIDEOS = [
     {
+        "keywords": ["cô dâu", "bride", "wedding", "lễ đường", "cưới", "đám cưới", "hôn lễ", "váy cưới", "aisle", "walking down"],
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-bride-posing-in-her-white-wedding-dress-41844-large.mp4",
+        "poster_url": "https://images.unsplash.com/photo-1519741497674-611481863552?w=1280&q=80",
+    },
+    {
+        "keywords": ["120fps", "slow-motion", "slow motion", "máy quay", "quay", "vận động viên", "gym", "thể thao", "athlete", "orbit", "fitness"],
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-boxer-training-in-a-dark-gym-41315-large.mp4",
+        "poster_url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1280&q=80",
+    },
+    {
+        "keywords": ["flycam", "fpv", "drone", "đỉnh núi", "bình minh", "núi non", "phong cảnh", "aerial", "mountain peak", "sunrise", "núi", "rừng", "cây", "forest"],
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+        "poster_url": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1280&q=80",
+    },
+    {
+        "keywords": ["cyberpunk", "con phố", "đường phố", "bước đi", "mưa", "đèn neon", "neon rain", "tương lai", "city street"],
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-woman-dancing-under-neon-lights-42512-large.mp4",
+        "poster_url": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1280&q=80",
+    },
+    {
+        "keywords": ["sản phẩm", "3d", "360", "xoay", "turntable", "đồng hồ", "luxury", "product showcase"],
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-graphs-31912-large.mp4",
+        "poster_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1280&q=80",
+    },
+    {
         "keywords": ["tech", "cyber", "ai", "robot", "neon", "future", "digital", "code", "network", "city", "hacker", "xe", "car"],
         "video_url": "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-graphs-31912-large.mp4",
         "poster_url": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80",
@@ -304,12 +329,7 @@ CINEMATIC_VIDEOS = [
         "poster_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80",
     },
     {
-        "keywords": ["forest", "mountain", "tree", "sun", "sunrise", "landscape", "autumn", "fall", "garden", "núi", "rừng", "cây"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1280&q=80",
-    },
-    {
-        "keywords": ["bird", "animal", "cat", "dog", "wild", "flying", "wildlife", "fish", "horse", "mèo", "chó", "chim", "thú"],
+        "keywords": ["bird", "animal", "cat", "dog", "wild", "flying", "wildlife", "fish", "horse", "mèo", "chó", "chim", "thú", "eagle", "đại bàng"],
         "video_url": "https://assets.mixkit.co/videos/preview/mixkit-flock-of-wild-birds-flying-across-a-dramatic-sky-41484-large.mp4",
         "poster_url": "https://images.unsplash.com/photo-1474511320723-9a56873ee67b?w=1280&q=80",
     },
