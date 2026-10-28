@@ -78,6 +78,7 @@ export interface GeneratedAudioItem {
   model: string;
   voice: string;
   duration?: string;
+  audioUrl?: string;
   createdAt: string;
 }
 
@@ -269,8 +270,32 @@ export const StudioPage: React.FC = () => {
   const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>([]);
 
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const [textareaShake, setTextareaShake] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const togglePlayAudio = (aud: GeneratedAudioItem) => {
+    if (playingAudioId === aud.id) {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+      }
+      setPlayingAudioId(null);
+      return;
+    }
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+    }
+    if (aud.audioUrl) {
+      const audio = new Audio(aud.audioUrl);
+      audio.onended = () => setPlayingAudioId(null);
+      audio.onerror = () => setPlayingAudioId(null);
+      audio.play().catch(() => setPlayingAudioId(null));
+      currentAudioRef.current = audio;
+      setPlayingAudioId(aud.id);
+    } else {
+      setPlayingAudioId(aud.id);
+    }
+  };
 
   // Load models dynamically from Admin Database via API
   useEffect(() => {
@@ -325,10 +350,11 @@ export const StudioPage: React.FC = () => {
           list.forEach((item: any) => {
             const mType = (item.media_type || '').toUpperCase();
             const dateStr = item.created_at ? new Date(item.created_at).toLocaleTimeString() : 'Gần đây';
+            const enc = encodeURIComponent(item.prompt || '');
             if (mType === 'IMAGE') {
               imgs.push({
                 id: item.id,
-                url: item.output_url || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+                url: item.output_url || `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&nologo=true`,
                 prompt: item.prompt,
                 model: item.model_id || 'AI Engine',
                 aspectRatio: '1:1',
@@ -338,11 +364,11 @@ export const StudioPage: React.FC = () => {
             } else if (mType === 'VIDEO') {
               vids.push({
                 id: item.id,
-                title: item.prompt.slice(0, 32) + '...',
+                title: item.prompt.slice(0, 32) + (item.prompt.length > 32 ? '...' : ''),
                 prompt: item.prompt,
                 model: item.model_id || 'AI Video Engine',
-                poster: item.output_url || 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80',
-                videoUrl: item.output_url || 'https://assets.mixkit.co/videos/preview/mixkit-athlete-working-out-with-heavy-ropes-in-a-gym-41315-large.mp4',
+                poster: `https://image.pollinations.ai/prompt/${enc}?width=1280&height=720&nologo=true`,
+                videoUrl: item.output_url || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4',
                 duration: '5s',
                 quality: '1080p',
                 aspectRatio: '16:9',
@@ -351,11 +377,12 @@ export const StudioPage: React.FC = () => {
             } else if (mType === 'AUDIO') {
               auds.push({
                 id: item.id,
-                title: item.prompt.slice(0, 36) + '...',
+                title: item.prompt.slice(0, 36) + (item.prompt.length > 36 ? '...' : ''),
                 prompt: item.prompt,
                 model: item.model_id || 'AI Audio Engine',
-                voice: 'Tiếng Việt',
-                duration: '0:20',
+                voice: 'AI Voice',
+                duration: '0:18',
+                audioUrl: item.output_url || `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${enc.slice(0, 150)}`,
                 createdAt: dateStr,
               });
             }
@@ -592,6 +619,10 @@ export const StudioPage: React.FC = () => {
 
     setIsGenerating(true);
 
+    let serverGeneratedUrl: string | null = null;
+    let serverPosterUrl: string | null = null;
+    let serverJobId: string | null = null;
+
     // Call backend API to authenticate, check credit balance, deduct from DB, and create job
     try {
       const jobRes = await apiClient.post('/studio/jobs', {
@@ -608,6 +639,10 @@ export const StudioPage: React.FC = () => {
         },
       });
       const jobData = jobRes.data?.data || jobRes.data;
+      serverGeneratedUrl = jobData?.output_url || null;
+      serverPosterUrl = jobData?.poster_url || null;
+      serverJobId = jobData?.job_id || null;
+
       if (jobData?.credit_balance !== undefined) {
         updateUser({ credit_balance: jobData.credit_balance });
       } else {
@@ -704,28 +739,24 @@ export const StudioPage: React.FC = () => {
       setActiveJobs((prev) =>
         prev.map((j) => (j.id === newJobId ? { ...j, progress: 75, statusText: activeTab === 'video' ? 'Đang khử nhiễu và làm mịn 60fps...' : 'Đang nâng cấp chất lượng cao...' } : j))
       );
-    }, 2800);
+    }, 2500);
 
     setTimeout(() => {
       setActiveJobs((prev) =>
         prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Hoàn tất đóng gói file!' } : j))
       );
-    }, 4200);
+    }, 3800);
 
     setTimeout(() => {
       setActiveJobs((prev) => prev.filter((j) => j.id !== newJobId));
       setIsGenerating(false);
 
       if (activeTab === 'image') {
-        const demoUrls = [
-          'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-        ];
+        const enc = encodeURIComponent(prompt.trim());
+        const finalUrl = serverGeneratedUrl || `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&nologo=true`;
         const newImg: GeneratedImageItem = {
-          id: `img-${Date.now()}`,
-          url: demoUrls[Math.floor(Math.random() * demoUrls.length)],
+          id: serverJobId || `img-${Date.now()}`,
+          url: finalUrl,
           prompt,
           model: selectedModelName,
           aspectRatio,
@@ -734,28 +765,16 @@ export const StudioPage: React.FC = () => {
         };
         setGeneratedImages((prev) => [newImg, ...prev]);
       } else if (activeTab === 'video') {
-        const demoVideos = [
-          {
-            poster: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80',
-            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-athlete-working-out-with-heavy-ropes-in-a-gym-41315-large.mp4',
-          },
-          {
-            poster: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
-            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-doing-warm-up-exercises-on-a-yoga-mat-41314-large.mp4',
-          },
-          {
-            poster: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-working-out-in-a-modern-gym-41316-large.mp4',
-          },
-        ];
-        const chosen = demoVideos[Math.floor(Math.random() * demoVideos.length)];
+        const enc = encodeURIComponent(prompt.trim());
+        const finalPoster = serverPosterUrl || `https://image.pollinations.ai/prompt/${enc}?width=1280&height=720&nologo=true`;
+        const finalVid = serverGeneratedUrl || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4';
         const newVid: GeneratedVideoItem = {
-          id: `vid-${Date.now()}`,
-          title: prompt.slice(0, 32) + '...',
+          id: serverJobId || `vid-${Date.now()}`,
+          title: prompt.slice(0, 32) + (prompt.length > 32 ? '...' : ''),
           prompt,
           model: selectedModelName,
-          poster: chosen.poster,
-          videoUrl: chosen.videoUrl,
+          poster: finalPoster,
+          videoUrl: finalVid,
           duration: videoDuration,
           quality: `${videoResolution} FHD`,
           aspectRatio,
@@ -763,13 +782,16 @@ export const StudioPage: React.FC = () => {
         };
         setGeneratedVideos((prev) => [newVid, ...prev]);
       } else if (activeTab === 'audio') {
+        const enc = encodeURIComponent(prompt.trim().slice(0, 150));
+        const finalAud = serverGeneratedUrl || `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${enc}`;
         const newAud: GeneratedAudioItem = {
-          id: `aud-${Date.now()}`,
-          title: prompt.slice(0, 36) + '...',
+          id: serverJobId || `aud-${Date.now()}`,
+          title: prompt.slice(0, 36) + (prompt.length > 36 ? '...' : ''),
           prompt,
           model: selectedModelName,
           voice: audioVoice,
           duration: '0:18',
+          audioUrl: finalAud,
           createdAt: 'Vừa xong',
         };
         setGeneratedAudios((prev) => [newAud, ...prev]);
@@ -777,7 +799,7 @@ export const StudioPage: React.FC = () => {
 
       setToastMsg(t('studio.generate_success', 'Tác phẩm AI đã được sinh hoàn tất!'));
       setTimeout(() => setToastMsg(null), 3000);
-    }, 4800);
+    }, 4200);
   };
 
   return (
@@ -921,7 +943,15 @@ export const StudioPage: React.FC = () => {
                       })
                     }
                   >
-                    <img src={img.url} alt={img.prompt} loading="lazy" />
+                    <img
+                      src={img.url}
+                      alt={img.prompt}
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(img.prompt.slice(0, 10))}/1024/1024`;
+                      }}
+                    />
                     <div className={styles.overlayActions}>
                       <button
                         type="button"
@@ -1021,7 +1051,15 @@ export const StudioPage: React.FC = () => {
                       })
                     }
                   >
-                    <img src={vid.poster} alt={vid.title} loading="lazy" />
+                    <img
+                      src={vid.poster}
+                      alt={vid.title}
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(vid.title.slice(0, 10))}/1280/720`;
+                      }}
+                    />
                     <div className={styles.playIconOverlay}>
                       <HiOutlinePlay size={24} />
                     </div>
@@ -1124,7 +1162,7 @@ export const StudioPage: React.FC = () => {
                       <button
                         type="button"
                         className={`${styles.audioPlayBtn} ${playingAudioId === aud.id ? styles.audioPlaying : ''}`}
-                        onClick={() => setPlayingAudioId(playingAudioId === aud.id ? null : aud.id)}
+                        onClick={() => togglePlayAudio(aud)}
                         title={playingAudioId === aud.id ? 'Dừng phát' : 'Nghe âm thanh'}
                       >
                         {playingAudioId === aud.id ? <HiOutlineSpeakerWave size={18} /> : <HiOutlinePlay size={18} />}
