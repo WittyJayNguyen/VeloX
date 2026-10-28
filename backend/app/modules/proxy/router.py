@@ -113,7 +113,7 @@ async def get_model_pricing(
     from datetime import datetime, timezone
     from sqlalchemy import or_
 
-    stmt = select(AIModel).where(AIModel.is_available == True)
+    stmt = select(AIModel).where(AIModel.is_available == True).where(~AIModel.model_code.ilike("%free%"))
     if model:
         m_strip = model.strip()
         stmt = stmt.where(or_(AIModel.model_code == m_strip, AIModel.model_code.ilike(f"%{m_strip}%")))
@@ -139,9 +139,10 @@ async def get_model_pricing(
             out_cr = m.output_credit_price or 300
             cache_cr = m.cache_read_credit_price or int(in_cr * 0.5)
 
-            in_vnd = round(float(m.input_cost_per_1m or in_cr), 2)
-            out_vnd = round(float(m.output_cost_per_1m or out_cr), 2)
-            cache_vnd = round(float(m.cache_read_cost_per_1m or cache_cr), 2)
+            # Giá bán ra chuẩn theo VND cho Khách hàng & Reseller (1 Credit = 100 VND)
+            in_vnd = round(float(in_cr * CREDIT_VND_RATE), 2)
+            out_vnd = round(float(out_cr * CREDIT_VND_RATE), 2)
+            cache_vnd = round(float(cache_cr * CREDIT_VND_RATE), 2)
 
             catalog_data.append({
                 "id": m.model_code,
