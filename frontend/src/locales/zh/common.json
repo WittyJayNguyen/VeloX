@@ -428,6 +428,7 @@
     "upscaling": "超分辨率处理...",
     "completed": "已完成！",
     "prompt_placeholder": "描述您想创作的内容...",
+    "prompt_placeholder_chat": "向 AI 提问任何内容、编写代码、解决问题或构思创意...",
     "prompt_placeholder_image": "描述您想生成的图像 (例如: 8K 电影感肖像、唯美光影)...",
     "prompt_placeholder_video": "描述您想生成的视频 (例如: 120fps 慢动作穿越未来城市)...",
     "prompt_placeholder_audio": "输入要转为自然逼真 AI 语音的文本内容...",
@@ -444,7 +445,11 @@
     "no_audio_yet": "暂无音频文件。在下方输入文本即可生成逼真的 AI 语音！",
     "generate_success": "AI 创作已成功完成！",
     "fullscreen": "全屏预览",
-    "credits_unit": "cr"
+    "credits_unit": "cr",
+    "tab_chat": "对话",
+    "clear_chat": "清除对话",
+    "chat_title": "AI 智能对话会话",
+    "chat_thinking": "AI 正在思考并整理回答..."
   },
   "models_page": {
     "title": "AI 模型库 (AI Models Catalog)",

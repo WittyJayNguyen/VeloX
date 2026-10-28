@@ -73,6 +73,7 @@ const router = createBrowserRouter([
       { path: '/register', element: <RegisterPage /> },
       // Core AI Navigation
       { path: '/studio', element: <StudioPage /> },
+      { path: '/playground', element: <PlaygroundPage /> },
       { path: '/models', element: <ModelsExplorePage /> },
       { path: '/docs', element: <ApiDocsPage /> },
       { path: '/apidocs', element: <ApiDocsPage /> },

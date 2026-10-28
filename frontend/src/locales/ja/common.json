@@ -504,6 +504,7 @@
     "upscaling": "高解像度化中...",
     "completed": "完了！",
     "prompt_placeholder": "作成したい内容を入力してください...",
+    "prompt_placeholder_chat": "AIに何でも質問、コード作成、問題解決、データ分析、アイデア出し...",
     "prompt_placeholder_image": "生成したい画像の説明を入力 (例: 8Kシネマティックポートレート、ドラマチックな照明)...",
     "prompt_placeholder_video": "生成したい動画の説明を入力 (例: 120fpsのスローモーションでドローンが空中飛行)...",
     "prompt_placeholder_audio": "自然なAI音声に変換したいテキストを入力...",
@@ -520,7 +521,11 @@
     "no_audio_yet": "音声ファイルはまだありません。下部にテキストを入力してAI音声を生成してください！",
     "generate_success": "AI作品の生成が完了しました！",
     "fullscreen": "全画面表示",
-    "credits_unit": "cr"
+    "credits_unit": "cr",
+    "tab_chat": "チャット",
+    "clear_chat": "履歴を消去",
+    "chat_title": "AI対話セッション",
+    "chat_thinking": "AIが思考中..."
   },
   "models_page": {
     "title": "AIモデルカタログ (AI Models Catalog)",

@@ -506,6 +506,7 @@
     "upscaling": "Hậu kỳ & Nâng cấp 4K...",
     "completed": "Hoàn tất!",
     "prompt_placeholder": "Mô tả nội dung bạn muốn tạo...",
+    "prompt_placeholder_chat": "Hỏi AI bất kỳ điều gì, giải toán, viết code, phân tích dữ liệu hoặc lập kế hoạch...",
     "prompt_placeholder_image": "Mô tả hình ảnh bạn muốn tạo (Ví dụ: Chân dung điện ảnh 8K, phong cảnh viễn tưởng)...",
     "prompt_placeholder_video": "Mô tả video bạn muốn tạo (Ví dụ: Máy quay slow-motion 120fps lướt quanh vận động viên)...",
     "prompt_placeholder_audio": "Nhập văn bản cần chuyển thành giọng đọc AI tự nhiên...",
@@ -522,7 +523,11 @@
     "no_audio_yet": "Chưa có file âm thanh nào. Hãy nhập văn bản bên dưới để tạo giọng nói AI sống động!",
     "generate_success": "Tác phẩm AI đã được sinh hoàn tất!",
     "fullscreen": "Xem toàn màn hình",
-    "credits_unit": "cr"
+    "credits_unit": "cr",
+    "tab_chat": "Chat",
+    "clear_chat": "Xoá hội thoại",
+    "chat_title": "Phiên Trò Chuyện Trí Tuệ Nhân Tạo",
+    "chat_thinking": "AI đang suy nghĩ và tổng hợp câu trả lời..."
   },
   "models_page": {
     "title": "Thư Viện Mô Hình AI (AI Models Catalog)",

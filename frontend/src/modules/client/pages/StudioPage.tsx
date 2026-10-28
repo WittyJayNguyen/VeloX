@@ -18,6 +18,9 @@ import {
   HiOutlineChevronDown,
   HiOutlineMusicalNote,
   HiOutlineCheck,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineTrash,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { modelService, type PublicModelItem } from '@modules/models/services/modelService';
@@ -26,13 +29,21 @@ import styles from './StudioPage.module.scss';
 
 export interface GenerationJob {
   id: string;
-  type: 'image' | 'video' | 'audio';
+  type: 'chat' | 'image' | 'video' | 'audio';
   prompt: string;
   model: string;
   progress: number;
   statusText: string;
   aspectRatio: string;
   refImage?: string | null;
+}
+
+export interface StudioChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  model: string;
+  createdAt: string;
 }
 
 export interface GeneratedImageItem {
@@ -343,7 +354,15 @@ export const PROMPT_PRESET_GROUPS: Record<string, PromptPresetGroup[]> = {
 };
 
 // Preset Prompts for "Inspire Me" categorized by mode
-export const INSPIRATION_PROMPTS_BY_TAB: Record<'image' | 'video' | 'audio', string[]> = {
+export const INSPIRATION_PROMPTS_BY_TAB: Record<'chat' | 'image' | 'video' | 'audio', string[]> = {
+  chat: [
+    'Giải thích nguyên lý hoạt động của Mạng nơ-ron Transformer một cách trực quan và dễ hiểu nhất',
+    'Viết kịch bản video ngắn 60 giây giới thiệu giải pháp AI sáng tạo hình ảnh & video thế hệ mới',
+    'Tối ưu hóa đoạn mã SQL query phức tạp để cải thiện hiệu năng cơ sở dữ liệu lớn',
+    'Lập kế hoạch chiến lược Content Marketing 30 ngày cho startup công nghệ B2B',
+    'Viết bài luận phân tích tác động của Trí tuệ nhân tạo đối với thị trường lao động toàn cầu',
+    'Thiết kế kiến trúc hệ thống Microservices xử lý 100.000 requests/giây bằng Go và Redis',
+  ],
   image: [
     'Chân dung studio điện ảnh 8K, ánh sáng Rembrandt mềm mại, ống kính 85mm f/1.4',
     'Phong cảnh viễn tưởng huyền ảo với những hòn đảo bay lơ lửng và thác nước pha lê phát quang',
@@ -368,6 +387,72 @@ export const INSPIRATION_PROMPTS_BY_TAB: Record<'image' | 'video' | 'audio', str
     'Giọng đọc lồng tiếng TVC quảng cáo thương mại cao cấp, sang trọng và đầy thuyết phục',
     'Đọc thơ nhẹ nhàng, êm đềm với ngữ điệu sâu lắng chạm vào cảm xúc người nghe',
   ],
+};
+
+export const generateSimulatedChatResponse = (userQuery: string, modelName: string): string => {
+  const queryLower = userQuery.toLowerCase();
+  if (queryLower.includes('code') || queryLower.includes('lập trình') || queryLower.includes('sql') || queryLower.includes('python') || queryLower.includes('react')) {
+    return `Tuyệt vời! Dưới đây là giải pháp kỹ thuật tối ưu do **${modelName}** đề xuất:
+
+\`\`\`typescript
+// Solution generated with ${modelName}
+export async function optimizeWorkflow(payload: Record<string, any>) {
+  try {
+    const startTime = performance.now();
+    // Cache layer & async execution
+    const result = await processPipeline(payload);
+    console.log(\`Execution time: \${(performance.now() - startTime).toFixed(2)}ms\`);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Workflow error:', error);
+    throw error;
+  }
+}
+\`\`\`
+
+**Điểm nổi bật của phương án này:**
+1. **Hiệu năng cao:** Tối ưu hóa bộ nhớ đệm, giảm tới 65% thời gian phản hồi.
+2. **Khả năng mở rộng:** Thiết kế dạng module độc lập, dễ dàng tích hợp vào hệ thống hiện tại.
+3. **Bảo mật & Ổn định:** Bổ sung cơ chế xử lý ngoại lệ và logging chi tiết.
+
+Bạn có muốn tôi phát triển thêm chức năng nào khác cho module này không?`;
+  }
+
+  if (queryLower.includes('kịch bản') || queryLower.includes('marketing') || queryLower.includes('tiktok') || queryLower.includes('viết bài')) {
+    return `Chào bạn! Dưới đây là dàn ý kịch bản sáng tạo được thiết kế bởi **${modelName}**:
+
+🎬 **KỊCH BẢN NỘI DUNG VIRAL:**
+
+**1. Hook (0s - 3s):**
+> *"Bạn có biết 90% nhà sáng tạo nội dung đang lãng phí hàng giờ mỗi ngày vào việc này không?"*
+
+**2. Đặt vấn đề & Khơi gợi tò mò (3s - 15s):**
+> Phân cảnh thể hiện sự bế tắc khi phải ngồi suy nghĩ ý tưởng hàng giờ mà sản phẩm vẫn không đạt như kỳ vọng.
+
+**3. Giới thiệu giải pháp đột phá (15s - 45s):**
+> Giới thiệu công cụ AI VeloX với khả năng sinh nội dung, hình ảnh và video chỉ sau vài giây chỉ bằng 1 câu lệnh ngắn gọn.
+
+**4. Kêu gọi hành động - Call to Action (45s - 60s):**
+> *"Trải nghiệm ngay hôm nay để đón đầu xu hướng sáng tạo tương lai!"*
+
+Bạn muốn điều chỉnh phong cách dí dỏm, năng động hay mang tính chuyên gia học thuật?`;
+  }
+
+  return `Chào bạn! Cảm ơn bạn đã đặt câu hỏi. Dưới đây là phản hồi chi tiết từ **${modelName}**:
+
+1. **Phân tích tổng quan:**
+Yêu cầu của bạn đã được tiếp nhận và phân tích toàn diện. Vấn đề này có thể tiếp cận theo hướng tối ưu hóa quy trình kết hợp công nghệ hiện đại nhằm đạt kết quả cao nhất.
+
+2. **Các bước thực thi cụ thể:**
+- **Bước 1:** Xác định mục tiêu trọng tâm và tiêu chí đánh giá thành công.
+- **Bước 2:** Chuẩn bị dữ liệu đầu vào và các ràng buộc kỹ thuật.
+- **Bước 3:** Tiến hành thử nghiệm quy mô nhỏ, đo lường chỉ số phản hồi và tinh chỉnh.
+- **Bước 4:** Triển khai diện rộng với hệ thống giám sát tự động.
+
+3. **Khuyến nghị từ chuyên gia:**
+Luôn duy trì tính linh hoạt và kiểm tra định kỳ để hệ thống thích ứng tốt nhất với sự thay đổi của môi trường.
+
+Nếu bạn cần phân tích sâu hơn ở khía cạnh cụ thể nào, hãy cho tôi biết nhé!`;
 };
 
 // Clean redundant provider prefixes from model display names
@@ -432,12 +517,25 @@ export const StudioPage: React.FC = () => {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
 
-  const urlCategory = searchParams.get('category') as 'image' | 'video' | 'audio' | null;
+  const urlCategory = searchParams.get('category') as 'chat' | 'image' | 'video' | 'audio' | null;
 
-  // Studio Mode: 'image' | 'video' | 'audio'
-  const [activeTab, setActiveTab] = useState<'image' | 'video' | 'audio'>(urlCategory || 'image');
+  // Studio Mode: 'chat' | 'image' | 'video' | 'audio'
+  const [activeTab, setActiveTab] = useState<'chat' | 'image' | 'video' | 'audio'>(urlCategory || 'image');
   const [dbModels, setDbModels] = useState<PublicModelItem[]>([]);
-  const [selectedModelCode, setSelectedModelCode] = useState<string>('gpt-image-2.5-sunburst');
+  const [selectedModelCode, setSelectedModelCode] = useState<string>(
+    urlCategory === 'chat' ? 'gpt-4o' : 'gpt-image-2.5-sunburst'
+  );
+  const [chatMessages, setChatMessages] = useState<StudioChatMessage[]>([
+    {
+      id: 'msg-init-1',
+      role: 'assistant',
+      content: 'Xin chào! Tôi là trợ lý AI thông minh trên VeloX Studio. Bạn cần hỗ trợ viết bài, phân tích tài liệu, lập trình, giải quyết vấn đề toán học hay lên ý tưởng sáng tạo hôm nay?',
+      model: 'GPT-4o (Omni)',
+      createdAt: 'Vừa xong',
+    },
+  ]);
+  const [chatTone, setChatTone] = useState<'creative' | 'balanced' | 'precise'>('balanced');
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const [prompt, setPrompt] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [topupOpen, setTopupOpen] = useState<boolean>(false);
@@ -593,6 +691,25 @@ export const StudioPage: React.FC = () => {
 
   // Filter and merge models for current active tab (Both DB models and standard creative models)
   const availableModels = useMemo(() => {
+    if (activeTab === 'chat') {
+      const dbChatModels = dbModels.filter((m) => m.category?.toUpperCase() === 'CHAT' || m.category?.toUpperCase() === 'TEXT');
+      const standardChatModels: PublicModelItem[] = [
+        { id: 'chat-std-1', name: 'GPT-4o (Omni)', model_code: 'gpt-4o', provider: 'OpenAI', selling_credit_price: 15, category: 'CHAT', is_available: true, input_credit_price: 15, output_credit_price: 15, cache_read_credit_price: 5 },
+        { id: 'chat-std-2', name: 'Claude 3.5 Sonnet', model_code: 'claude-3-5-sonnet', provider: 'Anthropic', selling_credit_price: 18, category: 'CHAT', is_available: true, input_credit_price: 18, output_credit_price: 18, cache_read_credit_price: 6 },
+        { id: 'chat-std-3', name: 'Gemini 1.5 Pro', model_code: 'gemini-1-5-pro', provider: 'Google DeepMind', selling_credit_price: 12, category: 'CHAT', is_available: true, input_credit_price: 12, output_credit_price: 12, cache_read_credit_price: 4 },
+        { id: 'chat-std-4', name: 'DeepSeek-R1', model_code: 'deepseek-r1', provider: 'DeepSeek', selling_credit_price: 10, category: 'CHAT', is_available: true, input_credit_price: 10, output_credit_price: 10, cache_read_credit_price: 3 },
+        { id: 'chat-std-5', name: 'Llama 3.3 (70B)', model_code: 'llama-3-3-70b', provider: 'Meta AI', selling_credit_price: 6, category: 'CHAT', is_available: true, input_credit_price: 6, output_credit_price: 6, cache_read_credit_price: 2 },
+      ];
+      const map = new Map<string, PublicModelItem>();
+      standardChatModels.forEach((m) => map.set(m.model_code, m));
+      dbChatModels.forEach((m) => {
+        if (!map.has(m.model_code)) {
+          map.set(m.model_code, m);
+        }
+      });
+      return Array.from(map.values());
+    }
+
     if (activeTab === 'image') {
       const dbImageModels = dbModels.filter((m) => m.category?.toUpperCase() === 'IMAGE');
       const standardImageModels: PublicModelItem[] = [
@@ -649,7 +766,7 @@ export const StudioPage: React.FC = () => {
     const paramCategory = searchParams.get('category');
     const paramModel = searchParams.get('model');
 
-    if (paramCategory && (paramCategory === 'image' || paramCategory === 'video' || paramCategory === 'audio')) {
+    if (paramCategory && (paramCategory === 'chat' || paramCategory === 'image' || paramCategory === 'video' || paramCategory === 'audio')) {
       setActiveTab(paramCategory);
     }
 
@@ -669,12 +786,14 @@ export const StudioPage: React.FC = () => {
   }, [searchParams, availableModels]);
 
   // Tab switch handler that automatically picks the right primary model
-  const handleTabChange = (newTab: 'image' | 'video' | 'audio') => {
+  const handleTabChange = (newTab: 'chat' | 'image' | 'video' | 'audio') => {
     setActiveTab(newTab);
     setIsModelMenuOpen(false);
     setIsParamsMenuOpen(false);
     setIsInspireMenuOpen(false);
-    if (newTab === 'image') {
+    if (newTab === 'chat') {
+      setSelectedModelCode('gpt-4o');
+    } else if (newTab === 'image') {
       setSelectedModelCode('gpt-image-2.5-sunburst');
     } else if (newTab === 'video') {
       setSelectedModelCode('seedance-2.5');
@@ -729,7 +848,7 @@ export const StudioPage: React.FC = () => {
   }, [selectedModelCode, activeTab, activeModelConfig]);
 
   // Compute Credits Needed
-  const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
+  const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'chat' ? 15 : activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
 
   // File Upload Helper
   const handleGenericFileUpload = (
@@ -824,6 +943,43 @@ export const StudioPage: React.FC = () => {
       return;
     }
 
+    const selectedModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
+
+    if (activeTab === 'chat') {
+      const userText = prompt.trim();
+      setPrompt('');
+      setIsGenerating(true);
+      addCredits(-totalCreditsNeeded);
+
+      const userMsg: StudioChatMessage = {
+        id: `msg-${Date.now()}-user`,
+        role: 'user',
+        content: userText,
+        model: selectedModelName,
+        createdAt: 'Vừa xong',
+      };
+      setChatMessages((prev) => [...prev, userMsg]);
+      setTimeout(() => {
+        chatScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+
+      setTimeout(() => {
+        setIsGenerating(false);
+        const assistantMsg: StudioChatMessage = {
+          id: `msg-${Date.now()}-ai`,
+          role: 'assistant',
+          content: generateSimulatedChatResponse(userText, selectedModelName),
+          model: selectedModelName,
+          createdAt: 'Vừa xong',
+        };
+        setChatMessages((prev) => [...prev, assistantMsg]);
+        setTimeout(() => {
+          chatScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 50);
+      }, 1400);
+      return;
+    }
+
     setIsGenerating(true);
     addCredits(-totalCreditsNeeded);
 
@@ -831,7 +987,6 @@ export const StudioPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const newJobId = `job-${Date.now()}`;
-    const selectedModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
     const newJob: GenerationJob = {
       id: newJobId,
       type: activeTab,
@@ -948,6 +1103,71 @@ export const StudioPage: React.FC = () => {
 
       {/* Main Canvas & Media Gallery */}
       <div className={styles.canvasContainer}>
+        {/* CHAT MODE */}
+        {activeTab === 'chat' && (
+          <div className={styles.chatAreaContainer}>
+            <div className={styles.chatHeaderBar}>
+              <div className={styles.chatHeaderLeft}>
+                <span className={styles.chatModelPill}>
+                  <HiOutlineSparkles size={14} />
+                  {cleanModelDisplayName(currentModel?.name || 'GPT-4o')}
+                </span>
+                <h3 className={styles.chatTitle}>{t('studio.chat_title', 'Phiên Trò Chuyện Trí Tuệ Nhân Tạo')}</h3>
+              </div>
+              <button
+                type="button"
+                className={styles.clearChatBtn}
+                onClick={() => setChatMessages([])}
+                title={t('studio.clear_chat', 'Xoá hội thoại')}
+              >
+                <HiOutlineTrash size={14} />
+                <span>{t('studio.clear_chat', 'Xoá hội thoại')}</span>
+              </button>
+            </div>
+
+            <div className={styles.chatMessagesStream}>
+              {chatMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={msg.role === 'user' ? styles.chatRowUser : styles.chatRowAssistant}
+                >
+                  {msg.role === 'assistant' && (
+                    <div className={styles.assistantAvatar}>
+                      <HiOutlineSparkles size={18} />
+                    </div>
+                  )}
+                  <div className={msg.role === 'user' ? styles.userBubble : styles.assistantBubble}>
+                    {msg.role === 'assistant' && (
+                      <div className={styles.assistantMeta}>
+                        <span className={styles.modelTag}>{msg.model}</span>
+                        <span className={styles.timeTag}>· {msg.createdAt}</span>
+                      </div>
+                    )}
+                    <div className={styles.assistantText}>{msg.content}</div>
+                  </div>
+                </div>
+              ))}
+
+              {isGenerating && (
+                <div className={styles.chatTypingRow}>
+                  <div className={styles.assistantAvatar}>
+                    <HiOutlineSparkles size={18} />
+                  </div>
+                  <div className={styles.typingBubble}>
+                    <div className={styles.typingDots}>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                    <span>{t('studio.chat_thinking', 'AI đang suy nghĩ và tổng hợp câu trả lời...')}</span>
+                  </div>
+                </div>
+              )}
+              <div ref={chatScrollRef} />
+            </div>
+          </div>
+        )}
+
         {/* IMAGE MODE */}
         {activeTab === 'image' && (
           <div className={styles.mediaGalleryArea}>
@@ -1528,7 +1748,9 @@ export const StudioPage: React.FC = () => {
               ref={promptTextareaRef}
               className={styles.promptTextarea}
               placeholder={
-                activeTab === 'image'
+                activeTab === 'chat'
+                  ? t('studio.prompt_placeholder_chat', 'Hỏi AI bất kỳ điều gì, giải toán, viết code, phân tích dữ liệu hoặc lập kế hoạch...')
+                  : activeTab === 'image'
                   ? t('studio.prompt_placeholder_image', 'Mô tả hình ảnh bạn muốn tạo (Ví dụ: Chân dung điện ảnh 8K, phong cảnh viễn tưởng)...')
                   : activeTab === 'video'
                   ? t('studio.prompt_placeholder_video', 'Mô tả video bạn muốn tạo (Ví dụ: Máy quay slow-motion 120fps lướt quanh vận động viên)...')
@@ -1549,8 +1771,18 @@ export const StudioPage: React.FC = () => {
             {/* BOTTOM TOOLBAR: Segmented Mode, Book, Model Dropdown, Params Dropdown, Mic, Pink Submit */}
             <div className={styles.promptBottomToolbar}>
               <div className={styles.toolbarLeft}>
-                {/* 1. Segmented Switcher [Ảnh] [Video] [Âm thanh] */}
+                {/* 1. Segmented Switcher [Chat] [Ảnh] [Video] [Âm thanh] */}
                 <div className={styles.modeSwitcherGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.modeTabBtn} ${activeTab === 'chat' ? styles.modeTabActive : ''}`}
+                    onClick={() => handleTabChange('chat')}
+                    title={t('studio.tab_chat', 'Chat')}
+                  >
+                    <HiOutlineChatBubbleLeftRight size={15} />
+                    {activeTab === 'chat' && <span>{t('studio.tab_chat', 'Chat')}</span>}
+                  </button>
+
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'image' ? styles.modeTabActive : ''}`}
@@ -1694,7 +1926,9 @@ export const StudioPage: React.FC = () => {
                     }}
                   >
                     <span>
-                      {activeTab === 'image'
+                      {activeTab === 'chat'
+                        ? (chatTone === 'creative' ? 'Sáng tạo' : chatTone === 'precise' ? 'Chính xác' : 'Cân bằng')
+                        : activeTab === 'image'
                         ? `${resolution} · ${translateParamOption(aspectRatio, t)} · ${translateParamOption(quality, t)}`
                         : activeTab === 'video'
                         ? `${videoResolution} · ${translateParamOption(aspectRatio, t)} · ${videoDuration}`
@@ -1705,6 +1939,44 @@ export const StudioPage: React.FC = () => {
 
                   {isParamsMenuOpen && (
                     <div className={styles.customPopoverMenu}>
+                      {activeTab === 'chat' && (
+                        <>
+                          <div className={styles.paramGroupTitle}>Phong cách phản hồi (Tone / Creativity)</div>
+                          <div className={styles.paramOptionsGrid}>
+                            <button
+                              type="button"
+                              className={`${styles.paramChip} ${chatTone === 'creative' ? styles.paramActive : ''}`}
+                              onClick={() => {
+                                setChatTone('creative');
+                                setIsParamsMenuOpen(false);
+                              }}
+                            >
+                              Sáng tạo (Creative)
+                            </button>
+                            <button
+                              type="button"
+                              className={`${styles.paramChip} ${chatTone === 'balanced' ? styles.paramActive : ''}`}
+                              onClick={() => {
+                                setChatTone('balanced');
+                                setIsParamsMenuOpen(false);
+                              }}
+                            >
+                              Cân bằng (Balanced)
+                            </button>
+                            <button
+                              type="button"
+                              className={`${styles.paramChip} ${chatTone === 'precise' ? styles.paramActive : ''}`}
+                              onClick={() => {
+                                setChatTone('precise');
+                                setIsParamsMenuOpen(false);
+                              }}
+                            >
+                              Chính xác (Precise)
+                            </button>
+                          </div>
+                        </>
+                      )}
+
                       {activeTab === 'image' && (
                         <>
                           <div className={styles.paramGroupTitle}>{t('studio.resolution', 'Độ phân giải')}</div>
