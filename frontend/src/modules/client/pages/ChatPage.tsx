@@ -1125,7 +1125,7 @@ export const ChatPage: React.FC = () => {
               <div className={styles.avatar}>
                 {renderProviderIcon(currentModel.provider, 18)}
               </div>
-              <div className={styles.messageBubble}>
+              <div className={`${styles.messageBubble} ${styles.generatingBubble}`}>
                 <div className={styles.generatingRow}>
                   <div className={styles.dots}>
                     <span />

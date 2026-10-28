@@ -19,6 +19,8 @@ import {
   HiOutlineMusicalNote,
   HiOutlineCheck,
   HiOutlineTrash,
+  HiOutlineArrowPath,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
@@ -178,6 +180,122 @@ export const translateParamOption = (val: string, tFn: any) => {
   return val;
 };
 
+// ── Smooth Image Thumbnail with Shimmer Placeholder ──
+const StudioImageThumbnail: React.FC<{
+  src: string;
+  alt: string;
+  prompt: string;
+  onClick: () => void;
+  children?: React.ReactNode;
+}> = ({ src, alt, prompt, onClick, children }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div className={styles.mediaThumbnailBox} onClick={onClick}>
+      <div
+        className={styles.imageShimmerPlaceholder}
+        style={{ opacity: isLoaded ? 0 : 1, pointerEvents: isLoaded ? 'none' : 'auto' }}
+      >
+        <div className={styles.shimmerGlaze} />
+        <HiOutlineSparkles size={26} style={{ color: 'rgba(56, 189, 248, 0.25)' }} />
+      </div>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className={isLoaded ? styles.imgLoaded : ''}
+        onLoad={() => setIsLoaded(true)}
+        onError={(e) => {
+          setIsLoaded(true);
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(prompt.slice(0, 10))}/1024/1024`;
+        }}
+      />
+      {children}
+    </div>
+  );
+};
+
+// ── Smooth Video Thumbnail with Shimmer Placeholder ──
+const StudioVideoThumbnail: React.FC<{
+  videoUrl?: string;
+  poster: string;
+  title: string;
+  children?: React.ReactNode;
+}> = ({ videoUrl, poster, title, children }) => {
+  const [isPosterLoaded, setIsPosterLoaded] = useState(false);
+
+  return (
+    <div className={videoUrl ? styles.videoPlayerBox : styles.videoThumbnailBox}>
+      <div
+        className={styles.imageShimmerPlaceholder}
+        style={{ opacity: isPosterLoaded ? 0 : 1, pointerEvents: isPosterLoaded ? 'none' : 'auto' }}
+      >
+        <div className={styles.shimmerGlaze} />
+        <HiOutlineSparkles size={26} style={{ color: 'rgba(255, 107, 53, 0.25)' }} />
+      </div>
+      {videoUrl ? (
+        <video
+          src={videoUrl}
+          poster={poster}
+          controls
+          playsInline
+          preload="metadata"
+          className={styles.cardVideoPlayer}
+          onLoadedData={() => setIsPosterLoaded(true)}
+        />
+      ) : (
+        <img
+          src={poster}
+          alt={title}
+          loading="lazy"
+          className={isPosterLoaded ? styles.imgLoaded : ''}
+          onLoad={() => setIsPosterLoaded(true)}
+          onError={(e) => {
+            setIsPosterLoaded(true);
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(title.slice(0, 10))}/1280/720`;
+          }}
+        />
+      )}
+      {children}
+    </div>
+  );
+};
+
+// ── Cyberpunk Shimmer Skeleton Grid ──
+const StudioSkeletonGrid: React.FC<{ count?: number }> = ({ count = 5 }) => {
+  return (
+    <div className={styles.compactGalleryGrid}>
+      {Array.from({ length: count }).map((_, idx) => (
+        <div
+          key={`skel_${idx}`}
+          className={styles.skeletonCard}
+          style={{ animationDelay: `${idx * 60}ms` }}
+        >
+          <div className={styles.skeletonThumbnailBox}>
+            <HiOutlineSparkles size={28} className={styles.skeletonCenterIcon} />
+            <div className={styles.skeletonShimmerSweep} />
+          </div>
+          <div className={styles.skeletonDetails}>
+            <div className={styles.skeletonLineTop}>
+              <div className={styles.skeletonTagPill}>
+                <div className={styles.skeletonShimmerSweep} />
+              </div>
+              <div className={styles.skeletonRatioPill}>
+                <div className={styles.skeletonShimmerSweep} />
+              </div>
+            </div>
+            <div className={styles.skeletonPromptLine}>
+              <div className={styles.skeletonShimmerSweep} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const StudioPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -276,6 +394,10 @@ export const StudioPage: React.FC = () => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImageItem[]>(cachedHistory.imgs);
   const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoItem[]>(cachedHistory.vids);
   const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>(cachedHistory.auds);
+  const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(
+    cachedHistory.imgs.length === 0 && cachedHistory.vids.length === 0 && cachedHistory.auds.length === 0
+  );
+  const [isRefreshingHistory, setIsRefreshingHistory] = useState<boolean>(false);
 
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -344,72 +466,79 @@ export const StudioPage: React.FC = () => {
   }, []);
 
   // Load user generation history from MediaGenerationLog database via API
+  const loadHistory = async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setIsRefreshingHistory(true);
+    } else if (generatedImages.length === 0 && generatedVideos.length === 0) {
+      setIsHistoryLoading(true);
+    }
+
+    try {
+      const res = await apiClient.get('/studio/history');
+      if (res.data?.data) {
+        const list = res.data.data;
+        const imgs: GeneratedImageItem[] = [];
+        const vids: GeneratedVideoItem[] = [];
+        const auds: GeneratedAudioItem[] = [];
+
+        list.forEach((item: any) => {
+          const mType = (item.media_type || '').toUpperCase();
+          const dateStr = item.created_at ? new Date(item.created_at).toLocaleTimeString() : 'Gần đây';
+          const enc = encodeURIComponent(item.prompt || '');
+          if (mType === 'IMAGE') {
+            imgs.push({
+              id: item.id,
+              url: item.output_url || `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&nologo=true`,
+              prompt: item.prompt,
+              model: item.model_id || 'AI Engine',
+              aspectRatio: '1:1',
+              quality: 'HD',
+              createdAt: dateStr,
+            });
+          } else if (mType === 'VIDEO') {
+            vids.push({
+              id: item.id,
+              title: item.prompt.slice(0, 32) + (item.prompt.length > 32 ? '...' : ''),
+              prompt: item.prompt,
+              model: item.model_id || 'AI Video Engine',
+              poster: `https://image.pollinations.ai/prompt/${enc}?width=1280&height=720&nologo=true`,
+              videoUrl: item.output_url || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4',
+              duration: '5s',
+              quality: '1080p',
+              aspectRatio: '16:9',
+              createdAt: dateStr,
+            });
+          } else if (mType === 'AUDIO') {
+            auds.push({
+              id: item.id,
+              title: item.prompt.slice(0, 36) + (item.prompt.length > 36 ? '...' : ''),
+              prompt: item.prompt,
+              model: item.model_id || 'AI Audio Engine',
+              voice: 'AI Voice',
+              duration: '0:18',
+              audioUrl: item.output_url || `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${enc.slice(0, 150)}`,
+              createdAt: dateStr,
+            });
+          }
+        });
+
+        if (imgs.length > 0 || isManualRefresh) setGeneratedImages(imgs);
+        if (vids.length > 0 || isManualRefresh) setGeneratedVideos(vids);
+        if (auds.length > 0 || isManualRefresh) setGeneratedAudios(auds);
+        try {
+          localStorage.setItem('velox_studio_media_cache', JSON.stringify({ imgs, vids, auds }));
+        } catch (_) {}
+      }
+    } catch (err) {
+      console.error('Failed to load studio history:', err);
+    } finally {
+      setIsHistoryLoading(false);
+      setIsRefreshingHistory(false);
+    }
+  };
+
   useEffect(() => {
-    let isMounted = true;
-    apiClient
-      .get('/studio/history')
-      .then((res) => {
-        if (isMounted && res.data?.data) {
-          const list = res.data.data;
-          const imgs: GeneratedImageItem[] = [];
-          const vids: GeneratedVideoItem[] = [];
-          const auds: GeneratedAudioItem[] = [];
-
-          list.forEach((item: any) => {
-            const mType = (item.media_type || '').toUpperCase();
-            const dateStr = item.created_at ? new Date(item.created_at).toLocaleTimeString() : 'Gần đây';
-            const enc = encodeURIComponent(item.prompt || '');
-            if (mType === 'IMAGE') {
-              imgs.push({
-                id: item.id,
-                url: item.output_url || `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&nologo=true`,
-                prompt: item.prompt,
-                model: item.model_id || 'AI Engine',
-                aspectRatio: '1:1',
-                quality: 'HD',
-                createdAt: dateStr,
-              });
-            } else if (mType === 'VIDEO') {
-              vids.push({
-                id: item.id,
-                title: item.prompt.slice(0, 32) + (item.prompt.length > 32 ? '...' : ''),
-                prompt: item.prompt,
-                model: item.model_id || 'AI Video Engine',
-                poster: `https://image.pollinations.ai/prompt/${enc}?width=1280&height=720&nologo=true`,
-                videoUrl: item.output_url || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4',
-                duration: '5s',
-                quality: '1080p',
-                aspectRatio: '16:9',
-                createdAt: dateStr,
-              });
-            } else if (mType === 'AUDIO') {
-              auds.push({
-                id: item.id,
-                title: item.prompt.slice(0, 36) + (item.prompt.length > 36 ? '...' : ''),
-                prompt: item.prompt,
-                model: item.model_id || 'AI Audio Engine',
-                voice: 'AI Voice',
-                duration: '0:18',
-                audioUrl: item.output_url || `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${enc.slice(0, 150)}`,
-                createdAt: dateStr,
-              });
-            }
-          });
-
-          if (imgs.length > 0) setGeneratedImages(imgs);
-          if (vids.length > 0) setGeneratedVideos(vids);
-          if (auds.length > 0) setGeneratedAudios(auds);
-          try {
-            localStorage.setItem('velox_studio_media_cache', JSON.stringify({ imgs, vids, auds }));
-          } catch (_) {}
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to load studio history:', err);
-      });
-    return () => {
-      isMounted = false;
-    };
+    loadHistory(false);
   }, []);
 
   // Filter models strictly from Database catalog for current active tab
@@ -935,9 +1064,22 @@ export const StudioPage: React.FC = () => {
                 <span>{t('studio.created_artworks', 'Danh Sách Tác Phẩm Đã Tạo')}</span>
                 <span className={styles.countBadge}>{generatedImages.length + activeJobs.filter((j) => j.type === 'image').length}</span>
               </h3>
+              <div className={styles.headerActionGroup}>
+                <button
+                  type="button"
+                  className={`${styles.refreshHistoryBtn} ${isRefreshingHistory ? styles.isRefreshing : ''}`}
+                  onClick={() => loadHistory(true)}
+                  title="Làm mới lịch sử tác phẩm"
+                >
+                  <HiOutlineArrowPath size={14} className={styles.refreshIcon} />
+                  <span>{t('common.refresh', 'Làm mới')}</span>
+                </button>
+              </div>
             </div>
 
-            {generatedImages.length === 0 && activeJobs.filter((j) => j.type === 'image').length === 0 ? (
+            {isHistoryLoading && generatedImages.length === 0 ? (
+              <StudioSkeletonGrid count={5} />
+            ) : generatedImages.length === 0 && activeJobs.filter((j) => j.type === 'image').length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
                 <HiOutlinePhoto size={48} color="#ff6b35" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.8 }} />
                 <p style={{ fontSize: '0.95rem' }}>{t('studio.no_images_yet', 'Chưa có tác phẩm ảnh nào. Hãy nhập mô tả ý tưởng bên dưới để tạo bức ảnh AI đầu tiên!')}</p>
@@ -972,11 +1114,17 @@ export const StudioPage: React.FC = () => {
                 </div>
               ))}
 
-              {/* COMPLETED IMAGES */}
-              {generatedImages.map((img) => (
-                <div key={img.id} className={styles.compactMediaCard}>
-                  <div
-                    className={styles.mediaThumbnailBox}
+              {/* COMPLETED IMAGES WITH STAGGER ANIMATION & SMOOTH IMAGE REVEAL */}
+              {generatedImages.map((img, idx) => (
+                <div
+                  key={img.id}
+                  className={styles.compactMediaCard}
+                  style={{ animationDelay: `${Math.min(idx * 45, 450)}ms` }}
+                >
+                  <StudioImageThumbnail
+                    src={img.url}
+                    alt={img.prompt}
+                    prompt={img.prompt}
                     onClick={() =>
                       setPreviewMedia({
                         type: 'image',
@@ -987,15 +1135,6 @@ export const StudioPage: React.FC = () => {
                       })
                     }
                   >
-                    <img
-                      src={img.url}
-                      alt={img.prompt}
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(img.prompt.slice(0, 10))}/1024/1024`;
-                      }}
-                    />
                     <div className={styles.overlayActions}>
                       <button
                         type="button"
@@ -1037,7 +1176,7 @@ export const StudioPage: React.FC = () => {
                         <HiOutlineTrash size={15} />
                       </button>
                     </div>
-                  </div>
+                  </StudioImageThumbnail>
 
                   <div className={styles.compactDetails}>
                     <div className={styles.metaRow}>
@@ -1081,9 +1220,22 @@ export const StudioPage: React.FC = () => {
                 <span>Danh Sách Video Đã Tạo</span>
                 <span className={styles.countBadge}>{generatedVideos.length + activeJobs.filter((j) => j.type === 'video').length}</span>
               </h3>
+              <div className={styles.headerActionGroup}>
+                <button
+                  type="button"
+                  className={`${styles.refreshHistoryBtn} ${isRefreshingHistory ? styles.isRefreshing : ''}`}
+                  onClick={() => loadHistory(true)}
+                  title="Làm mới lịch sử video"
+                >
+                  <HiOutlineArrowPath size={14} className={styles.refreshIcon} />
+                  <span>{t('common.refresh', 'Làm mới')}</span>
+                </button>
+              </div>
             </div>
 
-            {generatedVideos.length === 0 && activeJobs.filter((j) => j.type === 'video').length === 0 ? (
+            {isHistoryLoading && generatedVideos.length === 0 ? (
+              <StudioSkeletonGrid count={5} />
+            ) : generatedVideos.length === 0 && activeJobs.filter((j) => j.type === 'video').length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
                 <HiOutlineFilm size={48} color="#ff4d6d" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.8 }} />
                 <p style={{ fontSize: '0.95rem' }}>{t('studio.no_videos_yet', 'Chưa có tác phẩm video nào. Hãy nhập kịch bản bên dưới để tạo video AI chuyển động sống động!')}</p>
@@ -1118,30 +1270,18 @@ export const StudioPage: React.FC = () => {
                 </div>
               ))}
 
-              {/* COMPLETED VIDEOS */}
-              {generatedVideos.map((vid) => (
-                <div key={vid.id} className={styles.compactMediaCard}>
-                  <div className={styles.videoPlayerBox}>
-                    {vid.videoUrl ? (
-                      <video
-                        src={vid.videoUrl}
-                        poster={vid.poster}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        className={styles.cardVideoPlayer}
-                      />
-                    ) : (
-                      <img
-                        src={vid.poster}
-                        alt={vid.title}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(vid.title.slice(0, 10))}/1280/720`;
-                        }}
-                      />
-                    )}
+              {/* COMPLETED VIDEOS WITH STAGGER ANIMATION */}
+              {generatedVideos.map((vid, idx) => (
+                <div
+                  key={vid.id}
+                  className={styles.compactMediaCard}
+                  style={{ animationDelay: `${Math.min(idx * 45, 450)}ms` }}
+                >
+                  <StudioVideoThumbnail
+                    videoUrl={vid.videoUrl}
+                    poster={vid.poster}
+                    title={vid.title}
+                  >
                     <div className={styles.overlayActions}>
                       <button
                         type="button"
@@ -1185,7 +1325,7 @@ export const StudioPage: React.FC = () => {
                         <HiOutlineTrash size={15} />
                       </button>
                     </div>
-                  </div>
+                  </StudioVideoThumbnail>
 
                   <div className={styles.compactDetails}>
                     <div className={styles.metaRow}>
@@ -1234,6 +1374,17 @@ export const StudioPage: React.FC = () => {
                 <span>{t('studio.created_audio', 'Danh Sách Âm Thanh Đã Sinh')}</span>
                 <span className={styles.countBadge}>{generatedAudios.length + activeJobs.length}</span>
               </h3>
+              <div className={styles.headerActionGroup}>
+                <button
+                  type="button"
+                  className={`${styles.refreshHistoryBtn} ${isRefreshingHistory ? styles.isRefreshing : ''}`}
+                  onClick={() => loadHistory(true)}
+                  title="Làm mới lịch sử âm thanh"
+                >
+                  <HiOutlineArrowPath size={14} className={styles.refreshIcon} />
+                  <span>{t('common.refresh', 'Làm mới')}</span>
+                </button>
+              </div>
             </div>
 
             {/* ACTIVE AUDIO JOBS */}
@@ -1275,8 +1426,12 @@ export const StudioPage: React.FC = () => {
               </div>
             ) : (
               <div className={styles.audioListGrid}>
-                {generatedAudios.map((aud) => (
-                  <div key={aud.id} className={styles.compactAudioCard}>
+                {generatedAudios.map((aud, idx) => (
+                  <div
+                    key={aud.id}
+                    className={styles.compactAudioCard}
+                    style={{ animation: 'cardStaggerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both', animationDelay: `${Math.min(idx * 45, 450)}ms` }}
+                  >
                     <div className={styles.audioHeaderRow}>
                       <button
                         type="button"
