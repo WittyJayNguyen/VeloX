@@ -32,7 +32,7 @@ class CreditPackage(Base, UUIDMixin, TimestampMixin):
 class PaymentTransaction(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "payment_transactions"
     transaction_code = Column(String(64), unique=True, nullable=False)
-    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     package_id = Column(String(36), ForeignKey("credit_packages.id", ondelete="SET NULL"))
     amount_vnd = Column(Numeric(12, 0), nullable=False)
     credits_credited = Column(Numeric(14, 4), nullable=False)
