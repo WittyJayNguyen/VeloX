@@ -75,6 +75,7 @@ const router = createBrowserRouter([
       { path: '/docs', element: <ApiDocsPage /> },
       { path: '/apidocs', element: <ApiDocsPage /> },
       { path: '/pricing', element: <SubscriptionPage /> },
+      { path: '/subscription', element: <SubscriptionPage /> },
 
       // Protected Member Pages (Authentication Required to enter Studio or Account)
       {
@@ -85,7 +86,6 @@ const router = createBrowserRouter([
           { path: '/profile', element: <ProfilePage /> },
           { path: '/security', element: <SecurityPage /> },
           { path: '/team', element: <TeamPage /> },
-          { path: '/subscription', element: <SubscriptionPage /> },
           { path: '/history', element: <HistoryPage /> },
           { path: '/orders', element: <OrdersPage /> },
           { path: '/workflows', element: <WorkflowsPage /> },

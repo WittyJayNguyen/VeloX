@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { HiOutlineCheck, HiOutlineSparkles, HiOutlineCreditCard } from 'react-icons/hi2';
@@ -19,8 +20,18 @@ interface PricingTier {
 
 export const SubscriptionPage: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [topupOpen, setTopupOpen] = useState(false);
+
+  const handleAction = () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+    setTopupOpen(true);
+  };
 
   const tiers: PricingTier[] = [
     {
@@ -83,8 +94,8 @@ export const SubscriptionPage: React.FC = () => {
         </div>
 
         <div className={styles.headerActions}>
-          <button type="button" className={styles.primaryBtn} onClick={() => setTopupOpen(true)}>
-            <HiOutlineCreditCard /> {t('subscription.topup_btn', 'Nạp Credit Ngay')}
+          <button type="button" className={styles.primaryBtn} onClick={handleAction}>
+            <HiOutlineCreditCard /> {isAuthenticated ? t('subscription.topup_btn', 'Nạp Credit Ngay') : 'Đăng Nhập Để Nạp'}
           </button>
         </div>
       </div>
@@ -94,17 +105,21 @@ export const SubscriptionPage: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <div style={{ color: '#38bdf8', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>
-              {t('subscription.current_plan', 'Gói Dịch Vụ Đang Dùng')}
+              {isAuthenticated ? t('subscription.current_plan', 'Gói Dịch Vụ Đang Dùng') : 'Ưu Đãi Trải Nghiệm'}
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
-              {user?.tier || 'Free Member'}
+              {isAuthenticated ? (user?.tier || 'Free Member') : 'Tặng Ngay 1,000 Credits Khi Đăng Ký'}
             </div>
             <div style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '4px' }}>
-              Số dư tài khoản: <strong>💎 {(user?.credit_balance ?? 0).toLocaleString()} credit</strong>
+              {isAuthenticated ? (
+                <>Số dư tài khoản: <strong>💎 {(user?.credit_balance ?? 0).toLocaleString()} credit</strong></>
+              ) : (
+                'Khởi tạo tài khoản miễn phí để thử nghiệm ngay 100+ mô hình AI hàng đầu thế giới.'
+              )}
             </div>
           </div>
-          <button type="button" className={styles.primaryBtn} onClick={() => setTopupOpen(true)}>
-            <HiOutlineSparkles /> Nâng Cấp Gói Ngay
+          <button type="button" className={styles.primaryBtn} onClick={handleAction}>
+            <HiOutlineSparkles /> {isAuthenticated ? 'Nâng Cấp Gói Ngay' : 'Đăng Ký / Đăng Nhập'}
           </button>
         </div>
       </div>
@@ -162,11 +177,11 @@ export const SubscriptionPage: React.FC = () => {
 
             <button
               type="button"
-              className={tier.isCurrent ? styles.secondaryBtn : styles.primaryBtn}
+              className={tier.isCurrent && isAuthenticated ? styles.secondaryBtn : styles.primaryBtn}
               style={{ width: '100%', justifyContent: 'center' }}
-              onClick={() => setTopupOpen(true)}
+              onClick={handleAction}
             >
-              {tier.isCurrent ? 'Gói Hiện Tại' : 'Chọn Gói Này'}
+              {isAuthenticated ? (tier.isCurrent ? 'Gói Hiện Tại' : 'Chọn Gói Này') : 'Bắt Đầu Ngay'}
             </button>
           </div>
         ))}

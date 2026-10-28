@@ -115,8 +115,8 @@ const MainLayout = () => {
             <StudioMegaMenu onCloseMenu={closeMobileMenu} />
 
             <Link
-              to="/subscription"
-              className={`${styles.navItem} ${location.pathname.startsWith('/subscription') ? styles.active : ''}`}
+              to="/pricing"
+              className={`${styles.navItem} ${location.pathname.startsWith('/pricing') || location.pathname.startsWith('/subscription') ? styles.active : ''}`}
             >
               {t('nav.pricing', 'Bảng Giá')}
             </Link>
@@ -154,7 +154,7 @@ const MainLayout = () => {
                 </button>
 
                 {/* Pricing Link */}
-                <Link to="/subscription" className={styles.navPricingLink}>
+                <Link to="/pricing" className={styles.navPricingLink}>
                   {t('header.pricing', 'Bảng giá')}
                 </Link>
 
@@ -243,7 +243,7 @@ const MainLayout = () => {
 
                 <div style={{ height: '6px' }} />
 
-                <Link to="/subscription" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                <Link to="/pricing" className={styles.mobileNavItem} onClick={closeMobileMenu}>
                   <HiOutlineCreditCard size={18} /> {t('nav.pricing', 'Bảng Giá')}
                 </Link>
                 <Link to="/models" className={styles.mobileNavItem} onClick={closeMobileMenu}>
@@ -276,7 +276,7 @@ const MainLayout = () => {
                     <Link to="/profile" className={styles.mobileAdminBtn} onClick={closeMobileMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <HiOutlineUser size={16} /> {t('client_menu.profile', 'Hồ sơ & Cài đặt')}
                     </Link>
-                    <Link to="/subscription" className={styles.mobileAdminBtn} onClick={closeMobileMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Link to="/pricing" className={styles.mobileAdminBtn} onClick={closeMobileMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <HiOutlineCreditCard size={16} /> {t('client_menu.subscription', 'Quản lý gói')}
                     </Link>
                     {isSuperAdmin && (
@@ -367,7 +367,7 @@ const MainLayout = () => {
             <div className={styles.footerCol}>
               <h4 className={styles.footerColTitle}>Nền Tảng</h4>
               <ul className={styles.footerList}>
-                <li><Link to="/subscription">Bảng Giá Tín Dụng</Link></li>
+                <li><Link to="/pricing">Bảng Giá Tín Dụng</Link></li>
                 <li><Link to="/docs">Tài Liệu API & SDK</Link></li>
                 <li><Link to="/docs#part-10">Tích Hợp Cursor / Cline</Link></li>
                 <li><Link to="/models">Khám Phá Models</Link></li>
