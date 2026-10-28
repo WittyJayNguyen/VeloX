@@ -39,6 +39,8 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [availableBanks, setAvailableBanks] = useState<any[]>([]);
+  const [selectedBank, setSelectedBank] = useState<any | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,6 +69,32 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
         }
       })
       .catch(() => {});
+
+    // Fetch live active banks from database
+    apiClient
+      .get('/billing/banks')
+      .then((res) => {
+        if (!isMounted) return;
+        const list = res.data?.data || res.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setAvailableBanks(list);
+          const def = list.find((b: any) => b.is_default) || list[0];
+          setSelectedBank(def);
+        }
+      })
+      .catch(() => {
+        try {
+          const s = localStorage.getItem('velox_banks');
+          if (s) {
+            const list = JSON.parse(s);
+            if (Array.isArray(list) && list.length > 0) {
+              setAvailableBanks(list);
+              setSelectedBank(list.find((b: any) => b.is_default) || list[0]);
+            }
+          }
+        } catch {}
+      });
+
     return () => {
       isMounted = false;
     };
@@ -74,24 +102,16 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
 
   if (!isOpen) return null;
 
-  const defaultBank = (() => {
-    try {
-      const s = localStorage.getItem('velox_banks');
-      if (s) {
-        const list = JSON.parse(s);
-        return list.find((b: any) => b.is_default) || list[0];
-      }
-    } catch {}
-    return null;
-  })();
-
-  const bankName = defaultBank?.bank_name || 'MB BANK (Ngân hàng Quân Đội)';
-  const accountNumber = defaultBank?.account_number || '0988776655';
-  const accountHolder = defaultBank?.account_holder || 'VELOX AI GATEWAY';
+  const activeBank = selectedBank || availableBanks.find((b) => b.is_default) || availableBanks[0] || null;
+  const bankName = activeBank?.bank_name || 'MBBank (Ngân hàng Quân Đội)';
+  const bankCode = activeBank?.bank_code || 'MB';
+  const accountNumber = activeBank?.account_number || '0988776655';
+  const accountHolder = activeBank?.account_holder || 'VELOX AI GATEWAY';
   const transferContent = `VELOX ${user?.id ? user.id.slice(-8).toUpperCase() : '888888'}`;
 
-  // VietQR URL
-  const qrUrl = `https://img.vietqr.io/image/MB-${accountNumber}-compact2.png?amount=${selectedOption.priceVnd}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountHolder)}`;
+  // SePay Official VietQR generator URL with compact template
+  const qrUrl = `https://qr.sepay.vn/img?bank=${encodeURIComponent(bankCode)}&acc=${encodeURIComponent(accountNumber)}&template=compact&amount=${selectedOption.priceVnd}&des=${encodeURIComponent(transferContent)}`;
+  const fallbackQrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${selectedOption.priceVnd}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountHolder)}`;
 
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);
@@ -205,10 +225,42 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
 
             {/* Payment Section */}
             <div className={styles.sectionLabel}>{t('topup.payment_info', '2. Quét Mã VietQR Chuyển Khoản')}</div>
+            {availableBanks.length > 1 && (
+              <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', background: '#18181b', padding: '8px 12px', borderRadius: '8px', border: '1px solid #27272a' }}>
+                <span style={{ fontSize: '0.8rem', color: '#a1a1aa', whiteSpace: 'nowrap' }}>Chọn ngân hàng:</span>
+                <select
+                  value={activeBank?.id}
+                  onChange={(e) => setSelectedBank(availableBanks.find((b) => b.id === e.target.value))}
+                  style={{
+                    background: '#27272a',
+                    color: '#fafafa',
+                    border: '1px solid #3f3f46',
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '0.82rem',
+                    flex: 1,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {availableBanks.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.bank_name} - {b.account_number} {b.is_default ? '★' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className={styles.paymentBox}>
               <div className={styles.qrCol}>
                 <div className={styles.qrFrame}>
-                  <img src={qrUrl} alt="VietQR Banking Code" className={styles.qrImg} />
+                  <img
+                    src={qrUrl}
+                    alt="VietQR Banking Code"
+                    className={styles.qrImg}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = fallbackQrUrl;
+                    }}
+                  />
                 </div>
                 <span className={styles.qrHint}>{t('topup.qr_hint', 'Mở ứng dụng ngân hàng quét mã')}</span>
               </div>
