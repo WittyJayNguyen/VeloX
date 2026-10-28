@@ -9,6 +9,7 @@ import {
   HiOutlineXMark,
   HiOutlineClock,
   HiOutlineArrowsPointingOut,
+  HiOutlineArrowsPointingIn,
   HiOutlinePlay,
   HiPlay,
   HiOutlineArrowUp,
@@ -453,10 +454,23 @@ export const StudioPage: React.FC = () => {
   );
   const [isRefreshingHistory, setIsRefreshingHistory] = useState<boolean>(false);
 
+  const [textareaShake, setTextareaShake] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-  const [textareaShake, setTextareaShake] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  // Auto-resize prompt textarea smoothly when text changes or user toggles expand
+  useEffect(() => {
+    if (promptTextareaRef.current) {
+      promptTextareaRef.current.style.height = 'auto';
+      const scrollH = promptTextareaRef.current.scrollHeight;
+      const minH = isExpanded ? 140 : 50;
+      const maxH = isExpanded ? 340 : 220;
+      const targetHeight = Math.min(Math.max(scrollH, minH), maxH);
+      promptTextareaRef.current.style.height = `${targetHeight}px`;
+    }
+  }, [prompt, isExpanded]);
 
   const togglePlayAudio = (aud: GeneratedAudioItem) => {
     if (playingAudioId === aud.id) {
@@ -1779,8 +1793,21 @@ export const StudioPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Right: Inspire Me Dropdown */}
-              <div style={{ position: 'relative' }}>
+              {/* Right: Expand Prompt & Inspire Me Dropdown */}
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  type="button"
+                  className={styles.expandPromptBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }}
+                  title={isExpanded ? 'Thu gọn khung kịch bản' : 'Mở rộng khung soạn thảo kịch bản'}
+                >
+                  {isExpanded ? <HiOutlineArrowsPointingIn size={13} /> : <HiOutlineArrowsPointingOut size={13} />}
+                  <span>{isExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
+                </button>
+
                 <button
                   type="button"
                   className={styles.inspireMeBtn}
@@ -1926,10 +1953,10 @@ export const StudioPage: React.FC = () => {
               </div>
             )}
 
-            {/* MIDDLE ROW: Clean Borderless Textarea */}
+            {/* MIDDLE ROW: Clean Borderless Auto-Expanding Textarea */}
             <textarea
               ref={promptTextareaRef}
-              className={styles.promptTextarea}
+              className={`${styles.promptTextarea} ${isExpanded ? styles.textareaExpanded : ''}`}
               placeholder={
                 activeTab === 'image'
                   ? t('studio.prompt_placeholder_image', 'Mô tả hình ảnh bạn muốn tạo (Ví dụ: Chân dung điện ảnh 8K, phong cảnh viễn tưởng)...')

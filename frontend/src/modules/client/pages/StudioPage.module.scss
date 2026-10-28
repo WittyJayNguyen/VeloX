@@ -687,13 +687,13 @@
   background: #19191b;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 8px 12px 8px 12px;
+  padding: 10px 14px 10px 14px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   cursor: text;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:focus-within {
     border-color: rgba(255, 255, 255, 0.22);
@@ -820,6 +820,27 @@
   }
 }
 
+.expandPromptBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #a1a1aa;
+  font-size: 11px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
 .inspireMeBtn {
   background: transparent;
   border: none;
@@ -844,26 +865,55 @@
   }
 }
 
-// MIDDLE ROW: Clean Borderless Textarea
+// MIDDLE ROW: Clean Borderless Auto-Expanding Textarea
 .promptTextarea {
   background: transparent;
   border: none;
   outline: none;
   color: #ffffff;
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.55;
   resize: none;
   font-family: inherit;
   width: 100%;
-  min-height: 38px;
-  height: 42px;
-  max-height: 100px;
-  padding: 4px 0 4px 0;
+  min-height: 50px;
+  max-height: 240px;
+  padding: 6px 2px;
   margin: 0;
+  transition: height 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+
+  // Thanh cuộn Cyberpunk siêu mỏng, TRIỆT TIÊU HOÀN TOÀN MŨI TÊN SCROLL THÔ CỦA WINDOWS
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 107, 53, 0.3) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    &:hover {
+      background: rgba(255, 107, 53, 0.6);
+    }
+  }
+  &::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 
   &::placeholder {
     color: #71717a;
     font-size: 13.5px;
+  }
+
+  &.textareaExpanded {
+    min-height: 140px;
+    max-height: 360px;
   }
 }
 
@@ -872,15 +922,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  padding-top: 2px;
+  gap: 8px;
+  padding-top: 4px;
 }
 
 .toolbarLeft {
   display: flex;
   align-items: center;
   gap: 5px;
-  flex-wrap: nowrap;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 // Segmented Mode Switcher [Ảnh] [Video] [Âm thanh]
@@ -1041,6 +1097,14 @@
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 240px;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   &:hover {
     background: #323236;
@@ -1049,16 +1113,19 @@
   .starIcon {
     color: #ffffff;
     font-size: 11px;
+    flex-shrink: 0;
   }
 
   .chevron {
     color: #8e8e93;
+    flex-shrink: 0;
   }
 }
 
 .paramsPillBtn {
   color: #d4d4d8;
   font-weight: 500;
+  max-width: 190px;
 }
 
 // Speaker Toggle Button for Video Mode (Integrated in Toolbar)
@@ -1074,6 +1141,7 @@
   color: #d4d4d8;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 
   &:hover {
     background: #323236;
@@ -1092,6 +1160,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0; // LUÔN BẢO VỆ CREDIT BADGE + MIC + SUBMIT BUTTON KHÔNG BỊ TRÀN
 }
 
 .creditCostBadge {
