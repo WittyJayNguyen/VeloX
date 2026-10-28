@@ -113,14 +113,20 @@ export const ModelPricingPage: React.FC = () => {
     setModalOpen(true);
   };
 
-  // Quick apply margin to form
+  // Quick apply margin to form (VeloX Standard: 1 Credit = 100 VNĐ)
   const applyMarginToForm = (marginPct: number) => {
     const mult = 1.0 + (marginPct / 100.0);
     setFormQuickMargin(marginPct);
-    setFormInSell(Math.round(formInCost * mult));
-    setFormOutSell(Math.round(formOutCost * mult));
-    setFormCacheSell(Math.round(formCacheCost * mult));
-    setFormSellingCredit(Math.max(1, Math.round((formReqCost || (formInCost > 0 ? (formInCost + formOutCost) / 2000 : 1)) * mult)));
+    const inCr = formInCost > 50 ? Math.max(1, Math.round((formInCost * mult) / 100)) : Math.round(formInCost * mult);
+    const outCr = formOutCost > 50 ? Math.max(1, Math.round((formOutCost * mult) / 100)) : Math.round(formOutCost * mult);
+    const cacheCr = formCacheCost > 50 ? Math.max(1, Math.round((formCacheCost * mult) / 100)) : Math.round(formCacheCost * mult);
+    setFormInSell(inCr);
+    setFormOutSell(outCr);
+    setFormCacheSell(cacheCr);
+
+    const baseReq = formReqCost || (formInCost > 0 ? (formInCost + formOutCost) / 2000 : 1);
+    const reqCr = baseReq > 50 ? Math.max(1, Math.round((baseReq * mult) / 100)) : Math.max(1, Math.round(baseReq * mult));
+    setFormSellingCredit(reqCr);
   };
 
   // Save single model pricing
@@ -586,7 +592,7 @@ export const ModelPricingPage: React.FC = () => {
           {/* Quick preset buttons */}
           <div className={styles.bulkPresets}>
             <span style={{ fontSize: '12px', color: '#94a3b8', marginRight: 4, whiteSpace: 'nowrap' }}>Mức nhanh:</span>
-            {[15, 25, 30, 50, 100].map((pct) => (
+            {[30, 50, 60, 70, 100].map((pct) => (
               <button
                 key={pct}
                 type="button"

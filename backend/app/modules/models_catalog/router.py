@@ -224,24 +224,32 @@ async def bulk_markup_models(
     models = result.scalars().all()
 
     for m in models:
-        # Token rates (Convert VND cost / 1000 to standard credit units if in VND)
+        # Token rates (VeloX standard: 1 Credit = 100 VNĐ)
         if m.input_cost_per_1m and m.input_cost_per_1m > 0:
-            base_in = m.input_cost_per_1m / 1000.0 if m.input_cost_per_1m > 1000 else m.input_cost_per_1m
-            m.input_credit_price = max(1, int(round(base_in * mult)))
+            cost_in = m.input_cost_per_1m
+            m.input_credit_price = max(1, int(round((cost_in * mult) / 100.0)))
         if m.output_cost_per_1m and m.output_cost_per_1m > 0:
-            base_out = m.output_cost_per_1m / 1000.0 if m.output_cost_per_1m > 1000 else m.output_cost_per_1m
-            m.output_credit_price = max(1, int(round(base_out * mult)))
+            cost_out = m.output_cost_per_1m
+            m.output_credit_price = max(1, int(round((cost_out * mult) / 100.0)))
         if m.cache_read_cost_per_1m and m.cache_read_cost_per_1m > 0:
-            base_cache = m.cache_read_cost_per_1m / 1000.0 if m.cache_read_cost_per_1m > 1000 else m.cache_read_cost_per_1m
-            m.cache_read_credit_price = max(1, int(round(base_cache * mult)))
+            cost_cache = m.cache_read_cost_per_1m
+            m.cache_read_credit_price = max(1, int(round((cost_cache * mult) / 100.0)))
 
         # Media & Per-request rates
         if m.category in ["IMAGE", "VIDEO"]:
-            base_cost = m.cost_per_req_or_1k_tok or (2.0 if m.category == "IMAGE" else 10.0)
-            m.selling_credit_price = max(1, int(round(base_cost * mult)))
+            cost_req = float(m.cost_per_req_or_1k_tok or 0)
+            if cost_req > 50:
+                # Cost is in VNĐ (e.g. 4250 VNĐ) -> Convert to Credits (1 cr = 100đ)
+                m.selling_credit_price = max(1, int(round((cost_req * mult) / 100.0)))
+            else:
+                m.selling_credit_price = max(1, int(round(cost_req * mult)))
         else:
-            # For Chat/Text models, the minimum request floor should be 1 credit (or 2 for heavy reasoning models)
-            m.selling_credit_price = 2 if "o1" in m.model_code.lower() else 1
+            # For Chat/Text models, if cost_per_req is specified in VNĐ (e.g. 150đ for gpt-6-astra-ts)
+            cost_req = float(m.cost_per_req_or_1k_tok or 0)
+            if cost_req > 50:
+                m.selling_credit_price = max(1, int(round((cost_req * mult) / 100.0)))
+            else:
+                m.selling_credit_price = 2 if "o1" in m.model_code.lower() else 1
 
     await db.commit()
     markup_pct = round((mult - 1.0) * 100.0, 1)
