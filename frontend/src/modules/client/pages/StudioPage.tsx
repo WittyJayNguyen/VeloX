@@ -538,43 +538,82 @@ export const StudioPage: React.FC = () => {
   const currentCredits = user?.credit_balance ?? 0;
   const hasInsufficientCredits = currentCredits < totalCreditsNeeded || currentCredits <= 0;
 
+  // Compress image before Base64 encoding to keep payload light and avoid 413 limits
+  const compressImageFile = async (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target?.result as string);
+        reader.readAsDataURL(file);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1280;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          } else {
+            resolve(dataUrl);
+          }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   // File Upload Helper
-  const handleGenericFileUpload = (
+  const handleGenericFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setter: (val: string | null) => void,
     label: string
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setter(event.target.result as string);
-        setToastMsg(`Đã tải ${label} thành công!`);
-        setTimeout(() => setToastMsg(null), 2500);
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+    try {
+      const data = await compressImageFile(file);
+      setter(data);
+      setToastMsg(`Đã tải ${label} thành công!`);
+      setTimeout(() => setToastMsg(null), 2500);
+    } catch (err) {
+      console.error('File load error:', err);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   // Paste Event Handler (Clipboard Image)
-  const handlePasteEvent = (e: React.ClipboardEvent) => {
+  const handlePasteEvent = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf('image') !== -1) {
         const file = items[i].getAsFile();
         if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              setRefImage(event.target.result as string);
-              setToastMsg('Đã dán ảnh tham chiếu từ Clipboard!');
-              setTimeout(() => setToastMsg(null), 2500);
-            }
-          };
-          reader.readAsDataURL(file);
+          const data = await compressImageFile(file);
+          setRefImage(data);
+          setToastMsg('Đã dán ảnh tham chiếu từ Clipboard!');
+          setTimeout(() => setToastMsg(null), 2500);
           break;
         }
       }
@@ -739,8 +778,13 @@ export const StudioPage: React.FC = () => {
       }
     } catch (err: any) {
       setIsGenerating(false);
-      const serverMsg = err?.response?.data?.detail?.message || err?.response?.data?.detail || err?.message;
-      setToastMsg(`⚠️ ${serverMsg || 'Không thể tạo job do số dư không đủ. Vui lòng nạp thêm!'}`);
+      let serverMsg = err?.response?.data?.detail?.message || err?.response?.data?.detail;
+      if (!serverMsg && err?.response?.status === 413) {
+        serverMsg = 'Dung lượng tệp đính kèm quá lớn. Vui lòng chọn tệp nhỏ hơn!';
+      } else if (!serverMsg) {
+        serverMsg = err?.message || 'Không thể tạo job lúc này. Vui lòng thử lại!';
+      }
+      setToastMsg(`⚠️ ${serverMsg}`);
       if (err?.response?.status === 402) {
         setTopupOpen(true);
       }
