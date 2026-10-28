@@ -18,9 +18,7 @@ import {
   HiOutlineChevronDown,
   HiOutlineMusicalNote,
   HiOutlineCheck,
-  HiOutlineChatBubbleLeftRight,
   HiOutlineTrash,
-  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
@@ -204,25 +202,21 @@ export const StudioPage: React.FC = () => {
 
   const urlCategory = searchParams.get('category') as 'chat' | 'image' | 'video' | 'audio' | null;
 
-  // Studio Mode: 'chat' | 'image' | 'video' | 'audio'
-  const [activeTab, setActiveTab] = useState<'chat' | 'image' | 'video' | 'audio'>(urlCategory || 'image');
+  useEffect(() => {
+    if (urlCategory === 'chat') {
+      navigate('/chat', { replace: true });
+    }
+  }, [urlCategory, navigate]);
+
+  // Studio Mode: 'image' | 'video' | 'audio'
+  const [activeTab, setActiveTab] = useState<'image' | 'video' | 'audio'>(
+    urlCategory === 'video' || urlCategory === 'audio' ? urlCategory : 'image'
+  );
   const [dbModels, setDbModels] = useState<PublicModelItem[]>([]);
   const [selectedModelCode, setSelectedModelCode] = useState<string>('');
   const [presetGroups, setPresetGroups] = useState<Record<string, PromptPresetGroup[]>>({});
   const [inspirationPrompts, setInspirationPrompts] = useState<Record<string, string[]>>({});
-  const [chatMessages, setChatMessages] = useState<StudioChatMessage[]>([
-    {
-      id: 'msg-init-1',
-      role: 'assistant',
-      content: 'Xin chào! Tôi là trợ lý AI thông minh trên VeloX Studio. Bạn cần hỗ trợ viết bài, phân tích tài liệu, lập trình, giải quyết vấn đề toán học hay lên ý tưởng sáng tạo hôm nay?',
-      model: 'GPT-4o (Omni)',
-      createdAt: 'Vừa xong',
-    },
-  ]);
-  const [chatTone, setChatTone] = useState<'creative' | 'balanced' | 'precise'>('balanced');
-  const chatScrollRef = useRef<HTMLDivElement>(null);
   const [prompt, setPrompt] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [topupOpen, setTopupOpen] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -433,7 +427,7 @@ export const StudioPage: React.FC = () => {
     const paramCategory = searchParams.get('category');
     const paramModel = searchParams.get('model');
 
-    if (paramCategory && (paramCategory === 'chat' || paramCategory === 'image' || paramCategory === 'video' || paramCategory === 'audio')) {
+    if (paramCategory && (paramCategory === 'image' || paramCategory === 'video' || paramCategory === 'audio')) {
       setActiveTab((prev) => (prev !== paramCategory ? paramCategory : prev));
     }
 
@@ -453,7 +447,7 @@ export const StudioPage: React.FC = () => {
   }, [availableModels, selectedModelCode]);
 
   // Tab switch handler that automatically picks the right primary model and updates URL
-  const handleTabChange = (newTab: 'chat' | 'image' | 'video' | 'audio') => {
+  const handleTabChange = (newTab: 'image' | 'video' | 'audio') => {
     setActiveTab(newTab);
     setIsModelMenuOpen(false);
     setIsParamsMenuOpen(false);
@@ -471,7 +465,6 @@ export const StudioPage: React.FC = () => {
     const targetCat = newTab.toUpperCase();
     const matching = dbModels.filter((m) => {
       const cat = getNormalizedCategory(m);
-      if (targetCat === 'CHAT') return cat === 'CHAT' || cat === 'TEXT';
       return cat === targetCat;
     });
     if (matching.length > 0) {
@@ -534,7 +527,7 @@ export const StudioPage: React.FC = () => {
   }, [selectedModelCode, activeTab, activeModelConfig]);
 
   // Compute Credits Needed & User Credit Sufficiency
-  const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'chat' ? 15 : activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
+  const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
   const currentCredits = user?.credit_balance ?? 0;
   const hasInsufficientCredits = currentCredits < totalCreditsNeeded || currentCredits <= 0;
 
@@ -717,10 +710,8 @@ export const StudioPage: React.FC = () => {
     setTimeout(() => setToastMsg(null), 2500);
   };
 
-  // Generate / Submit Job
+  // Generate / Submit Job (Supports multiple concurrent jobs, cleans prompt immediately)
   const handleGenerate = async () => {
-    if (isGenerating) return;
-
     if (!prompt.trim()) {
       promptTextareaRef.current?.focus();
       setTextareaShake(true);
@@ -738,198 +729,168 @@ export const StudioPage: React.FC = () => {
       return;
     }
 
-    const selectedModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
+    // Capture snapshot of current inputs
+    const submittedPrompt = prompt.trim();
+    const targetTab = activeTab;
+    const targetModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
+    const targetModelCode = selectedModelCode;
+    const targetRatio = aspectRatio;
+    const targetQuality = quality;
+    const targetResolution = targetTab === 'video' ? videoResolution : resolution;
+    const targetDuration = videoDuration;
+    const targetVoice = audioVoice;
+    const targetRefImage = refImage;
+    const targetStartFrame = startFrame;
+    const targetEndFrame = endFrame;
+    const targetSourceVideo = sourceVideo;
+    const targetAudioTrack = audioTrack;
+    const creditsToDeduct = totalCreditsNeeded;
 
-    setIsGenerating(true);
+    // Immediately clear input textarea so user can compose next job prompt
+    setPrompt('');
 
-    let serverGeneratedUrl: string | null = null;
-    let serverPosterUrl: string | null = null;
-    let serverJobId: string | null = null;
-
-    // Call backend API to authenticate, check credit balance, deduct from DB, and create job
-    try {
-      const jobRes = await apiClient.post('/studio/jobs', {
-        type: activeTab,
-        model_code: selectedModelCode,
-        prompt: prompt.trim(),
-        options: {
-          aspectRatio,
-          resolution: activeTab === 'video' ? videoResolution : resolution,
-          duration: activeTab === 'video' ? videoDuration : undefined,
-          quality,
-          voice: activeTab === 'audio' ? audioVoice : undefined,
-          tone: activeTab === 'chat' ? chatTone : undefined,
-          ref_image: refImage,
-          start_frame: startFrame,
-          end_frame: endFrame,
-          source_video: sourceVideo,
-          audio_track: audioTrack,
-        },
-      });
-      const jobData = jobRes.data?.data || jobRes.data;
-      serverGeneratedUrl = jobData?.output_url || null;
-      serverPosterUrl = jobData?.poster_url || null;
-      serverJobId = jobData?.job_id || null;
-
-      if (jobData?.credit_balance !== undefined) {
-        updateUser({ credit_balance: jobData.credit_balance });
-      } else {
-        addCredits(-totalCreditsNeeded);
-      }
-    } catch (err: any) {
-      setIsGenerating(false);
-      let serverMsg = err?.response?.data?.detail?.message || err?.response?.data?.detail;
-      if (!serverMsg && err?.response?.status === 413) {
-        serverMsg = 'Dung lượng tệp đính kèm quá lớn. Vui lòng chọn tệp nhỏ hơn!';
-      } else if (!serverMsg) {
-        serverMsg = err?.message || 'Không thể tạo job lúc này. Vui lòng thử lại!';
-      }
-      setToastMsg(`⚠️ ${serverMsg}`);
-      if (err?.response?.status === 402) {
-        setTopupOpen(true);
-      }
-      return;
-    }
-
-    if (activeTab === 'chat') {
-      const userText = prompt.trim();
-      setPrompt('');
-
-      const userMsg: StudioChatMessage = {
-        id: `msg-${Date.now()}-user`,
-        role: 'user',
-        content: userText,
-        model: selectedModelName,
-        createdAt: 'Vừa xong',
-      };
-      setChatMessages((prev) => [...prev, userMsg]);
-      setTimeout(() => {
-        chatScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 50);
-
-      try {
-        const chatRes = await apiClient.post('/playground/chat', {
-          model_id: currentModel?.id || selectedModelCode,
-          messages: [{ role: 'user', content: userText }],
-          temperature: chatTone === 'creative' ? 0.9 : chatTone === 'precise' ? 0.2 : 0.7,
-        });
-        const replyContent =
-          chatRes.data?.content ||
-          chatRes.data?.data?.content ||
-          chatRes.data?.message ||
-          'Hoàn tất xử lý.';
-        const assistantMsg: StudioChatMessage = {
-          id: `msg-${Date.now()}-ai`,
-          role: 'assistant',
-          content: replyContent,
-          model: selectedModelName,
-          createdAt: 'Vừa xong',
-        };
-        setChatMessages((prev) => [...prev, assistantMsg]);
-      } catch (err: any) {
-        const assistantMsg: StudioChatMessage = {
-          id: `msg-${Date.now()}-ai`,
-          role: 'assistant',
-          content: `Phản hồi từ ${selectedModelName}: Yêu cầu của bạn đã được ghi nhận và xử lý trên hệ thống VeloX Studio.`,
-          model: selectedModelName,
-          createdAt: 'Vừa xong',
-        };
-        setChatMessages((prev) => [...prev, assistantMsg]);
-      } finally {
-        setIsGenerating(false);
-        setTimeout(() => {
-          chatScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 50);
-      }
-      return;
-    }
-
-    // Smoothly scroll to top so user sees the generated job in real time
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    const newJobId = `job-${Date.now()}`;
+    // Generate unique job id for this submission
+    const newJobId = `job-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newJob: GenerationJob = {
       id: newJobId,
-      type: activeTab,
-      prompt,
-      model: selectedModelName,
-      progress: 5,
-      statusText: activeTab === 'video' ? 'Đang xếp hàng trong cụm GPU Render...' : activeTab === 'audio' ? 'Đang phân tích ngữ điệu giọng nói...' : 'Đang xếp hàng trong cụm GPU...',
-      aspectRatio,
-      refImage,
+      type: targetTab,
+      prompt: submittedPrompt,
+      model: targetModelName,
+      progress: 10,
+      statusText: targetTab === 'video' ? 'Đang xếp hàng trong cụm GPU Render...' : targetTab === 'audio' ? 'Đang phân tích ngữ điệu giọng nói...' : 'Đang xếp hàng trong cụm GPU...',
+      aspectRatio: targetRatio,
+      refImage: targetRefImage,
     };
 
+    // Prepend new job to active jobs list immediately
     setActiveJobs((prev) => [newJob, ...prev]);
 
-    // Simulated Render Stages
-    setTimeout(() => {
-      setActiveJobs((prev) =>
-        prev.map((j) => (j.id === newJobId ? { ...j, progress: 35, statusText: activeTab === 'video' ? 'Đang mô phỏng chuyển động khung hình...' : 'Đang sinh mẫu neural...' } : j))
-      );
-    }, 1200);
+    // Smoothly scroll to top so user sees the newly spawned job card
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    setTimeout(() => {
-      setActiveJobs((prev) =>
-        prev.map((j) => (j.id === newJobId ? { ...j, progress: 75, statusText: activeTab === 'video' ? 'Đang khử nhiễu và làm mịn 60fps...' : 'Đang nâng cấp chất lượng cao...' } : j))
-      );
-    }, 2500);
+    // Background job process
+    (async () => {
+      let serverGeneratedUrl: string | null = null;
+      let serverPosterUrl: string | null = null;
+      let serverJobId: string | null = null;
 
-    setTimeout(() => {
-      setActiveJobs((prev) =>
-        prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Hoàn tất đóng gói file!' } : j))
-      );
-    }, 3800);
+      try {
+        // Optimistically deduct credits
+        addCredits(-creditsToDeduct);
 
-    setTimeout(() => {
-      setActiveJobs((prev) => prev.filter((j) => j.id !== newJobId));
-      setIsGenerating(false);
+        // Progress update: Stage 1
+        setTimeout(() => {
+          setActiveJobs((prev) =>
+            prev.map((j) => (j.id === newJobId ? { ...j, progress: 35, statusText: targetTab === 'video' ? 'Đang mô phỏng chuyển động khung hình...' : 'Đang sinh mẫu neural...' } : j))
+          );
+        }, 1200);
 
-      if (activeTab === 'image') {
-        const finalUrl = serverGeneratedUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1024&q=80';
-        const newImg: GeneratedImageItem = {
-          id: serverJobId || `img-${Date.now()}`,
-          url: finalUrl,
-          prompt,
-          model: selectedModelName,
-          aspectRatio,
-          quality,
-          createdAt: 'Vừa xong',
-        };
-        setGeneratedImages((prev) => [newImg, ...prev]);
-      } else if (activeTab === 'video') {
-        const finalPoster = serverPosterUrl || refImage || startFrame || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80';
-        const finalVid = serverGeneratedUrl || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4';
-        const newVid: GeneratedVideoItem = {
-          id: serverJobId || `vid-${Date.now()}`,
-          title: prompt.slice(0, 32) + (prompt.length > 32 ? '...' : ''),
-          prompt,
-          model: selectedModelName,
-          poster: finalPoster,
-          videoUrl: finalVid,
-          duration: videoDuration,
-          quality: `${videoResolution} FHD`,
-          aspectRatio,
-          createdAt: 'Vừa xong',
-        };
-        setGeneratedVideos((prev) => [newVid, ...prev]);
-      } else if (activeTab === 'audio') {
-        const finalAud = serverGeneratedUrl || '';
-        const newAud: GeneratedAudioItem = {
-          id: serverJobId || `aud-${Date.now()}`,
-          title: prompt.slice(0, 36) + (prompt.length > 36 ? '...' : ''),
-          prompt,
-          model: selectedModelName,
-          voice: audioVoice,
-          duration: '0:18',
-          audioUrl: finalAud,
-          createdAt: 'Vừa xong',
-        };
-        setGeneratedAudios((prev) => [newAud, ...prev]);
+        const jobRes = await apiClient.post('/studio/jobs', {
+          type: targetTab,
+          model_code: targetModelCode,
+          prompt: submittedPrompt,
+          options: {
+            aspectRatio: targetRatio,
+            resolution: targetResolution,
+            duration: targetTab === 'video' ? targetDuration : undefined,
+            quality: targetQuality,
+            voice: targetTab === 'audio' ? targetVoice : undefined,
+            ref_image: targetRefImage,
+            start_frame: targetStartFrame,
+            end_frame: targetEndFrame,
+            source_video: targetSourceVideo,
+            audio_track: targetAudioTrack,
+          },
+        });
+        const jobData = jobRes.data?.data || jobRes.data;
+        serverGeneratedUrl = jobData?.output_url || null;
+        serverPosterUrl = jobData?.poster_url || null;
+        serverJobId = jobData?.job_id || null;
+
+        if (jobData?.credit_balance !== undefined) {
+          updateUser({ credit_balance: jobData.credit_balance });
+        }
+
+        // Progress update: Stage 2
+        setActiveJobs((prev) =>
+          prev.map((j) => (j.id === newJobId ? { ...j, progress: 75, statusText: targetTab === 'video' ? 'Đang khử nhiễu và làm mịn 60fps...' : 'Đang nâng cấp chất lượng cao...' } : j))
+        );
+
+        // Progress update: Stage 3 (Final packaging)
+        setTimeout(() => {
+          setActiveJobs((prev) =>
+            prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Hoàn tất đóng gói file!' } : j))
+          );
+        }, 800);
+
+        // Finish job after short rendering delay
+        setTimeout(() => {
+          setActiveJobs((prev) => prev.filter((j) => j.id !== newJobId));
+
+          if (targetTab === 'image') {
+            const finalUrl = serverGeneratedUrl || `https://picsum.photos/seed/${encodeURIComponent(submittedPrompt.slice(0, 10))}/1024/1024`;
+            const newImg: GeneratedImageItem = {
+              id: serverJobId || `img-${Date.now()}`,
+              url: finalUrl,
+              prompt: submittedPrompt,
+              model: targetModelName,
+              aspectRatio: targetRatio,
+              quality: targetQuality,
+              createdAt: 'Vừa xong',
+            };
+            setGeneratedImages((prev) => [newImg, ...prev]);
+          } else if (targetTab === 'video') {
+            const finalPoster = serverPosterUrl || targetRefImage || targetStartFrame || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80';
+            const finalVid = serverGeneratedUrl || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4';
+            const newVid: GeneratedVideoItem = {
+              id: serverJobId || `vid-${Date.now()}`,
+              title: submittedPrompt.slice(0, 32) + (submittedPrompt.length > 32 ? '...' : ''),
+              prompt: submittedPrompt,
+              model: targetModelName,
+              poster: finalPoster,
+              videoUrl: finalVid,
+              duration: targetDuration,
+              quality: `${targetResolution} FHD`,
+              aspectRatio: targetRatio,
+              createdAt: 'Vừa xong',
+            };
+            setGeneratedVideos((prev) => [newVid, ...prev]);
+          } else if (targetTab === 'audio') {
+            const finalAud = serverGeneratedUrl || '';
+            const newAud: GeneratedAudioItem = {
+              id: serverJobId || `aud-${Date.now()}`,
+              title: submittedPrompt.slice(0, 36) + (submittedPrompt.length > 36 ? '...' : ''),
+              prompt: submittedPrompt,
+              model: targetModelName,
+              voice: targetVoice,
+              duration: '0:18',
+              audioUrl: finalAud,
+              createdAt: 'Vừa xong',
+            };
+            setGeneratedAudios((prev) => [newAud, ...prev]);
+          }
+
+          setToastMsg(t('studio.generate_success', 'Tác phẩm AI đã được sinh hoàn tất!'));
+          setTimeout(() => setToastMsg(null), 3000);
+        }, 1500);
+
+      } catch (err: any) {
+        setActiveJobs((prev) => prev.filter((j) => j.id !== newJobId));
+        // Re-sync user profile to restore credits on failure
+        syncProfile().catch(() => {});
+
+        let serverMsg = err?.response?.data?.detail?.message || err?.response?.data?.detail;
+        if (!serverMsg && err?.response?.status === 413) {
+          serverMsg = 'Dung lượng tệp đính kèm quá lớn. Vui lòng chọn tệp nhỏ hơn!';
+        } else if (!serverMsg) {
+          serverMsg = err?.message || 'Không thể tạo job lúc này. Vui lòng thử lại!';
+        }
+        setToastMsg(`⚠️ ${serverMsg}`);
+        if (err?.response?.status === 402) {
+          setTopupOpen(true);
+        }
       }
-
-      setToastMsg(t('studio.generate_success', 'Tác phẩm AI đã được sinh hoàn tất!'));
-      setTimeout(() => setToastMsg(null), 3000);
-    }, 4200);
+    })();
   };
 
   return (
@@ -948,70 +909,6 @@ export const StudioPage: React.FC = () => {
 
       {/* Main Canvas & Media Gallery */}
       <div className={styles.canvasContainer}>
-        {/* CHAT MODE */}
-        {activeTab === 'chat' && (
-          <div className={styles.chatAreaContainer}>
-            <div className={styles.chatHeaderBar}>
-              <div className={styles.chatHeaderLeft}>
-                <span className={styles.chatModelPill}>
-                  <HiOutlineSparkles size={14} />
-                  {cleanModelDisplayName(currentModel?.name || 'GPT-4o')}
-                </span>
-                <h3 className={styles.chatTitle}>{t('studio.chat_title', 'Phiên Trò Chuyện Trí Tuệ Nhân Tạo')}</h3>
-              </div>
-              <button
-                type="button"
-                className={styles.clearChatBtn}
-                onClick={() => setChatMessages([])}
-                title={t('studio.clear_chat', 'Xoá hội thoại')}
-              >
-                <HiOutlineTrash size={14} />
-                <span>{t('studio.clear_chat', 'Xoá hội thoại')}</span>
-              </button>
-            </div>
-
-            <div className={styles.chatMessagesStream}>
-              {chatMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={msg.role === 'user' ? styles.chatRowUser : styles.chatRowAssistant}
-                >
-                  {msg.role === 'assistant' && (
-                    <div className={styles.assistantAvatar}>
-                      <HiOutlineSparkles size={18} />
-                    </div>
-                  )}
-                  <div className={msg.role === 'user' ? styles.userBubble : styles.assistantBubble}>
-                    {msg.role === 'assistant' && (
-                      <div className={styles.assistantMeta}>
-                        <span className={styles.modelTag}>{msg.model}</span>
-                        <span className={styles.timeTag}>· {msg.createdAt}</span>
-                      </div>
-                    )}
-                    <div className={styles.assistantText}>{msg.content}</div>
-                  </div>
-                </div>
-              ))}
-
-              {isGenerating && (
-                <div className={styles.chatTypingRow}>
-                  <div className={styles.assistantAvatar}>
-                    <HiOutlineSparkles size={18} />
-                  </div>
-                  <div className={styles.typingBubble}>
-                    <div className={styles.typingDots}>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                    <span>{t('studio.chat_thinking', 'AI đang suy nghĩ và tổng hợp câu trả lời...')}</span>
-                  </div>
-                </div>
-              )}
-              <div ref={chatScrollRef} />
-            </div>
-          </div>
-        )}
 
         {/* IMAGE MODE */}
         {activeTab === 'image' && (
@@ -1019,11 +916,11 @@ export const StudioPage: React.FC = () => {
             <div className={styles.galleryHeaderRow}>
               <h3 className={styles.sectionTitle}>
                 <span>{t('studio.created_artworks', 'Danh Sách Tác Phẩm Đã Tạo')}</span>
-                <span className={styles.countBadge}>{generatedImages.length + activeJobs.length}</span>
+                <span className={styles.countBadge}>{generatedImages.length + activeJobs.filter((j) => j.type === 'image').length}</span>
               </h3>
             </div>
 
-            {generatedImages.length === 0 && activeJobs.length === 0 ? (
+            {generatedImages.length === 0 && activeJobs.filter((j) => j.type === 'image').length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
                 <HiOutlinePhoto size={48} color="#ff6b35" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.8 }} />
                 <p style={{ fontSize: '0.95rem' }}>{t('studio.no_images_yet', 'Chưa có tác phẩm ảnh nào. Hãy nhập mô tả ý tưởng bên dưới để tạo bức ảnh AI đầu tiên!')}</p>
@@ -1031,7 +928,7 @@ export const StudioPage: React.FC = () => {
             ) : (
               <div className={styles.compactGalleryGrid}>
                 {/* ACTIVE IMAGE JOBS */}
-              {activeJobs.map((job) => (
+              {activeJobs.filter((j) => j.type === 'image').map((job) => (
                 <div key={job.id} className={styles.activeJobCard}>
                   <div className={styles.jobVisualBox}>
                     <div className={styles.scannerLine}></div>
@@ -1165,11 +1062,11 @@ export const StudioPage: React.FC = () => {
             <div className={styles.galleryHeaderRow}>
               <h3 className={styles.sectionTitle}>
                 <span>Danh Sách Video Đã Tạo</span>
-                <span className={styles.countBadge}>{generatedVideos.length + activeJobs.length}</span>
+                <span className={styles.countBadge}>{generatedVideos.length + activeJobs.filter((j) => j.type === 'video').length}</span>
               </h3>
             </div>
 
-            {generatedVideos.length === 0 && activeJobs.length === 0 ? (
+            {generatedVideos.length === 0 && activeJobs.filter((j) => j.type === 'video').length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
                 <HiOutlineFilm size={48} color="#ff4d6d" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.8 }} />
                 <p style={{ fontSize: '0.95rem' }}>{t('studio.no_videos_yet', 'Chưa có tác phẩm video nào. Hãy nhập kịch bản bên dưới để tạo video AI chuyển động sống động!')}</p>
@@ -1177,7 +1074,7 @@ export const StudioPage: React.FC = () => {
             ) : (
               <div className={styles.compactGalleryGrid}>
                 {/* ACTIVE VIDEO JOBS */}
-              {activeJobs.map((job) => (
+              {activeJobs.filter((j) => j.type === 'video').map((job) => (
                 <div key={job.id} className={styles.activeJobCard}>
                   <div className={styles.jobVisualBox}>
                     <div className={styles.scannerLine}></div>
@@ -1735,9 +1632,7 @@ export const StudioPage: React.FC = () => {
               ref={promptTextareaRef}
               className={styles.promptTextarea}
               placeholder={
-                activeTab === 'chat'
-                  ? t('studio.prompt_placeholder_chat', 'Hỏi AI bất kỳ điều gì, giải toán, viết code, phân tích dữ liệu hoặc lập kế hoạch...')
-                  : activeTab === 'image'
+                activeTab === 'image'
                   ? t('studio.prompt_placeholder_image', 'Mô tả hình ảnh bạn muốn tạo (Ví dụ: Chân dung điện ảnh 8K, phong cảnh viễn tưởng)...')
                   : activeTab === 'video'
                   ? t('studio.prompt_placeholder_video', 'Mô tả video bạn muốn tạo (Ví dụ: Máy quay slow-motion 120fps lướt quanh vận động viên)...')
@@ -1758,21 +1653,8 @@ export const StudioPage: React.FC = () => {
             {/* BOTTOM TOOLBAR: Segmented Mode, Book, Model Dropdown, Params Dropdown, Mic, Pink Submit */}
             <div className={styles.promptBottomToolbar}>
               <div className={styles.toolbarLeft}>
-                {/* 1. Segmented Switcher [Chat] [Ảnh] [Video] [Âm thanh] */}
+                {/* 1. Segmented Switcher [Ảnh] [Video] [Âm thanh] */}
                 <div className={styles.modeSwitcherGroup}>
-                  <button
-                    type="button"
-                    className={`${styles.modeTabBtn} ${activeTab === 'chat' ? styles.modeTabActive : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTabChange('chat');
-                    }}
-                    title={t('studio.tab_chat', 'Chat')}
-                  >
-                    <HiOutlineChatBubbleLeftRight size={15} />
-                    {activeTab === 'chat' && <span>{t('studio.tab_chat', 'Chat')}</span>}
-                  </button>
-
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'image' ? styles.modeTabActive : ''}`}
@@ -1925,9 +1807,7 @@ export const StudioPage: React.FC = () => {
                     }}
                   >
                     <span>
-                      {activeTab === 'chat'
-                        ? (chatTone === 'creative' ? 'Sáng tạo' : chatTone === 'precise' ? 'Chính xác' : 'Cân bằng')
-                        : activeTab === 'image'
+                      {activeTab === 'image'
                         ? `${resolution} · ${translateParamOption(aspectRatio, t)} · ${translateParamOption(quality, t)}`
                         : activeTab === 'video'
                         ? `${videoResolution} · ${translateParamOption(aspectRatio, t)} · ${videoDuration}`
@@ -1938,43 +1818,6 @@ export const StudioPage: React.FC = () => {
 
                   {isParamsMenuOpen && (
                     <div className={styles.customPopoverMenu}>
-                      {activeTab === 'chat' && (
-                        <>
-                          <div className={styles.paramGroupTitle}>Phong cách phản hồi (Tone / Creativity)</div>
-                          <div className={styles.paramOptionsGrid}>
-                            <button
-                              type="button"
-                              className={`${styles.paramChip} ${chatTone === 'creative' ? styles.paramActive : ''}`}
-                              onClick={() => {
-                                setChatTone('creative');
-                                setIsParamsMenuOpen(false);
-                              }}
-                            >
-                              Sáng tạo (Creative)
-                            </button>
-                            <button
-                              type="button"
-                              className={`${styles.paramChip} ${chatTone === 'balanced' ? styles.paramActive : ''}`}
-                              onClick={() => {
-                                setChatTone('balanced');
-                                setIsParamsMenuOpen(false);
-                              }}
-                            >
-                              Cân bằng (Balanced)
-                            </button>
-                            <button
-                              type="button"
-                              className={`${styles.paramChip} ${chatTone === 'precise' ? styles.paramActive : ''}`}
-                              onClick={() => {
-                                setChatTone('precise');
-                                setIsParamsMenuOpen(false);
-                              }}
-                            >
-                              Chính xác (Precise)
-                            </button>
-                          </div>
-                        </>
-                      )}
 
                       {activeTab === 'image' && (
                         <>
@@ -2123,23 +1966,19 @@ export const StudioPage: React.FC = () => {
 
                 <button
                   type="button"
-                  className={`${styles.pinkNeonSubmitBtn} ${!prompt.trim() ? styles.submitBtnReady : ''}`}
+                  className={`${styles.pinkNeonSubmitBtn} ${prompt.trim() ? styles.submitBtnReady : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleGenerate();
                   }}
-                  disabled={isGenerating}
+                  disabled={!prompt.trim()}
                   title={
                     hasInsufficientCredits
                       ? `Số dư không đủ (${currentCredits.toLocaleString()}/${totalCreditsNeeded} cr) - Bấm để nạp thêm!`
                       : `${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`
                   }
                 >
-                  {isGenerating ? (
-                    <span className={styles.buttonSpinner} />
-                  ) : (
-                    <HiOutlineArrowUp size={20} strokeWidth={2.5} />
-                  )}
+                  <HiOutlineArrowUp size={20} strokeWidth={2.5} />
                 </button>
               </div>
             </div>
