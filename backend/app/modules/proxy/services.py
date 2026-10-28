@@ -12,10 +12,11 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+import httpx
 from app.modules.developers.models import UserApiKey
 from app.modules.users.models import User, CreditAuditLog
 from app.modules.models_catalog.models import AIModel
-from app.modules.pools.models import ProviderCredential
+from app.modules.pools.models import ProviderCredential, ServicePool
 from app.modules.logs.services import record_media_generation
 from app.modules.playground.muse_worker import generate_media_via_muse
 from app.modules.proxy.schemas import (
@@ -276,18 +277,133 @@ async def proxy_chat_completion(
     user: User,
     db: AsyncSession
 ) -> ChatCompletionResponse:
-    """Executes chat completion via VeloX Gateway models, deducting credits according to selling price."""
+    """Executes chat completion via VeloX Gateway models, forwarding to upstream AI pools and deducting credits."""
     model_code = payload.model or "gpt-4o"
     m_stmt = select(AIModel).where(AIModel.model_code == model_code)
     m_res = await db.execute(m_stmt)
     model_obj = m_res.scalar_one_or_none()
 
-    last_user_msg = payload.messages[-1].content if payload.messages else "Hello"
-    content = f"VeloX Gateway Response ({model_code}):\n\nPhản hồi tự động qua proxy VeloX cho prompt: \"{last_user_msg}\""
-    p_tokens = max(1, len(last_user_msg.split()) * 2)
-    c_tokens = max(1, len(content.split()) * 2)
+    # 1. Resolve Provider Credential & Service Pool
+    target_pool = None
+    target_cred = None
 
-    # Determine selling price (credits) for chat completion
+    if model_obj and model_obj.pool_id:
+        p_res = await db.execute(select(ServicePool).where(ServicePool.id == model_obj.pool_id, ServicePool.is_active == True))
+        target_pool = p_res.scalars().first()
+
+    if not target_pool:
+        p_res = await db.execute(
+            select(ServicePool).where(
+                ServicePool.provider == "OpenAI",
+                ServicePool.is_active == True,
+                ServicePool.base_url.isnot(None)
+            ).limit(1)
+        )
+        target_pool = p_res.scalars().first()
+
+    if not target_pool:
+        p_res = await db.execute(
+            select(ServicePool).where(
+                ServicePool.is_active == True,
+                ServicePool.base_url.isnot(None)
+            ).limit(1)
+        )
+        target_pool = p_res.scalars().first()
+
+    if target_pool:
+        c_stmt = (
+            select(ProviderCredential)
+            .where(
+                ProviderCredential.pool_id == target_pool.id,
+                ProviderCredential.status == "ACTIVE",
+                ProviderCredential.auth_type == "API_KEY"
+            )
+            .order_by(ProviderCredential.priority.desc(), ProviderCredential.requests_count.asc())
+        )
+        target_cred = (await db.execute(c_stmt)).scalars().first()
+
+    if not target_cred:
+        c_stmt = (
+            select(ProviderCredential)
+            .where(
+                ProviderCredential.status == "ACTIVE",
+                ProviderCredential.auth_type == "API_KEY"
+            )
+            .order_by(ProviderCredential.priority.desc(), ProviderCredential.requests_count.asc())
+        )
+        target_cred = (await db.execute(c_stmt)).scalars().first()
+        if target_cred:
+            p_res = await db.execute(select(ServicePool).where(ServicePool.id == target_cred.pool_id))
+            target_pool = p_res.scalars().first()
+
+    # 2. Determine upstream candidate models to try (supporting codex, gpt, claude aliases)
+    candidate_models = [model_code]
+    fallback_map = {
+        "gpt-4o": ["gpt-6.1-sol", "gpt-6-astra-ts", "claude-sonnet-5-5-ccmax"],
+        "gpt-4o-mini": ["gpt-6.1-sol", "gpt-6-astra-ts", "claude-sonnet-5-5-ccmax"],
+        "gpt-4": ["gpt-6.1-sol", "gpt-6-astra-ts", "claude-sonnet-5-5-ccmax"],
+        "gpt-3.5-turbo": ["gpt-6.1-sol", "gpt-6-astra-ts"],
+        "codex": ["gpt-6.1-sol", "gpt-6-astra-ts", "claude-sonnet-5-5-ccmax"],
+        "code": ["gpt-6.1-sol", "gpt-6-astra-ts", "claude-sonnet-5-5-ccmax"],
+        "claude-3-5-sonnet": ["claude-sonnet-5-5-ccmax", "gpt-6.1-sol"],
+        "claude-3-5-haiku": ["claude-haiku-5-5", "claude-sonnet-5-5-ccmax"],
+    }
+    if model_code in fallback_map:
+        candidate_models.extend(fallback_map[model_code])
+    elif any(k in model_code.lower() for k in ["codex", "code", "gpt"]):
+        candidate_models.extend(["gpt-6.1-sol", "gpt-6-astra-ts", "claude-sonnet-5-5-ccmax"])
+
+    seen = set()
+    unique_candidates = [m for m in candidate_models if not (m in seen or seen.add(m))]
+
+    # 3. Call Upstream AI Provider
+    last_user_msg = payload.messages[-1].content if payload.messages else "Hello"
+    content = ""
+    p_tokens = max(1, len(last_user_msg.split()) * 2)
+    c_tokens = 0
+
+    if target_pool and target_pool.base_url and target_cred and target_cred.key_val:
+        for cand in unique_candidates:
+            try:
+                async with httpx.AsyncClient(timeout=75.0) as client:
+                    chat_req = {
+                        "model": cand,
+                        "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
+                        "temperature": payload.temperature if payload.temperature is not None else 0.7,
+                    }
+                    if payload.max_tokens:
+                        chat_req["max_tokens"] = payload.max_tokens
+
+                    c_url = f"{target_pool.base_url.rstrip('/')}/chat/completions"
+                    c_resp = await client.post(
+                        c_url,
+                        json=chat_req,
+                        headers={
+                            "Authorization": f"Bearer {target_cred.key_val}",
+                            "Content-Type": "application/json",
+                        }
+                    )
+                    if c_resp.status_code == 200:
+                        c_data = c_resp.json()
+                        if "choices" in c_data and len(c_data["choices"]) > 0:
+                            content = c_data["choices"][0]["message"]["content"]
+                            if "usage" in c_data and c_data["usage"]:
+                                p_tokens = c_data["usage"].get("prompt_tokens", p_tokens)
+                                c_tokens = c_data["usage"].get("completion_tokens", c_tokens)
+                            break
+            except Exception as ex:
+                print(f"[Proxy Upstream Chat Error] with model '{cand}': {ex}")
+
+    if not content:
+        content = (
+            f"VeloX Gateway Response ({model_code}):\n\n"
+            f"Phản hồi từ proxy VeloX cho yêu cầu: \"{last_user_msg}\"\n\n"
+            f"(Lưu ý: Upstream AI Provider tạm thời không khả dụng hoặc đang bận. Vui lòng thử lại sau giây lát.)"
+        )
+    if c_tokens == 0:
+        c_tokens = max(1, len(content.split()) * 2)
+
+    # 4. Determine selling price (credits) for chat completion
     if model_obj and (model_obj.input_credit_price > 0 or model_obj.output_credit_price > 0):
         in_sell = model_obj.input_credit_price or (model_obj.selling_credit_price * 1000) or 250
         out_sell = model_obj.output_credit_price or (model_obj.selling_credit_price * 1000) or 500
@@ -308,14 +424,8 @@ async def proxy_chat_completion(
     await _deduct_user_credits(user, cost, f"Proxy API Key [{api_key.name}] Chat: {model_code} ({p_tokens} in, {c_tokens} out @ {cost} cr)", db)
 
     try:
-        cred_res = await db.execute(
-            select(ProviderCredential)
-            .where(ProviderCredential.status == "ACTIVE")
-            .order_by(ProviderCredential.requests_count.asc())
-        )
-        cred = cred_res.scalars().first()
-        if cred:
-            cred.record_usage(1)
+        if target_cred:
+            target_cred.record_usage(1)
         if api_key:
             api_key.record_usage()
         await db.commit()
