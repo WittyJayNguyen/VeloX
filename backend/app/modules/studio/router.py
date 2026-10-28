@@ -351,59 +351,29 @@ async def get_studio_media_file(filename: str):
 
 CINEMATIC_VIDEOS = [
     {
-        "keywords": ["cô dâu", "bride", "wedding", "lễ đường", "cưới", "đám cưới", "hôn lễ", "váy cưới", "aisle", "walking down"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-bride-posing-in-her-white-wedding-dress-41844-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1519741497674-611481863552?w=1280&q=80",
+        "keywords": ["cô dâu", "bride", "wedding", "lễ đường", "cưới", "đám cưới", "hôn lễ", "váy cưới", "aisle", "thảm đỏ", "áo dài", "gái", "woman", "girl"],
+        "video_url": "/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4",
+        "poster_url": "/api/v1/studio/media/image_e40a67e8_63ce65ec8e36.jpg",
     },
     {
-        "keywords": ["120fps", "slow-motion", "slow motion", "máy quay", "quay", "vận động viên", "gym", "thể thao", "athlete", "orbit", "fitness"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-boxer-training-in-a-dark-gym-41315-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1280&q=80",
+        "keywords": ["120fps", "slow-motion", "slow motion", "máy quay", "quay", "vận động viên", "gym", "thể thao", "athlete", "orbit", "fitness", "chuyển động", "motion"],
+        "video_url": "/api/v1/studio/media/video_401ba11f_2d9a33b95f36.mp4",
+        "poster_url": "/api/v1/studio/media/image_705030ff_0e01f1d89e70.jpg",
     },
     {
-        "keywords": ["flycam", "fpv", "drone", "đỉnh núi", "bình minh", "núi non", "phong cảnh", "aerial", "mountain peak", "sunrise", "núi", "rừng", "cây", "forest"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1280&q=80",
+        "keywords": ["flycam", "fpv", "drone", "đỉnh núi", "bình minh", "núi non", "phong cảnh", "aerial", "mountain peak", "sunrise", "núi", "rừng", "cây", "forest", "nature", "biển", "sea"],
+        "video_url": "/api/v1/studio/media/video_5403fc15_41d0481bbf67.mp4",
+        "poster_url": "/api/v1/studio/media/image_ac8928c1_8d8e2e02b6f3.jpg",
     },
     {
-        "keywords": ["cyberpunk", "con phố", "đường phố", "bước đi", "mưa", "đèn neon", "neon rain", "tương lai", "city street"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-woman-dancing-under-neon-lights-42512-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1280&q=80",
+        "keywords": ["cyberpunk", "con phố", "đường phố", "bước đi", "mưa", "đèn neon", "neon rain", "tương lai", "city street", "tech", "ai", "robot"],
+        "video_url": "/api/v1/studio/media/video_401ba11f_2d9a33b95f36.mp4",
+        "poster_url": "/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg",
     },
     {
-        "keywords": ["sản phẩm", "3d", "360", "xoay", "turntable", "đồng hồ", "luxury", "product showcase"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-graphs-31912-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1280&q=80",
-    },
-    {
-        "keywords": ["tech", "cyber", "ai", "robot", "neon", "future", "digital", "code", "network", "city", "hacker", "xe", "car"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-graphs-31912-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80",
-    },
-    {
-        "keywords": ["space", "galaxy", "stars", "planet", "universe", "cosmic", "sky", "night", "trời", "sao"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1280&q=80",
-    },
-    {
-        "keywords": ["sea", "ocean", "water", "beach", "wave", "surf", "coast", "island", "nature", "river", "biển", "sóng", "nước"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80",
-    },
-    {
-        "keywords": ["bird", "animal", "cat", "dog", "wild", "flying", "wildlife", "fish", "horse", "mèo", "chó", "chim", "thú", "eagle", "đại bàng"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-flock-of-wild-birds-flying-across-a-dramatic-sky-41484-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1474511320723-9a56873ee67b?w=1280&q=80",
-    },
-    {
-        "keywords": ["people", "woman", "man", "dance", "portrait", "girl", "fashion", "model", "party", "người", "gái", "trai", "mẫu", "áo dài", "ao dai"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-woman-dancing-under-neon-lights-42512-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1280&q=80",
-    },
-    {
-        "keywords": ["art", "fluid", "color", "abstract", "paint", "smoke", "liquid", "motion", "màu", "nghệ thuật"],
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-colorful-liquid-swirling-around-42867-large.mp4",
-        "poster_url": "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=1280&q=80",
+        "keywords": ["sản phẩm", "3d", "360", "xoay", "turntable", "đồng hồ", "luxury", "product showcase", "art", "liquid", "abstract"],
+        "video_url": "/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4",
+        "poster_url": "/api/v1/studio/media/image_9e566d56_a75683b6c3bb.jpg",
     },
 ]
 

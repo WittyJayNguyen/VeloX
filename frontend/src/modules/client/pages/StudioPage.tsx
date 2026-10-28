@@ -243,6 +243,15 @@ const StudioVideoThumbnail: React.FC<{
           preload="metadata"
           className={styles.cardVideoPlayer}
           onLoadedData={() => setIsPosterLoaded(true)}
+          onError={(e) => {
+            setIsPosterLoaded(true);
+            const target = e.currentTarget;
+            const fallbackVid = '/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4';
+            if (target.src && !target.src.endsWith(fallbackVid)) {
+              target.src = fallbackVid;
+              target.load();
+            }
+          }}
         />
       ) : (
         <img
@@ -254,7 +263,7 @@ const StudioVideoThumbnail: React.FC<{
           onError={(e) => {
             setIsPosterLoaded(true);
             e.currentTarget.onerror = null;
-            e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(title.slice(0, 10))}/1280/720`;
+            e.currentTarget.src = '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg';
           }}
         />
       )}
@@ -496,13 +505,16 @@ export const StudioPage: React.FC = () => {
               createdAt: dateStr,
             });
           } else if (mType === 'VIDEO') {
+            const rawVid = item.output_url || '';
+            const isBroken = !rawVid || rawVid.includes('mixkit.co') || rawVid.includes('googleapis.com');
+            const safeVid = isBroken ? '/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4' : rawVid;
             vids.push({
               id: item.id,
               title: item.prompt.slice(0, 32) + (item.prompt.length > 32 ? '...' : ''),
               prompt: item.prompt,
               model: item.model_id || 'AI Video Engine',
-              poster: `https://image.pollinations.ai/prompt/${enc}?width=1280&height=720&nologo=true`,
-              videoUrl: item.output_url || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4',
+              poster: `/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg`,
+              videoUrl: safeVid,
               duration: '5s',
               quality: '1080p',
               aspectRatio: '16:9',
@@ -993,8 +1005,10 @@ export const StudioPage: React.FC = () => {
             };
             setGeneratedImages((prev) => [newImg, ...prev]);
           } else if (targetTab === 'video') {
-            const finalPoster = serverPosterUrl || targetRefImage || targetStartFrame || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80';
-            const finalVid = serverGeneratedUrl || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4';
+            const finalPoster = serverPosterUrl || targetRefImage || targetStartFrame || '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg';
+            const rawVid = serverGeneratedUrl || '';
+            const isBroken = !rawVid || rawVid.includes('mixkit.co') || rawVid.includes('googleapis.com');
+            const finalVid = isBroken ? '/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4' : rawVid;
             const newVid: GeneratedVideoItem = {
               id: serverJobId || `vid-${Date.now()}`,
               title: submittedPrompt.slice(0, 32) + (submittedPrompt.length > 32 ? '...' : ''),
