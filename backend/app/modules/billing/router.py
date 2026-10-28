@@ -10,7 +10,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, or_
 
 from app.core.database import get_db
 from app.core.security import get_current_user, require_super_admin
@@ -25,8 +25,8 @@ router = APIRouter(prefix="/billing", tags=["Billing & Top-Up"])
 # ── Schemas ──
 class TopupRequest(BaseModel):
     package_id: Optional[str] = None
-    amount_vnd: int = Field(..., gt=0, description="Số tiền thanh toán VNĐ")
-    credits: int = Field(..., gt=0, description="Số credit tương ứng")
+    amount_vnd: Optional[int] = Field(default=None, description="Số tiền thanh toán VNĐ")
+    credits: Optional[int] = Field(default=None, description="Số credit tương ứng")
     payment_method: str = Field(default="VietQR Banking", description="Phương thức thanh toán")
 
 
@@ -112,7 +112,10 @@ async def process_topup(
 ):
     """
     Process top-up for authenticated user:
-    Adds credits directly to user's database balance and records CreditAuditLog & PaymentTransaction.
+    1. Detects package from database by package_id or price_vnd (authoritative).
+    2. Credits user balance according to package specification.
+    3. Automatically upgrades user membership tier (STARTER, PRO, ENTERPRISE).
+    4. Records immutable audit log and payment transaction.
     """
     # 1. Lock and retrieve user to prevent race conditions
     stmt = select(User).where(User.id == current_user.id).with_for_update()
@@ -122,14 +125,64 @@ async def process_topup(
     if not user_obj:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy tài khoản người dùng.")
 
+    # 2. Package Detection & Verification
+    pkg = None
+    if body.package_id:
+        pkg_stmt = select(CreditPackage).where(
+            or_(CreditPackage.id == body.package_id, CreditPackage.name == body.package_id)
+        )
+        pkg_res = await db.execute(pkg_stmt)
+        pkg = pkg_res.scalar_one_or_none()
+
+    # If package not found by id but amount_vnd provided, match by price_vnd
+    if not pkg and body.amount_vnd:
+        pkg_stmt = select(CreditPackage).where(CreditPackage.price_vnd == body.amount_vnd)
+        pkg_res = await db.execute(pkg_stmt)
+        pkg = pkg_res.scalar_one_or_none()
+
+    # Determine credits and amount from DB package (authoritative) or fallback
+    if pkg:
+        added_credits = int(pkg.credits_given)
+        amount_vnd = int(pkg.price_vnd)
+        pkg_name = pkg.name
+        pkg_category = pkg.category
+    else:
+        added_credits = int(body.credits or 0)
+        amount_vnd = int(body.amount_vnd or 0)
+        pkg_name = "Nạp Credit VietQR"
+        pkg_category = "TOPUP"
+
+    if added_credits <= 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Số Credit nạp không hợp lệ.")
+
+    # 3. Dynamic Tier / Rank Upgrade Logic
+    old_tier = (user_obj.tier or "FREE").upper()
+    new_tier = old_tier
+
+    if pkg_category == "STARTER":
+        if old_tier == "FREE":
+            new_tier = "STARTER"
+    elif pkg_category == "PRO":
+        new_tier = "PRO"
+    elif pkg_category == "ENTERPRISE":
+        new_tier = "ENTERPRISE"
+    elif pkg_category == "TOPUP":
+        if amount_vnd >= 1000000:
+            new_tier = "ENTERPRISE"
+        elif amount_vnd >= 200000 and old_tier in ("FREE", "STARTER"):
+            new_tier = "PRO"
+        elif amount_vnd >= 50000 and old_tier == "FREE":
+            new_tier = "STARTER"
+
+    user_obj.tier = new_tier
+
     balance_before = user_obj.credit_balance or 0
-    added_credits = int(body.credits)
     new_balance = balance_before + added_credits
     user_obj.credit_balance = new_balance
 
     client_ip = get_client_ip(request)
 
-    # 2. Immutable Credit Transaction Audit Log
+    # 4. Immutable Credit Transaction Audit Log
     tx_code = f"TX-{uuid.uuid4().hex[:10].upper()}"
 
     audit = CreditAuditLog(
@@ -139,17 +192,17 @@ async def process_topup(
         delta=added_credits,
         balance_before=balance_before,
         balance_after=new_balance,
-        reason=f"Nạp tiền thành công: +{added_credits:,} Credits ({body.amount_vnd:,} VNĐ qua {body.payment_method})",
+        reason=f"Nạp gói '{pkg_name}' (+{added_credits:,} Credits, {amount_vnd:,} VNĐ qua {body.payment_method}). Nâng hạng: [{new_tier}]",
         ip_address=client_ip,
     )
     db.add(audit)
 
-    # 3. Create Payment Transaction Record
+    # 5. Create Payment Transaction Record
     tx = PaymentTransaction(
         transaction_code=tx_code,
         user_id=user_obj.id,
-        package_id=body.package_id,
-        amount_vnd=body.amount_vnd,
+        package_id=pkg.id if pkg else body.package_id,
+        amount_vnd=amount_vnd,
         credits_credited=added_credits,
         payment_gateway=body.payment_method,
         status="COMPLETED",
@@ -162,11 +215,14 @@ async def process_topup(
         data={
             "transaction_code": tx_code,
             "credit_balance": user_obj.credit_balance,
+            "tier": user_obj.tier,
+            "package_name": pkg_name,
+            "package_category": pkg_category,
             "added_credits": added_credits,
             "balance_before": balance_before,
             "status": "COMPLETED",
         },
-        message=f"Nạp thành công {added_credits:,} Credits vào tài khoản! Số dư mới: {new_balance:,} Credits."
+        message=f"Nạp thành công gói '{pkg_name}'! Bạn nhận được +{added_credits:,} Credits và hạng tài khoản là [{user_obj.tier}]."
     )
 
 
