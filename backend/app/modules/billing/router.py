@@ -238,6 +238,30 @@ async def sepay_webhook(
     URL: https://velox.nexoratech.com.vn/api/v1/billing/webhook/sepay
     """
     import re
+    import secrets
+    from app.core.config import get_settings
+
+    # 1. API Key Authentication Check
+    settings = get_settings()
+    configured_key = getattr(settings, "SEPAY_API_KEY", "") or "velox_sepay_live_secret_key_8899"
+
+    if configured_key:
+        auth_header = request.headers.get("Authorization", "") or request.headers.get("authorization", "")
+        api_key_header = request.headers.get("X-API-KEY", "") or request.headers.get("x-api-key", "") or request.headers.get("X-Api-Key", "")
+
+        token = ""
+        if auth_header:
+            parts = auth_header.strip().split()
+            token = parts[-1] if parts else ""
+        elif api_key_header:
+            token = api_key_header.strip()
+
+        if not token or not secrets.compare_digest(token, configured_key):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Xác thực SePay Webhook thất bại: API Key không hợp lệ. Vui lòng kiểm tra lại cấu hình API Key trên SePay."
+            )
+
     try:
         body_bytes = await request.body()
         payload = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}

@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # CDN & Zero-Disk Storage Settings
     CDN_PROVIDER: str = "auto"
     CDN_API_KEY: str = ""
+    # SePay Banking Webhook Security
+    SEPAY_API_KEY: str = "velox_sepay_live_secret_key_8899"
     USER_JOB_RETENTION_LIMIT: int = 50  # Cap maximum job history records per user to preserve server disk
 
     class Config:
