@@ -17,23 +17,25 @@ interface TopupOption {
 }
 
 const TOPUP_OPTIONS: TopupOption[] = [
-  { id: 't50', priceVnd: 50000, credits: 500, bonusPercent: 0, label: 'Cơ bản' },
-  { id: 't100', priceVnd: 100000, credits: 1100, bonusPercent: 10, label: 'Phổ biến', popular: true },
-  { id: 't200', priceVnd: 200000, credits: 2400, bonusPercent: 20, label: 'Tiết kiệm' },
-  { id: 't500', priceVnd: 500000, credits: 6500, bonusPercent: 30, label: 'Ưu đãi cao' },
-  { id: 't1000', priceVnd: 1000000, credits: 14000, bonusPercent: 40, label: 'VIP Doanh nghiệp' },
+  { id: 't50', priceVnd: 50000, credits: 400, bonusPercent: 0, label: 'Trải nghiệm' },
+  { id: 't100', priceVnd: 100000, credits: 1000, bonusPercent: 0, label: 'Tiêu chuẩn' },
+  { id: 't200', priceVnd: 200000, credits: 2000, bonusPercent: 10, label: 'BÁN CHẠY NHẤT', popular: true },
+  { id: 't500', priceVnd: 500000, credits: 5500, bonusPercent: 10, label: '+10% Thưởng' },
+  { id: 't1000', priceVnd: 1000000, credits: 12500, bonusPercent: 25, label: '+25% Thưởng' },
+  { id: 't2000', priceVnd: 2000000, credits: 27000, bonusPercent: 35, label: 'Super VIP' },
 ];
 
 interface TopupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialPackageId?: string;
 }
 
-export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
+export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initialPackageId }) => {
   const { t } = useTranslation();
   const { user, addCredits } = useAuthStore();
   const [topupOptions, setTopupOptions] = useState<TopupOption[]>(TOPUP_OPTIONS);
-  const [selectedOption, setSelectedOption] = useState<TopupOption>(TOPUP_OPTIONS[1]);
+  const [selectedOption, setSelectedOption] = useState<TopupOption>(TOPUP_OPTIONS[2]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -53,6 +55,13 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
             popular: p.is_popular,
           }));
           setTopupOptions(mapped);
+          if (initialPackageId) {
+            const found = mapped.find((o) => o.id === initialPackageId);
+            if (found) {
+              setSelectedOption(found);
+              return;
+            }
+          }
           setSelectedOption((prev) => mapped.find((o) => o.id === prev.id) || mapped.find((o) => o.popular) || mapped[0]);
         }
       })
