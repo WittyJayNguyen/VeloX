@@ -179,16 +179,23 @@
 }
 
 .tocItem {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
   font-size: 0.82rem;
   font-weight: 600;
   color: #94a3b8;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.15s ease;
   line-height: 1.35;
   border-left: 2px solid transparent;
+  text-align: left;
 
   &:hover {
     color: #fff;
@@ -200,6 +207,76 @@
     background: rgba(255, 107, 53, 0.12);
     border-left-color: #ff6b35;
     font-weight: 700;
+  }
+}
+
+// ── Navigation Footer Between Sections ──
+.sectionNavFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  .prevSectionBtn,
+  .nextSectionBtn {
+    background: #0f1422;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
+    text-align: left;
+    max-width: 48%;
+
+    &:hover {
+      background: #162035;
+      border-color: #ff6b35;
+      color: #ff6b35;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .navSubLabel {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .navMainLabel {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+    }
+  }
+
+  .nextSectionBtn {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .navProgressBadge {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #38bdf8;
+    background: #141f33;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #233252;
+    white-space: nowrap;
   }
 }
 
@@ -220,8 +297,28 @@
   scroll-margin-top: 100px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 
+  &.hiddenSection {
+    display: none !important;
+  }
+
+  &.activeSection {
+    display: block !important;
+    animation: fadeInDocSection 0.22s ease-in-out;
+  }
+
   @media (max-width: 640px) {
     padding: 1.25rem;
+  }
+}
+
+@keyframes fadeInDocSection {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
