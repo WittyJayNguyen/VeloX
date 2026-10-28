@@ -375,15 +375,15 @@ async def get_my_usage_history(
     from app.modules.logs.models import MediaGenerationLog, ApiCallLog
     from app.modules.users.models import CreditAuditLog
 
-    # 1. Media generation logs (Studio / Playground) - only fetch lightweight metadata
+    # 1. Media generation logs (Studio / Playground)
     media_stmt = (
-        select(MediaGenerationLog.id, MediaGenerationLog.created_at, MediaGenerationLog.prompt, MediaGenerationLog.media_type)
+        select(MediaGenerationLog)
         .where(MediaGenerationLog.user_id == current_user.id)
         .order_by(desc(MediaGenerationLog.created_at))
         .limit(200)
     )
     media_res = await db.execute(media_stmt)
-    media_logs = media_res.all()
+    media_logs = media_res.scalars().all()
     media_by_time = {}
     for m in media_logs:
         t_key = m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else ""
@@ -463,11 +463,12 @@ async def get_my_usage_history(
                 p_cache = 0
 
         # Attach original prompt if available from media_logs
-        if t_min in media_by_time and media_by_time[t_min].prompt:
+        if t_min in media_by_time and getattr(media_by_time[t_min], "prompt", None):
             prompt_info = media_by_time[t_min].prompt
 
+        cid_str = str(c.id) if c.id else "0"
         items.append({
-            "id": f"req_{c.id[:8]}",
+            "id": f"req_{cid_str[:8]}",
             "timestamp": t_str,
             "model": model_name,
             "taskType": task_type,
@@ -477,7 +478,7 @@ async def get_my_usage_history(
             "tokensUsed": p_in + p_out,
             "creditsDeducted": abs(int(c.delta or 0)),
             "status": "SUCCESS",
-            "prompt": prompt_info[:140],
+            "prompt": str(prompt_info or "")[:140],
         })
         seen_timestamps.add(t_min)
 
@@ -485,18 +486,21 @@ async def get_my_usage_history(
     for m in media_logs:
         t_min = m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else ""
         if t_min not in seen_timestamps:
+            mid_str = str(m.id) if m.id else "0"
+            raw_type = getattr(m, "media_type", None) or "Media"
+            m_type = str(raw_type).capitalize()
             items.append({
-                "id": f"gen_{m.id[:8]}",
+                "id": f"gen_{mid_str[:8]}",
                 "timestamp": m.created_at.strftime("%Y-%m-%d %H:%M:%S") if m.created_at else "",
-                "model": m.model_id or "AI Media Engine",
-                "taskType": f"{m.media_type.capitalize()} Studio",
+                "model": getattr(m, "model_id", None) or "AI Media Engine",
+                "taskType": f"{m_type} Studio",
                 "inputTokens": 0,
                 "outputTokens": 0,
                 "cacheTokens": 0,
                 "tokensUsed": 0,
-                "creditsDeducted": int(m.credits_charged or 0),
+                "creditsDeducted": int(getattr(m, "credits_charged", 0) or 0),
                 "status": "SUCCESS",
-                "prompt": m.prompt[:140] if m.prompt else "",
+                "prompt": str(getattr(m, "prompt", "") or "")[:140],
             })
             seen_timestamps.add(t_min)
 
