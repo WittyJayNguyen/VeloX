@@ -462,6 +462,11 @@
   },
   "studio": {
     "title": "VeloX AI クリエイティブスタジオ",
+    "insufficient_credits_banner": "このモデルを実行するためのクレジット残高が不足しています",
+    "insufficient_credits_toast": "クレジットが不足しています（{{cost}} cr 必要、現在 {{balance}} cr）。チャージしてください！",
+    "need_credits": "必要",
+    "current_credits": "利用可能",
+    "btn_topup_now": "今すぐチャージ",
     "tools_title": "クリエイティブツール",
     "cat_chat": "チャット",
     "cat_image": "画像生成",

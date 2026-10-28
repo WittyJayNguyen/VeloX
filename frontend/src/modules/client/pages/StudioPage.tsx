@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HiOutlinePhoto,
@@ -22,8 +22,10 @@ import {
   HiOutlineTrash,
   HiOutlineSparkles,
 } from 'react-icons/hi2';
+import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { modelService, type PublicModelItem, type ModelConfig } from '@modules/models/services/modelService';
+import apiClient from '@modules/core/lib/apiClient';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
 import styles from './StudioPage.module.scss';
 
@@ -458,7 +460,18 @@ export const translateParamOption = (val: string, tFn: any) => {
 export const StudioPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, addCredits } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAuthenticated, syncProfile, updateUser, addCredits } = useAuthStore();
+
+  // Enforce authentication: Must be logged in to enter VeloX Studio
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { replace: true });
+    } else {
+      syncProfile().catch(() => {});
+    }
+  }, [isAuthenticated, navigate, location.pathname, location.search, syncProfile]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const startFrameInputRef = useRef<HTMLInputElement>(null);
@@ -814,8 +827,10 @@ export const StudioPage: React.FC = () => {
     }
   }, [selectedModelCode, activeTab, activeModelConfig]);
 
-  // Compute Credits Needed
+  // Compute Credits Needed & User Credit Sufficiency
   const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'chat' ? 15 : activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
+  const currentCredits = user?.credit_balance ?? 0;
+  const hasInsufficientCredits = currentCredits < totalCreditsNeeded || currentCredits <= 0;
 
   // File Upload Helper
   const handleGenericFileUpload = (
@@ -891,7 +906,7 @@ export const StudioPage: React.FC = () => {
   };
 
   // Generate / Submit Job
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (isGenerating) return;
 
     if (!prompt.trim()) {
@@ -903,20 +918,52 @@ export const StudioPage: React.FC = () => {
       return;
     }
 
-    const currentCredits = user?.credit_balance ?? 991;
-    if (currentCredits < totalCreditsNeeded) {
-      setToastMsg(`Số dư Credit không đủ (Cần ${totalCreditsNeeded} cr). Vui lòng nạp thêm!`);
+    if (hasInsufficientCredits) {
+      setToastMsg(
+        t('studio.insufficient_credits_toast', `Số dư Credit không đủ (Cần ${totalCreditsNeeded} cr, hiện có ${currentCredits.toLocaleString()} cr). Vui lòng nạp thêm!`)
+      );
       setTopupOpen(true);
       return;
     }
 
     const selectedModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
 
+    setIsGenerating(true);
+
+    // Call backend API to authenticate, check credit balance, deduct from DB, and create job
+    try {
+      const jobRes = await apiClient.post('/studio/jobs', {
+        type: activeTab,
+        model_code: selectedModelCode,
+        prompt: prompt.trim(),
+        options: {
+          aspectRatio,
+          resolution: activeTab === 'video' ? videoResolution : resolution,
+          duration: activeTab === 'video' ? videoDuration : undefined,
+          quality,
+          voice: activeTab === 'audio' ? audioVoice : undefined,
+          tone: activeTab === 'chat' ? chatTone : undefined,
+        },
+      });
+      const jobData = jobRes.data?.data || jobRes.data;
+      if (jobData?.credit_balance !== undefined) {
+        updateUser({ credit_balance: jobData.credit_balance });
+      } else {
+        addCredits(-totalCreditsNeeded);
+      }
+    } catch (err: any) {
+      setIsGenerating(false);
+      const serverMsg = err?.response?.data?.detail?.message || err?.response?.data?.detail || err?.message;
+      setToastMsg(`⚠️ ${serverMsg || 'Không thể tạo job do số dư không đủ. Vui lòng nạp thêm!'}`);
+      if (err?.response?.status === 402) {
+        setTopupOpen(true);
+      }
+      return;
+    }
+
     if (activeTab === 'chat') {
       const userText = prompt.trim();
       setPrompt('');
-      setIsGenerating(true);
-      addCredits(-totalCreditsNeeded);
 
       const userMsg: StudioChatMessage = {
         id: `msg-${Date.now()}-user`,
@@ -946,9 +993,6 @@ export const StudioPage: React.FC = () => {
       }, 1400);
       return;
     }
-
-    setIsGenerating(true);
-    addCredits(-totalCreditsNeeded);
 
     // Smoothly scroll to top so user sees the generated job in real time
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1709,6 +1753,26 @@ export const StudioPage: React.FC = () => {
               onChange={(e) => handleGenericFileUpload(e, setAudioTrack, 'audio track')}
             />
 
+            {/* INSUFFICIENT CREDITS WARNING BAR */}
+            {hasInsufficientCredits && (
+              <div
+                className={styles.creditWarningBar}
+                onClick={() => setTopupOpen(true)}
+                title={t('studio.insufficient_credits_banner', 'Số dư tài khoản không đủ để chạy model này')}
+              >
+                <div className={styles.warningLeft}>
+                  <RiSparklingFill size={16} color="#f59e0b" />
+                  <span>
+                    {t('studio.insufficient_credits_banner', 'Số dư tài khoản không đủ để chạy model này')} (
+                    {t('studio.need_credits', 'Cần')} <strong>{totalCreditsNeeded} cr</strong> · {t('studio.current_credits', 'Hiện có')} <strong>{currentCredits.toLocaleString()} cr</strong>)
+                  </span>
+                </div>
+                <button type="button" className={styles.topupAlertBtn}>
+                  {t('studio.btn_topup_now', 'Nạp Credit Ngay')} →
+                </button>
+              </div>
+            )}
+
             {/* MIDDLE ROW: Clean Borderless Textarea */}
             <textarea
               ref={promptTextareaRef}
@@ -2108,7 +2172,11 @@ export const StudioPage: React.FC = () => {
                     handleGenerate();
                   }}
                   disabled={isGenerating}
-                  title={`${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`}
+                  title={
+                    hasInsufficientCredits
+                      ? `Số dư không đủ (${currentCredits.toLocaleString()}/${totalCreditsNeeded} cr) - Bấm để nạp thêm!`
+                      : `${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`
+                  }
                 >
                   {isGenerating ? (
                     <span className={styles.buttonSpinner} />

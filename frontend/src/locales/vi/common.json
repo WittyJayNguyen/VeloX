@@ -464,6 +464,11 @@
   },
   "studio": {
     "title": "VeloX AI Creative Studio",
+    "insufficient_credits_banner": "Số dư tài khoản không đủ để chạy model này",
+    "insufficient_credits_toast": "Số dư Credit không đủ (Cần {{cost}} cr, hiện có {{balance}} cr). Vui lòng nạp thêm!",
+    "need_credits": "Cần",
+    "current_credits": "Hiện có",
+    "btn_topup_now": "Nạp Credit Ngay",
     "tools_title": "CÔNG CỤ SÁNG TẠO",
     "cat_chat": "Chat",
     "cat_image": "Hình Ảnh",

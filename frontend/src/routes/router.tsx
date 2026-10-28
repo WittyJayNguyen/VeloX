@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 import MainLayout from '@modules/core/components/MainLayout/MainLayout';
 import AdminLayout from '@modules/core/components/AdminLayout/AdminLayout';
-import { AdminRoute } from './guards';
+import { AdminRoute, ProtectedRoute } from './guards';
 import RouteErrorBoundary from './RouteErrorBoundary';
 
 // Lazy-loaded pages — grouped by module
@@ -71,25 +71,30 @@ const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
-      // Core AI Navigation
-      { path: '/studio', element: <StudioPage /> },
-      { path: '/playground', element: <PlaygroundPage /> },
       { path: '/models', element: <ModelsExplorePage /> },
       { path: '/docs', element: <ApiDocsPage /> },
       { path: '/apidocs', element: <ApiDocsPage /> },
-      // Client functional pages
-      { path: '/profile', element: <ProfilePage /> },
-      { path: '/security', element: <SecurityPage /> },
-      { path: '/team', element: <TeamPage /> },
-      { path: '/subscription', element: <SubscriptionPage /> },
       { path: '/pricing', element: <SubscriptionPage /> },
-      { path: '/history', element: <HistoryPage /> },
-      { path: '/orders', element: <OrdersPage /> },
-      { path: '/workflows', element: <WorkflowsPage /> },
-      { path: '/creator-sales', element: <CreatorSalesPage /> },
-      { path: '/referral', element: <ReferralPage /> },
-      { path: '/developer', element: <DeveloperApiPage /> },
-      { path: '/downloads', element: <DownloadsPage /> },
+
+      // Protected Member Pages (Authentication Required to enter Studio or Account)
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: '/studio', element: <StudioPage /> },
+          { path: '/playground', element: <PlaygroundPage /> },
+          { path: '/profile', element: <ProfilePage /> },
+          { path: '/security', element: <SecurityPage /> },
+          { path: '/team', element: <TeamPage /> },
+          { path: '/subscription', element: <SubscriptionPage /> },
+          { path: '/history', element: <HistoryPage /> },
+          { path: '/orders', element: <OrdersPage /> },
+          { path: '/workflows', element: <WorkflowsPage /> },
+          { path: '/creator-sales', element: <CreatorSalesPage /> },
+          { path: '/referral', element: <ReferralPage /> },
+          { path: '/developer', element: <DeveloperApiPage /> },
+          { path: '/downloads', element: <DownloadsPage /> },
+        ],
+      },
       // Wildcard catch-all fallback
       { path: '*', element: <Navigate to="/" replace /> },
     ],

@@ -464,6 +464,11 @@
   },
   "studio": {
     "title": "VeloX AI Creative Studio",
+    "insufficient_credits_banner": "Insufficient credit balance to run this model",
+    "insufficient_credits_toast": "Insufficient credits (Need {{cost}} cr, currently have {{balance}} cr). Please top up!",
+    "need_credits": "Need",
+    "current_credits": "Available",
+    "btn_topup_now": "Top Up Credits",
     "tools_title": "CREATIVE TOOLS",
     "cat_chat": "Chat",
     "cat_image": "Image",

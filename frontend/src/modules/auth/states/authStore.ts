@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { ADMIN_ROLES } from '@modules/core/utils/constants';
 import type { User } from '../types/auth.types';
+import { authService } from '../services/authService';
 
 interface AuthStore {
   user: User | null;
@@ -11,11 +12,12 @@ interface AuthStore {
   login: (user: User, token: string) => void;
   updateUser: (updatedFields: Partial<User>) => void;
   addCredits: (amount: number) => void;
+  syncProfile: () => Promise<User | null>;
   logout: () => void;
   hydrate: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => {
+export const useAuthStore = create<AuthStore>((set, get) => {
   const savedToken = localStorage.getItem('velox_token');
   const savedUserRaw = localStorage.getItem('velox_user');
 
@@ -33,9 +35,7 @@ export const useAuthStore = create<AuthStore>((set) => {
     try {
       const parsed = JSON.parse(savedUserRaw) as User;
       if (parsed && parsed.id && parsed.email) {
-        if (parsed.credit_balance === undefined || parsed.credit_balance === null) {
-          parsed.credit_balance = 991;
-        }
+        parsed.credit_balance = parsed.credit_balance ?? 0;
         initialUser = parsed;
         initialToken = savedToken;
         initialAuth = true;
@@ -56,9 +56,7 @@ export const useAuthStore = create<AuthStore>((set) => {
     isSuperAdmin: initialIsSuperAdmin,
 
     login: (user, token) => {
-      if (user.credit_balance === undefined || user.credit_balance === null) {
-        user.credit_balance = 991;
-      }
+      user.credit_balance = user.credit_balance ?? 0;
       localStorage.setItem('velox_token', token);
       localStorage.setItem('velox_user', JSON.stringify(user));
       const isAdmin = Array.isArray(user.roles) && user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
@@ -70,6 +68,9 @@ export const useAuthStore = create<AuthStore>((set) => {
         isAdmin,
         isSuperAdmin,
       });
+
+      // Synchronize latest profile & accurate credits from database
+      get().syncProfile().catch(() => {});
     },
 
     updateUser: (updatedFields) => {
@@ -91,10 +92,34 @@ export const useAuthStore = create<AuthStore>((set) => {
       set((state) => {
         if (!state.user) return state;
         const currentBalance = state.user.credit_balance ?? 0;
-        const updated = { ...state.user, credit_balance: currentBalance + amount };
+        const updated = { ...state.user, credit_balance: Math.max(0, currentBalance + amount) };
         localStorage.setItem('velox_user', JSON.stringify(updated));
         return { user: updated };
       });
+    },
+
+    syncProfile: async () => {
+      const token = localStorage.getItem('velox_token');
+      if (!token) return null;
+      try {
+        const freshUser = await authService.getProfile();
+        if (freshUser && freshUser.id) {
+          freshUser.credit_balance = freshUser.credit_balance ?? 0;
+          localStorage.setItem('velox_user', JSON.stringify(freshUser));
+          const isAdmin = Array.isArray(freshUser.roles) && freshUser.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+          const isSuperAdmin = Array.isArray(freshUser.roles) && freshUser.roles.includes('ROLE_SUPER_ADMIN');
+          set({
+            user: freshUser,
+            isAuthenticated: true,
+            isAdmin,
+            isSuperAdmin,
+          });
+          return freshUser;
+        }
+      } catch {
+        // Ignored if offline or unauthorized
+      }
+      return null;
     },
 
     logout: () => {
@@ -126,9 +151,7 @@ export const useAuthStore = create<AuthStore>((set) => {
         try {
           const user: User = JSON.parse(raw);
           if (user && user.id && user.email) {
-            if (user.credit_balance === undefined || user.credit_balance === null) {
-              user.credit_balance = 991;
-            }
+            user.credit_balance = user.credit_balance ?? 0;
             const isAdmin = Array.isArray(user.roles) && user.roles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
             const isSuperAdmin = Array.isArray(user.roles) && user.roles.includes('ROLE_SUPER_ADMIN');
             set({
@@ -138,6 +161,9 @@ export const useAuthStore = create<AuthStore>((set) => {
               isAdmin,
               isSuperAdmin,
             });
+
+            // Async background refresh from database
+            get().syncProfile().catch(() => {});
             return;
           }
         } catch {

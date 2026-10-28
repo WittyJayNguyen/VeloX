@@ -164,7 +164,7 @@ const MainLayout = () => {
                     <span className={styles.diamondIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>
                       <RiSparklingFill color="#2dd4bf" size={14} />
                     </span>
-                    <span className={styles.creditValue}>{user?.credit_balance ?? 991}</span>
+                    <span className={styles.creditValue}>{(user?.credit_balance ?? 0).toLocaleString()}</span>
                   </div>
                   <button
                     type="button"
@@ -260,7 +260,7 @@ const MainLayout = () => {
                 {isAuthenticated ? (
                   <div className={styles.mobileUserArea}>
                     <div className={styles.mobileUserGreeting} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <HiOutlineUser size={16} /> {user?.full_name || 'Hải源海'} • <RiSparklingFill size={13} color="#2dd4bf" /> {user?.credit_balance ?? 991} cr
+                      <HiOutlineUser size={16} /> {user?.full_name || 'Hải源海'} • <RiSparklingFill size={13} color="#2dd4bf" /> {(user?.credit_balance ?? 0).toLocaleString()} cr
                     </div>
                     <button
                       type="button"

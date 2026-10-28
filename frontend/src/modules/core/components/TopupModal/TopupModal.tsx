@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { HiOutlineXMark, HiOutlineCheckCircle, HiOutlineDocumentDuplicate, HiOutlineSparkles } from 'react-icons/hi2';
 import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
+import apiClient from '@modules/core/lib/apiClient';
 import styles from './TopupModal.module.scss';
 
 interface TopupOption {
@@ -51,10 +52,26 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleConfirmPaid = () => {
+  const handleConfirmPaid = async () => {
     setProcessing(true);
-    setTimeout(() => {
+    try {
+      // Call backend to credit user account in database
+      const res = await apiClient.post('/billing/topup', {
+        package_id: selectedOption.id,
+        amount_vnd: selectedOption.priceVnd,
+        credits: selectedOption.credits,
+        payment_method: 'VietQR Banking',
+      });
+      const data = res.data?.data || res.data;
+      if (data?.credit_balance !== undefined) {
+        useAuthStore.getState().updateUser({ credit_balance: data.credit_balance });
+      } else {
+        addCredits(selectedOption.credits);
+      }
+    } catch {
+      // Fallback local update
       addCredits(selectedOption.credits);
+    } finally {
       // Lưu lại đơn hàng đã mua vào localStorage
       const prevOrders = JSON.parse(localStorage.getItem('velox_user_orders') || '[]');
       const newOrder = {
@@ -73,8 +90,8 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
       setTimeout(() => {
         setIsSuccess(false);
         onClose();
-      }, 2200);
-    }, 1200);
+      }, 2000);
+    }
   };
 
   return (
@@ -88,7 +105,7 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
             <div>
               <h3>{t('topup.title', 'Nạp Credit Tài Khoản')}</h3>
               <p className={styles.balanceInfo}>
-                {t('topup.current_balance', 'Số dư hiện tại')}: <strong>{user?.credit_balance ?? 991} credit</strong>
+                {t('topup.current_balance', 'Số dư hiện tại')}: <strong>{(user?.credit_balance ?? 0).toLocaleString()} credit</strong>
               </p>
             </div>
           </div>
