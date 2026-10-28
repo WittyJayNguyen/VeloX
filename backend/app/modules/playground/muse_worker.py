@@ -366,11 +366,14 @@ async def generate_media_via_muse(
                         "latency_ms": round((time.perf_counter() - start_time) * 1000, 2),
                     }
 
+                # Wait for existing chat & media to fully hydrate in DOM
+                await page.wait_for_timeout(3000)
+
                 # Record existing media elements
                 initial_media = await page.evaluate('''() => {
                     return {
                         imgs: Array.from(document.querySelectorAll('img')).map(i => i.src).filter(s => s && s.startsWith('blob:')),
-                        videos: Array.from(document.querySelectorAll('video')).map(v => v.src || (v.querySelector('source') ? v.querySelector('source').src : '')).filter(s => s)
+                        videos: Array.from(document.querySelectorAll('video')).map(v => v.src || v.currentSrc || (v.querySelector('source') ? v.querySelector('source').src : '')).filter(Boolean)
                     };
                 }''')
 
@@ -384,14 +387,20 @@ async def generate_media_via_muse(
                 # Format prompt for image / video
                 clean_p = (prompt or "").strip()
                 if is_video:
-                    if not clean_p:
-                        clean_p = "Animate this into a smooth cinematic video"
-                    elif not clean_p.lower().startswith("animate"):
-                        clean_p = f"Animate: {clean_p}"
+                    if files_to_upload:
+                        if not clean_p:
+                            clean_p = "Animate this into a smooth cinematic video"
+                        elif not clean_p.lower().startswith("animate"):
+                            clean_p = f"Animate this image into a video: {clean_p}"
+                    else:
+                        if not clean_p:
+                            clean_p = "Create a short cinematic video"
+                        elif not clean_p.lower().startswith("create a video") and not clean_p.lower().startswith("create a short video"):
+                            clean_p = f"Create a short video of: {clean_p}"
                 else:
                     if not clean_p:
                         clean_p = "Imagine high quality visual"
-                    elif not clean_p.lower().startswith("imagine"):
+                    elif not clean_p.lower().startswith("imagine") and not clean_p.lower().startswith("create"):
                         clean_p = f"Imagine: {clean_p}"
 
                 await textarea.click()
@@ -406,21 +415,43 @@ async def generate_media_via_muse(
 
                 # Poll for result
                 result_url = None
+                error_msg = None
                 poll_start = time.perf_counter()
                 while (time.perf_counter() - poll_start) < timeout_sec:
                     await page.wait_for_timeout(1500)
 
+                    # Check for assistant error message after submission
+                    has_error = await page.evaluate('''() => {
+                        const errPatterns = [
+                            "Failed to create", "couldn't be made", "came back unavailable",
+                            "didn't go through", "could not generate", "error generating"
+                        ];
+                        const messages = Array.from(document.querySelectorAll('[data-message-id], [class*="message"], [class*="chat-item"], [class*="bubble"]'));
+                        const lastMsg = messages.length > 0 ? (messages[messages.length - 1].innerText || '') : '';
+                        for (const p of errPatterns) {
+                            if (lastMsg.includes(p)) return lastMsg;
+                        }
+                        return null;
+                    }''')
+                    if has_error:
+                        error_msg = f"Muse AI trả về thông báo lỗi: {has_error[:120]}"
+                        break
+
                     # 1. If video is requested, check for new video elements first
                     if is_video:
                         new_video_src = await page.evaluate('''(initial) => {
-                            const vids = Array.from(document.querySelectorAll('video'))
-                                .map(v => v.src || (v.querySelector('source') ? v.querySelector('source').src : ''))
-                                .filter(s => s && !initial.videos.includes(s));
-                            if (vids.length > 0) return vids[vids.length - 1];
-                            const dialog = document.querySelector('[role="dialog"]');
-                            if (dialog) {
-                                const dv = dialog.querySelector('video');
-                                if (dv && (dv.src || dv.currentSrc)) return dv.src || dv.currentSrc;
+                            const vids = Array.from(document.querySelectorAll('video'));
+                            for (const v of vids) {
+                                const s = v.src || v.currentSrc || (v.querySelector('source') ? v.querySelector('source').src : '');
+                                if (s && !initial.videos.includes(s)) {
+                                    if (v.duration > 0 || (v.readyState && v.readyState >= 1) || v.videoWidth > 0) {
+                                        return s;
+                                    }
+                                }
+                            }
+                            const links = Array.from(document.querySelectorAll('a[download], a[href*=".mp4"]'));
+                            for (const l of links) {
+                                if (l.href && !initial.videos.includes(l.href)) return l.href;
                             }
                             return null;
                         }''', initial_media)
@@ -445,11 +476,6 @@ async def generate_media_via_muse(
                                 return img.src;
                             }
                         }
-                        const dialog = document.querySelector('[role="dialog"]');
-                        if (dialog) {
-                            const di = dialog.querySelector('img');
-                            if (di && di.src) return di.src;
-                        }
                         return null;
                     }''', initial_media)
 
@@ -466,7 +492,13 @@ async def generate_media_via_muse(
                             break
 
                 latency = round((time.perf_counter() - start_time) * 1000, 2)
-                if result_url:
+                if error_msg:
+                    return {
+                        "success": False,
+                        "error": error_msg,
+                        "latency_ms": latency,
+                    }
+                elif result_url:
                     return {
                         "success": True,
                         "media_url": result_url,
