@@ -25,6 +25,7 @@ class AIModelBase(BaseModel):
     is_available: bool = True
     pool_id: Optional[str] = None
     description: Optional[str] = None
+    config: Optional[dict] = Field(default_factory=dict)
 
 
 class AIModelCreate(AIModelBase):
@@ -47,6 +48,7 @@ class AIModelUpdate(BaseModel):
     is_available: Optional[bool] = None
     pool_id: Optional[str] = None
     description: Optional[str] = None
+    config: Optional[dict] = None
 
 
 class AIModelResponse(BaseModel):
@@ -66,8 +68,20 @@ class AIModelResponse(BaseModel):
     is_available: bool
     pool_id: Optional[str] = None
     description: Optional[str] = None
+    config: Optional[dict] = Field(default_factory=dict)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        if isinstance(v, str):
+            try:
+                import json
+                return json.loads(v)
+            except Exception:
+                return {}
+        return v or {}
 
     # Computed fields for 2-column Cost vs Selling & Profit
     cost_price_vnd: Optional[float] = None
@@ -94,7 +108,19 @@ class AIModelPublicResponse(BaseModel):
     cache_read_credit_price: int
     is_available: bool
     description: Optional[str] = None
+    config: Optional[dict] = Field(default_factory=dict)
     created_at: Optional[datetime] = None
+
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        if isinstance(v, str):
+            try:
+                import json
+                return json.loads(v)
+            except Exception:
+                return {}
+        return v or {}
 
     class Config:
         from_attributes = True

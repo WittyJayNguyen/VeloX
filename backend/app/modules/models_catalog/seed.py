@@ -369,8 +369,130 @@ DEFAULT_MODELS = [
 ]
 
 
+def get_model_config(item: dict) -> dict:
+    code = (item.get("model_code") or "").lower()
+    cat = (item.get("category") or "").upper()
+    
+    # Specific Video configs
+    if "seedance" in code:
+        return {
+            "durations": ["5s", "10s"],
+            "resolutions": ["720p", "1080p"],
+            "aspectRatios": ["Tự động", "16:9", "9:16", "1:1"],
+            "defaultDuration": "5s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "Tự động",
+        }
+    if "runway" in code:
+        return {
+            "durations": ["5s", "10s (Pro)"],
+            "resolutions": ["720p", "1080p", "4K"],
+            "aspectRatios": ["16:9", "9:16"],
+            "defaultDuration": "5s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "16:9",
+        }
+    if "minimax" in code:
+        return {
+            "durations": ["6s"],
+            "resolutions": ["720p", "1080p"],
+            "aspectRatios": ["Tự động", "16:9", "9:16", "1:1"],
+            "defaultDuration": "6s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "Tự động",
+        }
+    if "kling" in code:
+        return {
+            "durations": ["5s", "10s"],
+            "resolutions": ["1080p"],
+            "aspectRatios": ["16:9", "9:16", "1:1"],
+            "defaultDuration": "5s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "16:9",
+        }
+    if "grok" in code and "video" in code:
+        return {
+            "durations": ["5s"],
+            "resolutions": ["720p", "1080p"],
+            "aspectRatios": ["16:9", "9:16"],
+            "defaultDuration": "5s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "16:9",
+        }
+    if "luma" in code:
+        return {
+            "durations": ["5s"],
+            "resolutions": ["720p", "1080p"],
+            "aspectRatios": ["16:9", "9:16"],
+            "defaultDuration": "5s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "16:9",
+        }
+
+    # Specific Image configs
+    if "midjourney" in code:
+        return {
+            "resolutions": ["1K", "2K", "4K"],
+            "aspectRatios": ["1:1", "16:9", "9:16", "4:3", "21:9"],
+            "qualities": ["Tiêu chuẩn", "Cao", "Ultra"],
+            "defaultResolution": "2K",
+            "defaultAspectRatio": "16:9",
+            "defaultQuality": "Ultra",
+        }
+    if "flux" in code:
+        return {
+            "resolutions": ["1K", "2K"],
+            "aspectRatios": ["1:1", "16:9", "9:16", "4:3"],
+            "qualities": ["Tiêu chuẩn", "Cao"],
+            "defaultResolution": "1K",
+            "defaultAspectRatio": "1:1",
+            "defaultQuality": "Cao",
+        }
+    if "dall-e" in code:
+        return {
+            "resolutions": ["1K", "2K"],
+            "aspectRatios": ["1:1", "16:9", "9:16"],
+            "qualities": ["Tiêu chuẩn", "HD"],
+            "defaultResolution": "1K",
+            "defaultAspectRatio": "1:1",
+            "defaultQuality": "HD",
+        }
+
+    # Category defaults
+    if cat == "VIDEO":
+        return {
+            "durations": ["5s", "10s"],
+            "resolutions": ["720p", "1080p"],
+            "aspectRatios": ["Tự động", "16:9", "9:16", "1:1"],
+            "defaultDuration": "5s",
+            "defaultResolution": "1080p",
+            "defaultAspectRatio": "Tự động",
+        }
+    if cat == "IMAGE":
+        return {
+            "resolutions": ["1K", "2K", "4K"],
+            "aspectRatios": ["Tự động", "1:1", "16:9", "9:16", "4:3", "21:9"],
+            "qualities": ["Tiêu chuẩn", "Cao", "Ultra"],
+            "defaultResolution": "1K",
+            "defaultAspectRatio": "Tự động",
+            "defaultQuality": "Cao",
+        }
+    if cat == "AUDIO":
+        return {
+            "voices": ["English · American", "English · British", "Tiếng Việt · Hà Nội", "Tiếng Việt · Sài Gòn"],
+            "defaultVoice": "English · American",
+        }
+    if cat == "CHAT":
+        return {
+            "tones": ["creative", "balanced", "precise"],
+            "defaultTone": "balanced",
+        }
+    return {}
+
+
 async def seed_default_models(db: AsyncSession):
-    """Seed initial models catalog and ensure all standard models exist"""
+    """Seed initial models catalog and ensure all standard models exist with full config"""
+    import json
     res = await db.execute(select(AIModel.model_code))
     existing_codes = set(res.scalars().all())
 
@@ -379,6 +501,7 @@ async def seed_default_models(db: AsyncSession):
         if item["model_code"] in existing_codes:
             continue
 
+        cfg_dict = get_model_config(item)
         model = AIModel(
             name=item["name"],
             model_code=item["model_code"],
@@ -394,12 +517,27 @@ async def seed_default_models(db: AsyncSession):
             cache_read_credit_price=item.get("cache_read_credit_price", 0),
             is_available=item.get("is_available", True),
             description=item.get("description", ""),
+            config=json.dumps(cfg_dict, ensure_ascii=False),
         )
         db.add(model)
         existing_codes.add(item["model_code"])
         added_count += 1
 
-    if added_count > 0:
+    # Backfill config for existing models in database if missing
+    all_models_res = await db.execute(select(AIModel))
+    all_models = all_models_res.scalars().all()
+    updated_config_count = 0
+    for m in all_models:
+        if not m.config or m.config.strip() in ("", "{}", "null"):
+            cfg = get_model_config({"model_code": m.model_code, "category": m.category})
+            m.config = json.dumps(cfg, ensure_ascii=False)
+            updated_config_count += 1
+
+    if added_count > 0 or updated_config_count > 0:
         await db.commit()
-        print(f"[DB] Seeded {added_count} new standard AI models into catalog")
+        if added_count > 0:
+            print(f"[DB] Seeded {added_count} new standard AI models into catalog")
+        if updated_config_count > 0:
+            print(f"[DB] Updated configurations for {updated_config_count} existing AI models")
+
     return added_count

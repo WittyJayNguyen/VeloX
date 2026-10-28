@@ -23,7 +23,7 @@ import {
   HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { useAuthStore } from '@modules/auth/states/authStore';
-import { modelService, type PublicModelItem } from '@modules/models/services/modelService';
+import { modelService, type PublicModelItem, type ModelConfig } from '@modules/models/services/modelService';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
 import styles from './StudioPage.module.scss';
 
@@ -79,125 +79,38 @@ export interface GeneratedAudioItem {
   createdAt: string;
 }
 
-export interface ModelConfig {
-  durations?: string[];
-  resolutions: string[];
-  aspectRatios: string[];
-  qualities?: string[];
-  defaultDuration?: string;
-  defaultResolution: string;
-  defaultAspectRatio: string;
-  defaultQuality?: string;
-}
-
-export const MODEL_CONFIGS: Record<string, ModelConfig> = {
-  // Video Models
-  'seedance-2.5': {
-    durations: ['5s', '10s'],
-    resolutions: ['720p', '1080p'],
-    aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: 'Tự động',
-  },
-  'runway-gen3-alpha': {
-    durations: ['5s', '10s (Pro)'],
-    resolutions: ['720p', '1080p', '4K'],
-    aspectRatios: ['16:9', '9:16'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-  'runway-gen3': {
-    durations: ['5s', '10s (Pro)'],
-    resolutions: ['720p', '1080p', '4K'],
-    aspectRatios: ['16:9', '9:16'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-  'minimax-video-01': {
-    durations: ['6s'],
-    resolutions: ['720p', '1080p'],
-    aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
-    defaultDuration: '6s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: 'Tự động',
-  },
-  'kling-v1.5-pro': {
-    durations: ['5s', '10s'],
-    resolutions: ['1080p'],
-    aspectRatios: ['16:9', '9:16', '1:1'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-  'kling-ai-1-5': {
-    durations: ['5s', '10s'],
-    resolutions: ['1080p'],
-    aspectRatios: ['16:9', '9:16', '1:1'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-  'grok-imagine-video': {
-    durations: ['5s'],
-    resolutions: ['720p', '1080p'],
-    aspectRatios: ['16:9', '9:16'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-  'grok-imagine-video-1.5': {
-    durations: ['5s'],
-    resolutions: ['720p', '1080p'],
-    aspectRatios: ['16:9', '9:16'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-  'luma-dream-machine': {
-    durations: ['5s'],
-    resolutions: ['720p', '1080p'],
-    aspectRatios: ['16:9', '9:16'],
-    defaultDuration: '5s',
-    defaultResolution: '1080p',
-    defaultAspectRatio: '16:9',
-  },
-
-  // Image Models
-  'gpt-image-2.5-sunburst': {
-    resolutions: ['1K', '2K', '4K'],
-    aspectRatios: ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9'],
-    qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
-    defaultResolution: '1K',
-    defaultAspectRatio: 'Tự động',
-    defaultQuality: 'Cao',
-  },
-  'flux-1-dev': {
-    resolutions: ['1K', '2K'],
-    aspectRatios: ['1:1', '16:9', '9:16', '4:3'],
-    qualities: ['Tiêu chuẩn', 'Cao'],
-    defaultResolution: '1K',
-    defaultAspectRatio: '1:1',
-    defaultQuality: 'Cao',
-  },
-  'midjourney-v6.1': {
-    resolutions: ['1K', '2K', '4K'],
-    aspectRatios: ['1:1', '16:9', '9:16', '4:3', '21:9'],
-    qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
-    defaultResolution: '2K',
-    defaultAspectRatio: '16:9',
-    defaultQuality: 'Ultra',
-  },
-  'dall-e-3': {
-    resolutions: ['1K', '2K'],
-    aspectRatios: ['1:1', '16:9', '9:16'],
-    qualities: ['Tiêu chuẩn', 'HD'],
-    defaultResolution: '1K',
-    defaultAspectRatio: '1:1',
-    defaultQuality: 'HD',
-  },
+export const getFallbackModelConfig = (category: string): ModelConfig => {
+  const cat = (category || '').toUpperCase();
+  if (cat === 'VIDEO') {
+    return {
+      durations: ['5s', '10s'],
+      resolutions: ['720p', '1080p', '4K'],
+      aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
+      defaultDuration: '5s',
+      defaultResolution: '1080p',
+      defaultAspectRatio: 'Tự động',
+    };
+  }
+  if (cat === 'IMAGE') {
+    return {
+      resolutions: ['1K', '2K', '4K'],
+      aspectRatios: ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9'],
+      qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
+      defaultResolution: '1K',
+      defaultAspectRatio: 'Tự động',
+      defaultQuality: 'Cao',
+    };
+  }
+  if (cat === 'AUDIO') {
+    return {
+      voices: ['English · American', 'English · British', 'Tiếng Việt · Hà Nội', 'Tiếng Việt · Sài Gòn'],
+      defaultVoice: 'English · American',
+    };
+  }
+  return {
+    tones: ['creative', 'balanced', 'precise'],
+    defaultTone: 'balanced',
+  };
 };
 
 // Preset Prompt Groups per category matching user request mockup exactly
@@ -851,19 +764,28 @@ export const StudioPage: React.FC = () => {
     return availableModels.find((m) => m.model_code === selectedModelCode) || availableModels[0];
   }, [availableModels, selectedModelCode]);
 
-  // Model-specific capabilities & configs
-  const activeModelConfig = useMemo(() => {
-    return MODEL_CONFIGS[selectedModelCode] || {
-      durations: ['5s', '10s'],
-      resolutions: activeTab === 'video' ? ['720p', '1080p'] : ['1K', '2K'],
-      aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
-      qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
-      defaultDuration: '5s',
-      defaultResolution: activeTab === 'video' ? '1080p' : '1K',
-      defaultAspectRatio: 'Tự động',
-      defaultQuality: 'Cao',
-    };
-  }, [selectedModelCode, activeTab]);
+  // Model-specific capabilities & configs dynamically loaded from Admin DB
+  const activeModelConfig = useMemo<ModelConfig>(() => {
+    const dbConfig = currentModel?.config;
+    const fallback = getFallbackModelConfig(currentModel?.category || activeTab);
+    if (dbConfig && typeof dbConfig === 'object' && Object.keys(dbConfig).length > 0) {
+      return {
+        durations: Array.isArray(dbConfig.durations) && dbConfig.durations.length > 0 ? dbConfig.durations : fallback.durations,
+        resolutions: Array.isArray(dbConfig.resolutions) && dbConfig.resolutions.length > 0 ? dbConfig.resolutions : fallback.resolutions,
+        aspectRatios: Array.isArray(dbConfig.aspectRatios) && dbConfig.aspectRatios.length > 0 ? dbConfig.aspectRatios : fallback.aspectRatios,
+        qualities: Array.isArray(dbConfig.qualities) && dbConfig.qualities.length > 0 ? dbConfig.qualities : fallback.qualities,
+        voices: Array.isArray(dbConfig.voices) && dbConfig.voices.length > 0 ? dbConfig.voices : fallback.voices,
+        tones: Array.isArray(dbConfig.tones) && dbConfig.tones.length > 0 ? dbConfig.tones : fallback.tones,
+        defaultDuration: dbConfig.defaultDuration || fallback.defaultDuration,
+        defaultResolution: dbConfig.defaultResolution || fallback.defaultResolution,
+        defaultAspectRatio: dbConfig.defaultAspectRatio || fallback.defaultAspectRatio,
+        defaultQuality: dbConfig.defaultQuality || fallback.defaultQuality,
+        defaultVoice: dbConfig.defaultVoice || fallback.defaultVoice,
+        defaultTone: dbConfig.defaultTone || fallback.defaultTone,
+      };
+    }
+    return fallback;
+  }, [currentModel, activeTab]);
 
   // Auto-map parameters whenever selected model or active tab changes
   useEffect(() => {

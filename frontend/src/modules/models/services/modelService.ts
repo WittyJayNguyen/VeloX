@@ -25,6 +25,23 @@ export interface ModelCatalogItem {
   selling_price_vnd?: number;
   profit_vnd?: number;
   profit_margin_pct?: number;
+  config?: ModelConfig;
+}
+
+export interface ModelConfig {
+  durations?: string[];
+  resolutions?: string[];
+  aspectRatios?: string[];
+  qualities?: string[];
+  voices?: string[];
+  tones?: string[];
+  defaultDuration?: string;
+  defaultResolution?: string;
+  defaultAspectRatio?: string;
+  defaultQuality?: string;
+  defaultVoice?: string;
+  defaultTone?: string;
+  [key: string]: any;
 }
 
 export interface PublicModelItem {
@@ -40,6 +57,7 @@ export interface PublicModelItem {
   is_available: boolean;
   description?: string;
   created_at?: string;
+  config?: ModelConfig;
 }
 
 export type ModelItem = ModelCatalogItem;

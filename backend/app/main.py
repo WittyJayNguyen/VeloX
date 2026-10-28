@@ -37,6 +37,15 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            def ensure_config_column(sync_conn):
+                from sqlalchemy import inspect, text
+                inspector = inspect(sync_conn)
+                if "ai_models" in inspector.get_table_names():
+                    cols = [c["name"] for c in inspector.get_columns("ai_models")]
+                    if "config" not in cols:
+                        sync_conn.execute(text("ALTER TABLE ai_models ADD COLUMN config TEXT DEFAULT '{}'"))
+                        print("[DB] Added 'config' column to ai_models")
+            await conn.run_sync(ensure_config_column)
         print("[DB] Database tables initialized successfully")
         
         # Auto-migrate columns and seed default roles / super admin / gateway defaults
