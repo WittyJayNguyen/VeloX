@@ -416,18 +416,50 @@ async def generate_media_via_muse(
                 # Poll for result
                 result_url = None
                 error_msg = None
+                confirmed = False
                 poll_start = time.perf_counter()
                 while (time.perf_counter() - poll_start) < timeout_sec:
                     await page.wait_for_timeout(1500)
 
-                    # Check for assistant error message after submission
-                    has_error = await page.evaluate('''() => {
-                        const errPatterns = [
-                            "Failed to create", "couldn't be made", "came back unavailable",
-                            "didn't go through", "could not generate", "error generating"
-                        ];
+                    # Ensure lazy-loaded video elements in chat container are scrolled into view
+                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+
+                    # Check if Muse is asking for confirmation / safer take for reference images
+                    needs_confirm = await page.evaluate('''() => {
                         const messages = Array.from(document.querySelectorAll('[data-message-id], [class*="message"], [class*="chat-item"], [class*="bubble"]'));
                         const lastMsg = messages.length > 0 ? (messages[messages.length - 1].innerText || '') : '';
+                        if (lastMsg.includes("Want me to try that version") ||
+                            lastMsg.includes("Would you like me to try") ||
+                            lastMsg.includes("safer take") ||
+                            lastMsg.includes("safe version")) {
+                            return true;
+                        }
+                        return false;
+                    }''')
+                    if needs_confirm and not confirmed:
+                        confirmed = True
+                        print("[Muse Worker]: Muse proposed safe animation. Auto-confirming: 'Yes, please try that version'...")
+                        await textarea.fill("Yes, please try that version")
+                        await page.wait_for_timeout(500)
+                        send_btn2 = page.locator('button[aria-label="Send"]:not([disabled]), button[aria-label="Send message"]:not([disabled])').first
+                        if await send_btn2.count() > 0:
+                            await send_btn2.click()
+                        else:
+                            await textarea.press("Enter")
+                        continue
+
+                    # Check for assistant error message after submission
+                    has_error = await page.evaluate('''() => {
+                        const messages = Array.from(document.querySelectorAll('[data-message-id], [class*="message"], [class*="chat-item"], [class*="bubble"]'));
+                        const lastMsg = messages.length > 0 ? (messages[messages.length - 1].innerText || '') : '';
+                        if (lastMsg.includes("Want me to try") || lastMsg.includes("safer take") || lastMsg.includes("safe version")) {
+                            return null;
+                        }
+                        const errPatterns = [
+                            "Failed to create", "couldn't be made", "came back unavailable",
+                            "didn't go through", "could not generate", "couldn't generate",
+                            "cannot generate", "error generating"
+                        ];
                         for (const p of errPatterns) {
                             if (lastMsg.includes(p)) return lastMsg;
                         }
