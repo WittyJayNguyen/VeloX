@@ -44,19 +44,22 @@ class AIModel(Base, TimestampMixin):
 
     @property
     def selling_price_vnd(self) -> float:
-        """Computed selling price in Credits/VNĐ (either per request or average 1M token selling price)"""
+        """Computed selling price in VNĐ (1 Credit = 100 VNĐ benchmark)."""
+        CREDIT_TO_VND = 100.0
         if self.category in ["IMAGE", "VIDEO"] or (not self.input_credit_price and not self.output_credit_price):
-            return float(self.selling_credit_price or 0.0)
-        return round((float(self.input_credit_price or 0.0) + float(self.output_credit_price or 0.0)) / 2.0, 2)
+            return round(float(self.selling_credit_price or 0.0) * CREDIT_TO_VND, 2)
+        # Average 1M token selling price in VNĐ
+        avg_credits_1m = (float(self.input_credit_price or 0.0) + float(self.output_credit_price or 0.0)) / 2.0
+        return round(avg_credits_1m * CREDIT_TO_VND, 2)
 
     @property
     def profit_vnd(self) -> float:
-        """Net profit in VNĐ / Credits per unit"""
+        """Net profit in VNĐ per unit/request or average 1M tokens."""
         return round(self.selling_price_vnd - self.cost_price_vnd, 2)
 
     @property
     def profit_margin_pct(self) -> float:
-        """Profit margin percentage (Markup %)"""
+        """Profit margin percentage (Markup % = (Selling - Cost) / Cost * 100)."""
         cost = self.cost_price_vnd
         if cost > 0:
             return round(((self.selling_price_vnd - cost) / cost) * 100.0, 1)
