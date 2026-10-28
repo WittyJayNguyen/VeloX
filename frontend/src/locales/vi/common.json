@@ -542,5 +542,15 @@
     "maintenance": "Bảo Trì",
     "no_models_found": "Không tìm thấy mô hình nào phù hợp",
     "loading": "Đang tải danh sách mô hình từ hệ thống..."
+  },
+  "error": {
+    "not_found_title": "404 - Không Tìm Thấy Trang",
+    "general_title": "Đã Xảy Ra Sự Cố Tải Trang",
+    "chunk_reloading": "Hệ thống vừa được nâng cấp phiên bản mới. Đang làm mới trang để tải các tài nguyên mới nhất...",
+    "not_found_desc": "Đường dẫn bạn yêu cầu không tồn tại hoặc đã được di chuyển sang địa chỉ mới.",
+    "general_desc": "Gặp sự cố khi hiển thị nội dung này. Vui lòng làm mới trang hoặc quay về trang chủ.",
+    "btn_reload": "Tải Lại Trang",
+    "btn_home": "Trang Chủ"
   }
 }
+

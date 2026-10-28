@@ -1,8 +1,9 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 import MainLayout from '@modules/core/components/MainLayout/MainLayout';
 import AdminLayout from '@modules/core/components/AdminLayout/AdminLayout';
 import { AdminRoute } from './guards';
+import RouteErrorBoundary from './RouteErrorBoundary';
 
 // Lazy-loaded pages — grouped by module
 const HomePage = lazy(() => import('@modules/home/pages/HomePage'));
@@ -65,6 +66,7 @@ const ApiDocsPage = lazy(() => import('@modules/client/pages/ApiDocsPage'));
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
@@ -87,10 +89,13 @@ const router = createBrowserRouter([
       { path: '/referral', element: <ReferralPage /> },
       { path: '/developer', element: <DeveloperApiPage /> },
       { path: '/downloads', element: <DownloadsPage /> },
+      // Wildcard catch-all fallback
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
   {
     element: <AdminRoute />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         element: <AdminLayout />,

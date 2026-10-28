@@ -464,5 +464,14 @@
     "maintenance": "维护中",
     "no_models_found": "未找到匹配的 AI 模型",
     "loading": "正在从系统加载模型列表中..."
+  },
+  "error": {
+    "not_found_title": "404 - 页面未找到",
+    "general_title": "页面加载遇到问题",
+    "chunk_reloading": "平台刚完成版本更新，正在自动刷新以获取最新应用资源...",
+    "not_found_desc": "您所请求的页面不存在或可能已迁移。",
+    "general_desc": "渲染此页面时遇到异常，请刷新重试或返回系统首页。",
+    "btn_reload": "刷新页面",
+    "btn_home": "返回首页"
   }
 }
