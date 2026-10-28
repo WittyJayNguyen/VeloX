@@ -370,25 +370,36 @@ export const ModelsExplorePage: React.FC = () => {
                     ) : (
                       /* Text & Code: Token-based & Cache Pricing */
                       <>
-                        <div className={styles.priceRow}>
-                          <span className={styles.priceLabel}>Input Tokens</span>
-                          <span className={styles.priceValue}>
-                            {model.input_credit_price
-                              ? `${model.input_credit_price.toLocaleString()} cr / 1M`
-                              : 'Miễn phí'}
-                          </span>
-                        </div>
+                        {(!model.input_credit_price && !model.output_credit_price && model.selling_credit_price) ? (
+                          <div className={styles.priceRow}>
+                            <span className={styles.priceLabel}>Giá mỗi lượt gọi</span>
+                            <span className={styles.priceValue}>
+                              {model.selling_credit_price.toLocaleString()} cr / lượt
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={styles.priceRow}>
+                              <span className={styles.priceLabel}>Input Tokens</span>
+                              <span className={styles.priceValue}>
+                                {model.input_credit_price
+                                  ? `${model.input_credit_price.toLocaleString()} cr / 1M`
+                                  : '1 cr (Sàn tối thiểu)'}
+                              </span>
+                            </div>
 
-                        <div className={styles.divider} />
+                            <div className={styles.divider} />
 
-                        <div className={styles.priceRow}>
-                          <span className={styles.priceLabel}>Output Tokens</span>
-                          <span className={styles.priceValue}>
-                            {model.output_credit_price
-                              ? `${model.output_credit_price.toLocaleString()} cr / 1M`
-                              : 'Miễn phí'}
-                          </span>
-                        </div>
+                            <div className={styles.priceRow}>
+                              <span className={styles.priceLabel}>Output Tokens</span>
+                              <span className={styles.priceValue}>
+                                {model.output_credit_price
+                                  ? `${model.output_credit_price.toLocaleString()} cr / 1M`
+                                  : '1 cr (Sàn tối thiểu)'}
+                              </span>
+                            </div>
+                          </>
+                        )}
 
                         {model.cache_read_credit_price ? (
                           <>
