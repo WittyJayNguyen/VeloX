@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   HiOutlinePlus,
   HiOutlineTrash,
@@ -17,11 +17,12 @@ import { Table, type TableColumn } from '@modules/core/design-system/Table';
 import { Card } from '@modules/core/design-system/Card';
 import { Badge } from '@modules/core/design-system/Badge';
 import { StatCard, SearchInput } from '@modules/core/design-system/Components';
+import { billingService } from '@modules/billing/services/billingService';
 
 export interface CreditPackageItem {
   id: string;
   name: string;
-  category: 'STARTER' | 'PRO' | 'ENTERPRISE' | 'DEV';
+  category: 'STARTER' | 'PRO' | 'ENTERPRISE' | 'DEV' | 'TOPUP';
   tagBadge?: string;
   credits: number;
   bonusCredits: number;
@@ -34,35 +35,18 @@ export interface CreditPackageItem {
   isActive: boolean;
 }
 
-const initialPackages: CreditPackageItem[] = [];
-
 const CATEGORY_OPTIONS = [
   { value: 'ALL', label: 'Tất cả phân loại' },
   { value: 'STARTER', label: 'Gói Cơ Bản (Starter)' },
   { value: 'PRO', label: 'Gói Chuyên Nghiệp (Pro)' },
   { value: 'ENTERPRISE', label: 'Gói Doanh Nghiệp (Enterprise)' },
   { value: 'DEV', label: 'Gói API Developer' },
+  { value: 'TOPUP', label: 'Gói Nạp Trực Tiếp (VietQR Top-Up)' },
 ];
 
 const PackagesPage = () => {
-  const [packages, setPackages] = useState<CreditPackageItem[]>(() => {
-    const s = localStorage.getItem('velox_credit_packages');
-    if (s) {
-      try {
-        const parsed = JSON.parse(s);
-        // Clean out legacy mock packages
-        if (Array.isArray(parsed) && parsed.some((p: any) => p.id === 'pkg_starter')) {
-          localStorage.removeItem('velox_credit_packages');
-          return [];
-        }
-        return parsed;
-      } catch {
-        return [];
-      }
-    }
-    return initialPackages;
-  });
-
+  const [packages, setPackages] = useState<CreditPackageItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('ALL');
   const [page, setPage] = useState(1);
@@ -83,10 +67,37 @@ const PackagesPage = () => {
   const [formDurationDays, setFormDurationDays] = useState(60);
   const [formRateLimitRpm, setFormRateLimitRpm] = useState(300);
 
-  const savePackages = (items: CreditPackageItem[]) => {
-    setPackages(items);
-    localStorage.setItem('velox_credit_packages', JSON.stringify(items));
+  const fetchPackages = async () => {
+    setIsLoading(true);
+    try {
+      const data = await billingService.getAdminPackages();
+      setPackages(
+        data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          category: (p.category as any) || 'PRO',
+          tagBadge: p.tag_badge,
+          credits: p.credits_given,
+          bonusCredits: Math.round((p.credits_given * (p.bonus_percentage || 0)) / 100),
+          priceVnd: p.price_vnd,
+          originalPriceVnd: p.original_price_vnd || p.price_vnd,
+          modelsIncluded: p.features || [],
+          durationDays: 60,
+          rateLimitRpm: 300,
+          salesCount: 0,
+          isActive: p.is_active,
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to load packages from database:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingPkg(null);
@@ -118,7 +129,7 @@ const PackagesPage = () => {
     setShowModal(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) return;
 
@@ -127,55 +138,60 @@ const PackagesPage = () => {
       .map((m) => m.trim())
       .filter(Boolean);
 
-    if (editingPkg) {
-      savePackages(
-        packages.map((p) =>
-          p.id === editingPkg.id
-            ? {
-                ...p,
-                name: formName,
-                category: formCategory,
-                tagBadge: formTagBadge || undefined,
-                credits: Number(formCredits),
-                bonusCredits: Number(formBonusCredits),
-                priceVnd: Number(formPriceVnd),
-                originalPriceVnd: Number(formOriginalPriceVnd),
-                modelsIncluded: modelsList,
-                durationDays: Number(formDurationDays),
-                rateLimitRpm: Number(formRateLimitRpm),
-              }
-            : p
-        )
-      );
-    } else {
-      const newPkg: CreditPackageItem = {
-        id: `pkg_${Date.now()}`,
-        name: formName,
-        category: formCategory,
-        tagBadge: formTagBadge || undefined,
-        credits: Number(formCredits),
-        bonusCredits: Number(formBonusCredits),
-        priceVnd: Number(formPriceVnd),
-        originalPriceVnd: Number(formOriginalPriceVnd),
-        modelsIncluded: modelsList,
-        durationDays: Number(formDurationDays),
-        rateLimitRpm: Number(formRateLimitRpm),
-        salesCount: 0,
-        isActive: true,
-      };
-      savePackages([...packages, newPkg]);
-    }
-    setShowModal(false);
-  };
+    const bonusPct = formCredits > 0 ? Math.round((formBonusCredits / formCredits) * 100) : 0;
 
-  const handleDelete = (id: string) => {
-    if (confirm('Bạn có chắc muốn xoá gói credit này?')) {
-      savePackages(packages.filter((p) => p.id !== id));
+    try {
+      if (editingPkg) {
+        await billingService.updatePackage(editingPkg.id, {
+          name: formName,
+          category: formCategory,
+          tag_badge: formTagBadge,
+          credits_given: Number(formCredits),
+          bonus_percentage: bonusPct,
+          price_vnd: Number(formPriceVnd),
+          original_price_vnd: Number(formOriginalPriceVnd),
+          features: modelsList,
+        });
+      } else {
+        await billingService.createPackage({
+          name: formName,
+          category: formCategory,
+          tag_badge: formTagBadge,
+          credits_given: Number(formCredits),
+          bonus_percentage: bonusPct,
+          price_vnd: Number(formPriceVnd),
+          original_price_vnd: Number(formOriginalPriceVnd),
+          features: modelsList,
+          is_active: true,
+        });
+      }
+      await fetchPackages();
+      setShowModal(false);
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Lỗi khi lưu gói credit vào database');
     }
   };
 
-  const handleToggle = (id: string) => {
-    savePackages(packages.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)));
+  const handleDelete = async (id: string) => {
+    if (confirm('Bạn có chắc muốn xoá gói credit này khỏi cơ sở dữ liệu?')) {
+      try {
+        await billingService.removePackage(id);
+        await fetchPackages();
+      } catch (err: any) {
+        alert(err?.response?.data?.detail || 'Lỗi khi xoá gói');
+      }
+    }
+  };
+
+  const handleToggle = async (id: string) => {
+    const pkg = packages.find((p) => p.id === id);
+    if (!pkg) return;
+    try {
+      await billingService.updatePackage(id, { is_active: !pkg.isActive });
+      await fetchPackages();
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Lỗi khi đổi trạng thái');
+    }
   };
 
   // Stats
@@ -360,7 +376,7 @@ const PackagesPage = () => {
         headerRight={<HiOutlineCreditCard size={20} style={{ color: '#6366f1' }} />}
         padding="none"
       >
-        <Table columns={columns} data={filtered} rowKey={(p) => p.id} page={page} pageSize={10} onPageChange={setPage} />
+        <Table columns={columns} data={filtered} rowKey={(p) => p.id} page={page} pageSize={10} onPageChange={setPage} loading={isLoading} />
       </Card>
 
       {/* Modal Thêm / Sửa Gói Credit */}

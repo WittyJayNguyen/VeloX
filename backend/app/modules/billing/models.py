@@ -16,11 +16,17 @@ class UserWallet(Base, TimestampMixin):
 class CreditPackage(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "credit_packages"
     name = Column(String(128), nullable=False)
+    category = Column(String(32), default="PRO", nullable=True)  # STARTER, PRO, ENTERPRISE, DEV, TOPUP
+    description = Column(String(255), nullable=True)
     price_vnd = Column(Numeric(12, 0), nullable=False)
+    original_price_vnd = Column(Numeric(12, 0), nullable=True)
     credits_given = Column(Numeric(14, 4), nullable=False)
     bonus_percentage = Column(Integer, default=0)
+    features = Column(String(2000), nullable=True)  # JSON-encoded array of feature strings
+    tag_badge = Column(String(64), nullable=True)
     is_popular = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
 
 
 class PaymentTransaction(Base, UUIDMixin, TimestampMixin):

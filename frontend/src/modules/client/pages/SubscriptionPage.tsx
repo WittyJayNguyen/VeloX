@@ -1,22 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { HiOutlineCheck, HiOutlineSparkles, HiOutlineCreditCard } from 'react-icons/hi2';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
+import { billingService, type CreditPackageDto } from '@modules/billing/services/billingService';
 import styles from '@assets/scss/client/client-pages.module.scss';
-
-interface PricingTier {
-  id: string;
-  name: string;
-  price: string;
-  period: string;
-  desc: string;
-  credits: string;
-  features: string[];
-  popular?: boolean;
-  isCurrent?: boolean;
-}
 
 export const SubscriptionPage: React.FC = () => {
   const { t } = useTranslation();
@@ -24,6 +13,29 @@ export const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [topupOpen, setTopupOpen] = useState(false);
+  const [packages, setPackages] = useState<CreditPackageDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    billingService
+      .getPublicPackages()
+      .then((data) => {
+        if (isMounted && data && data.length > 0) {
+          const subs = data.filter((p) => p.category !== 'TOPUP');
+          setPackages(subs.length > 0 ? subs : data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load packages from database:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleAction = () => {
     if (!isAuthenticated) {
@@ -32,55 +44,6 @@ export const SubscriptionPage: React.FC = () => {
     }
     setTopupOpen(true);
   };
-
-  const tiers: PricingTier[] = [
-    {
-      id: 'free',
-      name: 'Free Starter',
-      price: '0 đ',
-      period: '/mãi mãi',
-      desc: 'Dành cho người mới bắt đầu trải nghiệm AI Gateway',
-      credits: '1,000 credit/tháng',
-      isCurrent: true,
-      features: [
-        'Truy cập GPT-4o-mini & Claude 3.5 Haiku',
-        'Tốc độ xử lý tiêu chuẩn',
-        '10 workflows cơ bản',
-        'Hỗ trợ cộng đồng',
-      ],
-    },
-    {
-      id: 'pro',
-      name: 'Pro Creator',
-      price: '199.000 đ',
-      period: '/tháng',
-      desc: 'Tối ưu cho cá nhân sáng tạo nội dung & nhà phát triển',
-      credits: '15,000 credit/tháng',
-      popular: true,
-      features: [
-        'Truy cập đầy đủ 100+ Model cao cấp (GPT-4o, Claude 3.5 Sonnet, Midjourney v6)',
-        'Ưu tiên hàng đợi cao nhất, latency < 300ms',
-        'Không giới hạn Workflows AI',
-        'Tạo API Key cá nhân & kết nối MCP',
-        'Hỗ trợ kỹ thuật 24/7',
-      ],
-    },
-    {
-      id: 'enterprise',
-      name: 'Team & Business',
-      price: '599.000 đ',
-      period: '/tháng',
-      desc: 'Giải pháp toàn diện cho đội nhóm & doanh nghiệp vừa',
-      credits: '50,000 credit/tháng',
-      features: [
-        'Tất cả tính năng của gói Pro',
-        'Workspace nhóm tối đa 20 thành viên',
-        'Phân bổ hạn mức Credit độc lập cho từng nhân sự',
-        'Custom Domain & Private Endpoint Gateway',
-        'Cam kết SLA 99.9% Uptime',
-      ],
-    },
-  ];
 
   return (
     <div className={styles.clientContainer}>
@@ -125,67 +88,82 @@ export const SubscriptionPage: React.FC = () => {
       </div>
 
       {/* Plans Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
-        {tiers.map((tier) => (
-          <div
-            key={tier.id}
-            className={styles.contentCard}
-            style={{
-              position: 'relative',
-              borderColor: tier.popular ? '#ff6b35' : '#1e2638',
-              boxShadow: tier.popular ? '0 10px 30px rgba(255, 107, 53, 0.15)' : undefined,
-            }}
-          >
-            {tier.popular && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '-12px',
-                  right: '20px',
-                  background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
-                  color: '#fff',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  padding: '3px 10px',
-                  borderRadius: '999px',
-                }}
-              >
-                KHUYÊN DÙNG
-              </span>
-            )}
-
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>{tier.name}</div>
-            <div style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '0.35rem 0 1rem' }}>{tier.desc}</div>
-
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '1rem' }}>
-              <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#fff' }}>{tier.price}</span>
-              <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{tier.period}</span>
-            </div>
-
-            <div style={{ padding: '0.65rem 0.85rem', background: '#0e131e', borderRadius: '8px', marginBottom: '1.25rem', color: '#2dd4bf', fontWeight: 600, fontSize: '0.88rem' }}>
-              💎 {tier.credits}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem' }}>
-              {tier.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
-                  <HiOutlineCheck color="#10b981" size={16} />
-                  <span>{f}</span>
-                </div>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              className={tier.isCurrent && isAuthenticated ? styles.secondaryBtn : styles.primaryBtn}
-              style={{ width: '100%', justifyContent: 'center' }}
-              onClick={handleAction}
+      {isLoading ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+          Đang tải thông tin bảng giá từ máy chủ...
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
+          {packages.map((tier) => {
+          const isUserCurrent = isAuthenticated && (user?.tier || 'Free Member').toLowerCase().includes(tier.name.toLowerCase());
+          return (
+            <div
+              key={tier.id}
+              className={styles.contentCard}
+              style={{
+                position: 'relative',
+                borderColor: tier.is_popular ? '#ff6b35' : '#1e2638',
+                boxShadow: tier.is_popular ? '0 10px 30px rgba(255, 107, 53, 0.15)' : undefined,
+              }}
             >
-              {isAuthenticated ? (tier.isCurrent ? 'Gói Hiện Tại' : 'Chọn Gói Này') : 'Bắt Đầu Ngay'}
-            </button>
-          </div>
-        ))}
-      </div>
+              {tier.is_popular && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-12px',
+                    right: '20px',
+                    background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                    color: '#fff',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  {tier.tag_badge || 'KHUYÊN DÙNG'}
+                </span>
+              )}
+
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>{tier.name}</div>
+              <div style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '0.35rem 0 1rem' }}>
+                {tier.description || 'Gói dịch vụ AI Gateway VeloX'}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '1rem' }}>
+                <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#fff' }}>
+                  {tier.price_vnd > 0 ? `${tier.price_vnd.toLocaleString()} đ` : '0 đ'}
+                </span>
+                <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                  {tier.price_vnd === 0 ? '/mãi mãi' : '/tháng'}
+                </span>
+              </div>
+
+              <div style={{ padding: '0.65rem 0.85rem', background: '#0e131e', borderRadius: '8px', marginBottom: '1.25rem', color: '#2dd4bf', fontWeight: 600, fontSize: '0.88rem' }}>
+                💎 {tier.credits_given.toLocaleString()} credit/tháng
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem' }}>
+                {(tier.features || []).map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                    <HiOutlineCheck color="#10b981" size={16} />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className={isUserCurrent ? styles.secondaryBtn : styles.primaryBtn}
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={handleAction}
+              >
+                {isAuthenticated ? (isUserCurrent ? 'Gói Hiện Tại' : 'Chọn Gói Này') : 'Bắt Đầu Ngay'}
+              </button>
+            </div>
+          );
+        })}
+        </div>
+      )}
 
       <TopupModal isOpen={topupOpen} onClose={() => setTopupOpen(false)} />
     </div>

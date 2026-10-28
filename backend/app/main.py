@@ -39,26 +39,42 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-            def ensure_config_column(sync_conn):
+            def ensure_table_columns(sync_conn):
                 from sqlalchemy import inspect, text
                 inspector = inspect(sync_conn)
-                if "ai_models" in inspector.get_table_names():
+                tables = inspector.get_table_names()
+                if "ai_models" in tables:
                     cols = [c["name"] for c in inspector.get_columns("ai_models")]
                     if "config" not in cols:
                         sync_conn.execute(text("ALTER TABLE ai_models ADD COLUMN config TEXT DEFAULT '{}'"))
                         print("[DB] Added 'config' column to ai_models")
-            await conn.run_sync(ensure_config_column)
+                if "credit_packages" in tables:
+                    cols = [c["name"] for c in inspector.get_columns("credit_packages")]
+                    for col_name, col_type, col_def in [
+                        ("category", "VARCHAR(32)", "'PRO'"),
+                        ("description", "VARCHAR(255)", "''"),
+                        ("original_price_vnd", "NUMERIC(12, 0)", "0"),
+                        ("features", "VARCHAR(2000)", "'[]'"),
+                        ("tag_badge", "VARCHAR(64)", "''"),
+                        ("sort_order", "INTEGER", "0"),
+                    ]:
+                        if col_name not in cols:
+                            sync_conn.execute(text(f"ALTER TABLE credit_packages ADD COLUMN {col_name} {col_type} DEFAULT {col_def}"))
+                            print(f"[DB] Added '{col_name}' column to credit_packages")
+            await conn.run_sync(ensure_table_columns)
         print("[DB] Database tables initialized successfully")
         
-        # Auto-migrate columns and seed default roles / super admin / gateway defaults
+        # Auto-migrate columns and seed default roles / super admin / gateway defaults / packages
         from app.core.database import async_session
         from app.modules.users.router import seed_defaults
         from app.modules.models_catalog.seed import seed_default_models
+        from app.modules.billing.seed import seed_default_packages
         async with async_session() as db:
             await seed_defaults(db)
             await seed_gateway_data(db)
             await seed_default_models(db)
-        print("[DB] Default roles, Super Admin, Gateway data, and Models Catalog verified")
+            await seed_default_packages(db)
+        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, and Credit Packages verified")
     except Exception as e:
         print(f"[WARN] Database initialization warning: {e}")
     yield

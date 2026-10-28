@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HiOutlineXMark, HiOutlineCheckCircle, HiOutlineDocumentDuplicate, HiOutlineSparkles } from 'react-icons/hi2';
 import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
+import { billingService } from '@modules/billing/services/billingService';
 import apiClient from '@modules/core/lib/apiClient';
 import styles from './TopupModal.module.scss';
 
@@ -31,10 +32,35 @@ interface TopupModalProps {
 export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const { user, addCredits } = useAuthStore();
+  const [topupOptions, setTopupOptions] = useState<TopupOption[]>(TOPUP_OPTIONS);
   const [selectedOption, setSelectedOption] = useState<TopupOption>(TOPUP_OPTIONS[1]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    billingService
+      .getPublicPackages('TOPUP')
+      .then((data) => {
+        if (isMounted && data && data.length > 0) {
+          const mapped: TopupOption[] = data.map((p) => ({
+            id: p.id,
+            priceVnd: p.price_vnd,
+            credits: p.credits_given,
+            bonusPercent: p.bonus_percentage || 0,
+            label: p.tag_badge || p.name,
+            popular: p.is_popular,
+          }));
+          setTopupOptions(mapped);
+          setSelectedOption((prev) => mapped.find((o) => o.id === prev.id) || mapped.find((o) => o.popular) || mapped[0]);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -128,7 +154,7 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose }) => {
             {/* Packages selector */}
             <div className={styles.sectionLabel}>{t('topup.choose_package', '1. Chọn Mức Nạp Credit')}</div>
             <div className={styles.optionsGrid}>
-              {TOPUP_OPTIONS.map((opt) => {
+              {topupOptions.map((opt) => {
                 const isSelected = selectedOption.id === opt.id;
                 return (
                   <div
