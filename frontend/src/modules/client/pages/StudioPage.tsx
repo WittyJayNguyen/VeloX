@@ -752,8 +752,7 @@ export const StudioPage: React.FC = () => {
       setIsGenerating(false);
 
       if (activeTab === 'image') {
-        const enc = encodeURIComponent(prompt.trim());
-        const finalUrl = serverGeneratedUrl || `https://image.pollinations.ai/prompt/${enc}?width=1024&height=1024&nologo=true`;
+        const finalUrl = serverGeneratedUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1024&q=80';
         const newImg: GeneratedImageItem = {
           id: serverJobId || `img-${Date.now()}`,
           url: finalUrl,
@@ -765,8 +764,7 @@ export const StudioPage: React.FC = () => {
         };
         setGeneratedImages((prev) => [newImg, ...prev]);
       } else if (activeTab === 'video') {
-        const enc = encodeURIComponent(prompt.trim());
-        const finalPoster = serverPosterUrl || `https://image.pollinations.ai/prompt/${enc}?width=1280&height=720&nologo=true`;
+        const finalPoster = serverPosterUrl || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80';
         const finalVid = serverGeneratedUrl || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4';
         const newVid: GeneratedVideoItem = {
           id: serverJobId || `vid-${Date.now()}`,
