@@ -375,15 +375,15 @@ async def get_my_usage_history(
     from app.modules.logs.models import MediaGenerationLog, ApiCallLog
     from app.modules.users.models import CreditAuditLog
 
-    # 1. Media generation logs (Studio / Playground)
+    # 1. Media generation logs (Studio / Playground) - only fetch lightweight metadata
     media_stmt = (
-        select(MediaGenerationLog)
+        select(MediaGenerationLog.id, MediaGenerationLog.created_at, MediaGenerationLog.prompt, MediaGenerationLog.media_type)
         .where(MediaGenerationLog.user_id == current_user.id)
         .order_by(desc(MediaGenerationLog.created_at))
         .limit(200)
     )
     media_res = await db.execute(media_stmt)
-    media_logs = media_res.scalars().all()
+    media_logs = media_res.all()
     media_by_time = {}
     for m in media_logs:
         t_key = m.created_at.strftime("%Y-%m-%d %H:%M") if m.created_at else ""

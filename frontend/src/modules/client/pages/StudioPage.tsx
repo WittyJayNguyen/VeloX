@@ -257,11 +257,25 @@ export const StudioPage: React.FC = () => {
     model: string;
   } | null>(null);
 
-  // Results state
-  // Generation results state (Loaded dynamically from DB history)
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImageItem[]>([]);
-  const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoItem[]>([]);
-  const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>([]);
+  // Results state with instant local cache for 0ms initial load
+  const cachedHistory = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('velox_studio_media_cache');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          imgs: Array.isArray(parsed.imgs) ? parsed.imgs : [],
+          vids: Array.isArray(parsed.vids) ? parsed.vids : [],
+          auds: Array.isArray(parsed.auds) ? parsed.auds : [],
+        };
+      }
+    } catch (_) {}
+    return { imgs: [], vids: [], auds: [] };
+  }, []);
+
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImageItem[]>(cachedHistory.imgs);
+  const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideoItem[]>(cachedHistory.vids);
+  const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>(cachedHistory.auds);
 
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -385,6 +399,9 @@ export const StudioPage: React.FC = () => {
           if (imgs.length > 0) setGeneratedImages(imgs);
           if (vids.length > 0) setGeneratedVideos(vids);
           if (auds.length > 0) setGeneratedAudios(auds);
+          try {
+            localStorage.setItem('velox_studio_media_cache', JSON.stringify({ imgs, vids, auds }));
+          } catch (_) {}
         }
       })
       .catch((err) => {

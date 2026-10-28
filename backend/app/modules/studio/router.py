@@ -5,6 +5,8 @@ Handles authenticated Studio job creations, verifies user credit balances,
 and automatically deducts credits with full immutable transaction audit logging.
 """
 from typing import Optional, Dict, Any, List
+import os
+import re
 import uuid
 import urllib.parse
 import urllib.request
@@ -15,6 +17,7 @@ import time
 import random
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
@@ -29,6 +32,50 @@ from app.modules.pools.models import ServicePool, ProviderCredential
 from app.modules.users.router import get_client_ip
 
 router = APIRouter(prefix="/studio", tags=["Studio Workspace & Jobs"])
+
+MEDIA_DIR = os.environ.get("STUDIO_MEDIA_DIR", "/app/data/media")
+os.makedirs(MEDIA_DIR, exist_ok=True)
+
+
+def save_media_file_if_base64(data_uri: str, file_prefix: str = "media") -> str:
+    """
+    If data_uri is a base64 Data URL, decode and write it to disk, returning relative API URL.
+    Otherwise returns data_uri unchanged.
+    """
+    if not data_uri or not data_uri.startswith("data:"):
+        return data_uri
+
+    try:
+        header, b64data = data_uri.split(",", 1)
+        mime_match = re.search(r"data:([^;]+);", header)
+        mime = mime_match.group(1).lower() if mime_match else "application/octet-stream"
+
+        ext = ".jpg"
+        if "png" in mime:
+            ext = ".png"
+        elif "jpeg" in mime or "jpg" in mime:
+            ext = ".jpg"
+        elif "webp" in mime:
+            ext = ".webp"
+        elif "mp4" in mime:
+            ext = ".mp4"
+        elif "webm" in mime:
+            ext = ".webm"
+        elif "mpeg" in mime or "mp3" in mime:
+            ext = ".mp3"
+        elif "wav" in mime:
+            ext = ".wav"
+
+        filename = f"{file_prefix}_{uuid.uuid4().hex[:12]}{ext}"
+        filepath = os.path.join(MEDIA_DIR, filename)
+        with open(filepath, "wb") as f:
+            f.write(base64.b64decode(b64data))
+
+        return f"/api/v1/studio/media/{filename}"
+    except Exception as e:
+        print(f"[Studio Media Save Error]: {e}")
+        return data_uri
+
 
 DEFAULT_CREDIT_COSTS = {
     "CHAT": 15,
@@ -285,6 +332,21 @@ async def delete_studio_history_item(
     await db.delete(record)
     await db.commit()
     return ok(message="Đã xóa tác phẩm khỏi lịch sử thành công.")
+
+
+@router.get("/media/{filename}")
+async def get_studio_media_file(filename: str):
+    """Serves generated media files with immutable caching."""
+    safe_name = os.path.basename(filename)
+    filepath = os.path.join(MEDIA_DIR, safe_name)
+    if not os.path.isfile(filepath):
+        raise HTTPException(status_code=404, detail="File media không tồn tại")
+    return FileResponse(
+        filepath,
+        headers={
+            "Cache-Control": "public, max-age=31536000, immutable",
+        },
+    )
 
 
 CINEMATIC_VIDEOS = [
@@ -881,6 +943,10 @@ async def create_studio_job(
     )
     output_url = gen_result.get("output_url") or ""
     poster_url = gen_result.get("poster_url")
+    # Save base64 data URLs to static media files to prevent DB bloat and ultra-slow history loading
+    output_url = save_media_file_if_base64(output_url, file_prefix=f"{cat_lookup.lower()}_{job_id[:8]}")
+    if poster_url and poster_url.startswith("data:"):
+        poster_url = save_media_file_if_base64(poster_url, file_prefix=f"poster_{job_id[:8]}")
     render_seconds = gen_result.get("render_seconds", 3.0)
 
     # 5. Save into MediaGenerationLog and commit in < 1ms
