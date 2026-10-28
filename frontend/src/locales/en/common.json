@@ -506,6 +506,7 @@
     "upscaling": "Upscaling to 4K...",
     "completed": "Completed!",
     "prompt_placeholder": "Describe what you want to create...",
+    "prompt_placeholder_chat": "Ask AI anything, write code, solve problems, analyze data, or draft plans...",
     "prompt_placeholder_image": "Describe the image you want to create (e.g., 8K cinematic portrait, volumetric lighting)...",
     "prompt_placeholder_video": "Describe the video you want to create (e.g., 120fps slow-motion drone flyover)...",
     "prompt_placeholder_audio": "Enter text you want to synthesize into natural AI voice...",
@@ -522,7 +523,11 @@
     "no_audio_yet": "No audio files generated yet. Type a prompt below to synthesize lifelike AI speech!",
     "generate_success": "AI generation completed successfully!",
     "fullscreen": "View Fullscreen",
-    "credits_unit": "cr"
+    "credits_unit": "cr",
+    "tab_chat": "Chat",
+    "clear_chat": "Clear Chat",
+    "chat_title": "AI Conversational Studio",
+    "chat_thinking": "AI is thinking and drafting a response..."
   },
   "models_page": {
     "title": "AI Models Catalog",
