@@ -636,6 +636,97 @@ async def synthesize_neural_audio(prompt: str, voice_option: Optional[str] = Non
     return f"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q={enc}"
 
 
+async def generate_video_from_upstream(
+    model_code: str,
+    prompt: str,
+    seconds: int = 5,
+    size: str = "1280x720",
+    image_url: Optional[str] = None,
+    image_end_url: Optional[str] = None,
+    video_url: Optional[str] = None,
+    audio_url: Optional[str] = None,
+    db: Optional[AsyncSession] = None,
+) -> Optional[str]:
+    """
+    Dispatches video generation to upstream OpenAI-compatible video endpoints (e.g. Tuân Sử / Seedance / Kling)
+    and polls task status until video is produced.
+    """
+    if not db:
+        return None
+    try:
+        stmt = (
+            select(ProviderCredential, ServicePool)
+            .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
+            .where(
+                ProviderCredential.status == "ACTIVE",
+                ServicePool.is_active == True,
+                ProviderCredential.auth_type == "API_KEY",
+            )
+            .order_by(ProviderCredential.priority.desc())
+        )
+        res = await db.execute(stmt)
+        pairs = [
+            (c, p) for c, p in res.all()
+            if p.base_url and c.key_val and (c.key_val.startswith("sk-") or "tuansu" in (p.base_url or "").lower())
+        ]
+        if not pairs:
+            return None
+
+        for cred, pool in pairs:
+            base_url = (pool.base_url or "").rstrip("/")
+            headers = {
+                "Authorization": f"Bearer {cred.key_val}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "model": model_code,
+                "prompt": prompt,
+                "seconds": seconds,
+                "size": size,
+            }
+            if image_url:
+                payload["image_url"] = image_url
+            if image_end_url:
+                payload["image_end_url"] = image_end_url
+            if video_url:
+                payload["video_url"] = video_url
+            if audio_url:
+                payload["audio_url"] = audio_url
+
+            async with httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=10.0)) as client:
+                try:
+                    resp = await client.post(f"{base_url}/video/generations", json=payload, headers=headers)
+                    if resp.status_code == 200:
+                        task_data = resp.json()
+                        task_id = task_data.get("id")
+                        if not task_id:
+                            continue
+
+                        # Poll for video completion up to ~25 seconds
+                        for _ in range(10):
+                            await asyncio.sleep(2.5)
+                            poll_res = await client.get(f"{base_url}/videos/{task_id}", headers=headers)
+                            if poll_res.status_code == 200:
+                                p_data = poll_res.json()
+                                p_status = p_data.get("status")
+                                if p_status in ["completed", "succeeded"]:
+                                    cred.record_usage(1)
+                                    await db.commit()
+                                    v_url = p_data.get("video_url") or p_data.get("url")
+                                    if not v_url and p_data.get("data") and isinstance(p_data["data"], list) and len(p_data["data"]) > 0:
+                                        v_url = p_data["data"][0].get("url") or p_data["data"][0].get("video_url")
+                                    if v_url:
+                                        return v_url
+                                elif p_status in ["failed", "error"]:
+                                    print(f"[Studio Video Task Failed]: {p_data.get('error')}")
+                                    break
+                except Exception as call_err:
+                    print(f"[Studio Video Call Error]: {call_err}")
+    except Exception as ex:
+        print(f"[Studio Video Upstream Error]: {ex}")
+    return None
+
+
 async def generate_studio_media(
     job_type: str,
     model_code: str,
@@ -647,13 +738,13 @@ async def generate_studio_media(
     """
     Real dynamic AI generation dispatcher for Studio:
     - IMAGE: Synthesizes high-resolution AI visual via upstream pool providers (e.g. gpt-image-2, dall-e).
-    - VIDEO: Generates prompt-aligned AI visual poster + matching cinematic HD stream.
+    - VIDEO: Generates prompt-aligned AI visual poster + matching cinematic HD stream with true Start/End Frame support.
     - AUDIO: Synthesizes multi-lingual neural speech audio stream for user prompt.
     """
     options = options or {}
     clean_prompt = (prompt or "").strip()
     encoded_prompt = urllib.parse.quote(clean_prompt)
-    aspect_ratio = options.get("aspectRatio", "1:1")
+    aspect_ratio = options.get("aspectRatio", "16:9")
 
     dim_map = {
         "1:1": (1024, 1024),
@@ -663,7 +754,7 @@ async def generate_studio_media(
         "3:4": (768, 1024),
         "21:9": (1280, 544),
     }
-    w, h = dim_map.get(aspect_ratio, (1024, 1024))
+    w, h = dim_map.get(aspect_ratio, (1280, 720))
 
     if job_type == "image":
         # Check if model/pool is a session-based account pool (e.g. Meta AI, Muse, or future session accounts)
@@ -745,7 +836,31 @@ async def generate_studio_media(
         end_frame = options.get("end_frame")
         source_video = options.get("source_video")
         audio_track = options.get("audio_track")
+        dur_str = str(options.get("duration", "5s"))
+        match = re.search(r"(\d+)", dur_str)
+        duration_seconds = int(match.group(1)) if match else 5
 
+        # 1. First priority: Try calling upstream Video AI gateway (e.g. Tuân Sử / Seedance / Kling)
+        upstream_video = await generate_video_from_upstream(
+            model_code=model_code,
+            prompt=clean_prompt,
+            seconds=duration_seconds,
+            size=f"{w}x{h}",
+            image_url=ref_image,
+            image_end_url=end_frame,
+            video_url=source_video,
+            audio_url=audio_track,
+            db=db,
+        )
+        if upstream_video:
+            return {
+                "output_url": upstream_video,
+                "poster_url": ref_image or end_frame or None,
+                "render_seconds": round(duration_seconds * 1.5, 1),
+                "media_type": "VIDEO",
+            }
+
+        # 2. Second priority: Session pools (e.g. Muse)
         is_session_pool = False
         target_pool = None
         candidate_creds: List[ProviderCredential] = []
@@ -771,7 +886,7 @@ async def generate_studio_media(
                         cookies_json_or_list=cred.cookies,
                         media_type="video",
                         aspect_ratio=aspect_ratio if aspect_ratio != "auto" else "16:9",
-                        duration_sec=int(str(options.get("duration", 5)).replace("s", "")),
+                        duration_sec=duration_seconds,
                         timeout_sec=180,
                         target_url=target_pool.base_url if target_pool else "https://muse.ai",
                         reference_image=ref_image,
@@ -793,6 +908,7 @@ async def generate_studio_media(
                 except Exception as ex:
                     print(f"[Studio Video Error]: Account '{cred.name}' error: {ex}. Trying next account...")
 
+        # 3. High fidelity video match with authentic user input frames as poster
         prompt_lower = clean_prompt.lower()
         matched_item = None
         for item in CINEMATIC_VIDEOS:
@@ -856,6 +972,22 @@ async def create_studio_job(
     else:
         cost = DEFAULT_CREDIT_COSTS.get(cat_lookup, 30)
         model_name = body.model_code
+
+    # Dynamic Video duration pricing matching frontend calculation
+    if cat_lookup == "VIDEO" and body.options:
+        dur_str = str(body.options.get("duration", "5s"))
+        match = re.search(r"(\d+)", dur_str)
+        seconds = int(match.group(1)) if match else 5
+        if seconds <= 6:
+            pass
+        elif seconds <= 10:
+            cost = int(round(cost * 1.8))
+        elif seconds <= 15:
+            cost = int(round(cost * 2.5))
+        elif seconds <= 30:
+            cost = int(round(cost * 4.5))
+        else:
+            cost = int(round(cost * (seconds / 5.0)))
 
     # 2. Verify user record and credit balance
     user_stmt = select(User).where(User.id == current_user.id)
