@@ -386,6 +386,11 @@
   },
   "studio": {
     "title": "VeloX AI 创意工作室",
+    "insufficient_credits_banner": "账户余额不足以运行此模型",
+    "insufficient_credits_toast": "积分不足（需要 {{cost}} 积分，当前有 {{balance}} 积分）。请充值！",
+    "need_credits": "需要",
+    "current_credits": "现有",
+    "btn_topup_now": "立即充值",
     "tools_title": "AI 创作工坊",
     "cat_chat": "聊天对话",
     "cat_image": "图像生成",

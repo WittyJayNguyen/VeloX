@@ -157,7 +157,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
               </div>
               <div className={styles.balanceInfo}>
                 <div className={styles.creditAmount}>
-                  {(user?.credit_balance ?? 991).toLocaleString()}
+                  {(user?.credit_balance ?? 0).toLocaleString()}
                 </div>
                 <div className={styles.creditUnit}>Credits khả dụng</div>
               </div>

@@ -100,7 +100,7 @@ export const SubscriptionPage: React.FC = () => {
               {user?.tier || 'Free Member'}
             </div>
             <div style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '4px' }}>
-              Số dư tài khoản: <strong>💎 {user?.credit_balance ?? 991} credit</strong>
+              Số dư tài khoản: <strong>💎 {(user?.credit_balance ?? 0).toLocaleString()} credit</strong>
             </div>
           </div>
           <button type="button" className={styles.primaryBtn} onClick={() => setTopupOpen(true)}>

@@ -25,6 +25,8 @@ from app.modules.developers.router import router as developers_router
 from app.modules.logs.router import router as logs_router
 from app.modules.proxy.router import router as proxy_router
 from app.modules.accounting.router import router as accounting_router
+from app.modules.billing.router import router as billing_router
+from app.modules.studio.router import router as studio_router
 from app.modules.pools.seed import seed_gateway_data
 
 settings = get_settings()
@@ -89,6 +91,8 @@ app.include_router(playground_router, prefix="/api/v1")
 app.include_router(developers_router, prefix="/api/v1")
 app.include_router(logs_router, prefix="/api/v1")
 app.include_router(accounting_router, prefix="/api/v1")
+app.include_router(billing_router, prefix="/api/v1")
+app.include_router(studio_router, prefix="/api/v1")
 app.include_router(proxy_router)
 
 

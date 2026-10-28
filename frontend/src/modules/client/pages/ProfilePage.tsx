@@ -46,7 +46,7 @@ export const ProfilePage: React.FC = () => {
           <div className={styles.statIconBox}>💎</div>
           <div className={styles.statInfo}>
             <div className={styles.statLabel}>{t('profile.balance_label', 'Số Dư Credit')}</div>
-            <div className={styles.statValue}>{user?.credit_balance ?? 991}</div>
+            <div className={styles.statValue}>{(user?.credit_balance ?? 0).toLocaleString()}</div>
           </div>
         </div>
 
