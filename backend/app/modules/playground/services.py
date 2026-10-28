@@ -23,6 +23,40 @@ from app.modules.playground.schemas import (
 from app.modules.playground.muse_worker import generate_media_via_muse, parse_cookies_universal
 
 
+UPSTREAM_MODEL_MAP = {
+    # OpenAI Flagships & Minis
+    "gpt-4o": "gpt-6-sol-ts",
+    "gpt-4o-mini": "deepseek-v4.1-flash-1017-free",
+    "gpt-4": "claude-sonnet-5-kiro",
+    "gpt-3.5-turbo": "deepseek-v4.1-flash",
+
+    # Anthropic Claude
+    "claude-3-5-sonnet": "claude-sonnet-5.5-kiro",
+    "claude-3.5-sonnet": "claude-sonnet-5.5-kiro",
+    "claude-sonnet-5": "claude-sonnet-5-kiro",
+    "claude-3-haiku": "claude-haiku-5-5",
+    "claude-3-5-haiku": "claude-haiku-5-5",
+    "claude-opus": "claude-opus-5-kiro",
+    "claude-3-opus": "claude-opus-5-kiro",
+
+    # DeepSeek Reasoning & Chat
+    "deepseek-r1": "deepseek-v4.1-flash",
+    "deepseek-v3": "deepseek-v4.1-flash",
+    "deepseek-chat": "deepseek-v4.1-flash",
+
+    # Google Gemini
+    "gemini-1-5-pro": "gemini-4-argon",
+    "gemini-1.5-pro": "gemini-4-argon",
+    "gemini-flash": "gemini-flash-3.8-fast",
+    "gemini-1-5-flash": "gemini-flash-3.8-fast",
+
+    # Meta Llama & Open Source
+    "llama-3-3-70b": "qwen3.8-flash",
+    "llama-3.3-70b-instruct": "qwen3.8-flash",
+    "meta-ai-chat": "deepseek-v4.1-flash-free",
+}
+
+
 async def execute_playground_request(
     payload: PlaygroundRequest,
     db: AsyncSession,
@@ -49,6 +83,7 @@ async def execute_playground_request(
         out_cost = model.output_cost_per_1m or 0.0
 
     is_video = category_name == "VIDEO" or "video" in payload.model_code.lower() or "animate" in payload.model_code.lower()
+    is_media = is_video or category_name == "IMAGE" or "imagine" in payload.model_code.lower() or "image" in payload.model_code.lower()
 
     # 2. Resolve Credential / Key (Multi-account rotation with pool routing strategy)
     credential: Optional[ProviderCredential] = None
@@ -62,32 +97,27 @@ async def execute_playground_request(
             candidate_credentials = [credential]
 
     if not candidate_credentials:
-        target_pool_id = payload.pool_id or (model.pool_id if model else None)
-        target_pool = None
-        if target_pool_id:
-            p_res = await db.execute(select(ServicePool).where(ServicePool.id == target_pool_id, ServicePool.is_active == True))
-            target_pool = p_res.scalars().first()
-        if not target_pool:
-            p_res = await db.execute(
-                select(ServicePool).where(ServicePool.provider == provider_name, ServicePool.is_active == True).limit(1)
-            )
-            target_pool = p_res.scalars().first()
-
-        if target_pool:
+        if is_media:
+            # Media tasks use SESSION_TOKEN (Muse)
             c_stmt = select(ProviderCredential).where(
-                ProviderCredential.pool_id == target_pool.id,
-                ProviderCredential.status == "ACTIVE"
-            )
-            strategy = (target_pool.routing_strategy or "LEAST_USED").upper()
-            if strategy == "ROUND_ROBIN":
-                c_stmt = c_stmt.order_by(ProviderCredential.last_checked_at.asc().nullsfirst(), ProviderCredential.requests_count.asc())
-            elif strategy == "PRIORITY":
-                c_stmt = c_stmt.order_by(ProviderCredential.priority.desc(), ProviderCredential.requests_count.asc())
-            else:  # LEAST_USED (default)
-                c_stmt = c_stmt.order_by(ProviderCredential.requests_count.asc(), ProviderCredential.priority.desc())
-
+                ProviderCredential.status == "ACTIVE",
+                ProviderCredential.auth_type == "SESSION_TOKEN"
+            ).order_by(ProviderCredential.requests_count.asc(), ProviderCredential.priority.desc())
             candidate_credentials = (await db.execute(c_stmt)).scalars().all()
         else:
+            # Text / Chat tasks strictly use API_KEY credentials from active gateway pools
+            c_stmt = (
+                select(ProviderCredential)
+                .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
+                .where(
+                    ProviderCredential.status == "ACTIVE",
+                    ProviderCredential.auth_type == "API_KEY"
+                )
+                .order_by(ProviderCredential.priority.desc(), ProviderCredential.requests_count.asc())
+            )
+            candidate_credentials = (await db.execute(c_stmt)).scalars().all()
+
+        if not candidate_credentials:
             c_stmt = select(ProviderCredential).where(
                 ProviderCredential.status == "ACTIVE"
             ).order_by(ProviderCredential.requests_count.asc(), ProviderCredential.priority.desc())
@@ -360,47 +390,76 @@ async def execute_playground_request(
                 media_url = generated_url
                 media_urls = [media_url]
                 content = f"🎨 Đã tạo thành công qua AI Gateway với model `{payload.model_code}` ({provider_name}):\n\n> \"{user_prompt}\""
-        elif credential and credential.auth_type == "API_KEY" and (credential.key_val or "").startswith("sk-"):
-            pool_res = await db.execute(select(ServicePool).where(ServicePool.id == credential.pool_id).limit(1))
-            c_pool = pool_res.scalars().first()
-            if c_pool and c_pool.base_url:
-                try:
-                    async with httpx.AsyncClient(timeout=45.0) as client:
-                        chat_req = {
-                            "model": payload.model_code,
-                            "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
-                            "temperature": payload.temperature,
-                            "max_tokens": payload.max_tokens,
-                        }
-                        c_url = f"{c_pool.base_url.rstrip('/')}/chat/completions"
-                        c_resp = await client.post(c_url, json=chat_req, headers={
-                            "Authorization": f"Bearer {credential.key_val}",
-                            "Content-Type": "application/json",
-                        })
-                        if c_resp.status_code == 200:
-                            c_data = c_resp.json()
-                            if "choices" in c_data and len(c_data["choices"]) > 0:
-                                content = c_data["choices"][0]["message"]["content"]
-                except Exception as ex:
-                    print(f"[Playground Upstream Chat Error]: {ex}")
+        else:
+            # Standard Text / Chat LLM Execution via Upstream API Gateway
+            if not credential and candidate_credentials:
+                credential = candidate_credentials[0]
+
+            if credential and credential.auth_type == "API_KEY" and (credential.key_val or "").startswith("sk-"):
+                pool_res = await db.execute(select(ServicePool).where(ServicePool.id == credential.pool_id).limit(1))
+                c_pool = pool_res.scalars().first()
+                if c_pool and c_pool.base_url:
+                    base_url = c_pool.base_url.rstrip("/")
+                    target_model = UPSTREAM_MODEL_MAP.get(payload.model_code, payload.model_code)
+
+                    # Build failover sequence for maximum reliability
+                    candidate_models = [
+                        target_model,
+                        "claude-sonnet-5.5-kiro",
+                        "deepseek-v4.1-flash",
+                        "gpt-6-sol-ts",
+                        "qwen3.8-flash",
+                        "claude-haiku-5-5",
+                    ]
+                    # Deduplicate while preserving sequence order
+                    seen_models = set()
+                    unique_models = []
+                    for cand in candidate_models:
+                        if cand not in seen_models:
+                            unique_models.append(cand)
+                            seen_models.add(cand)
+
+                    for m_cand in unique_models:
+                        try:
+                            async with httpx.AsyncClient(timeout=45.0) as client:
+                                chat_req = {
+                                    "model": m_cand,
+                                    "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
+                                    "temperature": payload.temperature if payload.temperature is not None else 0.7,
+                                    "max_tokens": payload.max_tokens or 2048,
+                                }
+                                c_resp = await client.post(
+                                    f"{base_url}/chat/completions",
+                                    json=chat_req,
+                                    headers={
+                                        "Authorization": f"Bearer {credential.key_val}",
+                                        "Content-Type": "application/json",
+                                    }
+                                )
+                                if c_resp.status_code == 200:
+                                    c_data = c_resp.json()
+                                    if "choices" in c_data and len(c_data["choices"]) > 0:
+                                        msg_choice = c_data["choices"][0].get("message", {})
+                                        content = msg_choice.get("content") or msg_choice.get("reasoning_content") or ""
+                                        if content:
+                                            req_status = "success"
+                                            debug_info["upstream_model_used"] = m_cand
+                                            debug_info["upstream_pool"] = c_pool.name
+                                            debug_info["key_selected"] = credential.name
+                                            credential.record_usage(1)
+                                            await db.commit()
+                                            break
+                                else:
+                                    print(f"[Playground Chat]: Upstream model {m_cand} returned HTTP {c_resp.status_code}")
+                        except Exception as ex:
+                            print(f"[Playground Upstream Chat Error with {m_cand}]: {ex}")
+
             if not content:
                 content = (
-                    f"Xin chào Admin! Tôi là mô hình **{payload.model_code}** ({provider_name}).\n\n"
-                    f"Tôi đã nhận được prompt thử nghiệm từ bạn:\n> {user_prompt}\n\n"
-                    f"**Thông tin định tuyến:**\n"
-                    f"- Provider: `{provider_name}`\n"
-                    f"- API Key sử dụng: `{credential.name if credential else 'Auto Gateway Default'}`\n"
-                    f"- Token Input: tính toán theo giá niêm yết danh mục Model Catalog."
+                    "Dịch vụ AI Gateway đang quá tải hoặc tạm thời không thể kết nối tới mô hình. "
+                    "Vui lòng thử lại sau giây lát hoặc chọn mô hình khác."
                 )
-        else:
-            content = (
-                f"Xin chào Admin! Tôi là mô hình **{payload.model_code}** ({provider_name}).\n\n"
-                f"Tôi đã nhận được prompt thử nghiệm từ bạn:\n> {user_prompt}\n\n"
-                f"**Thông tin định tuyến:**\n"
-                f"- Provider: `{provider_name}`\n"
-                f"- API Key sử dụng: `{credential.name if credential else 'Auto Gateway Default'}`\n"
-                f"- Token Input: tính toán theo giá niêm yết danh mục Model Catalog."
-            )
+                req_status = "error"
 
     latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
 

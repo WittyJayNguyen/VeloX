@@ -132,6 +132,26 @@ const CURATED_CHAT_MODELS: CuratedChatModel[] = [
     credits: '1 cr/tin nhắn',
     selling_credit_price: 1,
   },
+  {
+    id: 'qwen3.8-flash',
+    name: 'Qwen 3.8 Flash',
+    model_code: 'qwen3.8-flash',
+    provider: 'Alibaba',
+    badge: 'SIÊU TỐC',
+    description: 'Mô hình mã nguồn mở tốc độ cao, khả năng đa ngôn ngữ và lập trình sắc bén',
+    credits: '1 cr/tin nhắn',
+    selling_credit_price: 1,
+  },
+  {
+    id: 'kimi-k3.1-pro',
+    name: 'Kimi K3.1 Pro',
+    model_code: 'kimi-k3.1-pro',
+    provider: 'Moonshot AI',
+    badge: 'LONG CONTEXT',
+    description: 'Mô hình ngữ cảnh siêu dài, tóm tắt và đọc tài liệu chuyên nghiệp',
+    credits: '1 cr/tin nhắn',
+    selling_credit_price: 1,
+  },
 ];
 
 const STORAGE_KEY = 'velox_ai_chat_sessions_v2';
