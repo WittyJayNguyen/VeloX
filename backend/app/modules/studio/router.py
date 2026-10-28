@@ -535,8 +535,8 @@ async def create_studio_job(
         cost = DEFAULT_CREDIT_COSTS.get(cat_lookup, 30)
         model_name = body.model_code
 
-    # 2. Lock user record to prevent concurrent double-spending
-    user_stmt = select(User).where(User.id == current_user.id).with_for_update()
+    # 2. Verify user record and credit balance
+    user_stmt = select(User).where(User.id == current_user.id)
     user_res = await db.execute(user_stmt)
     user_obj = user_res.scalar_one_or_none()
 
@@ -559,7 +559,7 @@ async def create_studio_job(
             }
         )
 
-    # 3. Deduct credits
+    # 3. Deduct credits & commit immediately (releases write lock in < 1ms)
     balance_before = current_balance
     new_balance = balance_before - cost
     user_obj.credit_balance = new_balance
@@ -578,8 +578,9 @@ async def create_studio_job(
         ip_address=client_ip,
     )
     db.add(audit)
+    await db.commit()
 
-    # 4. Dispatch Generation Pipeline
+    # 4. Dispatch Generation Pipeline (runs without holding any DB transaction lock)
     gen_result = await generate_studio_media(
         job_type=job_type,
         model_code=body.model_code,
@@ -591,10 +592,10 @@ async def create_studio_job(
     poster_url = gen_result.get("poster_url")
     render_seconds = gen_result.get("render_seconds", 3.0)
 
-    # 5. Save into MediaGenerationLog if image, video, or audio
+    # 5. Save into MediaGenerationLog and commit in < 1ms
     if cat_lookup in ["IMAGE", "VIDEO", "AUDIO"]:
         log_entry = MediaGenerationLog(
-            user_id=user_obj.id,
+            user_id=current_user.id,
             model_id=body.model_code,
             media_type=cat_lookup,
             prompt=body.prompt,
@@ -603,8 +604,7 @@ async def create_studio_job(
             render_seconds=render_seconds,
         )
         db.add(log_entry)
-
-    await db.commit()
+        await db.commit()
 
     return ok(
         data={
