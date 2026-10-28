@@ -201,7 +201,15 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
   return (
     <div className={`${styles.megaMenuWrapper} ${isStudioActive ? styles.active : ''}`}>
       {/* Trigger Link with Chevron */}
-      <div className={styles.triggerButton}>
+      <div
+        className={styles.triggerButton}
+        onClick={() => {
+          navigate('/studio');
+          if (onCloseMenu) onCloseMenu();
+        }}
+        role="button"
+        tabIndex={0}
+      >
         <span className={styles.navLabel}>{t('nav.studio', 'Studio')}</span>
         <HiOutlineChevronDown className={styles.chevron} size={14} />
       </div>

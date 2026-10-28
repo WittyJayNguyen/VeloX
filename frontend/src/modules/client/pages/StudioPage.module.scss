@@ -1537,4 +1537,61 @@
   40% { transform: scale(1); opacity: 1; }
 }
 
+@media (max-width: 768px) {
+  .bottomControlPanel {
+    bottom: 8px;
+    width: calc(100% - 16px);
+  }
+
+  .promptInputBox {
+    padding: 6px 10px;
+    border-radius: 14px;
+  }
+
+  .promptBottomToolbar {
+    gap: 4px;
+  }
+
+  .toolbarLeft {
+    overflow-x: auto;
+    max-width: calc(100% - 75px);
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .toolbarRight {
+    flex-shrink: 0;
+    gap: 4px;
+  }
+
+  .modeSwitcherGroup {
+    flex-shrink: 0;
+    
+    .modeTabBtn {
+      padding: 0 6px;
+      font-size: 11px;
+    }
+  }
+
+  .modelPillDropdown,
+  .paramsPillDropdown {
+    flex-shrink: 0;
+  }
+
+  .modelPillBtn,
+  .paramsPillBtn {
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .chatConversationArea {
+    padding: 16px 12px 140px;
+  }
+}
+
+
 
