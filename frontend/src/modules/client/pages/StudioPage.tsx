@@ -653,6 +653,11 @@ export const StudioPage: React.FC = () => {
           quality,
           voice: activeTab === 'audio' ? audioVoice : undefined,
           tone: activeTab === 'chat' ? chatTone : undefined,
+          ref_image: refImage,
+          start_frame: startFrame,
+          end_frame: endFrame,
+          source_video: sourceVideo,
+          audio_track: audioTrack,
         },
       });
       const jobData = jobRes.data?.data || jobRes.data;
@@ -781,7 +786,7 @@ export const StudioPage: React.FC = () => {
         };
         setGeneratedImages((prev) => [newImg, ...prev]);
       } else if (activeTab === 'video') {
-        const finalPoster = serverPosterUrl || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80';
+        const finalPoster = serverPosterUrl || refImage || startFrame || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1280&q=80';
         const finalVid = serverGeneratedUrl || 'https://assets.mixkit.co/videos/preview/mixkit-drone-view-of-waves-crashing-on-a-rocky-shore-41318-large.mp4';
         const newVid: GeneratedVideoItem = {
           id: serverJobId || `vid-${Date.now()}`,
@@ -797,8 +802,7 @@ export const StudioPage: React.FC = () => {
         };
         setGeneratedVideos((prev) => [newVid, ...prev]);
       } else if (activeTab === 'audio') {
-        const enc = encodeURIComponent(prompt.trim().slice(0, 150));
-        const finalAud = serverGeneratedUrl || `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${enc}`;
+        const finalAud = serverGeneratedUrl || '';
         const newAud: GeneratedAudioItem = {
           id: serverJobId || `aud-${Date.now()}`,
           title: prompt.slice(0, 36) + (prompt.length > 36 ? '...' : ''),

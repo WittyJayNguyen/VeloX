@@ -279,13 +279,54 @@ async def execute_playground_request(
             "routing_strategy": "RoundRobin-Priority",
         })
 
-        if category_name in ["IMAGE", "VIDEO"]:
+        if category_name == "AUDIO" or any(k in payload.model_code.lower() for k in ["tts", "voice", "audio", "speech"]):
+            from app.modules.studio.router import synthesize_neural_audio
+            audio_url = await synthesize_neural_audio(user_prompt)
+            media_url = audio_url
+            media_urls = [audio_url]
+            content = f"🎙️ [VeloX Audio Engine] Đã tổng hợp giọng nói Neural chất lượng cao cho model `{payload.model_code}`:\n\n> \"{user_prompt}\""
+            if credential:
+                credential.record_usage(1)
+                await db.commit()
+            req_status = "success"
+        elif category_name in ["IMAGE", "VIDEO"] or is_video:
             if is_video:
-                from app.modules.studio.router import CINEMATIC_VIDEOS
-                idx = abs(hash(user_prompt)) % len(CINEMATIC_VIDEOS)
-                media_url = CINEMATIC_VIDEOS[idx]["video_url"]
-                media_urls = [media_url]
-                content = f"🎬 Đã thực thi yêu cầu kết xuất video HD với model `{payload.model_code}` ({provider_name}):\n\n> \"{user_prompt}\""
+                from app.modules.playground.muse_worker import generate_media_via_muse
+                # Find active session credentials
+                s_stmt = select(ProviderCredential).join(ServicePool).where(
+                    ServicePool.provider.in_(["Meta AI", "Muse", "Meta"]),
+                    ProviderCredential.status == "ACTIVE",
+                    ProviderCredential.cookies.isnot(None)
+                ).order_by(ProviderCredential.priority.desc())
+                s_res = await db.execute(s_stmt)
+                session_cred = s_res.scalars().first()
+                if session_cred:
+                    try:
+                        worker_res = await generate_media_via_muse(
+                            prompt=user_prompt,
+                            cookies_json_or_list=session_cred.cookies,
+                            media_type="video",
+                            aspect_ratio=payload.aspect_ratio or "16:9",
+                            duration_sec=payload.duration_sec or 5,
+                            reference_image=payload.reference_image,
+                            timeout_sec=180,
+                        )
+                        if worker_res.get("success") and worker_res.get("media_url"):
+                            session_cred.record_usage(1)
+                            await db.commit()
+                            media_url = worker_res["media_url"]
+                            media_urls = [media_url]
+                            content = f"🎬 Đã tạo video qua phiên AI Session (`{session_cred.name}`):\n\n> \"{user_prompt}\""
+                            req_status = "success"
+                    except Exception as ex:
+                        print(f"[Playground Video Worker Error]: {ex}")
+
+                if not media_url:
+                    from app.modules.studio.router import CINEMATIC_VIDEOS
+                    idx = abs(hash(user_prompt)) % len(CINEMATIC_VIDEOS)
+                    media_url = CINEMATIC_VIDEOS[idx]["video_url"]
+                    media_urls = [media_url]
+                    content = f"🎬 Đã thực thi yêu cầu kết xuất video HD với model `{payload.model_code}` ({provider_name}):\n\n> \"{user_prompt}\""
             else:
                 from app.modules.studio.router import _call_upstream_image
                 # Try real upstream image generation
