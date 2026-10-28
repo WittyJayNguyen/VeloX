@@ -10,6 +10,7 @@ import {
   HiOutlineClock,
   HiOutlineArrowsPointingOut,
   HiOutlinePlay,
+  HiPlay,
   HiOutlineArrowUp,
   HiOutlineMicrophone,
   HiOutlineSpeakerWave,
@@ -216,54 +217,97 @@ const StudioImageThumbnail: React.FC<{
   );
 };
 
-// ── Smooth Video Thumbnail with Shimmer Placeholder ──
+// ── Smooth Video Thumbnail with Interactive Play Button & Buffering Indicator ──
 const StudioVideoThumbnail: React.FC<{
   videoUrl?: string;
   poster: string;
   title: string;
   children?: React.ReactNode;
 }> = ({ videoUrl, poster, title, children }) => {
-  const [isPosterLoaded, setIsPosterLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [safePoster, setSafePoster] = useState(
+    poster || '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg'
+  );
+
+  // Sync safePoster when poster prop changes
+  useEffect(() => {
+    if (poster) setSafePoster(poster);
+  }, [poster]);
+
+  const handleTogglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play().catch(() => {});
+    }
+  };
 
   return (
-    <div className={videoUrl ? styles.videoPlayerBox : styles.videoThumbnailBox}>
-      <div
-        className={styles.imageShimmerPlaceholder}
-        style={{ opacity: isPosterLoaded ? 0 : 1, pointerEvents: isPosterLoaded ? 'none' : 'auto' }}
-      >
-        <div className={styles.shimmerGlaze} />
-        <HiOutlineSparkles size={26} style={{ color: 'rgba(255, 107, 53, 0.25)' }} />
-      </div>
+    <div
+      className={videoUrl ? styles.videoPlayerBox : styles.videoThumbnailBox}
+      onClick={videoUrl ? handleTogglePlay : undefined}
+    >
       {videoUrl ? (
-        <video
-          src={videoUrl}
-          poster={poster}
-          controls
-          playsInline
-          preload="metadata"
-          className={styles.cardVideoPlayer}
-          onLoadedData={() => setIsPosterLoaded(true)}
-          onError={(e) => {
-            setIsPosterLoaded(true);
-            const target = e.currentTarget;
-            const fallbackVid = '/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4';
-            if (target.src && !target.src.endsWith(fallbackVid)) {
-              target.src = fallbackVid;
-              target.load();
-            }
-          }}
-        />
+        <>
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            poster={safePoster}
+            controls={isPlaying}
+            playsInline
+            preload="metadata"
+            className={styles.cardVideoPlayer}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={() => setIsPlaying(false)}
+            onWaiting={() => setIsBuffering(true)}
+            onPlaying={() => {
+              setIsPlaying(true);
+              setIsBuffering(false);
+            }}
+            onCanPlay={() => setIsBuffering(false)}
+            onError={(e) => {
+              const target = e.currentTarget;
+              const fallbackVid = '/api/v1/studio/media/video_09accc31_1f361a79e9a4.mp4';
+              if (target.src && !target.src.endsWith(fallbackVid)) {
+                target.src = fallbackVid;
+                target.load();
+              }
+            }}
+          />
+
+          {/* Holographic Play Button in center when paused */}
+          {!isPlaying && !isBuffering && (
+            <button
+              type="button"
+              className={styles.videoPlayCenterBtn}
+              onClick={handleTogglePlay}
+              title="Phát video"
+            >
+              <HiPlay size={24} />
+            </button>
+          )}
+
+          {/* Buffering Neon Spinner */}
+          {isBuffering && (
+            <div className={styles.videoBufferingOverlay}>
+              <HiOutlineArrowPath size={26} className={styles.bufferingSpinner} />
+              <span className={styles.bufferingText}>Đang tải video...</span>
+            </div>
+          )}
+        </>
       ) : (
         <img
-          src={poster}
+          src={safePoster}
           alt={title}
           loading="lazy"
-          className={isPosterLoaded ? styles.imgLoaded : ''}
-          onLoad={() => setIsPosterLoaded(true)}
-          onError={(e) => {
-            setIsPosterLoaded(true);
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = '/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg';
+          className={styles.imgLoaded}
+          onError={() => {
+            setSafePoster('/api/v1/studio/media/image_8d111e06_fa285bbfbb3b.jpg');
           }}
         />
       )}
@@ -372,6 +416,7 @@ export const StudioPage: React.FC = () => {
 
   // Active generating jobs
   const [activeJobs, setActiveJobs] = useState<GenerationJob[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Modal preview
   const [previewMedia, setPreviewMedia] = useState<{
@@ -927,11 +972,49 @@ export const StudioPage: React.FC = () => {
       refImage: targetRefImage,
     };
 
+    setIsSubmitting(true);
+
     // Prepend new job to active jobs list immediately
     setActiveJobs((prev) => [newJob, ...prev]);
 
     // Smoothly scroll to top so user sees the newly spawned job card
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Multi-stage realistic progress updater while waiting for backend GPU
+    const videoStages = [
+      { threshold: 25, text: 'Đang xếp hàng trong cụm GPU Render AI...' },
+      { threshold: 45, text: 'Đang sinh trường chuyển động AI Motion Diffusion...' },
+      { threshold: 65, text: 'Đang render vector quang học & ánh sáng 60FPS...' },
+      { threshold: 85, text: 'Đang khử nhiễu & nâng cấp độ nét 4K HDR...' },
+      { threshold: 94, text: 'Đang tối ưu bitrate & chuẩn bị đóng gói file...' },
+    ];
+    const imageStages = [
+      { threshold: 25, text: 'Đang xếp hàng trong cụm GPU Cluster...' },
+      { threshold: 50, text: 'Đang khử nhiễu hạt Neural Diffusion...' },
+      { threshold: 75, text: 'Đang nâng cấp chi tiết & ánh sáng điện ảnh...' },
+      { threshold: 94, text: 'Đang xuất ảnh 4K độ phân giải cao...' },
+    ];
+    const audioStages = [
+      { threshold: 30, text: 'Đang phân tích ngữ điệu giọng nói...' },
+      { threshold: 65, text: 'Đang tổng hợp sóng âm WaveNet chất lượng cao...' },
+      { threshold: 94, text: 'Đang xuất tệp âm thanh lossless...' },
+    ];
+    const currentStages = targetTab === 'video' ? videoStages : targetTab === 'audio' ? audioStages : imageStages;
+
+    const progressTimer = setInterval(() => {
+      setActiveJobs((prev) =>
+        prev.map((j) => {
+          if (j.id !== newJobId) return j;
+          const nextProg = Math.min(j.progress + Math.floor(Math.random() * 3 + 2), 92);
+          const stage = currentStages.find((s) => nextProg <= s.threshold) || currentStages[currentStages.length - 1];
+          return {
+            ...j,
+            progress: nextProg,
+            statusText: stage.text,
+          };
+        })
+      );
+    }, 450);
 
     // Background job process
     (async () => {
@@ -942,13 +1025,6 @@ export const StudioPage: React.FC = () => {
       try {
         // Optimistically deduct credits
         addCredits(-creditsToDeduct);
-
-        // Progress update: Stage 1
-        setTimeout(() => {
-          setActiveJobs((prev) =>
-            prev.map((j) => (j.id === newJobId ? { ...j, progress: 35, statusText: targetTab === 'video' ? 'Đang mô phỏng chuyển động khung hình...' : 'Đang sinh mẫu neural...' } : j))
-          );
-        }, 1200);
 
         const jobRes = await apiClient.post('/studio/jobs', {
           type: targetTab,
@@ -976,20 +1052,16 @@ export const StudioPage: React.FC = () => {
           updateUser({ credit_balance: jobData.credit_balance });
         }
 
-        // Progress update: Stage 2
+        // Final Packaging Step
+        clearInterval(progressTimer);
         setActiveJobs((prev) =>
-          prev.map((j) => (j.id === newJobId ? { ...j, progress: 75, statusText: targetTab === 'video' ? 'Đang khử nhiễu và làm mịn 60fps...' : 'Đang nâng cấp chất lượng cao...' } : j))
+          prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Đang hoàn tất đóng gói file!' } : j))
         );
-
-        // Progress update: Stage 3 (Final packaging)
-        setTimeout(() => {
-          setActiveJobs((prev) =>
-            prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Hoàn tất đóng gói file!' } : j))
-          );
-        }, 800);
 
         // Finish job after short rendering delay
         setTimeout(() => {
+          clearInterval(progressTimer);
+          setIsSubmitting(false);
           setActiveJobs((prev) => prev.filter((j) => j.id !== newJobId));
 
           if (targetTab === 'image') {
@@ -1039,9 +1111,11 @@ export const StudioPage: React.FC = () => {
 
           setToastMsg(t('studio.generate_success', 'Tác phẩm AI đã được sinh hoàn tất!'));
           setTimeout(() => setToastMsg(null), 3000);
-        }, 1500);
+        }, 1200);
 
       } catch (err: any) {
+        clearInterval(progressTimer);
+        setIsSubmitting(false);
         setActiveJobs((prev) => prev.filter((j) => j.id !== newJobId));
         // Re-sync user profile to restore credits on failure
         syncProfile().catch(() => {});
@@ -1800,6 +1874,38 @@ export const StudioPage: React.FC = () => {
               onChange={(e) => handleGenericFileUpload(e, setAudioTrack, 'audio track')}
             />
 
+            {/* ACTIVE JOBS LIVE PROGRESS TICKER BAR */}
+            {activeJobs.length > 0 && (
+              <div
+                className={styles.activeJobsStatusBar}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                title="Nhấp để cuộn lên xem tiến trình tác phẩm"
+              >
+                <div className={styles.statusPulseIconBox}>
+                  <div className={styles.pulseLiveDot} />
+                  <HiOutlineArrowPath className={styles.activeJobsSpinIcon} size={15} />
+                </div>
+                <div className={styles.statusInfoCol}>
+                  <div className={styles.statusHeadline}>
+                    <span className={styles.statusBadgeText}>
+                      Đang xử lý {activeJobs.length} tác phẩm AI ({activeJobs[0].progress}%)
+                    </span>
+                    <span className={styles.statusDivider}>•</span>
+                    <span className={styles.statusDetailText}>{activeJobs[0].statusText}</span>
+                  </div>
+                  <div className={styles.statusProgressTrack}>
+                    <div
+                      className={styles.statusProgressBar}
+                      style={{ width: `${activeJobs[0].progress}%` }}
+                    />
+                  </div>
+                </div>
+                <div className={styles.statusActionCol}>
+                  <span className={styles.viewJobLink}>Xem tác phẩm ↑</span>
+                </div>
+              </div>
+            )}
+
             {/* INSUFFICIENT CREDITS WARNING BAR */}
             {hasInsufficientCredits && (
               <div
@@ -2177,19 +2283,25 @@ export const StudioPage: React.FC = () => {
 
                 <button
                   type="button"
-                  className={`${styles.pinkNeonSubmitBtn} ${prompt.trim() ? styles.submitBtnReady : ''}`}
+                  className={`${styles.pinkNeonSubmitBtn} ${prompt.trim() && !isSubmitting ? styles.submitBtnReady : ''} ${isSubmitting ? styles.submitBtnLoading : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleGenerate();
                   }}
-                  disabled={!prompt.trim()}
+                  disabled={!prompt.trim() || isSubmitting}
                   title={
-                    hasInsufficientCredits
+                    isSubmitting
+                      ? 'Hệ thống đang tiến hành sinh tác phẩm...'
+                      : hasInsufficientCredits
                       ? `Số dư không đủ (${currentCredits.toLocaleString()}/${totalCreditsNeeded} cr) - Bấm để nạp thêm!`
                       : `${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`
                   }
                 >
-                  <HiOutlineArrowUp size={20} strokeWidth={2.5} />
+                  {isSubmitting ? (
+                    <HiOutlineArrowPath size={17} className={styles.spinSubmitIcon} />
+                  ) : (
+                    <HiOutlineArrowUp size={20} strokeWidth={2.5} />
+                  )}
                 </button>
               </div>
             </div>
