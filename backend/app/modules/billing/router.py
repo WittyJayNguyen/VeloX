@@ -7,6 +7,7 @@ and provides Admin RBAC endpoints to create, update, and manage credit packages 
 import json
 import uuid
 import logging
+from datetime import datetime, timedelta
 from typing import Optional, List
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -149,11 +150,80 @@ async def list_packages(
     return ok(data=[serialize_package(p) for p in packages])
 
 
+@router.get("/check-payment-status")
+async def check_payment_status(
+    since: Optional[str] = None,
+    expected_amount: Optional[int] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Check if a successful payment transaction has arrived for the current user.
+    Used by the frontend to automatically detect bank transfer completion via SePay Webhook.
+    """
+    # 1. Refresh current user to get latest credit balance
+    user_stmt = select(User).where(User.id == current_user.id)
+    user_res = await db.execute(user_stmt)
+    latest_user = user_res.scalar_one_or_none() or current_user
+
+    # Determine cutoff time (default: last 15 minutes)
+    cutoff = datetime.utcnow() - timedelta(minutes=15)
+    if since:
+        try:
+            clean_since = since.replace("Z", "+00:00")
+            parsed_dt = datetime.fromisoformat(clean_since)
+            if parsed_dt.tzinfo is not None:
+                parsed_dt = parsed_dt.replace(tzinfo=None)
+            cutoff = max(cutoff, parsed_dt - timedelta(seconds=10))
+        except Exception:
+            pass
+
+    # 2. Query recent successful transactions for this user
+    query = (
+        select(PaymentTransaction)
+        .where(
+            PaymentTransaction.user_id == current_user.id,
+            PaymentTransaction.status.in_(["SUCCESS", "COMPLETED"]),
+            PaymentTransaction.created_at >= cutoff,
+        )
+        .order_by(desc(PaymentTransaction.created_at))
+    )
+
+    if expected_amount and expected_amount > 0:
+        query = query.where(PaymentTransaction.amount_vnd == expected_amount)
+
+    res = await db.execute(query)
+    tx = res.scalar_one_or_none()
+
+    if tx:
+        return ok(
+            data={
+                "paid": True,
+                "transaction_code": tx.transaction_code,
+                "amount_vnd": int(tx.amount_vnd),
+                "credits_credited": int(tx.credits_credited),
+                "created_at": tx.created_at.isoformat() if tx.created_at else None,
+                "credit_balance": latest_user.credit_balance,
+                "tier": latest_user.tier,
+            },
+            message="Giao dịch thanh toán thành công!"
+        )
+
+    return ok(
+        data={
+            "paid": False,
+            "credit_balance": latest_user.credit_balance,
+            "tier": latest_user.tier,
+        },
+        message="Đang chờ giao dịch..."
+    )
+
+
 @router.post("/topup")
 async def process_topup(
     body: TopupRequest,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission("billing.manage")),
     db: AsyncSession = Depends(get_db),
 ):
     """
