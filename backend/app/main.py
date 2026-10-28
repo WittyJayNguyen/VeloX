@@ -3,14 +3,16 @@ VeloX AI Gateway — Main Application Entry Point
 =================================================
 FastAPI App Factory with CORS, Router Registration and Lifespan Events.
 """
+from typing import Optional
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
+from app.core.database import engine, get_db
+from app.common.base_model import Base
 from app.modules.auth.router import router as auth_router
 from app.modules.users.router import router as users_router
-from app.core.database import engine
-from app.common.base_model import Base
 import app.modules.users.models  # noqa
 import app.modules.billing.models  # noqa
 import app.modules.pools.models  # noqa
@@ -134,3 +136,14 @@ app.include_router(proxy_router)
 @app.get("/api/v1/health")
 async def health_check():
     return {"status": "healthy", "app": settings.APP_NAME, "version": settings.APP_VERSION}
+
+
+@app.get("/api/v1/pricing")
+async def api_pricing_alias(
+    model: Optional[str] = None,
+    category: Optional[str] = None,
+    currency: Optional[str] = "VND",
+    db: AsyncSession = Depends(get_db),
+):
+    from app.modules.proxy.router import get_model_pricing
+    return await get_model_pricing(model=model, category=category, currency=currency, db=db)
