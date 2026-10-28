@@ -10,8 +10,9 @@ const LangSwitcher = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const activeCode = (i18n.language || 'vi').split('-')[0];
   const current =
-    SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language) ||
+    SUPPORTED_LANGUAGES.find((l) => l.code === activeCode) ||
     SUPPORTED_LANGUAGES[0];
 
   useEffect(() => {

@@ -240,7 +240,7 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
                     <div className={styles.catIconBox}>{cat.icon}</div>
                     <div className={styles.catInfo}>
                       <div className={styles.catTitle}>{t(`studio.cat_${cat.id}`, cat.label)}</div>
-                      <div className={styles.catDesc}>{cat.desc}</div>
+                      <div className={styles.catDesc}>{t(`studio.cat_${cat.id}_desc`, cat.desc)}</div>
                     </div>
                     <HiOutlineArrowRight className={styles.catArrow} size={15} />
                   </div>
@@ -264,10 +264,10 @@ export const StudioMegaMenu: React.FC<StudioMegaMenuProps> = ({ onCloseMenu }) =
           <div className={styles.modelsColumn}>
             <div className={styles.columnHeader}>
               <span>
-                {t('studio.available_models_for', 'MÔ HÌNH KHẢ DỤNG')} • {currentCategory.label.toUpperCase()}
+                {t('studio.available_models_for', 'MÔ HÌNH KHẢ DỤNG')} • {t(`studio.cat_${currentCategory.id}`, currentCategory.label).toUpperCase()}
               </span>
               <span className={styles.modelsCountBadge}>
-                {currentCategory.models.length} Model
+                {currentCategory.models.length} {t('studio.models_count', 'Model')}
               </span>
             </div>
 

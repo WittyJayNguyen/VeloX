@@ -19,12 +19,22 @@ i18n
       ko: { translation: ko },
       zh: { translation: zh },
     },
+    supportedLngs: ['vi', 'en', 'ja', 'ko', 'zh'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     fallbackLng: 'vi',
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'velox_lang',
+      caches: ['localStorage'],
     },
     interpolation: { escapeValue: false },
   });
+
+// Keep document.documentElement.lang in sync with i18n
+i18n.on('languageChanged', (lng) => {
+  const clean = (lng || 'vi').split('-')[0];
+  document.documentElement.lang = clean;
+});
 
 export default i18n;

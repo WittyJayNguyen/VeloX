@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   HiOutlinePhoto,
   HiOutlineFilm,
@@ -383,7 +384,17 @@ export const matchModelCode = (rawCode: string, list: PublicModelItem[]): Public
   return null;
 };
 
+export const translateParamOption = (val: string, tFn: any) => {
+  if (!val) return '';
+  if (val === 'Tự động' || val === 'Auto') return tFn('studio.auto', 'Tự động');
+  if (val === 'Tiêu chuẩn' || val === 'Standard') return tFn('studio.standard', 'Tiêu chuẩn');
+  if (val === 'Cao' || val === 'High') return tFn('studio.high', 'Cao');
+  if (val === 'Ultra') return tFn('studio.ultra', 'Ultra');
+  return val;
+};
+
 export const StudioPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { user, addCredits } = useAuthStore();
 
@@ -839,7 +850,7 @@ export const StudioPage: React.FC = () => {
         setGeneratedVideos((prev) => [newVid, ...prev]);
       }
 
-      setToastMsg('Tác phẩm AI đã được sinh hoàn tất!');
+      setToastMsg(t('studio.generate_success', 'Tác phẩm AI đã được sinh hoàn tất!'));
       setTimeout(() => setToastMsg(null), 3000);
     }, 4800);
   };
@@ -865,7 +876,7 @@ export const StudioPage: React.FC = () => {
           <div className={styles.mediaGalleryArea}>
             <div className={styles.galleryHeaderRow}>
               <h3 className={styles.sectionTitle}>
-                <span>Danh Sách Tác Phẩm Đã Tạo</span>
+                <span>{t('studio.created_artworks', 'Danh Sách Tác Phẩm Đã Tạo')}</span>
                 <span className={styles.countBadge}>{generatedImages.length + activeJobs.length}</span>
               </h3>
             </div>
@@ -889,7 +900,7 @@ export const StudioPage: React.FC = () => {
                   <div className={styles.jobCardFooter}>
                     <div className={styles.jobModelRow}>
                       <span className={styles.jobBadge}>{job.model}</span>
-                      <span className={styles.jobRatioBadge}>{job.aspectRatio}</span>
+                      <span className={styles.jobRatioBadge}>{translateParamOption(job.aspectRatio, t)}</span>
                     </div>
                     <p className={styles.jobPromptText}>{job.prompt}</p>
                     <div className={styles.progressBarTrack}>
@@ -908,7 +919,7 @@ export const StudioPage: React.FC = () => {
                       setPreviewMedia({
                         type: 'image',
                         url: img.url,
-                        title: 'Tác Phẩm AI',
+                        title: t('studio.title', 'Tác Phẩm AI'),
                         prompt: img.prompt,
                         model: img.model,
                       })
@@ -919,13 +930,13 @@ export const StudioPage: React.FC = () => {
                       <button
                         type="button"
                         className={styles.actionBtn}
-                        title="Xem toàn màn hình"
+                        title={t('studio.fullscreen', 'Xem toàn màn hình')}
                         onClick={(e) => {
                           e.stopPropagation();
                           setPreviewMedia({
                             type: 'image',
                             url: img.url,
-                            title: 'Tác Phẩm AI',
+                            title: t('studio.title', 'Tác Phẩm AI'),
                             prompt: img.prompt,
                             model: img.model,
                           });
@@ -939,7 +950,7 @@ export const StudioPage: React.FC = () => {
                   <div className={styles.compactDetails}>
                     <div className={styles.metaRow}>
                       <span className={styles.mediaModelBadge}>{img.model}</span>
-                      {img.aspectRatio && <span className={styles.ratioPill}>{img.aspectRatio}</span>}
+                      {img.aspectRatio && <span className={styles.ratioPill}>{translateParamOption(img.aspectRatio, t)}</span>}
                     </div>
                     <p className={styles.mediaPrompt} title={img.prompt}>
                       {img.prompt}
@@ -980,7 +991,7 @@ export const StudioPage: React.FC = () => {
                   <div className={styles.jobCardFooter}>
                     <div className={styles.jobModelRow}>
                       <span className={styles.jobBadge}>{job.model}</span>
-                      <span className={styles.jobRatioBadge}>{job.aspectRatio}</span>
+                      <span className={styles.jobRatioBadge}>{translateParamOption(job.aspectRatio, t)}</span>
                     </div>
                     <p className={styles.jobPromptText}>{job.prompt}</p>
                     <div className={styles.progressBarTrack}>
@@ -1015,7 +1026,7 @@ export const StudioPage: React.FC = () => {
                       <button
                         type="button"
                         className={styles.actionBtn}
-                        title="Xem toàn màn hình"
+                        title={t('studio.fullscreen', 'Xem toàn màn hình')}
                         onClick={(e) => {
                           e.stopPropagation();
                           setPreviewMedia({
@@ -1059,13 +1070,13 @@ export const StudioPage: React.FC = () => {
           <div className={styles.mediaGalleryArea}>
             <div className={styles.galleryHeaderRow}>
               <h3 className={styles.sectionTitle}>
-                <span>Danh Sách Âm Thanh Đã Sinh</span>
+                <span>{t('studio.created_audio', 'Danh Sách Âm Thanh Đã Sinh')}</span>
                 <span className={styles.countBadge}>0</span>
               </h3>
             </div>
             <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
               <HiOutlineMusicalNote size={48} color="#ff6b35" style={{ margin: '0 auto 1rem', display: 'block' }} />
-              <p>Chưa có file âm thanh nào. Hãy nhập văn bản bên dưới để tạo giọng nói AI sống động!</p>
+              <p>{t('studio.no_audio_yet', 'Chưa có file âm thanh nào. Hãy nhập văn bản bên dưới để tạo giọng nói AI sống động!')}</p>
             </div>
           </div>
         )}
@@ -1085,7 +1096,7 @@ export const StudioPage: React.FC = () => {
                     type="button"
                     className={`${styles.refSlotBtn} ${refImage ? styles.slotActive : ''}`}
                     onClick={() => fileInputRef.current?.click()}
-                    title="Đính kèm ảnh tham chiếu (Image-to-Image)"
+                    title={t('studio.ref_image', 'Ảnh tham chiếu')}
                   >
                     {refImage ? (
                       <>
@@ -1106,7 +1117,7 @@ export const StudioPage: React.FC = () => {
                           <HiOutlinePhoto size={15} />
                           <span className={styles.subPlus}>+</span>
                         </span>
-                        <span className={styles.slotLabel}>Ref</span>
+                        <span className={styles.slotLabel}>{t('studio.ref_image', 'Ref')}</span>
                       </>
                     )}
                   </button>
@@ -1120,7 +1131,7 @@ export const StudioPage: React.FC = () => {
                       type="button"
                       className={`${styles.refSlotBtn} ${startFrame ? styles.slotActive : ''}`}
                       onClick={() => startFrameInputRef.current?.click()}
-                      title="Frame hình bắt đầu"
+                      title={t('studio.start_frame', 'Bắt đầu')}
                     >
                       {startFrame ? (
                         <>
@@ -1141,7 +1152,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlinePhoto size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>Bắt đầu</span>
+                          <span className={styles.slotLabel}>{t('studio.start_frame', 'Bắt đầu')}</span>
                         </>
                       )}
                     </button>
@@ -1153,7 +1164,7 @@ export const StudioPage: React.FC = () => {
                       type="button"
                       className={`${styles.refSlotBtn} ${endFrame ? styles.slotActive : ''}`}
                       onClick={() => endFrameInputRef.current?.click()}
-                      title="Frame hình kết thúc"
+                      title={t('studio.end_frame', 'Kết thúc')}
                     >
                       {endFrame ? (
                         <>
@@ -1174,7 +1185,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlinePhoto size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>Kết th...</span>
+                          <span className={styles.slotLabel}>{t('studio.end_frame', 'Kết th...')}</span>
                         </>
                       )}
                     </button>
@@ -1184,7 +1195,7 @@ export const StudioPage: React.FC = () => {
                       type="button"
                       className={`${styles.refSlotBtn} ${refImage ? styles.slotActive : ''}`}
                       onClick={() => fileInputRef.current?.click()}
-                      title="Ảnh tham chiếu phong cách"
+                      title={t('studio.ref_image', 'Ảnh tham chiếu')}
                     >
                       {refImage ? (
                         <>
@@ -1205,7 +1216,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlinePhoto size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>Ref</span>
+                          <span className={styles.slotLabel}>{t('studio.ref_image', 'Ref')}</span>
                         </>
                       )}
                     </button>
@@ -1215,11 +1226,11 @@ export const StudioPage: React.FC = () => {
                       type="button"
                       className={`${styles.refSlotBtn} ${sourceVideo ? styles.slotActive : ''}`}
                       onClick={() => videoInputRef.current?.click()}
-                      title="Video nguồn (Video-to-Video)"
+                      title={t('studio.source_video', 'Video')}
                     >
                       {sourceVideo ? (
                         <>
-                          <span style={{ fontSize: '0.68rem', color: '#2dd4bf' }}>Đã nạp</span>
+                          <span style={{ fontSize: '0.68rem', color: '#2dd4bf' }}>{t('studio.loaded', 'Đã nạp')}</span>
                           <span
                             className={styles.clearSlotBtn}
                             onClick={(e) => {
@@ -1236,7 +1247,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlineFilm size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>Video</span>
+                          <span className={styles.slotLabel}>{t('studio.source_video', 'Video')}</span>
                         </>
                       )}
                     </button>
@@ -1246,11 +1257,11 @@ export const StudioPage: React.FC = () => {
                       type="button"
                       className={`${styles.refSlotBtn} ${audioTrack ? styles.slotActive : ''}`}
                       onClick={() => audioInputRef.current?.click()}
-                      title="Audio track lồng tiếng"
+                      title={t('studio.audio_track', 'Âm thanh')}
                     >
                       {audioTrack ? (
                         <>
-                          <span style={{ fontSize: '0.68rem', color: '#c084fc' }}>Đã nạp</span>
+                          <span style={{ fontSize: '0.68rem', color: '#c084fc' }}>{t('studio.loaded', 'Đã nạp')}</span>
                           <span
                             className={styles.clearSlotBtn}
                             onClick={(e) => {
@@ -1267,7 +1278,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlineMusicalNote size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>Âm th...</span>
+                          <span className={styles.slotLabel}>{t('studio.audio_track', 'Âm th...')}</span>
                         </>
                       )}
                     </button>
@@ -1288,13 +1299,13 @@ export const StudioPage: React.FC = () => {
                   }}
                 >
                   <span className={styles.sparkleIcon}>※</span>
-                  <span>Truyền cảm hứng cho tôi</span>
+                  <span>{t('studio.inspire_me', 'Truyền cảm hứng cho tôi')}</span>
                   <HiOutlineChevronDown size={13} />
                 </button>
 
                 {isInspireMenuOpen && (
                   <div className={`${styles.customPopoverMenu} ${styles.popoverRight}`}>
-                    <div className={styles.paramGroupTitle}>Gợi ý Prompt Sáng Tạo</div>
+                    <div className={styles.paramGroupTitle}>{t('studio.inspire_title', 'Gợi ý Prompt Sáng Tạo')}</div>
                     {INSPIRATION_PROMPTS.map((p, idx) => (
                       <button
                         key={idx}
@@ -1355,7 +1366,7 @@ export const StudioPage: React.FC = () => {
             {/* MIDDLE ROW: Clean Borderless Textarea */}
             <textarea
               className={styles.promptTextarea}
-              placeholder="Mô tả nội dung bạn muốn tạo..."
+              placeholder={t('studio.prompt_placeholder', 'Mô tả nội dung bạn muốn tạo...')}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {
@@ -1376,30 +1387,30 @@ export const StudioPage: React.FC = () => {
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'image' ? styles.modeTabActive : ''}`}
                     onClick={() => handleTabChange('image')}
-                    title="Tạo hình ảnh"
+                    title={t('studio.tab_image', 'Ảnh')}
                   >
                     <HiOutlinePhoto size={15} />
-                    {activeTab === 'image' && <span>Ảnh</span>}
+                    {activeTab === 'image' && <span>{t('studio.tab_image', 'Ảnh')}</span>}
                   </button>
 
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'video' ? styles.modeTabActive : ''}`}
                     onClick={() => handleTabChange('video')}
-                    title="Tạo video"
+                    title={t('studio.tab_video', 'Video')}
                   >
                     <HiOutlineFilm size={15} />
-                    {activeTab === 'video' && <span>Video</span>}
+                    {activeTab === 'video' && <span>{t('studio.tab_video', 'Video')}</span>}
                   </button>
 
                   <button
                     type="button"
                     className={`${styles.modeTabBtn} ${activeTab === 'audio' ? styles.modeTabActive : ''}`}
                     onClick={() => handleTabChange('audio')}
-                    title="Tạo âm thanh / giọng nói"
+                    title={t('studio.tab_audio', 'Âm thanh')}
                   >
                     <SoundWaveIcon size={14} />
-                    {activeTab === 'audio' && <span>Âm thanh</span>}
+                    {activeTab === 'audio' && <span>{t('studio.tab_audio', 'Âm thanh')}</span>}
                   </button>
                 </div>
 
@@ -1408,7 +1419,7 @@ export const StudioPage: React.FC = () => {
                   <button
                     type="button"
                     className={`${styles.iconBookBtn} ${isPresetsMenuOpen ? styles.iconBookBtnActive : ''}`}
-                    title="Thư viện phong cách & prompt mẫu chuẩn"
+                    title={t('studio.presets_title', 'Thư viện phong cách & prompt mẫu chuẩn')}
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsPresetsMenuOpen(!isPresetsMenuOpen);
@@ -1435,7 +1446,7 @@ export const StudioPage: React.FC = () => {
                                 if (item.ratio) setAspectRatio(item.ratio);
                                 if (item.duration && activeTab === 'video') setVideoDuration(item.duration);
                                 setIsPresetsMenuOpen(false);
-                                setToastMsg(`Đã áp dụng mẫu: "${item.title}"`);
+                                setToastMsg(`${t('studio.presets_applied', 'Đã áp dụng mẫu')}: "${item.title}"`);
                                 setTimeout(() => setToastMsg(null), 2500);
                               }}
                             >
@@ -1462,14 +1473,14 @@ export const StudioPage: React.FC = () => {
                     }}
                   >
                     <span className={styles.starIcon}>✦</span>
-                    <span>{cleanModelDisplayName(currentModel?.name || 'Chọn Model')}</span>
+                    <span>{cleanModelDisplayName(currentModel?.name || t('studio.select_model', 'Chọn Model'))}</span>
                     <HiOutlineChevronDown className={styles.chevron} size={12} />
                   </button>
 
                   {isModelMenuOpen && (
                     <div className={styles.customPopoverMenu}>
                       <div className={styles.paramGroupTitle}>
-                        Mô hình {activeTab === 'image' ? 'Ảnh' : activeTab === 'video' ? 'Video' : 'Âm thanh'} ({availableModels.length})
+                        {t('studio.models_count', 'Mô hình')} {activeTab === 'image' ? t('studio.tab_image', 'Ảnh') : activeTab === 'video' ? t('studio.tab_video', 'Video') : t('studio.tab_audio', 'Âm thanh')} ({availableModels.length})
                       </div>
                       {availableModels.map((m) => {
                         const isSelected = selectedModelCode === m.model_code;
@@ -1516,9 +1527,9 @@ export const StudioPage: React.FC = () => {
                   >
                     <span>
                       {activeTab === 'image'
-                        ? `${resolution} · ${aspectRatio} · ${quality}`
+                        ? `${resolution} · ${translateParamOption(aspectRatio, t)} · ${translateParamOption(quality, t)}`
                         : activeTab === 'video'
-                        ? `${videoResolution} · ${aspectRatio} · ${videoDuration}`
+                        ? `${videoResolution} · ${translateParamOption(aspectRatio, t)} · ${videoDuration}`
                         : audioVoice}
                     </span>
                     <HiOutlineChevronDown className={styles.chevron} size={13} />
@@ -1528,7 +1539,7 @@ export const StudioPage: React.FC = () => {
                     <div className={styles.customPopoverMenu}>
                       {activeTab === 'image' && (
                         <>
-                          <div className={styles.paramGroupTitle}>Độ phân giải</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.resolution', 'Độ phân giải')}</div>
                           <div className={styles.paramOptionsGrid}>
                             {(activeModelConfig.resolutions || ['1K', '2K', '4K']).map((res) => (
                               <button
@@ -1542,7 +1553,7 @@ export const StudioPage: React.FC = () => {
                             ))}
                           </div>
 
-                          <div className={styles.paramGroupTitle}>Tỉ lệ khung hình</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
                           <div className={styles.paramOptionsGrid}>
                             {(activeModelConfig.aspectRatios || ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
                               <button
@@ -1551,12 +1562,12 @@ export const StudioPage: React.FC = () => {
                                 className={`${styles.paramChip} ${aspectRatio === ratio ? styles.paramActive : ''}`}
                                 onClick={() => setAspectRatio(ratio)}
                               >
-                                {ratio}
+                                {translateParamOption(ratio, t)}
                               </button>
                             ))}
                           </div>
 
-                          <div className={styles.paramGroupTitle}>Chất lượng Render</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.render_quality', 'Chất lượng Render')}</div>
                           <div className={styles.paramOptionsGrid}>
                             {(activeModelConfig.qualities || ['Tiêu chuẩn', 'Cao', 'Ultra']).map((q) => (
                               <button
@@ -1565,7 +1576,7 @@ export const StudioPage: React.FC = () => {
                                 className={`${styles.paramChip} ${quality === q ? styles.paramActive : ''}`}
                                 onClick={() => setQuality(q)}
                               >
-                                {q}
+                                {translateParamOption(q, t)}
                               </button>
                             ))}
                           </div>
@@ -1574,7 +1585,7 @@ export const StudioPage: React.FC = () => {
 
                       {activeTab === 'video' && (
                         <>
-                          <div className={styles.paramGroupTitle}>Độ phân giải video</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.video_resolution', 'Độ phân giải video')}</div>
                           <div className={styles.paramOptionsGrid}>
                             {(activeModelConfig.resolutions || ['720p', '1080p', '4K']).map((res) => (
                               <button
@@ -1588,7 +1599,7 @@ export const StudioPage: React.FC = () => {
                             ))}
                           </div>
 
-                          <div className={styles.paramGroupTitle}>Tỉ lệ khung hình</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
                           <div className={styles.paramOptionsGrid}>
                             {(activeModelConfig.aspectRatios || ['Tự động', '16:9', '9:16']).map((ratio) => (
                               <button
@@ -1597,12 +1608,12 @@ export const StudioPage: React.FC = () => {
                                 className={`${styles.paramChip} ${aspectRatio === ratio ? styles.paramActive : ''}`}
                                 onClick={() => setAspectRatio(ratio)}
                               >
-                                {ratio}
+                                {translateParamOption(ratio, t)}
                               </button>
                             ))}
                           </div>
 
-                          <div className={styles.paramGroupTitle}>Thời lượng ({cleanModelDisplayName(currentModel?.name || '')})</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.video_duration', 'Thời lượng video')} ({cleanModelDisplayName(currentModel?.name || '')})</div>
                           <div className={styles.paramOptionsGrid}>
                             {(activeModelConfig.durations || ['5s', '10s (Pro)']).map((dur) => (
                               <button
@@ -1620,7 +1631,7 @@ export const StudioPage: React.FC = () => {
 
                       {activeTab === 'audio' && (
                         <>
-                          <div className={styles.paramGroupTitle}>Ngôn ngữ & Giọng đọc</div>
+                          <div className={styles.paramGroupTitle}>{t('studio.audio_voice_title', 'Ngôn ngữ & Giọng đọc')}</div>
                           {['English · American', 'English · British', 'Tiếng Việt · Hà Nội', 'Tiếng Việt · Sài Gòn'].map((voice) => (
                             <button
                               key={voice}
@@ -1647,7 +1658,7 @@ export const StudioPage: React.FC = () => {
                     type="button"
                     className={`${styles.speakerToolbarBtn} ${isAudioMuted ? styles.speakerMuted : ''}`}
                     onClick={() => setIsAudioMuted(!isAudioMuted)}
-                    title={isAudioMuted ? 'Bật âm thanh video' : 'Tắt âm thanh video'}
+                    title={isAudioMuted ? t('studio.unmute', 'Bật âm thanh') : t('studio.mute', 'Tắt âm thanh')}
                   >
                     {isAudioMuted ? <HiOutlineSpeakerXMark size={16} /> : <HiOutlineSpeakerWave size={16} />}
                   </button>
@@ -1660,7 +1671,7 @@ export const StudioPage: React.FC = () => {
                   type="button"
                   className={`${styles.micBtn} ${isSpeechRecording ? styles.micActive : ''}`}
                   onClick={toggleVoiceInput}
-                  title="Nhập bằng giọng nói"
+                  title={t('studio.voice_input', 'Nhập bằng giọng nói')}
                 >
                   <HiOutlineMicrophone size={20} />
                 </button>
@@ -1670,7 +1681,7 @@ export const StudioPage: React.FC = () => {
                   className={styles.pinkNeonSubmitBtn}
                   onClick={handleGenerate}
                   disabled={isGenerating || !prompt.trim()}
-                  title={`Tạo ngay (${totalCreditsNeeded} cr)`}
+                  title={`${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`}
                 >
                   <HiOutlineArrowUp size={20} strokeWidth={2.5} />
                 </button>
@@ -1688,7 +1699,7 @@ export const StudioPage: React.FC = () => {
               type="button"
               className={styles.lightboxCloseBtn}
               onClick={() => setPreviewMedia(null)}
-              title="Đóng xem trước"
+              title={t('common.close', 'Đóng')}
             >
               <HiOutlineXMark size={20} />
             </button>
@@ -1719,7 +1730,7 @@ export const StudioPage: React.FC = () => {
                   rel="noreferrer"
                   className={styles.lightboxDownloadBtn}
                 >
-                  <HiOutlineArrowDownTray size={15} /> Tải bản gốc Ultra 4K
+                  <HiOutlineArrowDownTray size={15} /> {t('common.download', 'Tải bản gốc')} Ultra 4K
                 </a>
               </div>
               <p className={styles.lightboxPrompt}>{previewMedia.prompt}</p>
