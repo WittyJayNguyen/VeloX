@@ -58,6 +58,16 @@ export interface GeneratedVideoItem {
   createdAt: string;
 }
 
+export interface GeneratedAudioItem {
+  id: string;
+  title: string;
+  prompt: string;
+  model: string;
+  voice: string;
+  duration?: string;
+  createdAt: string;
+}
+
 export interface ModelConfig {
   durations?: string[];
   resolutions: string[];
@@ -332,15 +342,33 @@ export const PROMPT_PRESET_GROUPS: Record<string, PromptPresetGroup[]> = {
   ],
 };
 
-// Preset Prompts for "Inspire Me"
-const INSPIRATION_PROMPTS = [
-  'A mystical cyberpunk samurai standing under rain in neon Tokyo, volumetric light, 8k octane render',
-  'Macro shot of a futuristic crystal lotus flower with glowing fiber-optic petals in morning dew',
-  'Cinematic dynamic motion of an elite athlete sprinting through a luminous hologram track, slow-motion',
-  'Hyper-detailed portrait of an ancient Nordic warrior with bioluminescent glowing runic tattoos, photorealistic',
-  'Surreal floating islands with cascading golden waterfalls under purple nebula aurora borealis sky',
-  'Retro-futuristic 1980s synthwave sports car speeding on a laser grid highway into a sunset',
-];
+// Preset Prompts for "Inspire Me" categorized by mode
+export const INSPIRATION_PROMPTS_BY_TAB: Record<'image' | 'video' | 'audio', string[]> = {
+  image: [
+    'Chân dung studio điện ảnh 8K, ánh sáng Rembrandt mềm mại, ống kính 85mm f/1.4',
+    'Phong cảnh viễn tưởng huyền ảo với những hòn đảo bay lơ lửng và thác nước pha lê phát quang',
+    'Hình chụp macro hoa sen pha lê phát sáng lung linh trong sương sớm, chi tiết 8K cực nét',
+    'Chiến binh Bắc Âu dũng mãnh với hình xăm cổ ngữ rực sáng trong bão tuyết bí ẩn',
+    'Sản phẩm công nghệ tương lai tối giản trên bục đá cẩm thạch đen phản chiếu gợn nước',
+    'Tạo hình nhân vật 3D phong cách hoạt hình Pixar đáng yêu, hiệu ứng ánh sáng Octane Render',
+  ],
+  video: [
+    'Máy quay điện ảnh 120fps quay slow-motion lướt quanh vận động viên thể thao trong phòng tập neon hiện đại',
+    'Flycam FPV bay lượn ngoạn mục qua những đỉnh núi mù sương đón ánh bình minh vàng rực rỡ',
+    'Nhân vật bước đi tự nhiên qua con phố cyberpunk tương lai dưới ánh đèn neon phản chiếu mặt đường ướt mưa',
+    'Mô hình sản phẩm 3D xoay 360 độ siêu nét trên mặt bàn bóng bẩy, ánh sáng studio sang trọng',
+    'Hiệu ứng kỹ xảo biến đổi hạt năng lượng vàng tan biến vào không gian đầy kịch tính',
+    'Xe thể thao phong cách Synthwave thập niên 80 lao vút trên xa lộ laser hướng về phía hoàng hôn',
+  ],
+  audio: [
+    'Giọng đọc nam trầm ấm truyền cảm, phong cách kể chuyện podcast thư giãn đêm khuya',
+    'Giọng nữ truyền cảm hứng, năng lượng tích cực lan tỏa động lực bứt phá giới hạn bản thân',
+    'Lời chào tổng đài chuyên nghiệp: Chào mừng quý khách đến với dịch vụ trí tuệ nhân tạo VeloX',
+    'Bản tin công nghệ nhịp điệu nhanh, rõ ràng, phát âm chuẩn xác từng thuật ngữ',
+    'Giọng đọc lồng tiếng TVC quảng cáo thương mại cao cấp, sang trọng và đầy thuyết phục',
+    'Đọc thơ nhẹ nhàng, êm đềm với ngữ điệu sâu lắng chạm vào cảm xúc người nghe',
+  ],
+};
 
 // Clean redundant provider prefixes from model display names
 export const cleanModelDisplayName = (name: string): string => {
@@ -518,6 +546,31 @@ export const StudioPage: React.FC = () => {
       createdAt: 'Hôm qua',
     },
   ]);
+
+  const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudioItem[]>([
+    {
+      id: 'aud-1',
+      title: 'Giọng trầm ấm truyền cảm kể chuyện đêm khuya',
+      prompt: 'Đêm đã về khuya, không gian lắng đọng và bình yên. Hãy thả lỏng tâm trí, hít một hơi thật sâu...',
+      model: 'Eleven v3',
+      voice: 'Tiếng Việt · Hà Nội',
+      duration: '0:24',
+      createdAt: '10 phút trước',
+    },
+    {
+      id: 'aud-2',
+      title: 'Giọng truyền cảm hứng, động lực phát triển bản thân',
+      prompt: 'Mỗi buổi sáng thức dậy là một cơ hội mới để bạn chạm tới phiên bản vĩ đại nhất của chính mình...',
+      model: 'OpenAI TTS HD',
+      voice: 'Tiếng Việt · Sài Gòn',
+      duration: '0:18',
+      createdAt: '1 giờ trước',
+    },
+  ]);
+
+  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
+  const [textareaShake, setTextareaShake] = useState(false);
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load models dynamically from Admin Database via API
   useEffect(() => {
@@ -753,7 +806,16 @@ export const StudioPage: React.FC = () => {
 
   // Generate / Submit Job
   const handleGenerate = () => {
-    if (!prompt.trim() || isGenerating) return;
+    if (isGenerating) return;
+
+    if (!prompt.trim()) {
+      promptTextareaRef.current?.focus();
+      setTextareaShake(true);
+      setTimeout(() => setTextareaShake(false), 600);
+      setToastMsg('💡 ' + t('studio.prompt_required', 'Vui lòng nhập mô tả ý tưởng hoặc chọn một gợi ý mẫu bên dưới!'));
+      setTimeout(() => setToastMsg(null), 3500);
+      return;
+    }
 
     const currentCredits = user?.credit_balance ?? 991;
     if (currentCredits < totalCreditsNeeded) {
@@ -765,6 +827,9 @@ export const StudioPage: React.FC = () => {
     setIsGenerating(true);
     addCredits(-totalCreditsNeeded);
 
+    // Smoothly scroll to top so user sees the generated job in real time
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const newJobId = `job-${Date.now()}`;
     const selectedModelName = cleanModelDisplayName(currentModel?.name || 'VeloX Engine');
     const newJob: GenerationJob = {
@@ -773,7 +838,7 @@ export const StudioPage: React.FC = () => {
       prompt,
       model: selectedModelName,
       progress: 5,
-      statusText: 'Đang xếp hàng trong cụm GPU...',
+      statusText: activeTab === 'video' ? 'Đang xếp hàng trong cụm GPU Render...' : activeTab === 'audio' ? 'Đang phân tích ngữ điệu giọng nói...' : 'Đang xếp hàng trong cụm GPU...',
       aspectRatio,
       refImage,
     };
@@ -783,19 +848,19 @@ export const StudioPage: React.FC = () => {
     // Simulated Render Stages
     setTimeout(() => {
       setActiveJobs((prev) =>
-        prev.map((j) => (j.id === newJobId ? { ...j, progress: 35, statusText: 'Đang sinh mẫu neural...' } : j))
+        prev.map((j) => (j.id === newJobId ? { ...j, progress: 35, statusText: activeTab === 'video' ? 'Đang mô phỏng chuyển động khung hình...' : 'Đang sinh mẫu neural...' } : j))
       );
     }, 1200);
 
     setTimeout(() => {
       setActiveJobs((prev) =>
-        prev.map((j) => (j.id === newJobId ? { ...j, progress: 75, statusText: 'Đang nâng cấp chất lượng cao...' } : j))
+        prev.map((j) => (j.id === newJobId ? { ...j, progress: 75, statusText: activeTab === 'video' ? 'Đang khử nhiễu và làm mịn 60fps...' : 'Đang nâng cấp chất lượng cao...' } : j))
       );
     }, 2800);
 
     setTimeout(() => {
       setActiveJobs((prev) =>
-        prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Hoàn tất xuất file!' } : j))
+        prev.map((j) => (j.id === newJobId ? { ...j, progress: 98, statusText: 'Hoàn tất đóng gói file!' } : j))
       );
     }, 4200);
 
@@ -808,6 +873,7 @@ export const StudioPage: React.FC = () => {
           'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80',
           'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
           'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
         ];
         const newImg: GeneratedImageItem = {
           id: `img-${Date.now()}`,
@@ -848,6 +914,17 @@ export const StudioPage: React.FC = () => {
           createdAt: 'Vừa xong',
         };
         setGeneratedVideos((prev) => [newVid, ...prev]);
+      } else if (activeTab === 'audio') {
+        const newAud: GeneratedAudioItem = {
+          id: `aud-${Date.now()}`,
+          title: prompt.slice(0, 36) + '...',
+          prompt,
+          model: selectedModelName,
+          voice: audioVoice,
+          duration: '0:18',
+          createdAt: 'Vừa xong',
+        };
+        setGeneratedAudios((prev) => [newAud, ...prev]);
       }
 
       setToastMsg(t('studio.generate_success', 'Tác phẩm AI đã được sinh hoàn tất!'));
@@ -1071,13 +1148,74 @@ export const StudioPage: React.FC = () => {
             <div className={styles.galleryHeaderRow}>
               <h3 className={styles.sectionTitle}>
                 <span>{t('studio.created_audio', 'Danh Sách Âm Thanh Đã Sinh')}</span>
-                <span className={styles.countBadge}>0</span>
+                <span className={styles.countBadge}>{generatedAudios.length + activeJobs.length}</span>
               </h3>
             </div>
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
-              <HiOutlineMusicalNote size={48} color="#ff6b35" style={{ margin: '0 auto 1rem', display: 'block' }} />
-              <p>{t('studio.no_audio_yet', 'Chưa có file âm thanh nào. Hãy nhập văn bản bên dưới để tạo giọng nói AI sống động!')}</p>
-            </div>
+
+            {/* ACTIVE AUDIO JOBS */}
+            {activeJobs.length > 0 && (
+              <div className={styles.compactGalleryGrid}>
+                {activeJobs.map((job) => (
+                  <div key={job.id} className={styles.activeJobCard}>
+                    <div className={styles.jobVisualBox}>
+                      <div className={styles.scannerLine}></div>
+                      <div className={styles.matrixShimmer}></div>
+                      <div className={styles.jobStatusOverlay}>
+                        <div className={styles.pulseRadar}>
+                          <HiOutlineMusicalNote size={22} className={styles.spinIcon} />
+                        </div>
+                        <div className={styles.jobPercent}>{job.progress}%</div>
+                        <div className={styles.jobStatusText}>{job.statusText}</div>
+                      </div>
+                    </div>
+
+                    <div className={styles.jobCardFooter}>
+                      <div className={styles.jobModelRow}>
+                        <span className={styles.jobBadge}>{job.model}</span>
+                        <span className={styles.jobRatioBadge}>{audioVoice}</span>
+                      </div>
+                      <p className={styles.jobPromptText}>{job.prompt}</p>
+                      <div className={styles.progressBarTrack}>
+                        <div className={styles.progressBarFill} style={{ width: `${job.progress}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {generatedAudios.length === 0 && activeJobs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94a3b8' }}>
+                <HiOutlineMusicalNote size={48} color="#ff6b35" style={{ margin: '0 auto 1rem', display: 'block' }} />
+                <p>{t('studio.no_audio_yet', 'Chưa có file âm thanh nào. Hãy nhập văn bản bên dưới để tạo giọng nói AI sống động!')}</p>
+              </div>
+            ) : (
+              <div className={styles.audioListGrid}>
+                {generatedAudios.map((aud) => (
+                  <div key={aud.id} className={styles.compactAudioCard}>
+                    <div className={styles.audioHeaderRow}>
+                      <button
+                        type="button"
+                        className={`${styles.audioPlayBtn} ${playingAudioId === aud.id ? styles.audioPlaying : ''}`}
+                        onClick={() => setPlayingAudioId(playingAudioId === aud.id ? null : aud.id)}
+                        title={playingAudioId === aud.id ? 'Dừng phát' : 'Nghe âm thanh'}
+                      >
+                        {playingAudioId === aud.id ? <HiOutlineSpeakerWave size={18} /> : <HiOutlinePlay size={18} />}
+                      </button>
+                      <div className={styles.audioMetaBlock}>
+                        <h4 className={styles.audioTitle}>{aud.title}</h4>
+                        <div className={styles.audioTags}>
+                          <span className={styles.audioModelBadge}>{aud.model}</span>
+                          <span className={styles.audioVoiceBadge}>{aud.voice}</span>
+                          <span className={styles.audioDurationBadge}>{aud.duration || '0:18'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className={styles.audioPromptSnippet}>{aud.prompt}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1085,7 +1223,11 @@ export const StudioPage: React.FC = () => {
       {/* BOTTOM PROMPT CONTROL BAR (Chuẩn 1:1 theo mẫu thiết kế Krea/Higgsfield) */}
       <div className={styles.bottomControlPanel}>
         <div className={styles.controlContainer}>
-          <div className={styles.promptInputBox} onPaste={handlePasteEvent} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={`${styles.promptInputBox} ${textareaShake ? styles.shakeBox : ''}`}
+            onPaste={handlePasteEvent}
+            onClick={() => promptTextareaRef.current?.focus()}
+          >
             {/* TOP BAR: Slots Attachment & Inspire Me */}
             <div className={styles.promptTopBar}>
               {/* Left Attachment Slots */}
@@ -1306,14 +1448,32 @@ export const StudioPage: React.FC = () => {
                 {isInspireMenuOpen && (
                   <div className={`${styles.customPopoverMenu} ${styles.popoverRight}`}>
                     <div className={styles.paramGroupTitle}>{t('studio.inspire_title', 'Gợi ý Prompt Sáng Tạo')}</div>
-                    {INSPIRATION_PROMPTS.map((p, idx) => (
+                    {/* Quick Random Fill */}
+                    <button
+                      type="button"
+                      className={styles.popoverItem}
+                      style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '4px', color: '#ff6b35', fontWeight: 700 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const list = INSPIRATION_PROMPTS_BY_TAB[activeTab] || INSPIRATION_PROMPTS_BY_TAB.image;
+                        const randomP = list[Math.floor(Math.random() * list.length)];
+                        setPrompt(randomP);
+                        setIsInspireMenuOpen(false);
+                        promptTextareaRef.current?.focus();
+                      }}
+                    >
+                      <span>🎲 {t('studio.random_prompt', 'Điền ngẫu nhiên 1 prompt mẫu')}</span>
+                    </button>
+                    {(INSPIRATION_PROMPTS_BY_TAB[activeTab] || INSPIRATION_PROMPTS_BY_TAB.image).map((p, idx) => (
                       <button
                         key={idx}
                         type="button"
                         className={styles.popoverItem}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setPrompt(p);
                           setIsInspireMenuOpen(false);
+                          promptTextareaRef.current?.focus();
                         }}
                       >
                         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
@@ -1365,10 +1525,18 @@ export const StudioPage: React.FC = () => {
 
             {/* MIDDLE ROW: Clean Borderless Textarea */}
             <textarea
+              ref={promptTextareaRef}
               className={styles.promptTextarea}
-              placeholder={t('studio.prompt_placeholder', 'Mô tả nội dung bạn muốn tạo...')}
+              placeholder={
+                activeTab === 'image'
+                  ? t('studio.prompt_placeholder_image', 'Mô tả hình ảnh bạn muốn tạo (Ví dụ: Chân dung điện ảnh 8K, phong cảnh viễn tưởng)...')
+                  : activeTab === 'video'
+                  ? t('studio.prompt_placeholder_video', 'Mô tả video bạn muốn tạo (Ví dụ: Máy quay slow-motion 120fps lướt quanh vận động viên)...')
+                  : t('studio.prompt_placeholder_audio', 'Nhập văn bản cần chuyển thành giọng đọc AI tự nhiên...')
+              }
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -1678,12 +1846,16 @@ export const StudioPage: React.FC = () => {
 
                 <button
                   type="button"
-                  className={styles.pinkNeonSubmitBtn}
+                  className={`${styles.pinkNeonSubmitBtn} ${!prompt.trim() ? styles.submitBtnReady : ''}`}
                   onClick={handleGenerate}
-                  disabled={isGenerating || !prompt.trim()}
+                  disabled={isGenerating}
                   title={`${t('common.generate', 'Tạo ngay')} (${totalCreditsNeeded} cr)`}
                 >
-                  <HiOutlineArrowUp size={20} strokeWidth={2.5} />
+                  {isGenerating ? (
+                    <span className={styles.buttonSpinner} />
+                  ) : (
+                    <HiOutlineArrowUp size={20} strokeWidth={2.5} />
+                  )}
                 </button>
               </div>
             </div>

@@ -368,7 +368,7 @@
   transform: translateX(-50%);
   width: calc(100% - 24px);
   max-width: 710px;
-  z-index: 100;
+  z-index: 200;
   pointer-events: auto;
 }
 
@@ -388,12 +388,26 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  cursor: text;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus-within {
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
   }
+
+  &.shakeBox {
+    animation: shakeBoxAnim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    border-color: rgba(255, 46, 166, 0.7) !important;
+    box-shadow: 0 0 30px rgba(255, 46, 166, 0.35) !important;
+  }
+}
+
+@keyframes shakeBoxAnim {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(3px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 // TOP ROW: Slots & Inspire Me
@@ -532,15 +546,15 @@
   border: none;
   outline: none;
   color: #ffffff;
-  font-size: 13.5px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.45;
   resize: none;
   font-family: inherit;
   width: 100%;
-  min-height: 26px;
-  height: 28px;
-  max-height: 70px;
-  padding: 1px 0 3px 0;
+  min-height: 38px;
+  height: 42px;
+  max-height: 100px;
+  padding: 4px 0 4px 0;
   margin: 0;
 
   &::placeholder {
@@ -808,21 +822,45 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 2px 10px rgba(255, 46, 166, 0.45);
 
   &:hover:not(:disabled) {
-    transform: scale(1.05);
+    transform: scale(1.06);
     background: #ff47b3;
-    box-shadow: 0 3px 12px rgba(255, 46, 166, 0.6);
+    box-shadow: 0 4px 14px rgba(255, 46, 166, 0.65);
+  }
+
+  &.submitBtnReady {
+    background: #ff2ea6;
+    opacity: 0.92;
+    box-shadow: 0 2px 10px rgba(255, 46, 166, 0.5);
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.08);
+      box-shadow: 0 4px 16px rgba(255, 46, 166, 0.7);
+    }
   }
 
   &:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+    opacity: 0.6;
+    cursor: wait;
   }
+}
+
+.buttonSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spinBtn 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spinBtn {
+  to { transform: rotate(360deg); }
 }
 
 // Standalone Speaker Button for Video Mode (Placed bottom-left beneath box)
@@ -853,15 +891,15 @@
   bottom: calc(100% + 8px);
   left: 0;
   background: #1c1c1f;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
   padding: 6px;
   min-width: 250px;
   max-width: 340px;
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.85);
-  z-index: 110;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 350;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -1188,3 +1226,112 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+// ── Audio List Grid & Compact Audio Card ──
+.audioListGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compactAudioCard {
+  background: #0f1523;
+  border: 1px solid #1a2538;
+  border-radius: 14px;
+  padding: 14px 18px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &:hover {
+    border-color: rgba(255, 107, 53, 0.45);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .audioHeaderRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .audioPlayBtn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b35 0%, #ea580c 100%);
+    border: none;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 14px rgba(255, 107, 53, 0.55);
+    }
+
+    &.audioPlaying {
+      background: #22c55e;
+      box-shadow: 0 0 16px rgba(34, 197, 94, 0.6);
+    }
+  }
+
+  .audioMetaBlock {
+    flex: 1;
+    min-width: 0;
+
+    .audioTitle {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin: 0 0 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .audioTags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+
+      .audioModelBadge {
+        font-size: 0.68rem;
+        color: #ff6b35;
+        background: rgba(255, 107, 53, 0.12);
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .audioVoiceBadge {
+        font-size: 0.68rem;
+        color: #38bdf8;
+        background: rgba(56, 189, 248, 0.12);
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
+
+      .audioDurationBadge {
+        font-size: 0.68rem;
+        color: #94a3b8;
+        background: #18233a;
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .audioPromptSnippet {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.45;
+  }
+}
+
