@@ -196,10 +196,10 @@ const MainLayout = () => {
 
                 <div className={styles.authGroup}>
                   <Link to="/login" className={styles.loginBtn}>
-                    {t('fitness.log_in')}
+                    {t('nav.login', 'Đăng Nhập')}
                   </Link>
                   <Link to="/register" className={styles.startTrialBtn}>
-                    {t('fitness.start_trial')}
+                    {t('nav.register', 'Đăng Ký')}
                   </Link>
                 </div>
               </>
@@ -295,14 +295,14 @@ const MainLayout = () => {
                 ) : (
                   <div className={styles.mobileAuthArea}>
                     <Link to="/login" className={styles.mobileLoginBtn} onClick={closeMobileMenu}>
-                      {t('fitness.log_in')}
+                      {t('nav.login', 'Đăng Nhập')}
                     </Link>
                     <Link
                       to="/register"
                       className={styles.mobileStartTrialBtn}
                       onClick={closeMobileMenu}
                     >
-                      {t('fitness.start_trial')}
+                      {t('nav.register', 'Đăng Ký')}
                     </Link>
                   </div>
                 )}
