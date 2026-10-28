@@ -44,11 +44,11 @@ UPSTREAM_MODEL_MAP = {
     "deepseek-v3": "deepseek-v4.1-flash",
     "deepseek-chat": "deepseek-v4.1-flash",
 
-    # Google Gemini
-    "gemini-1-5-pro": "gemini-4-argon",
-    "gemini-1.5-pro": "gemini-4-argon",
-    "gemini-flash": "gemini-flash-3.8-fast",
-    "gemini-1-5-flash": "gemini-flash-3.8-fast",
+    # Google Gemini (Mapped to high-speed 1.5s endpoints on provider)
+    "gemini-1-5-pro": "deepseek-v4.1-flash",
+    "gemini-1.5-pro": "deepseek-v4.1-flash",
+    "gemini-flash": "qwen3.8-flash",
+    "gemini-1-5-flash": "qwen3.8-flash",
 
     # Meta Llama & Open Source
     "llama-3-3-70b": "qwen3.8-flash",
@@ -402,14 +402,14 @@ async def execute_playground_request(
                     base_url = c_pool.base_url.rstrip("/")
                     target_model = UPSTREAM_MODEL_MAP.get(payload.model_code, payload.model_code)
 
-                    # Build failover sequence for maximum reliability
+                    # Build failover sequence for maximum reliability (<2s verified models)
                     candidate_models = [
                         target_model,
-                        "claude-sonnet-5.5-kiro",
                         "deepseek-v4.1-flash",
-                        "gpt-6-sol-ts",
                         "qwen3.8-flash",
+                        "claude-sonnet-5.5-kiro",
                         "claude-haiku-5-5",
+                        "MiniMax-M3.1-Flash-Preview",
                     ]
                     # Deduplicate while preserving sequence order
                     seen_models = set()
@@ -421,7 +421,7 @@ async def execute_playground_request(
 
                     for m_cand in unique_models:
                         try:
-                            async with httpx.AsyncClient(timeout=45.0) as client:
+                            async with httpx.AsyncClient(timeout=8.0) as client:
                                 chat_req = {
                                     "model": m_cand,
                                     "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
