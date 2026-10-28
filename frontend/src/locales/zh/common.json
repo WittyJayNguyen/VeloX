@@ -11,7 +11,8 @@
     "logout": "退出",
     "workspace": "工作区",
     "studio": "Studio",
-    "models": "AI 模型"
+    "models": "AI 模型",
+    "chat": "AI 对话"
   },
   "hero": {
     "badge": "新一代AI网关平台",
@@ -566,5 +567,38 @@
     "general_desc": "渲染此页面时遇到异常，请刷新重试或返回系统首页。",
     "btn_reload": "刷新页面",
     "btn_home": "返回首页"
+  },
+  "chat": {
+    "title": "VeloX AI 对话",
+    "new_chat": "新对话",
+    "new_chat_btn": "+ 创建新对话",
+    "history_title": "对话历史记录",
+    "search_placeholder": "搜索对话...",
+    "no_history": "暂无对话历史",
+    "group_today": "今天",
+    "group_yesterday": "昨天",
+    "group_last_7_days": "前7天",
+    "group_older": "更早",
+    "model_selector_title": "选择 AI 对话模型",
+    "model_selector_desc": "系统仅加载专门用于对话和编程的大型语言模型",
+    "all_providers": "全部",
+    "search_model_placeholder": "搜索对话模型 (GPT-4o, Claude, DeepSeek...)",
+    "credits_per_msg": "点/条",
+    "tone_label": "语气:",
+    "tone_creative": "创意",
+    "tone_balanced": "平衡",
+    "tone_precise": "精确",
+    "sys_prompt_label": "系统指令",
+    "input_placeholder": "提问任何问题、编写代码或分析数据... (Enter 发送, Shift+Enter 换行)",
+    "send_btn": "发送",
+    "stop_btn": "停止",
+    "copy_btn": "复制",
+    "copied": "已复制",
+    "delete_chat": "删除对话",
+    "rename_chat": "重命名",
+    "clear_all": "清空所有历史",
+    "out_of_credits_title": "积分余额不足",
+    "out_of_credits_desc": "请充值积分以继续与 AI 进行对话。",
+    "topup_btn": "立即充值"
   }
 }

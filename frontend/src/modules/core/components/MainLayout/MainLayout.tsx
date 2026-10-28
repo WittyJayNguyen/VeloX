@@ -111,6 +111,14 @@ const MainLayout = () => {
               {t('nav.home', 'Trang Chủ')}
             </Link>
 
+            <Link
+              to="/chat"
+              className={`${styles.navItem} ${location.pathname.startsWith('/chat') ? styles.active : ''}`}
+            >
+              <HiOutlineChatBubbleLeftRight size={17} style={{ marginRight: 6, verticalAlign: 'middle', color: '#10a37f' }} />
+              {t('nav.chat', 'AI Chat')}
+            </Link>
+
             {/* Studio Mega Menu with 2-column hover flyout */}
             <StudioMegaMenu onCloseMenu={closeMobileMenu} />
 
@@ -228,10 +236,14 @@ const MainLayout = () => {
                   <HiOutlineHome size={18} /> {t('nav.home', 'Trang Chủ')}
                 </Link>
 
+                <Link to="/chat" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                  <HiOutlineChatBubbleLeftRight size={18} color="#10a37f" /> {t('nav.chat', 'AI Chat')}
+                </Link>
+
                 <div className={styles.mobileSectionHeader} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <RiOpenaiFill size={16} color="#10a37f" /> STUDIO SÁNG TẠO
                 </div>
-                <Link to="/studio?category=chat" className={styles.mobileSubItem} onClick={closeMobileMenu}>
+                <Link to="/chat" className={styles.mobileSubItem} onClick={closeMobileMenu}>
                   <HiOutlineChatBubbleLeftRight size={16} color="#10a37f" /> Chat (GPT-4o, Claude 3.5, Gemini)
                 </Link>
                 <Link to="/studio?category=image" className={styles.mobileSubItem} onClick={closeMobileMenu}>
@@ -317,8 +329,8 @@ const MainLayout = () => {
         <Outlet />
       </main>
 
-      {/* ── FOOTER (Hidden on /studio workspace) ── */}
-      {!location.pathname.startsWith('/studio') && (
+      {/* ── FOOTER (Hidden on /studio and /chat workspace) ── */}
+      {!location.pathname.startsWith('/studio') && !location.pathname.startsWith('/chat') && (
         <footer className={styles.footer}>
         <div className={styles.footerContainer}>
           <div className={styles.footerTopRow}>

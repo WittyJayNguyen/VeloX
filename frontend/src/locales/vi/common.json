@@ -11,7 +11,8 @@
     "logout": "Đăng Xuất",
     "workspace": "Khu Làm Việc",
     "studio": "Studio",
-    "models": "Mô Hình AI"
+    "models": "Mô Hình AI",
+    "chat": "AI Chat"
   },
   "hero": {
     "badge": "Nền Tảng AI Gateway Thế Hệ Mới",
@@ -581,5 +582,38 @@
     "general_desc": "Gặp sự cố khi hiển thị nội dung này. Vui lòng làm mới trang hoặc quay về trang chủ.",
     "btn_reload": "Tải Lại Trang",
     "btn_home": "Trang Chủ"
+  },
+  "chat": {
+    "title": "VeloX AI Chat",
+    "new_chat": "Đoạn chat mới",
+    "new_chat_btn": "+ Tạo đoạn chat mới",
+    "history_title": "Lịch sử đoạn chat",
+    "search_placeholder": "Tìm kiếm đoạn chat...",
+    "no_history": "Chưa có lịch sử đoạn chat nào",
+    "group_today": "Hôm nay",
+    "group_yesterday": "Hôm qua",
+    "group_last_7_days": "7 ngày trước",
+    "group_older": "Cũ hơn",
+    "model_selector_title": "Chọn Mô Hình Chat AI",
+    "model_selector_desc": "Hệ thống chỉ tải các mô hình ngôn ngữ chuyên sâu cho hội thoại & lập trình",
+    "all_providers": "Tất cả",
+    "search_model_placeholder": "Tìm kiếm mô hình chat (GPT-4o, Claude, DeepSeek...)",
+    "credits_per_msg": "cr/tin nhắn",
+    "tone_label": "Văn phong:",
+    "tone_creative": "Sáng tạo",
+    "tone_balanced": "Cân bằng",
+    "tone_precise": "Chính xác",
+    "sys_prompt_label": "Chỉ dẫn AI",
+    "input_placeholder": "Hỏi bất kỳ điều gì hoặc yêu cầu viết code, phân tích... (Enter để gửi, Shift+Enter xuống dòng)",
+    "send_btn": "Gửi",
+    "stop_btn": "Dừng",
+    "copy_btn": "Sao chép",
+    "copied": "Đã chép",
+    "delete_chat": "Xóa đoạn chat",
+    "rename_chat": "Đổi tên",
+    "clear_all": "Xóa toàn bộ lịch sử",
+    "out_of_credits_title": "Hết số dư Credit",
+    "out_of_credits_desc": "Bạn cần nạp thêm credit để tiếp tục trò chuyện cùng AI.",
+    "topup_btn": "Nạp Credit Ngay"
   }
 }

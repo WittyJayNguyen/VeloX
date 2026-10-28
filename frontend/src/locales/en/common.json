@@ -11,7 +11,8 @@
     "logout": "Sign Out",
     "workspace": "Workspace",
     "studio": "Studio",
-    "models": "Models"
+    "models": "Models",
+    "chat": "AI Chat"
   },
   "hero": {
     "badge": "Next-Gen AI Gateway Platform",
@@ -581,5 +582,38 @@
     "general_desc": "An unexpected error occurred while rendering this page. Please refresh or return to the homepage.",
     "btn_reload": "Reload Page",
     "btn_home": "Home Page"
+  },
+  "chat": {
+    "title": "VeloX AI Chat",
+    "new_chat": "New Chat",
+    "new_chat_btn": "+ New Chat",
+    "history_title": "Chat History",
+    "search_placeholder": "Search chats...",
+    "no_history": "No chat history yet",
+    "group_today": "Today",
+    "group_yesterday": "Yesterday",
+    "group_last_7_days": "Previous 7 days",
+    "group_older": "Older",
+    "model_selector_title": "Select AI Chat Model",
+    "model_selector_desc": "System loads chat & reasoning LLMs exclusively for conversation & coding",
+    "all_providers": "All",
+    "search_model_placeholder": "Search chat models (GPT-4o, Claude, DeepSeek...)",
+    "credits_per_msg": "cr/msg",
+    "tone_label": "Tone:",
+    "tone_creative": "Creative",
+    "tone_balanced": "Balanced",
+    "tone_precise": "Precise",
+    "sys_prompt_label": "System Prompt",
+    "input_placeholder": "Ask anything, write code, analyze data... (Enter to send, Shift+Enter for newline)",
+    "send_btn": "Send",
+    "stop_btn": "Stop",
+    "copy_btn": "Copy",
+    "copied": "Copied",
+    "delete_chat": "Delete chat",
+    "rename_chat": "Rename",
+    "clear_all": "Clear all history",
+    "out_of_credits_title": "Insufficient Credits",
+    "out_of_credits_desc": "Please top up your credits to continue chatting with AI.",
+    "topup_btn": "Top Up Credits"
   }
 }

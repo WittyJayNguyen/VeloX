@@ -11,7 +11,8 @@
     "logout": "로그아웃",
     "workspace": "워크스페이스",
     "studio": "Studio",
-    "models": "AI 모델"
+    "models": "AI 모델",
+    "chat": "AI 챗"
   },
   "hero": {
     "badge": "차세대 AI 게이트웨이 플랫폼",
@@ -566,5 +567,38 @@
     "general_desc": "페이지를 렌더링하는 중 예기치 않은 오류가 발생했습니다. 새로고침하거나 홈으로 돌아가주세요.",
     "btn_reload": "새로고침",
     "btn_home": "홈으로 이동"
+  },
+  "chat": {
+    "title": "VeloX AI 챗",
+    "new_chat": "새 대화",
+    "new_chat_btn": "+ 새 대화 시작",
+    "history_title": "대화 기록",
+    "search_placeholder": "대화 검색...",
+    "no_history": "대화 기록이 없습니다",
+    "group_today": "오늘",
+    "group_yesterday": "어제",
+    "group_last_7_days": "지난 7일",
+    "group_older": "이전",
+    "model_selector_title": "AI 챗 모델 선택",
+    "model_selector_desc": "대화 및 코딩에 특화된 언어 모델만 로드합니다",
+    "all_providers": "전체",
+    "search_model_placeholder": "챗 모델 검색 (GPT-4o, Claude, DeepSeek...)",
+    "credits_per_msg": "크레딧/건",
+    "tone_label": "톤:",
+    "tone_creative": "창의적",
+    "tone_balanced": "균형",
+    "tone_precise": "정확",
+    "sys_prompt_label": "시스템 지시문",
+    "input_placeholder": "질문하거나 코딩, 분석을 요청하세요... (Enter 전송, Shift+Enter 줄바꿈)",
+    "send_btn": "전송",
+    "stop_btn": "중지",
+    "copy_btn": "복사",
+    "copied": "복사됨",
+    "delete_chat": "대화 삭제",
+    "rename_chat": "이름 변경",
+    "clear_all": "전체 기록 삭제",
+    "out_of_credits_title": "크레딧 잔액 부족",
+    "out_of_credits_desc": "AI와 대화를 계속하려면 크레딧을 충전하세요.",
+    "topup_btn": "지금 충전하기"
   }
 }

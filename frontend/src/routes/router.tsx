@@ -60,6 +60,7 @@ const ReferralPage = lazy(() => import('@modules/client/pages/ReferralPage'));
 const DeveloperApiPage = lazy(() => import('@modules/client/pages/DeveloperApiPage'));
 const DownloadsPage = lazy(() => import('@modules/client/pages/DownloadsPage'));
 const StudioPage = lazy(() => import('@modules/client/pages/StudioPage'));
+const ChatPage = lazy(() => import('@modules/client/pages/ChatPage'));
 const ModelsExplorePage = lazy(() => import('@modules/client/pages/ModelsExplorePage'));
 const ApiDocsPage = lazy(() => import('@modules/client/pages/ApiDocsPage'));
 
@@ -77,10 +78,11 @@ const router = createBrowserRouter([
       { path: '/pricing', element: <SubscriptionPage /> },
       { path: '/subscription', element: <SubscriptionPage /> },
 
-      // Protected Member Pages (Authentication Required to enter Studio or Account)
+      // Protected Member Pages (Authentication Required to enter Studio, Chat or Account)
       {
         element: <ProtectedRoute />,
         children: [
+          { path: '/chat', element: <ChatPage /> },
           { path: '/studio', element: <StudioPage /> },
           { path: '/playground', element: <PlaygroundPage /> },
           { path: '/profile', element: <ProfilePage /> },
