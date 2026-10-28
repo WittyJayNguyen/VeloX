@@ -17,6 +17,7 @@ import {
   HiOutlineChevronDown,
   HiOutlineMusicalNote,
   HiOutlineCheck,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { modelService, type PublicModelItem } from '@modules/models/services/modelService';
@@ -50,10 +51,205 @@ export interface GeneratedVideoItem {
   prompt: string;
   model: string;
   poster: string;
+  videoUrl?: string;
   duration?: string;
   quality?: string;
+  aspectRatio?: string;
   createdAt: string;
 }
+
+export interface ModelConfig {
+  durations?: string[];
+  resolutions: string[];
+  aspectRatios: string[];
+  qualities?: string[];
+  defaultDuration?: string;
+  defaultResolution: string;
+  defaultAspectRatio: string;
+  defaultQuality?: string;
+}
+
+export const MODEL_CONFIGS: Record<string, ModelConfig> = {
+  // Video Models
+  'seedance-2.5': {
+    durations: ['5s', '10s'],
+    resolutions: ['720p', '1080p'],
+    aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: 'Tự động',
+  },
+  'runway-gen3-alpha': {
+    durations: ['5s', '10s (Pro)'],
+    resolutions: ['720p', '1080p', '4K'],
+    aspectRatios: ['16:9', '9:16'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+  'runway-gen3': {
+    durations: ['5s', '10s (Pro)'],
+    resolutions: ['720p', '1080p', '4K'],
+    aspectRatios: ['16:9', '9:16'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+  'minimax-video-01': {
+    durations: ['6s'],
+    resolutions: ['720p', '1080p'],
+    aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
+    defaultDuration: '6s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: 'Tự động',
+  },
+  'kling-v1.5-pro': {
+    durations: ['5s', '10s'],
+    resolutions: ['1080p'],
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+  'kling-ai-1-5': {
+    durations: ['5s', '10s'],
+    resolutions: ['1080p'],
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+  'grok-imagine-video': {
+    durations: ['5s'],
+    resolutions: ['720p', '1080p'],
+    aspectRatios: ['16:9', '9:16'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+  'grok-imagine-video-1.5': {
+    durations: ['5s'],
+    resolutions: ['720p', '1080p'],
+    aspectRatios: ['16:9', '9:16'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+  'luma-dream-machine': {
+    durations: ['5s'],
+    resolutions: ['720p', '1080p'],
+    aspectRatios: ['16:9', '9:16'],
+    defaultDuration: '5s',
+    defaultResolution: '1080p',
+    defaultAspectRatio: '16:9',
+  },
+
+  // Image Models
+  'gpt-image-2.5-sunburst': {
+    resolutions: ['1K', '2K', '4K'],
+    aspectRatios: ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9'],
+    qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
+    defaultResolution: '1K',
+    defaultAspectRatio: 'Tự động',
+    defaultQuality: 'Cao',
+  },
+  'flux-1-dev': {
+    resolutions: ['1K', '2K'],
+    aspectRatios: ['1:1', '16:9', '9:16', '4:3'],
+    qualities: ['Tiêu chuẩn', 'Cao'],
+    defaultResolution: '1K',
+    defaultAspectRatio: '1:1',
+    defaultQuality: 'Cao',
+  },
+  'midjourney-v6.1': {
+    resolutions: ['1K', '2K', '4K'],
+    aspectRatios: ['1:1', '16:9', '9:16', '4:3', '21:9'],
+    qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
+    defaultResolution: '2K',
+    defaultAspectRatio: '16:9',
+    defaultQuality: 'Ultra',
+  },
+  'dall-e-3': {
+    resolutions: ['1K', '2K'],
+    aspectRatios: ['1:1', '16:9', '9:16'],
+    qualities: ['Tiêu chuẩn', 'HD'],
+    defaultResolution: '1K',
+    defaultAspectRatio: '1:1',
+    defaultQuality: 'HD',
+  },
+};
+
+// Preset Prompts & Templates per model/category
+export const PROMPT_PRESETS: Record<string, Array<{ title: string; prompt: string; tag: string; ratio?: string; duration?: string }>> = {
+  video: [
+    {
+      title: 'Quay quỹ đạo điện ảnh Slow-motion',
+      prompt: 'Cinematic slow-motion 120fps camera orbit around an elite athlete lifting heavy barbell in a modern moody gym, volumetric neon light, floating chalk dust, 4k ultra-realistic',
+      tag: 'Điện ảnh',
+      ratio: '16:9',
+      duration: '5s',
+    },
+    {
+      title: 'Chuyển động Drone tốc độ cao',
+      prompt: 'Dynamic FPV drone shot following runner sprinting through neon rain cyber street, water splashes, anamorphic lens flare, motion blur, hyper-realistic',
+      tag: 'Hành động',
+      ratio: '16:9',
+      duration: '10s',
+    },
+    {
+      title: 'Yoga Bình minh Thiên nhiên',
+      prompt: 'Serene woman practicing yoga flow on a breathtaking mountain peak during golden hour sunrise, smooth gimbal tracking shot, volumetric clouds, photorealistic',
+      tag: 'Nghệ thuật',
+      ratio: '9:16',
+      duration: '5s',
+    },
+    {
+      title: 'Crossfit Battle Ropes bùng nổ',
+      prompt: 'Explosive high-intensity battle rope workout, extreme close-up of muscles and sweat in dramatic stadium rim lighting, slow-motion 60fps',
+      tag: 'Fitness',
+      ratio: '16:9',
+      duration: '6s',
+    },
+  ],
+  image: [
+    {
+      title: 'Chân dung Studio Hyper-Realistic 8K',
+      prompt: 'Masterpiece portrait of athlete in studio lighting, extreme detail on skin texture, 85mm f/1.4 lens, Rembrandt lighting, photorealistic 8k octane render',
+      tag: 'Chân thực',
+      ratio: '1:1',
+    },
+    {
+      title: 'Phòng tập tương lai Cyberpunk',
+      prompt: 'Futuristic AI fitness laboratory with biometric neon holograms, sleek dark aesthetic, glass floors, cyberpunk gym aesthetic, unreal engine 5 render',
+      tag: 'Sci-Fi',
+      ratio: '16:9',
+    },
+    {
+      title: 'Kiến trúc Gym Tối giản Đẳng cấp',
+      prompt: 'Modern architectural luxury fitness studio with floor-to-ceiling panoramic windows overlooking pine forest mist, soft diffused daylight, architectural digest',
+      tag: 'Kiến trúc',
+      ratio: '16:9',
+    },
+    {
+      title: 'Chiến binh Runic huyền thoại',
+      prompt: 'Ancient Nordic athletic warrior with glowing cyan runic energy markings, dramatic moody stadium spotlights, photorealistic concept art',
+      tag: 'Concept Art',
+      ratio: '9:16',
+    },
+  ],
+  audio: [
+    {
+      title: 'Giọng đọc Động lực & Năng lượng',
+      prompt: 'Chào bạn! Đây là trợ lý giọng nói VeloX. Hãy kiên trì rèn luyện và bứt phá mọi giới hạn mỗi ngày để chạm tới phiên bản tốt nhất của chính mình!',
+      tag: 'Động lực',
+    },
+    {
+      title: 'Bản tin Công nghệ AI Tức thì',
+      prompt: 'Bản tin công nghệ VeloX: Nền tảng vừa cập nhật hệ thống mô hình thế hệ mới bao gồm Seedance 2.5 và Runway Gen-3 Alpha với tốc độ render vượt trội.',
+      tag: 'Tin tức',
+    },
+  ],
+};
 
 // Preset Prompts for "Inspire Me"
 const INSPIRATION_PROMPTS = [
@@ -106,6 +302,7 @@ export const StudioPage: React.FC = () => {
   // Popover Menus
   const [isModelMenuOpen, setIsModelMenuOpen] = useState<boolean>(false);
   const [isParamsMenuOpen, setIsParamsMenuOpen] = useState<boolean>(false);
+  const [isPresetsMenuOpen, setIsPresetsMenuOpen] = useState<boolean>(false);
   const [isInspireMenuOpen, setIsInspireMenuOpen] = useState<boolean>(false);
   const [isSpeechRecording, setIsSpeechRecording] = useState<boolean>(false);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
@@ -119,6 +316,8 @@ export const StudioPage: React.FC = () => {
 
   // Advanced Generation Settings
   const [resolution, setResolution] = useState<string>('1K');
+  const [videoResolution, setVideoResolution] = useState<string>('1080p');
+  const [videoDuration, setVideoDuration] = useState<string>('5s');
   const [aspectRatio, setAspectRatio] = useState<string>('Tự động');
   const [quality, setQuality] = useState<string>('Cao');
   const [audioVoice, setAudioVoice] = useState<string>('English · American');
@@ -128,8 +327,10 @@ export const StudioPage: React.FC = () => {
 
   // Modal preview
   const [previewMedia, setPreviewMedia] = useState<{
-    type: 'image' | 'video';
+    type: 'image' | 'video' | 'audio';
     url: string;
+    videoUrl?: string;
+    poster?: string;
     title: string;
     prompt: string;
     model: string;
@@ -182,8 +383,10 @@ export const StudioPage: React.FC = () => {
       prompt: 'Hyper-realistic video of athlete running through neon rain city, smooth slow-motion camera orbit',
       model: 'Runway Gen-3 Alpha',
       poster: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-athlete-working-out-with-heavy-ropes-in-a-gym-41315-large.mp4',
       duration: '5s',
       quality: '1080p FHD',
+      aspectRatio: '16:9',
       createdAt: 'Hôm nay',
     },
     {
@@ -192,8 +395,10 @@ export const StudioPage: React.FC = () => {
       prompt: 'Explosive battle rope training with particles of chalk floating in golden hour light',
       model: 'Minimax Video-01',
       poster: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
-      duration: '5s',
+      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-doing-warm-up-exercises-on-a-yoga-mat-41314-large.mp4',
+      duration: '6s',
       quality: '720p HD',
+      aspectRatio: '16:9',
       createdAt: 'Hôm qua',
     },
   ]);
@@ -304,6 +509,47 @@ export const StudioPage: React.FC = () => {
   const currentModel = useMemo(() => {
     return availableModels.find((m) => m.model_code === selectedModelCode) || availableModels[0];
   }, [availableModels, selectedModelCode]);
+
+  // Model-specific capabilities & configs
+  const activeModelConfig = useMemo(() => {
+    return MODEL_CONFIGS[selectedModelCode] || {
+      durations: ['5s', '10s'],
+      resolutions: activeTab === 'video' ? ['720p', '1080p'] : ['1K', '2K'],
+      aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
+      qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
+      defaultDuration: '5s',
+      defaultResolution: activeTab === 'video' ? '1080p' : '1K',
+      defaultAspectRatio: 'Tự động',
+      defaultQuality: 'Cao',
+    };
+  }, [selectedModelCode, activeTab]);
+
+  // Auto-map parameters whenever selected model or active tab changes
+  useEffect(() => {
+    if (activeTab === 'video') {
+      const allowedDurations = activeModelConfig.durations || ['5s', '10s'];
+      if (!allowedDurations.includes(videoDuration)) {
+        setVideoDuration(activeModelConfig.defaultDuration || allowedDurations[0]);
+      }
+      const allowedResolutions = activeModelConfig.resolutions || ['720p', '1080p'];
+      if (!allowedResolutions.includes(videoResolution)) {
+        setVideoResolution(activeModelConfig.defaultResolution || allowedResolutions[0]);
+      }
+      const allowedRatios = activeModelConfig.aspectRatios || ['Tự động', '16:9', '9:16'];
+      if (!allowedRatios.includes(aspectRatio)) {
+        setAspectRatio(activeModelConfig.defaultAspectRatio || '16:9');
+      }
+    } else if (activeTab === 'image') {
+      const allowedResolutions = activeModelConfig.resolutions || ['1K', '2K'];
+      if (!allowedResolutions.includes(resolution)) {
+        setResolution(activeModelConfig.defaultResolution || allowedResolutions[0]);
+      }
+      const allowedQualities = activeModelConfig.qualities || ['Tiêu chuẩn', 'Cao'];
+      if (quality && !allowedQualities.includes(quality)) {
+        setQuality(activeModelConfig.defaultQuality || allowedQualities[0]);
+      }
+    }
+  }, [selectedModelCode, activeTab, activeModelConfig]);
 
   // Compute Credits Needed
   const totalCreditsNeeded = currentModel?.selling_credit_price || (activeTab === 'image' ? 35 : activeTab === 'video' ? 80 : 15);
@@ -450,14 +696,31 @@ export const StudioPage: React.FC = () => {
         };
         setGeneratedImages((prev) => [newImg, ...prev]);
       } else if (activeTab === 'video') {
+        const demoVideos = [
+          {
+            poster: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80',
+            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-athlete-working-out-with-heavy-ropes-in-a-gym-41315-large.mp4',
+          },
+          {
+            poster: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
+            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-doing-warm-up-exercises-on-a-yoga-mat-41314-large.mp4',
+          },
+          {
+            poster: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-working-out-in-a-modern-gym-41316-large.mp4',
+          },
+        ];
+        const chosen = demoVideos[Math.floor(Math.random() * demoVideos.length)];
         const newVid: GeneratedVideoItem = {
           id: `vid-${Date.now()}`,
           title: prompt.slice(0, 32) + '...',
           prompt,
           model: selectedModelName,
-          poster: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-          duration: '5s',
-          quality: '1080p FHD',
+          poster: chosen.poster,
+          videoUrl: chosen.videoUrl,
+          duration: videoDuration,
+          quality: `${videoResolution} FHD`,
+          aspectRatio,
           createdAt: 'Vừa xong',
         };
         setGeneratedVideos((prev) => [newVid, ...prev]);
@@ -622,7 +885,9 @@ export const StudioPage: React.FC = () => {
                     onClick={() =>
                       setPreviewMedia({
                         type: 'video',
-                        url: vid.poster,
+                        url: vid.videoUrl || vid.poster,
+                        videoUrl: vid.videoUrl,
+                        poster: vid.poster,
                         title: vid.title,
                         prompt: vid.prompt,
                         model: vid.model,
@@ -642,7 +907,9 @@ export const StudioPage: React.FC = () => {
                           e.stopPropagation();
                           setPreviewMedia({
                             type: 'video',
-                            url: vid.poster,
+                            url: vid.videoUrl || vid.poster,
+                            videoUrl: vid.videoUrl,
+                            poster: vid.poster,
                             title: vid.title,
                             prompt: vid.prompt,
                             model: vid.model,
@@ -1023,20 +1290,55 @@ export const StudioPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* 2. Book Icon [📖] */}
-                <button
-                  type="button"
-                  className={styles.iconBookBtn}
-                  title="Thư viện phong cách & prompt mẫu"
-                  onClick={() => {
-                    const randomP = INSPIRATION_PROMPTS[Math.floor(Math.random() * INSPIRATION_PROMPTS.length)];
-                    setPrompt(randomP);
-                    setToastMsg('Đã nạp mẫu sáng tạo từ thư viện!');
-                    setTimeout(() => setToastMsg(null), 2500);
-                  }}
-                >
-                  <HiOutlineBookOpen size={16} />
-                </button>
+                {/* 2. Book Icon [📖] & Presets Popover */}
+                <div className={styles.bookPopoverWrapper}>
+                  <button
+                    type="button"
+                    className={`${styles.iconBookBtn} ${isPresetsMenuOpen ? styles.iconBookBtnActive : ''}`}
+                    title="Thư viện phong cách & prompt mẫu chuẩn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPresetsMenuOpen(!isPresetsMenuOpen);
+                      setIsModelMenuOpen(false);
+                      setIsParamsMenuOpen(false);
+                      setIsInspireMenuOpen(false);
+                    }}
+                  >
+                    <HiOutlineBookOpen size={16} />
+                  </button>
+
+                  {isPresetsMenuOpen && (
+                    <div className={styles.presetsPopoverMenu} onClick={(e) => e.stopPropagation()}>
+                      <div className={styles.presetsHeader}>
+                        <HiOutlineSparkles size={14} color="#ff6b35" />
+                        <span>Mẫu Prompt Chuẩn ({activeTab === 'image' ? 'Ảnh' : activeTab === 'video' ? 'Video' : 'Âm thanh'})</span>
+                      </div>
+                      <div className={styles.presetsList}>
+                        {(PROMPT_PRESETS[activeTab] || []).map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            className={styles.presetItemBtn}
+                            onClick={() => {
+                              setPrompt(preset.prompt);
+                              if (preset.ratio) setAspectRatio(preset.ratio);
+                              if (preset.duration && activeTab === 'video') setVideoDuration(preset.duration);
+                              setIsPresetsMenuOpen(false);
+                              setToastMsg(`Đã nạp mẫu "${preset.title}" và cấu hình tối ưu!`);
+                              setTimeout(() => setToastMsg(null), 2500);
+                            }}
+                          >
+                            <div className={styles.presetItemTop}>
+                              <span className={styles.presetItemTitle}>{preset.title}</span>
+                              <span className={styles.presetTag}>{preset.tag}</span>
+                            </div>
+                            <p className={styles.presetItemSnippet}>{preset.prompt}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* 3. Model Dropdown ✦ [Model Name] ⌵ */}
                 <div className={styles.modelPillDropdown}>
@@ -1047,6 +1349,7 @@ export const StudioPage: React.FC = () => {
                       e.stopPropagation();
                       setIsModelMenuOpen(!isModelMenuOpen);
                       setIsParamsMenuOpen(false);
+                      setIsPresetsMenuOpen(false);
                       setIsInspireMenuOpen(false);
                     }}
                   >
@@ -1090,7 +1393,7 @@ export const StudioPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* 4. Params Dropdown (1K · Tự động · Cao ⌵ hoặc 1080p · Tự động · Tự động ⌵) */}
+                {/* 4. Params Dropdown (1K · Tự động · Cao ⌵ hoặc 1080p · Tự động · 5s ⌵) */}
                 <div className={styles.paramsPillDropdown}>
                   <button
                     type="button"
@@ -1099,6 +1402,7 @@ export const StudioPage: React.FC = () => {
                       e.stopPropagation();
                       setIsParamsMenuOpen(!isParamsMenuOpen);
                       setIsModelMenuOpen(false);
+                      setIsPresetsMenuOpen(false);
                       setIsInspireMenuOpen(false);
                     }}
                   >
@@ -1106,7 +1410,7 @@ export const StudioPage: React.FC = () => {
                       {activeTab === 'image'
                         ? `${resolution} · ${aspectRatio} · ${quality}`
                         : activeTab === 'video'
-                        ? `1080p · ${aspectRatio} · ${aspectRatio === 'Tự động' ? 'Tự động' : 'Chuẩn'}`
+                        ? `${videoResolution} · ${aspectRatio} · ${videoDuration}`
                         : audioVoice}
                     </span>
                     <HiOutlineChevronDown className={styles.chevron} size={13} />
@@ -1118,7 +1422,7 @@ export const StudioPage: React.FC = () => {
                         <>
                           <div className={styles.paramGroupTitle}>Độ phân giải</div>
                           <div className={styles.paramOptionsGrid}>
-                            {['1K', '2K', '4K'].map((res) => (
+                            {(activeModelConfig.resolutions || ['1K', '2K', '4K']).map((res) => (
                               <button
                                 key={res}
                                 type="button"
@@ -1132,7 +1436,7 @@ export const StudioPage: React.FC = () => {
 
                           <div className={styles.paramGroupTitle}>Tỉ lệ khung hình</div>
                           <div className={styles.paramOptionsGrid}>
-                            {['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9'].map((ratio) => (
+                            {(activeModelConfig.aspectRatios || ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
                               <button
                                 key={ratio}
                                 type="button"
@@ -1146,7 +1450,7 @@ export const StudioPage: React.FC = () => {
 
                           <div className={styles.paramGroupTitle}>Chất lượng Render</div>
                           <div className={styles.paramOptionsGrid}>
-                            {['Tiêu chuẩn', 'Cao', 'Ultra'].map((q) => (
+                            {(activeModelConfig.qualities || ['Tiêu chuẩn', 'Cao', 'Ultra']).map((q) => (
                               <button
                                 key={q}
                                 type="button"
@@ -1164,11 +1468,12 @@ export const StudioPage: React.FC = () => {
                         <>
                           <div className={styles.paramGroupTitle}>Độ phân giải video</div>
                           <div className={styles.paramOptionsGrid}>
-                            {['720p', '1080p', '4K'].map((res) => (
+                            {(activeModelConfig.resolutions || ['720p', '1080p', '4K']).map((res) => (
                               <button
                                 key={res}
                                 type="button"
-                                className={`${styles.paramChip} ${res === '1080p' ? styles.paramActive : ''}`}
+                                className={`${styles.paramChip} ${videoResolution === res ? styles.paramActive : ''}`}
+                                onClick={() => setVideoResolution(res)}
                               >
                                 {res}
                               </button>
@@ -1177,7 +1482,7 @@ export const StudioPage: React.FC = () => {
 
                           <div className={styles.paramGroupTitle}>Tỉ lệ khung hình</div>
                           <div className={styles.paramOptionsGrid}>
-                            {['Tự động', '16:9', '9:16'].map((ratio) => (
+                            {(activeModelConfig.aspectRatios || ['Tự động', '16:9', '9:16']).map((ratio) => (
                               <button
                                 key={ratio}
                                 type="button"
@@ -1189,10 +1494,15 @@ export const StudioPage: React.FC = () => {
                             ))}
                           </div>
 
-                          <div className={styles.paramGroupTitle}>Thời lượng</div>
+                          <div className={styles.paramGroupTitle}>Thời lượng ({cleanModelDisplayName(currentModel?.name || '')})</div>
                           <div className={styles.paramOptionsGrid}>
-                            {['5s', '10s (Pro)'].map((dur) => (
-                              <button key={dur} type="button" className={`${styles.paramChip} ${dur === '5s' ? styles.paramActive : ''}`}>
+                            {(activeModelConfig.durations || ['5s', '10s (Pro)']).map((dur) => (
+                              <button
+                                key={dur}
+                                type="button"
+                                className={`${styles.paramChip} ${videoDuration === dur ? styles.paramActive : ''}`}
+                                onClick={() => setVideoDuration(dur)}
+                              >
                                 {dur}
                               </button>
                             ))}
@@ -1262,7 +1572,7 @@ export const StudioPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal with Real Video Player */}
       {previewMedia && (
         <div className={styles.lightboxBackdrop} onClick={() => setPreviewMedia(null)}>
           <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
@@ -1270,20 +1580,33 @@ export const StudioPage: React.FC = () => {
               type="button"
               className={styles.lightboxCloseBtn}
               onClick={() => setPreviewMedia(null)}
+              title="Đóng xem trước"
             >
               <HiOutlineXMark size={20} />
             </button>
 
             <div className={styles.lightboxImageWrapper}>
-              <img src={previewMedia.url} alt={previewMedia.prompt} />
+              {previewMedia.type === 'video' ? (
+                <video
+                  src={previewMedia.videoUrl || previewMedia.url}
+                  poster={previewMedia.poster}
+                  controls
+                  autoPlay
+                  playsInline
+                  loop
+                  style={{ width: '100%', maxHeight: '540px', objectFit: 'contain', background: '#000' }}
+                />
+              ) : (
+                <img src={previewMedia.url} alt={previewMedia.prompt} />
+              )}
             </div>
 
             <div className={styles.lightboxMeta}>
               <div className={styles.lightboxModelRow}>
                 <span className={styles.lightboxModelBadge}>{previewMedia.model}</span>
                 <a
-                  href={previewMedia.url}
-                  download="velox-asset.jpg"
+                  href={previewMedia.videoUrl || previewMedia.url}
+                  download={previewMedia.type === 'video' ? 'velox-video.mp4' : 'velox-asset.jpg'}
                   target="_blank"
                   rel="noreferrer"
                   className={styles.lightboxDownloadBtn}
