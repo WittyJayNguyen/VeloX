@@ -12,6 +12,7 @@ import json
 import asyncio
 import time
 import random
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -300,23 +301,21 @@ CINEMATIC_VIDEOS = [
 ]
 
 
-def _call_upstream_image_sync(base_url: str, key_val: str, payload: dict) -> Optional[dict]:
-    """Execute synchronous HTTP request to upstream image generation API with browser-grade headers."""
+async def _call_upstream_image(base_url: str, key_val: str, payload: dict) -> Optional[dict]:
+    """Execute asynchronous HTTP request to upstream image generation API using httpx."""
     try:
         url = f"{base_url.rstrip('/')}/images/generations"
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {key_val}",
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            },
-        )
-        with urllib.request.urlopen(req, timeout=60) as res:
-            if res.status == 200:
-                raw = res.read().decode("utf-8")
-                return json.loads(raw)
+        headers = {
+            "Authorization": f"Bearer {key_val}",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        }
+        async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=15.0)) as client:
+            res = await client.post(url, json=payload, headers=headers)
+            if res.status_code == 200:
+                return res.json()
+            else:
+                print(f"[Studio Upstream Error] {base_url}/images/generations returned {res.status_code}: {res.text[:200]}")
     except Exception as e:
         print(f"[Studio Upstream Error] Failed to call {base_url}/images/generations: {e}")
     return None
@@ -390,7 +389,7 @@ async def generate_image_from_upstream(
                 "n": 1,
             }
 
-            resp_data = await asyncio.to_thread(_call_upstream_image_sync, base_url, cred.key_val, payload)
+            resp_data = await _call_upstream_image(base_url, cred.key_val, payload)
             if resp_data and resp_data.get("data"):
                 first = resp_data["data"][0]
                 if first.get("b64_json"):
