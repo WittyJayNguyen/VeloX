@@ -492,7 +492,7 @@ export const SubscriptionPage: React.FC = () => {
             Đang tải thông tin bảng giá cập nhật từ hệ thống...
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
             {displayedPackages.map((tier) => {
               const isUserCurrent =
                 isAuthenticated &&
@@ -511,6 +511,7 @@ export const SubscriptionPage: React.FC = () => {
                     position: 'relative',
                     display: 'flex',
                     flexDirection: 'column',
+                    padding: '1.75rem 1.5rem',
                     borderColor: tier.is_popular ? '#ff6b35' : '#1e2638',
                     background: tier.is_popular
                       ? 'linear-gradient(180deg, rgba(255, 107, 53, 0.05) 0%, rgba(17, 24, 39, 1) 100%)'
@@ -558,53 +559,61 @@ export const SubscriptionPage: React.FC = () => {
                     </span>
                   )}
 
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>{tier.name}</div>
-                  <div style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '0.35rem 0 1rem', minHeight: '38px' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap' }}>{tier.name}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.84rem', margin: '0.4rem 0 1rem', minHeight: '38px', lineHeight: 1.45 }}>
                     {tier.description || 'Gói dịch vụ AI Gateway VeloX'}
                   </div>
 
-                  {/* Pricing Area */}
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '0.75rem' }}>
-                    <span style={{ fontSize: '1.9rem', fontWeight: 800, color: '#fff' }}>
-                      {tier.price_vnd > 0 ? `${tier.price_vnd.toLocaleString()} đ` : '0 đ'}
-                    </span>
-                    {tier.original_price_vnd && tier.original_price_vnd > tier.price_vnd && (
-                      <span style={{ color: '#64748b', textDecoration: 'line-through', fontSize: '0.9rem' }}>
-                        {tier.original_price_vnd.toLocaleString()} đ
+                  {/* Pricing Area: Structured two-tier layout avoiding text drops */}
+                  <div style={{ marginBottom: '1.1rem', minHeight: '68px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                      <span style={{ fontSize: '1.85rem', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', letterSpacing: '-0.5px' }}>
+                        {tier.price_vnd > 0 ? `${tier.price_vnd.toLocaleString()} ₫` : '0 ₫'}
                       </span>
-                    )}
-                    {discountPercent > 0 && (
-                      <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.68rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
-                        -{discountPercent}%
+                      <span style={{ color: '#94a3b8', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                        {tier.category === 'TOPUP' ? '' : '/tháng'}
                       </span>
+                    </div>
+
+                    {tier.original_price_vnd && tier.original_price_vnd > tier.price_vnd ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                        <span style={{ color: '#64748b', textDecoration: 'line-through', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                          {tier.original_price_vnd.toLocaleString()} ₫
+                        </span>
+                        {discountPercent > 0 && (
+                          <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.68rem', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                            -{discountPercent}%
+                          </span>
+                        )}
+                        <span style={{ color: '#10b981', fontSize: '0.74rem', fontWeight: 600 }}>Tiết kiệm</span>
+                      </div>
+                    ) : (
+                      <div style={{ height: '22px' }} />
                     )}
-                    <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-                      {tier.category === 'TOPUP' ? '' : tier.price_vnd === 0 ? '/vĩnh viễn' : '/tháng'}
-                    </span>
                   </div>
 
                   {/* Credit Quota & Production Capacity */}
                   <div
                     style={{
-                      padding: '0.75rem 0.9rem',
+                      padding: '0.85rem 1rem',
                       background: '#090d16',
                       border: '1px solid #1a2234',
-                      borderRadius: '8px',
+                      borderRadius: '10px',
                       marginBottom: '1.25rem',
                     }}
                   >
-                    <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '0.95rem' }}>
+                    <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '0.98rem', whiteSpace: 'nowrap' }}>
                       💎 {tier.credits_given.toLocaleString()} Credits {tier.category === 'TOPUP' ? 'vĩnh viễn' : '/tháng'}
                     </div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '4px', fontWeight: 500 }}>
+                    <div style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '5px', fontWeight: 500, lineHeight: 1.45 }}>
                       {getProductionCapability(tier)}
                     </div>
                   </div>
 
                   {/* Feature List */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem', marginBottom: '1.5rem', flex: 1 }}>
                     {(tier.features || []).map((f, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: 1.45 }}>
                         <HiOutlineCheck color="#10b981" size={17} style={{ flexShrink: 0, marginTop: '2px' }} />
                         <span>{f}</span>
                       </div>
