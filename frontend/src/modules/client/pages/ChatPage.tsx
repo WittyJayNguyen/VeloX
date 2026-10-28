@@ -286,6 +286,11 @@ export const ChatPage: React.FC = () => {
     return found || sessions[0] || createDefaultSession();
   }, [sessions, activeSessionId]);
 
+  // Auto-scroll to bottom of messages pane when messages change or while generating
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activeSession.messages, isGenerating]);
+
   // Combined models list (Curated + DB models)
   const allChatModels = useMemo<CuratedChatModel[]>(() => {
     const list: CuratedChatModel[] = [...CURATED_CHAT_MODELS];
