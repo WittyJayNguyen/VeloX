@@ -313,7 +313,7 @@ def _call_upstream_image_sync(base_url: str, key_val: str, payload: dict) -> Opt
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             },
         )
-        with urllib.request.urlopen(req, timeout=45) as res:
+        with urllib.request.urlopen(req, timeout=60) as res:
             if res.status == 200:
                 raw = res.read().decode("utf-8")
                 return json.loads(raw)
@@ -353,6 +353,10 @@ async def generate_image_from_upstream(
         for cred, pool in pairs:
             base_url = (pool.base_url or "").rstrip("/")
             if not base_url or not cred.key_val:
+                continue
+
+            # Only call credentials that are API_KEY and valid OpenAI-compatible format (sk-...)
+            if cred.auth_type != "API_KEY" or not (cred.key_val or "").startswith("sk-"):
                 continue
 
             detected = []
