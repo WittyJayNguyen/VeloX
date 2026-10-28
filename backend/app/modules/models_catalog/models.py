@@ -62,6 +62,10 @@ class AIModel(Base, TimestampMixin):
         """Profit margin percentage (Markup % = (Selling - Cost) / Cost * 100)."""
         cost = self.cost_price_vnd
         if cost > 0:
-            return round(((self.selling_price_vnd - cost) / cost) * 100.0, 1)
+            pct = round(((self.selling_price_vnd - cost) / cost) * 100.0, 1)
+            # If cost is negligible (<= 10 VND) or margin is astronomical (> 100%), cap display to 100.0%
+            if cost <= 10.0 or pct > 100.0:
+                return 100.0 if pct >= 100.0 else pct
+            return pct
         return 100.0 if self.selling_price_vnd > 0 else 0.0
 
