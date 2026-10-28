@@ -465,8 +465,12 @@
     "withdraw_btn": "出金を申請"
   },
   "referral": {
-    "subtitle": "友達を招待して、チャージごとに永続20%のクレジット還元を獲得",
-    "copied_notice": "招待リンクをクリップボードにコピーしました！"
+    "subtitle": "VeloXへお友達を招待：初回パッケージチャージで100クレジット進呈、チャージ毎に20%の永久還元を獲得",
+    "copied_notice": "招待リンクをクリップボードにコピーしました！",
+    "reward_mechanism_title": "報酬システム：",
+    "reward_mechanism_desc": "お友達が招待リンクから登録し初回パッケージチャージを完了すると100クレジットが付与され、チャージ毎に20%の還元クレジットを受け取れます！",
+    "empty_hint": "招待コード {{refCode}} をシェアすると、お友達の初回チャージ時に100クレジットが付与され、永続20%還元を獲得できます！",
+    "share_caption": "VeloX AI Gateway を体験 - 超高速マルチモデルAIプラットフォーム。初回チャージで100体験クレジット獲得："
   },
   "developer": {
     "subtitle": "IDE、Claude Desktop、Cursor、バックエンドと連携"

@@ -467,8 +467,12 @@
     "withdraw_btn": "Request Payout"
   },
   "referral": {
-    "subtitle": "Invite friends to experience VeloX and earn 20% lifetime credit commission on all their top-ups",
-    "copied_notice": "Referral link copied to clipboard!"
+    "subtitle": "Invite friends to experience VeloX: they get 100 Credits upon their first top-up, and you earn 20% lifetime commission for each top-up",
+    "copied_notice": "Referral link copied to clipboard!",
+    "reward_mechanism_title": "Reward Mechanism:",
+    "reward_mechanism_desc": "When users register through your link and complete their first package top-up, they receive 100 trial Credits, and you receive 20% of their credits for every successful deposit!",
+    "empty_hint": "Share your referral code {{refCode}} so friends receive 100 Credits on their first top-up, and you earn 20% lifetime commission!",
+    "share_caption": "Experience VeloX AI Gateway - High-speed multi-model AI platform. Register and top up your first package to get 100 trial Credits:"
   },
   "developer": {
     "subtitle": "Connect VeloX AI Gateway with IDEs, Claude Desktop, Cursor and backend services"
