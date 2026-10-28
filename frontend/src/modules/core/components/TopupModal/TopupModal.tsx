@@ -43,15 +43,16 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
   useEffect(() => {
     let isMounted = true;
     billingService
-      .getPublicPackages('TOPUP')
+      .getPublicPackages()
       .then((data) => {
         if (isMounted && data && data.length > 0) {
-          const mapped: TopupOption[] = data.map((p) => ({
+          const paidPackages = data.filter((p) => p.price_vnd > 0);
+          const mapped: TopupOption[] = paidPackages.map((p) => ({
             id: p.id,
             priceVnd: p.price_vnd,
             credits: p.credits_given,
             bonusPercent: p.bonus_percentage || 0,
-            label: p.tag_badge || p.name,
+            label: p.tag_badge ? `${p.tag_badge} - ${p.name}` : p.name,
             popular: p.is_popular,
           }));
           setTopupOptions(mapped);
@@ -99,7 +100,10 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
       });
       const data = res.data?.data || res.data;
       if (data?.credit_balance !== undefined) {
-        useAuthStore.getState().updateUser({ credit_balance: data.credit_balance });
+        useAuthStore.getState().updateUser({
+          credit_balance: data.credit_balance,
+          ...(data.tier ? { tier: data.tier } : {}),
+        });
       } else {
         addCredits(selectedOption.credits);
       }
