@@ -92,6 +92,12 @@ const ModelsPage = () => {
   const [formCacheSell, setFormCacheSell] = useState(40625);
   const [formSellingPrice, setFormSellingPrice] = useState(250);
 
+  // Studio parameters config
+  const [formResolutions, setFormResolutions] = useState('');
+  const [formAspectRatios, setFormAspectRatios] = useState('');
+  const [formDurations, setFormDurations] = useState('');
+  const [formQualities, setFormQualities] = useState('');
+
   const fetchModels = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -175,6 +181,10 @@ const ModelsPage = () => {
     setFormOutSell(325000);
     setFormCacheSell(40625);
     setFormSellingPrice(250);
+    setFormResolutions('1K, 2K, 4K');
+    setFormAspectRatios('1:1, 16:9, 9:16');
+    setFormDurations('5s, 10s');
+    setFormQualities('Tiêu chuẩn, Cao, Ultra');
     setShowModal(true);
   };
 
@@ -194,6 +204,12 @@ const ModelsPage = () => {
     setFormOutSell(m.output_credit_price ?? Math.round(outC * 1.3));
     setFormCacheSell(m.cache_read_credit_price ?? Math.round(cacheC * 1.3));
     setFormSellingPrice(m.selling_credit_price ?? 250);
+
+    const cfg = m.config || {};
+    setFormResolutions((cfg.resolutions || []).join(', '));
+    setFormAspectRatios((cfg.aspectRatios || []).join(', '));
+    setFormDurations((cfg.durations || []).join(', '));
+    setFormQualities((cfg.qualities || []).join(', '));
     setShowModal(true);
   };
 
@@ -211,6 +227,13 @@ const ModelsPage = () => {
       const cacheSell = Number(formCacheSell);
       const sellPrice = Number(formSellingPrice);
 
+      const configPayload = {
+        resolutions: formResolutions ? formResolutions.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        aspectRatios: formAspectRatios ? formAspectRatios.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        durations: formDurations ? formDurations.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        qualities: formQualities ? formQualities.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+      };
+
       const payload: Partial<ModelCatalogItem> = {
         name: formName,
         model_code: formCode,
@@ -224,6 +247,7 @@ const ModelsPage = () => {
         input_credit_price: inSell,
         output_credit_price: outSell,
         cache_read_credit_price: cacheSell,
+        config: configPayload,
       };
 
       if (editingModel) {
@@ -929,7 +953,44 @@ const ModelsPage = () => {
               Giá bán ra sẽ được tự động trừ vào tài khoản khách hàng khi gọi API qua Secret Key hoặc dùng trên web.
             </div>
           </div>
-          <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+
+          {/* CỘT 3: THAM SỐ STUDIO (STUDIO PARAMETERS & CAPABILITIES) */}
+          <div style={{ gridColumn: '1 / -1', padding: '0.85rem', background: 'rgba(255, 107, 53, 0.05)', borderRadius: 8, border: '1px solid rgba(255, 107, 53, 0.25)' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ff6b35', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>CỘT 3: THAM SỐ STUDIO AI (Được đồng bộ trực tiếp lên Studio cho người dùng chọn)</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+              <Input
+                label="Độ phân giải (Resolutions)"
+                value={formResolutions}
+                onChange={(e) => setFormResolutions(e.target.value)}
+                placeholder="1K, 2K, 4K hoặc 720p, 1080p"
+              />
+              <Input
+                label="Tỉ lệ khung hình (Aspect Ratios)"
+                value={formAspectRatios}
+                onChange={(e) => setFormAspectRatios(e.target.value)}
+                placeholder="1:1, 16:9, 9:16, 4:3, 21:9"
+              />
+              <Input
+                label="Thời lượng Video (Durations)"
+                value={formDurations}
+                onChange={(e) => setFormDurations(e.target.value)}
+                placeholder="5s, 10s"
+              />
+              <Input
+                label="Chất lượng (Qualities)"
+                value={formQualities}
+                onChange={(e) => setFormQualities(e.target.value)}
+                placeholder="Tiêu chuẩn, Cao, Ultra"
+              />
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#a1a1aa', marginTop: 6 }}>
+              Các giá trị ngăn cách nhau bởi dấu phẩy (,). Khi Admin lưu, người dùng tại AI Studio sẽ lập tức nhìn thấy các tùy chọn này.
+            </div>
+          </div>
+
+          <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
             <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>
               Hủy
             </Button>

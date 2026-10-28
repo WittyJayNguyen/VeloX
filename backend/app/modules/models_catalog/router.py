@@ -87,6 +87,13 @@ async def create_model(
     if existing_res.scalar_one_or_none():
         raise HTTPException(status_code=400, detail=f"Model code '{payload.model_code}' already exists")
 
+    config_val = payload.config
+    if isinstance(config_val, dict):
+        import json
+        config_str = json.dumps(config_val, ensure_ascii=False)
+    else:
+        config_str = str(config_val or "{}")
+
     model = AIModel(
         name=payload.name,
         model_code=payload.model_code,
@@ -103,6 +110,7 @@ async def create_model(
         is_available=payload.is_available,
         pool_id=payload.pool_id,
         description=payload.description,
+        config=config_str,
     )
     db.add(model)
     await db.commit()
@@ -139,6 +147,12 @@ async def update_model(
 
     update_data = payload.model_dump(exclude_unset=True)
     for field, val in update_data.items():
+        if field == "config":
+            if isinstance(val, dict):
+                import json
+                val = json.dumps(val, ensure_ascii=False)
+            elif val is None:
+                val = "{}"
         setattr(model, field, val)
 
     await db.commit()

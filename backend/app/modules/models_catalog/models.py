@@ -33,6 +33,7 @@ class AIModel(Base, TimestampMixin):
     is_available = Column(Boolean, default=True)
     pool_id = Column(String(64), nullable=True)                         # Foreign pool ID reference
     description = Column(Text, nullable=True)
+    config = Column(Text, nullable=True, default="{}")                  # Model parameters config (durations, resolutions, aspectRatios, etc.)
 
     @property
     def cost_price_vnd(self) -> float:
