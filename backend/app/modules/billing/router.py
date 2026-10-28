@@ -337,28 +337,40 @@ async def sepay_webhook(
     if existing_tx_res.scalar_one_or_none():
         return {"success": True, "message": "Transaction already processed"}
 
-    # Extract user identifier from content (e.g. "VELOX 3B57B1" or "VELOX3B57B1")
-    user_match = re.search(r"VELOX\s*([A-Za-z0-9\-_]+)", content, re.IGNORECASE)
+    # Extract user identifier from content (Supports "VL 10025", "VL10025", "V 10025", "VELOX 3B57B1", "VELOX3B57B1")
+    user_match = re.search(r"(?:VELOX|VL|V)\s*([A-Za-z0-9\-_]+)", content, re.IGNORECASE)
     user_code = user_match.group(1).strip() if user_match else ""
+
+    # Also fallback: look for pure 5-6 digit sequence (e.g. 10025)
+    if not user_code:
+        digit_match = re.search(r"\b(1\d{4,5})\b", content)
+        if digit_match:
+            user_code = digit_match.group(1).strip()
 
     user_obj = None
     if user_code:
-        # 1. Try finding by ID suffix or exact ID
-        user_stmt = select(User).where(
-            or_(
-                User.id == user_code,
-                User.id.ilike(f"%{user_code}%")
+        # 1. Match exact user_code first (e.g. "10001", "10025")
+        uc_stmt = select(User).where(User.user_code == user_code)
+        uc_res = await db.execute(uc_stmt)
+        user_obj = uc_res.scalar_one_or_none()
+
+        # 2. Fallback: match by ID suffix or exact UUID
+        if not user_obj:
+            user_stmt = select(User).where(
+                or_(
+                    User.id == user_code,
+                    User.id.ilike(f"%{user_code}%")
+                )
             )
-        )
-        user_res = await db.execute(user_stmt)
-        user_candidates = user_res.scalars().all()
-        if user_candidates:
-            for cand in user_candidates:
-                if cand.id.lower().endswith(user_code.lower()) or cand.id.replace("-", "").lower().endswith(user_code.lower()):
-                    user_obj = cand
-                    break
-            if not user_obj:
-                user_obj = user_candidates[0]
+            user_res = await db.execute(user_stmt)
+            user_candidates = user_res.scalars().all()
+            if user_candidates:
+                for cand in user_candidates:
+                    if cand.id.lower().endswith(user_code.lower()) or cand.id.replace("-", "").lower().endswith(user_code.lower()):
+                        user_obj = cand
+                        break
+                if not user_obj:
+                    user_obj = user_candidates[0]
 
     # If still not found, search if user email is present in content
     if not user_obj:

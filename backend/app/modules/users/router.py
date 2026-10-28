@@ -390,6 +390,7 @@ async def list_users(
             or_(
                 User.email.ilike(term),
                 User.full_name.ilike(term),
+                User.user_code.ilike(term),
                 User.id.ilike(term)
             )
         )
@@ -438,6 +439,7 @@ async def list_users(
         primary_role = role_codes[0] if role_codes else "ROLE_USER"
         items.append({
             "id": u.id,
+            "userCode": getattr(u, "user_code", None) or u.id.replace("-", "")[-6:].upper(),
             "fullName": u.full_name or u.email.split("@")[0],
             "email": u.email,
             "role": primary_role,

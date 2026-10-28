@@ -144,7 +144,14 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
                 <span className={styles.userName}>{user?.full_name || 'Admin VeloX'}</span>
                 <span className={styles.tierBadge}>{user?.tier?.toUpperCase() || 'PRO'}</span>
               </div>
-              <span className={styles.userEmail}>{user?.email || 'admin@velox.ai'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className={styles.userEmail}>{user?.email || 'admin@velox.ai'}</span>
+                {(user?.user_code || user?.id) && (
+                  <span style={{ fontSize: '0.7rem', color: '#38bdf8', background: 'rgba(56,189,248,0.12)', padding: '1px 5px', borderRadius: 4, fontWeight: 700 }}>
+                    #{user?.user_code || user?.id.replace(/-/g, '').slice(-6).toUpperCase()}
+                  </span>
+                )}
+              </div>
             </div>
             <HiOutlineChevronRight className={styles.chevronIcon} />
           </div>

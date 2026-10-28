@@ -187,6 +187,27 @@ export const UsersPage: React.FC = () => {
   // Table Columns Definition
   const columns: TableColumn<UserDto>[] = [
     {
+      key: 'userCode',
+      header: 'Mã KH',
+      render: (u) => (
+        <span
+          style={{
+            background: 'rgba(56, 189, 248, 0.12)',
+            color: '#38bdf8',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            padding: '2px 8px',
+            borderRadius: 6,
+            fontWeight: 700,
+            fontSize: '0.8rem',
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          #{u.userCode || (u as any).user_code || u.id.replace(/-/g, '').slice(-6).toUpperCase()}
+        </span>
+      ),
+    },
+    {
       key: 'fullName',
       header: 'Thành Viên',
       render: (u) => (
@@ -445,7 +466,7 @@ export const UsersPage: React.FC = () => {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              placeholder="Tìm theo họ tên, email hoặc User ID..."
+              placeholder="Tìm theo Mã KH (#10001), họ tên, email hoặc User ID..."
             />
           </div>
 

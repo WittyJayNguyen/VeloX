@@ -27,6 +27,7 @@ class User(Base, UUIDMixin, TimestampMixin):
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(128))
     avatar_url = Column(String(512))
+    user_code = Column(String(32), unique=True, nullable=True, index=True)
     credit_balance = Column(Integer, default=100, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)

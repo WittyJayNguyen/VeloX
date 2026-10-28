@@ -142,6 +142,7 @@ export interface RoleDto {
 
 export interface UserDto {
   id: string;
+  userCode?: string;
   fullName: string;
   email: string;
   role: string;

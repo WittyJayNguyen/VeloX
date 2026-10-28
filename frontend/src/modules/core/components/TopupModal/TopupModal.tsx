@@ -106,8 +106,9 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
   const bankName = activeBank?.bank_name || 'MBBank (Ngân hàng Quân Đội)';
   const bankCode = activeBank?.bank_code || 'MB';
   const accountNumber = activeBank?.account_number || '0988776655';
-  const accountHolder = activeBank?.account_holder || 'VELOX AI GATEWAY';
-  const transferContent = `VELOX ${user?.id ? user.id.slice(-8).toUpperCase() : '888888'}`;
+  const accountHolder = activeBank?.account_holder || 'NGUYEN LE HAI';
+  const userIdentifier = (user as any)?.user_code || (user as any)?.userCode || (user?.id ? user.id.replace(/-/g, '').slice(-6).toUpperCase() : '10001');
+  const transferContent = `VL ${userIdentifier}`;
 
   // SePay Official VietQR generator URL with compact template
   const qrUrl = `https://qr.sepay.vn/img?bank=${encodeURIComponent(bankCode)}&acc=${encodeURIComponent(accountNumber)}&template=compact&amount=${selectedOption.priceVnd}&des=${encodeURIComponent(transferContent)}`;

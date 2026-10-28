@@ -86,10 +86,15 @@ async def register_user(
 
     now_iso = datetime.now(timezone.utc).isoformat()
 
+    count_res = await session.execute(select(func.count(User.id)))
+    user_count = count_res.scalar() or 0
+    next_code = str(10000 + user_count + 1)
+
     user = User(
         email=clean_email,
         password_hash=hash_password(password),
         full_name=clean_name,
+        user_code=next_code,
         credit_balance=starter_credits,
         is_active=True,
         is_verified=True,
@@ -260,6 +265,7 @@ def build_token_response(user: User) -> dict:
         "token_type": "bearer",
         "user": {
             "id": user.id,
+            "user_code": getattr(user, "user_code", None) or (user.id.replace("-", "")[-6:].upper() if user.id else "10001"),
             "email": user.email,
             "full_name": user.full_name or user.email.split("@")[0],
             "avatar_url": user.avatar_url,
