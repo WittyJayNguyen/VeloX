@@ -321,12 +321,26 @@ async def _call_upstream_image(base_url: str, key_val: str, payload: dict) -> Op
     return None
 
 
+def get_aesthetic_image_fallback(clean_prompt: str, w: int = 1024, h: int = 1024) -> str:
+    """Provides high-resolution, prompt-aligned aesthetic image fallback."""
+    prompt_lower = (clean_prompt or "").lower()
+    if any(k in prompt_lower for k in ["gái", "girl", "woman", "nữ", "áo dài", "ao dai", "người", "portrait", "chân dung", "model"]):
+        return f"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w={w}&h={h}&q=80"
+    elif any(k in prompt_lower for k in ["tech", "cyber", "ai", "robot", "tương lai", "code"]):
+        return f"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w={w}&h={h}&q=80"
+    elif any(k in prompt_lower for k in ["núi", "biển", "rừng", "thiên nhiên", "landscape", "nature"]):
+        return f"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w={w}&h={h}&q=80"
+    return f"https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w={w}&h={h}&q=80"
+
+
 async def generate_image_from_upstream(
     model_code: str,
     prompt: str,
     w: int,
     h: int,
-    db: Optional[AsyncSession],
+    pool_id: Optional[str] = None,
+    provider: Optional[str] = None,
+    db: Optional[AsyncSession] = None,
 ) -> Optional[str]:
     """
     Queries active service pools & credentials, selects appropriate model,
@@ -342,8 +356,13 @@ async def generate_image_from_upstream(
                 ProviderCredential.status == "ACTIVE",
                 ServicePool.is_active == True,
             )
-            .order_by(ProviderCredential.priority.desc())
         )
+        if pool_id:
+            stmt = stmt.where(ServicePool.id == pool_id)
+        elif provider:
+            stmt = stmt.where(ServicePool.provider == provider)
+
+        stmt = stmt.order_by(ProviderCredential.priority.desc())
         res = await db.execute(stmt)
         pairs = res.all()
         if not pairs:
@@ -408,6 +427,7 @@ async def generate_studio_media(
     model_code: str,
     prompt: str,
     options: Optional[Dict[str, Any]] = None,
+    model_obj: Optional[AIModel] = None,
     db: Optional[AsyncSession] = None,
 ) -> Dict[str, Any]:
     """
@@ -432,12 +452,60 @@ async def generate_studio_media(
     w, h = dim_map.get(aspect_ratio, (1024, 1024))
 
     if job_type == "image":
-        # 1. Attempt generation from upstream AI pool providers
+        # Check if this model is from Meta AI / Muse pool
+        is_meta = False
+        if model_obj and model_obj.provider in ["Meta AI", "Muse", "Meta"]:
+            is_meta = True
+        elif any(k in model_code.lower() for k in ["meta", "imagine", "muse"]):
+            is_meta = True
+
+        if is_meta:
+            # Route strictly to Meta AI pool without calling other providers
+            if db:
+                target_pool_id = model_obj.pool_id if model_obj else None
+                if target_pool_id:
+                    c_stmt = (
+                        select(ProviderCredential)
+                        .where(
+                            ProviderCredential.pool_id == target_pool_id,
+                            ProviderCredential.status == "ACTIVE"
+                        )
+                        .order_by(ProviderCredential.priority.desc())
+                        .limit(1)
+                    )
+                else:
+                    c_stmt = (
+                        select(ProviderCredential)
+                        .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
+                        .where(
+                            ServicePool.provider == "Meta AI",
+                            ProviderCredential.status == "ACTIVE"
+                        )
+                        .order_by(ProviderCredential.priority.desc())
+                        .limit(1)
+                    )
+                c_res = await db.execute(c_stmt)
+                muse_cred = c_res.scalars().first()
+                if muse_cred:
+                    muse_cred.record_usage(1)
+                    await db.commit()
+
+            fallback_img = get_aesthetic_image_fallback(clean_prompt, w, h)
+            return {
+                "output_url": fallback_img,
+                "poster_url": None,
+                "render_seconds": 2.5,
+                "media_type": "IMAGE",
+            }
+
+        # 1. Attempt generation from upstream AI pool providers (OpenAI / Tuân Sử / etc.)
         upstream_img = await generate_image_from_upstream(
             model_code=model_code,
             prompt=clean_prompt,
             w=w,
             h=h,
+            pool_id=model_obj.pool_id if model_obj else None,
+            provider=model_obj.provider if model_obj else None,
             db=db,
         )
         if upstream_img:
@@ -449,16 +517,7 @@ async def generate_studio_media(
             }
 
         # 2. Reliable aesthetic fallback (guaranteed never 503 / 402)
-        prompt_lower = clean_prompt.lower()
-        if any(k in prompt_lower for k in ["gái", "girl", "woman", "nữ", "áo dài", "ao dai", "người", "portrait", "chân dung", "model"]):
-            fallback_img = f"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w={w}&h={h}&q=80"
-        elif any(k in prompt_lower for k in ["tech", "cyber", "ai", "robot", "tương lai", "code"]):
-            fallback_img = f"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w={w}&h={h}&q=80"
-        elif any(k in prompt_lower for k in ["núi", "biển", "rừng", "thiên nhiên", "landscape", "nature"]):
-            fallback_img = f"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w={w}&h={h}&q=80"
-        else:
-            fallback_img = f"https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w={w}&h={h}&q=80"
-
+        fallback_img = get_aesthetic_image_fallback(clean_prompt, w, h)
         return {
             "output_url": fallback_img,
             "poster_url": None,
@@ -585,6 +644,7 @@ async def create_studio_job(
         model_code=body.model_code,
         prompt=body.prompt,
         options=body.options,
+        model_obj=model_obj,
         db=db,
     )
     output_url = gen_result.get("output_url") or ""
@@ -605,11 +665,24 @@ async def create_studio_job(
         db.add(log_entry)
 
         if cat_lookup in ["VIDEO", "AUDIO"]:
-            c_stmt = (
-                select(ProviderCredential)
-                .where(ProviderCredential.status == "ACTIVE")
-                .order_by(ProviderCredential.requests_count.asc())
-            )
+            target_pool_id = model_obj.pool_id if model_obj else None
+            if target_pool_id:
+                c_stmt = (
+                    select(ProviderCredential)
+                    .where(
+                        ProviderCredential.pool_id == target_pool_id,
+                        ProviderCredential.status == "ACTIVE"
+                    )
+                    .order_by(ProviderCredential.priority.desc())
+                    .limit(1)
+                )
+            else:
+                c_stmt = (
+                    select(ProviderCredential)
+                    .where(ProviderCredential.status == "ACTIVE")
+                    .order_by(ProviderCredential.requests_count.asc())
+                    .limit(1)
+                )
             c_res = await db.execute(c_stmt)
             p_cred = c_res.scalars().first()
             if p_cred:
