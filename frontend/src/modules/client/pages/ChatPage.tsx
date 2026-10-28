@@ -194,8 +194,10 @@ export const ChatPage: React.FC = () => {
     }
   }, [isAuthenticated, navigate, syncProfile]);
 
-  // UI state
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  // UI state (auto collapse sidebar on screens <= 960px)
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth > 960 : true
+  );
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>('');
@@ -339,6 +341,9 @@ export const ChatPage: React.FC = () => {
   const handleSelectSession = (id: string) => {
     setActiveSessionId(id);
     setEditingSessionId(null);
+    if (window.innerWidth <= 960) {
+      setSidebarOpen(false);
+    }
   };
 
   // Create new session
@@ -347,6 +352,9 @@ export const ChatPage: React.FC = () => {
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setInputPrompt('');
+    if (window.innerWidth <= 960) {
+      setSidebarOpen(false);
+    }
     if (textareaRef.current) textareaRef.current.focus();
   };
 
@@ -912,6 +920,15 @@ export const ChatPage: React.FC = () => {
           )}
         </div>
       </aside>
+
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div
+          className={styles.mobileBackdrop}
+          onClick={() => setSidebarOpen(false)}
+          title="Đóng thanh lịch sử"
+        />
+      )}
 
       {/* ── MAIN CHAT AREA ── */}
       <main className={styles.chatMain}>

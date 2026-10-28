@@ -1320,29 +1320,145 @@
   50% { transform: translateY(-5px); }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Mobile Backdrop */
+.mobileBackdrop {
+  display: none;
+
+  @media (max-width: 960px) {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 25;
+    animation: fadeIn 0.2s ease;
+  }
+}
+
+/* Comprehensive Responsive Adjustments */
+@media (max-width: 960px) {
   .sidebar {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    width: 280px;
+    min-width: 280px;
+    max-width: 85vw;
+    box-shadow: 15px 0 35px rgba(0, 0, 0, 0.75);
+    z-index: 30;
   }
 
   .topBar {
     padding: 0 12px;
+    height: 52px;
+    min-height: 52px;
+    max-height: 52px;
+  }
+
+  .chatTitleBadge {
+    max-width: 170px;
+
+    .titleText {
+      font-size: 0.88rem;
+    }
+  }
+
+  .modelSelectorHeaderBtn {
+    padding: 4px 10px;
+    font-size: 0.76rem;
+
+    .modelTag {
+      display: none;
+    }
+
+    .modelName {
+      max-width: 95px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .messagesPane {
-    padding: 16px 12px;
+    padding: 14px 12px 8px 12px;
+    gap: 16px;
+  }
+
+  .messageRow {
+    gap: 10px;
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .messageBubble {
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      border-radius: 14px;
+    }
   }
 
   .bottomArea {
-    padding: 8px 12px 14px 12px;
+    padding: 6px 10px 12px 10px;
+  }
+
+  .controlsBar {
+    margin-bottom: 6px;
+    gap: 6px;
+  }
+
+  .creditEstimationBadge {
+    display: none;
+  }
+
+  .inputCard {
+    padding: 8px 10px 8px 10px;
+    border-radius: 12px;
+  }
+
+  .chatTextarea {
+    font-size: 0.88rem;
+    min-height: 40px;
   }
 
   .startersGrid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .emptyState {
+    padding: 20px 10px;
+  }
+
+  .emptyStateTitle {
+    font-size: 1.45rem;
+  }
+
+  .emptyStateSubtitle {
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatTitleBadge {
+    max-width: 110px;
+  }
+
+  .modelSelectorHeaderBtn .modelName {
+    max-width: 75px;
+  }
+
+  .toneSelector button {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+  }
+
+  .sysPromptBtn {
+    padding: 4px 6px;
+    font-size: 0.7rem;
   }
 }
