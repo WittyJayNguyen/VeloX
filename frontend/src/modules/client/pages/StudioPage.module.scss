@@ -458,6 +458,61 @@
       display: block;
     }
 
+    .videoPlayCenterBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 107, 53, 0.85);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.45);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+      &:hover {
+        background: #ff6b35;
+        border-color: #ff9f1c;
+        transform: translate(-50%, -50%) scale(1.15);
+        box-shadow: 0 0 28px rgba(255, 107, 53, 0.75);
+      }
+    }
+
+    .videoBufferingOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 10, 18, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      z-index: 6;
+      pointer-events: none;
+
+      .bufferingSpinner {
+        color: #ff6b35;
+        animation: spinBtn 0.9s linear infinite;
+        filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.6));
+      }
+
+      .bufferingText {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: #e2e8f0;
+        letter-spacing: 0.5px;
+      }
+    }
+
     .playIconOverlay {
       position: absolute;
       top: 50%;
@@ -1165,10 +1220,28 @@
     }
   }
 
+  &.submitBtnLoading {
+    background: #ff6b35 !important;
+    box-shadow: 0 0 16px rgba(255, 107, 53, 0.7) !important;
+    opacity: 1 !important;
+    cursor: wait !important;
+    animation: submitBtnPulse 1.2s ease-in-out infinite alternate;
+  }
+
   &:disabled {
     opacity: 0.6;
-    cursor: wait;
+    cursor: not-allowed;
   }
+}
+
+.spinSubmitIcon {
+  animation: spinBtn 0.75s linear infinite;
+  color: #ffffff;
+}
+
+@keyframes submitBtnPulse {
+  0% { transform: scale(0.96); box-shadow: 0 0 10px rgba(255, 107, 53, 0.4); }
+  100% { transform: scale(1.06); box-shadow: 0 0 20px rgba(255, 107, 53, 0.85); }
 }
 
 .buttonSpinner {
@@ -2037,6 +2110,131 @@
     &:hover {
       transform: scale(1.04);
       background: #fbbf24;
+    }
+  }
+}
+
+// ── Active Jobs Floating Live Progress Ticker Bar ──
+.activeJobsStatusBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(15, 21, 35, 0.95) 0%, rgba(28, 17, 34, 0.95) 100%);
+  border: 1px solid rgba(255, 107, 53, 0.45);
+  border-radius: 12px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 107, 53, 0.15);
+  cursor: pointer;
+  animation: cardStaggerIn 0.35s ease both;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(255, 107, 53, 0.8);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 107, 53, 0.25);
+  }
+
+  .statusPulseIconBox {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 107, 53, 0.15);
+    border: 1px solid #ff6b35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6b35;
+    flex-shrink: 0;
+
+    .pulseLiveDot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.2s infinite;
+    }
+
+    .activeJobsSpinIcon {
+      animation: spinBtn 1.2s linear infinite;
+    }
+  }
+
+  .statusInfoCol {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .statusHeadline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      .statusBadgeText {
+        font-weight: 700;
+        color: #ff6b35;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .statusDivider {
+        color: #475569;
+        font-size: 0.7rem;
+      }
+
+      .statusDetailText {
+        color: #cbd5e1;
+        font-size: 0.74rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .statusProgressTrack {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+
+      .statusProgressBar {
+        height: 100%;
+        background: linear-gradient(90deg, #ff2ea6 0%, #ff6b35 50%, #38bdf8 100%);
+        border-radius: 999px;
+        transition: width 0.35s ease-out;
+        box-shadow: 0 0 8px #ff6b35;
+      }
+    }
+  }
+
+  .statusActionCol {
+    flex-shrink: 0;
+
+    .viewJobLink {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #ff6b35;
+      background: rgba(255, 107, 53, 0.12);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      padding: 4px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #ff6b35;
+        color: #ffffff;
+        box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+      }
     }
   }
 }
