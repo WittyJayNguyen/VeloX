@@ -6,7 +6,6 @@ import LangSwitcher from '../LangSwitcher/LangSwitcher';
 import {
   HiOutlineBars3,
   HiOutlineXMark,
-  HiOutlineMagnifyingGlass,
   HiOutlineBell,
   HiOutlineHome,
   HiOutlineCreditCard,
@@ -161,23 +160,6 @@ const MainLayout = () => {
             {/* Desktop Auth Controls */}
             {isAuthenticated ? (
               <div className={styles.topbarAuthControls}>
-                {/* Search Quick Ctrl K */}
-                <button
-                  type="button"
-                  className={styles.quickSearchBtn}
-                  onClick={() => setSearchOpen(true)}
-                  title="Tìm nhanh (Ctrl + K)"
-                >
-                  <HiOutlineMagnifyingGlass size={16} />
-                  <span>{t('header.quick_search', 'Tìm nhanh')}</span>
-                  <kbd className={styles.searchShortcut}>Ctrl K</kbd>
-                </button>
-
-                {/* Pricing Link */}
-                <Link to="/pricing" className={styles.navPricingLink}>
-                  {t('header.pricing', 'Bảng giá')}
-                </Link>
-
                 {/* Credit Badge + Nạp */}
                 <div className={styles.creditBadgeBox}>
                   <div className={styles.creditPill} onClick={() => setTopupOpen(true)} title="Số dư Credit">
