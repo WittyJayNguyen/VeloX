@@ -4,11 +4,19 @@ import apiClient from '@modules/core/lib/apiClient';
 export interface CreditPackageDto {
   id: string;
   name: string;
+  category: 'STARTER' | 'PRO' | 'ENTERPRISE' | 'DEV' | 'TOPUP';
+  description?: string;
   price_vnd: number;
-  credits: number;
-  bonus_percent: number;
+  original_price_vnd?: number;
+  credits_given: number;
+  bonus_percentage: number;
   is_popular?: boolean;
   is_active: boolean;
+  tag_badge?: string;
+  sort_order?: number;
+  features?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface TransactionDto {
@@ -25,94 +33,65 @@ export type TransactionItem = TransactionDto;
 
 export interface CreatePackagePayload {
   name: string;
+  category?: string;
+  description?: string;
   price_vnd: number;
-  credits: number;
-  bonus_percent: number;
+  original_price_vnd?: number;
+  credits_given: number;
+  bonus_percentage?: number;
+  features?: string[];
+  tag_badge?: string;
+  is_popular?: boolean;
+  is_active?: boolean;
+  sort_order?: number;
 }
-
-// ── Offline fallback ──
-const PKG_KEY = 'velox_billing_packages';
-const TXN_KEY = 'velox_transactions';
-
-const getLocalPkgs = (): CreditPackageDto[] => {
-  try { return JSON.parse(localStorage.getItem(PKG_KEY) || '[]'); } catch { return []; }
-};
-const saveLocalPkgs = (d: CreditPackageDto[]) => localStorage.setItem(PKG_KEY, JSON.stringify(d));
-
-const getLocalTxns = (): TransactionDto[] => {
-  try { return JSON.parse(localStorage.getItem(TXN_KEY) || '[]'); } catch { return []; }
-};
-const saveLocalTxns = (d: TransactionDto[]) => localStorage.setItem(TXN_KEY, JSON.stringify(d));
 
 // ── Service ──
 export const billingService = {
-  // ─── Packages CRUD ───
-  getPackages: async (): Promise<CreditPackageDto[]> => {
-    try {
-      const res = await apiClient.get<CreditPackageDto[]>('/billing/packages');
-      saveLocalPkgs(res.data);
-      return res.data;
-    } catch { return getLocalPkgs(); }
+  // ─── Public Packages for Clients ───
+  getPublicPackages: async (category?: string): Promise<CreditPackageDto[]> => {
+    const params = category && category !== 'ALL' ? { category } : undefined;
+    const res = await apiClient.get('/billing/packages', { params });
+    return res.data?.data || res.data || [];
+  },
+
+  // ─── Admin Packages Management ───
+  getAdminPackages: async (): Promise<CreditPackageDto[]> => {
+    const res = await apiClient.get('/billing/admin/packages');
+    return res.data?.data || res.data || [];
   },
 
   createPackage: async (payload: CreatePackagePayload): Promise<CreditPackageDto> => {
-    const pkg: CreditPackageDto = { id: `pkg_${Date.now()}`, ...payload, is_active: true };
-    try {
-      const res = await apiClient.post<CreditPackageDto>('/billing/packages', payload);
-      Object.assign(pkg, res.data);
-    } catch { /* offline */ }
-    const all = getLocalPkgs();
-    all.push(pkg);
-    saveLocalPkgs(all);
-    return pkg;
+    const res = await apiClient.post('/billing/admin/packages', payload);
+    return res.data?.data || res.data;
   },
 
   updatePackage: async (id: string, payload: Partial<CreatePackagePayload>): Promise<CreditPackageDto> => {
-    try {
-      const res = await apiClient.put<CreditPackageDto>(`/billing/packages/${id}`, payload);
-      const all = getLocalPkgs().map((p) => (p.id === id ? { ...p, ...res.data } : p));
-      saveLocalPkgs(all);
-      return res.data;
-    } catch {
-      const all = getLocalPkgs().map((p) => (p.id === id ? { ...p, ...payload } : p));
-      saveLocalPkgs(all);
-      return all.find((p) => p.id === id)!;
-    }
+    const res = await apiClient.put(`/billing/admin/packages/${id}`, payload);
+    return res.data?.data || res.data;
   },
 
   removePackage: async (id: string): Promise<void> => {
-    try { await apiClient.delete(`/billing/packages/${id}`); } catch { /* offline */ }
-    saveLocalPkgs(getLocalPkgs().filter((p) => p.id !== id));
+    await apiClient.delete(`/billing/admin/packages/${id}`);
+  },
+
+  // ─── Legacy aliases for backward compatibility ───
+  getPackages: async (): Promise<CreditPackageDto[]> => {
+    return billingService.getPublicPackages();
   },
 
   // ─── Transactions ───
   getTransactions: async (): Promise<TransactionDto[]> => {
     try {
-      const res = await apiClient.get<TransactionDto[]>('/billing/transactions');
-      saveLocalTxns(res.data);
-      return res.data;
-    } catch { return getLocalTxns(); }
+      const res = await apiClient.get<any>('/billing/transactions');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    } catch {
+      return [];
+    }
   },
 
   refundTransaction: async (id: string): Promise<void> => {
-    try { await apiClient.post(`/billing/transactions/${id}/refund`); } catch { /* offline */ }
-    const all = getLocalTxns().map((t) => (t.id === id ? { ...t, status: 'REFUNDED' as const } : t));
-    saveLocalTxns(all);
-  },
-
-  // ─── Stats ───
-  getStats: async () => {
-    try {
-      const res = await apiClient.get('/billing/stats');
-      return res.data;
-    } catch {
-      const txns = getLocalTxns();
-      return {
-        total_revenue: txns.filter((t) => t.status === 'SUCCESS').reduce((a, t) => a + t.amount_vnd, 0),
-        total_transactions: txns.length,
-        pending_count: txns.filter((t) => t.status === 'PENDING').length,
-      };
-    }
+    await apiClient.post(`/billing/transactions/${id}/refund`);
   },
 };
 
