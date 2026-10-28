@@ -273,17 +273,112 @@ DEFAULT_MODELS = [
         "is_available": True,
         "description": "Diễn hoạt biểu cảm gương mặt và hành động tự nhiên, khung hình 60fps mượt mà",
     },
+    {
+        "name": "ByteDance Seedance 2.5",
+        "model_code": "seedance-2.5",
+        "category": "VIDEO",
+        "provider": "ByteDance",
+        "cost_per_req_or_1k_tok": 50.0,
+        "selling_credit_price": 80,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Tạo video chân thực độ phân giải cao, chuyển động uyển chuyển bám sát nhịp điệu",
+    },
+    {
+        "name": "Runway Gen-3 Alpha HD",
+        "model_code": "runway-gen3-alpha",
+        "category": "VIDEO",
+        "provider": "Runway",
+        "cost_per_req_or_1k_tok": 70.0,
+        "selling_credit_price": 95,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Đỉnh cao video điện ảnh thế hệ mới, điều khiển góc máy camera 360 độ hoàn hảo",
+    },
+    {
+        "name": "FLUX.1 [dev/pro]",
+        "model_code": "flux-1-dev",
+        "category": "IMAGE",
+        "provider": "Black Forest Labs",
+        "cost_per_req_or_1k_tok": 18.0,
+        "selling_credit_price": 25,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Mô hình tạo ảnh thế hệ mới 12 tỷ tham số, tái hiện chữ text và bàn tay giải phẫu siêu chuẩn",
+    },
+    {
+        "name": "Midjourney v6.1 Ultra",
+        "model_code": "midjourney-v6.1",
+        "category": "IMAGE",
+        "provider": "Midjourney",
+        "cost_per_req_or_1k_tok": 30.0,
+        "selling_credit_price": 45,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Nhiếp ảnh chân thực, ánh sáng studio nghệ thuật và độ sắc nét chi tiết da cực đỉnh",
+    },
+
+    # ── AUDIO & VOICE MODELS ──
+    {
+        "name": "ElevenLabs Multilingual v3",
+        "model_code": "eleven-multilingual-v3",
+        "category": "AUDIO",
+        "provider": "ElevenLabs",
+        "cost_per_req_or_1k_tok": 10.0,
+        "selling_credit_price": 15,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Giọng đọc truyền cảm, đa ngôn ngữ với ngữ điệu tự nhiên như người bản xứ",
+    },
+    {
+        "name": "OpenAI TTS-1 HD",
+        "model_code": "tts-1-hd",
+        "category": "AUDIO",
+        "provider": "OpenAI",
+        "cost_per_req_or_1k_tok": 12.0,
+        "selling_credit_price": 20,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Bộ tạo giọng nói độ trung thực cao từ OpenAI với 6 âm sắc linh hoạt",
+    },
+    {
+        "name": "Chatterbox Voice Turbo",
+        "model_code": "chatterbox-turbo",
+        "category": "AUDIO",
+        "provider": "Meta",
+        "cost_per_req_or_1k_tok": 6.0,
+        "selling_credit_price": 10,
+        "input_credit_price": 0,
+        "output_credit_price": 0,
+        "cache_read_credit_price": 0,
+        "is_available": True,
+        "description": "Sinh âm thanh và giọng đọc siêu tốc độ với độ trễ thấp",
+    },
 ]
 
 
 async def seed_default_models(db: AsyncSession):
-    """Seed initial models catalog if table is empty"""
-    res = await db.execute(select(AIModel.id))
-    existing_count = len(res.scalars().all())
-    if existing_count > 0:
-        return existing_count
+    """Seed initial models catalog and ensure all standard models exist"""
+    res = await db.execute(select(AIModel.model_code))
+    existing_codes = set(res.scalars().all())
 
+    added_count = 0
     for item in DEFAULT_MODELS:
+        if item["model_code"] in existing_codes:
+            continue
+
         model = AIModel(
             name=item["name"],
             model_code=item["model_code"],
@@ -301,7 +396,10 @@ async def seed_default_models(db: AsyncSession):
             description=item.get("description", ""),
         )
         db.add(model)
+        existing_codes.add(item["model_code"])
+        added_count += 1
 
-    await db.commit()
-    print(f"[DB] Seeded {len(DEFAULT_MODELS)} default AI models into catalog")
-    return len(DEFAULT_MODELS)
+    if added_count > 0:
+        await db.commit()
+        print(f"[DB] Seeded {added_count} new standard AI models into catalog")
+    return added_count
