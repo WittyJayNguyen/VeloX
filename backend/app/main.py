@@ -138,6 +138,8 @@ async def health_check():
     return {"status": "healthy", "app": settings.APP_NAME, "version": settings.APP_VERSION}
 
 
+@app.get("/pricing")
+@app.get("/v1/pricing")
 @app.get("/api/v1/pricing")
 async def api_pricing_alias(
     model: Optional[str] = None,
