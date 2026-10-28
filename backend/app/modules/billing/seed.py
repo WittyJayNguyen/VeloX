@@ -68,9 +68,9 @@ OPTIMAL_PACKAGES = [
             "15,000 Credits/tháng (~400 ảnh 4K hoặc 180 video AI)",
             "Khai thác 156+ Model cao cấp với độ trễ thấp nhất",
             "Workspace nhóm tối đa 10 nhân sự độc lập",
-            "Băng thông riêng biệt, cam kết SLA 99.9% Uptime",
+            "Băng thông riêng biệt, tốc độ xử lý ưu tiên hàng đầu",
             "Tùy biến Custom Domain Gateway cho doanh nghiệp",
-            "Hỗ trợ xuất hóa đơn tài chính VAT đầy đủ",
+            "Hỗ trợ kỹ thuật 1-1 chuyên sâu",
         ],
     },
     {
@@ -91,7 +91,7 @@ OPTIMAL_PACKAGES = [
             "Workspace không giới hạn số lượng nhân sự",
             "Cổng Gateway API riêng biệt chịu tải cực cao",
             "Tùy biến Prompt Engineering chuyên biệt",
-            "Hợp đồng doanh nghiệp & bảo đảm SLA",
+            "Băng thông chuyên dụng độc quyền tốc độ cao nhất",
         ],
     },
 
