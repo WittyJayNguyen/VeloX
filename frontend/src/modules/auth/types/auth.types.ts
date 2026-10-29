@@ -6,6 +6,7 @@ export interface User {
   avatar_url?: string;
   credit_balance?: number;
   tier?: string;
+  subscription_expires_at?: string;
   is_active: boolean;
   roles: string[];
   permissions?: string[];

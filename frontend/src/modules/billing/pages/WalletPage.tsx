@@ -82,8 +82,10 @@ const WalletPage = () => {
   // Manual Top-Up Modal
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [modalEmail, setModalEmail] = useState('');
-  const [modalAmount, setModalAmount] = useState(200000);
-  const [modalCredits, setModalCredits] = useState(220000);
+  const [modalAmount, setModalAmount] = useState(189000);
+  const [modalCredits, setModalCredits] = useState(2000);
+  const [modalTier, setModalTier] = useState<string>('STARTER');
+  const [modalDays, setModalDays] = useState<number>(30);
   const [modalMethod, setModalMethod] = useState<TopUpTransaction['method']>('VietQR');
 
   // Stats
@@ -103,7 +105,9 @@ const WalletPage = () => {
         amount_vnd: Number(modalAmount),
         credits: Number(modalCredits),
         method: modalMethod,
-        note: `Nạp thủ công Admin (${Number(modalCredits).toLocaleString()} credits)`,
+        note: `Nạp thủ công Admin (${Number(modalCredits).toLocaleString()} credits - Gói ${modalTier} hạn ${modalDays} ngày)`,
+        tier: modalTier,
+        duration_days: Number(modalDays),
       });
       setShowTopUpModal(false);
       setModalEmail('');
@@ -374,6 +378,28 @@ const WalletPage = () => {
               type="number"
               value={modalCredits}
               onChange={(e) => setModalCredits(Number(e.target.value))}
+              required
+              fullWidth
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '0.75rem' }}>
+            <Select
+              label="Gói Thuê Bao (Tier)"
+              options={[
+                { value: 'STARTER', label: 'Creator Standard (STARTER)' },
+                { value: 'PRO', label: 'Pro Developer (PRO)' },
+                { value: 'ENTERPRISE', label: 'Enterprise AI (ENTERPRISE)' },
+                { value: 'FREE', label: 'Không đổi gói (FREE)' },
+              ]}
+              value={modalTier}
+              onChange={(e) => setModalTier(e.target.value)}
+              fullWidth
+            />
+            <Input
+              label="Thời Hạn Gói (Ngày)"
+              type="number"
+              value={modalDays}
+              onChange={(e) => setModalDays(Number(e.target.value))}
               required
               fullWidth
             />

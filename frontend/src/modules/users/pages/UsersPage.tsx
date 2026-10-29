@@ -239,15 +239,48 @@ export const UsersPage: React.FC = () => {
     },
     {
       key: 'tier',
-      header: 'Hạng (Tier)',
-      render: (u) => (
-        <Badge
-          variant={u.tier === 'ENTERPRISE' ? 'purple' : u.tier === 'PRO' ? 'primary' : 'neutral'}
-          size="sm"
-        >
-          {u.tier || 'FREE'}
-        </Badge>
-      ),
+      header: 'Gói & Thời Hạn',
+      render: (u) => {
+        const hasExpiry = Boolean(u.subscriptionExpiresAt);
+        let daysLeft = 0;
+        let isExpired = false;
+        if (hasExpiry) {
+          const diffMs = new Date(u.subscriptionExpiresAt!).getTime() - Date.now();
+          daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          isExpired = daysLeft <= 0;
+        }
+
+        return (
+          <div style={{ whiteSpace: 'nowrap' }}>
+            <Badge
+              variant={
+                u.tier === 'ENTERPRISE'
+                  ? 'purple'
+                  : u.tier === 'PRO'
+                  ? 'primary'
+                  : u.tier === 'STARTER'
+                  ? 'success'
+                  : 'neutral'
+              }
+              size="sm"
+            >
+              {u.tier || 'FREE'}
+            </Badge>
+            {hasExpiry && (
+              <div
+                style={{
+                  fontSize: '0.72rem',
+                  marginTop: 3,
+                  color: isExpired ? '#f43f5e' : daysLeft <= 5 ? '#f59e0b' : '#38bdf8',
+                  fontWeight: 500,
+                }}
+              >
+                {isExpired ? 'Hết hạn chu kỳ' : `Còn ${daysLeft} ngày`}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'creditBalance',

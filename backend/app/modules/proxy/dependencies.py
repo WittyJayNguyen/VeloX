@@ -62,4 +62,11 @@ async def get_developer_auth(
             }
         )
 
+    # Enforce 30-day subscription expiration for API keys
+    try:
+        from app.modules.billing.subscription_service import enforce_user_subscription
+        await enforce_user_subscription(user, db)
+    except Exception:
+        pass
+
     return api_key_record, user
