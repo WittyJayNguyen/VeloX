@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     CDN_PROVIDER: str = "auto"
     CDN_API_KEY: str = ""
     # SePay Banking Webhook Security
-    SEPAY_API_KEY: str = "velox_sepay_live_secret_key_8899"
+    SEPAY_API_KEY: str = "OLKS3CIEFSEC5YAGJF2ZLAOYKNYDCJOGJXR95TVMAX46T9RTUIQL2BKEQS4FCOVU"
     USER_JOB_RETENTION_LIMIT: int = 50  # Cap maximum job history records per user to preserve server disk
 
     # Social Auth & SSO (Google & Telegram)
