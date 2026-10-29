@@ -6,6 +6,7 @@ Seeds standard subscription plans and VietQR topup tiers optimized for maximum p
 import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
+import app.modules.users.models  # noqa
 from app.modules.billing.models import CreditPackage
 
 
