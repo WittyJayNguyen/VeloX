@@ -157,24 +157,30 @@ async def get_my_orders(
 ):
     """List real payment transactions / top-up orders for the currently authenticated user."""
     stmt = (
-        select(PaymentTransaction)
+        select(PaymentTransaction, CreditPackage.name.label("package_name"), CreditPackage.tag_badge)
+        .outerjoin(CreditPackage, PaymentTransaction.package_id == CreditPackage.id)
         .where(PaymentTransaction.user_id == current_user.id)
         .order_by(desc(PaymentTransaction.created_at))
-        .limit(50)
+        .limit(100)
     )
     res = await db.execute(stmt)
-    records = res.scalars().all()
+    records = res.all()
 
     orders = []
-    for r in records:
+    for tx, pkg_name, tag_badge in records:
+        credits_num = int(tx.credits_credited or 0)
+        display_name = pkg_name or f"Nạp {credits_num:,} Credit"
+        if tag_badge:
+            display_name = f"{tag_badge} - {display_name}"
+
         orders.append({
-            "id": r.id,
-            "packageName": f"Nạp {r.credits:,} Credit" if r.credits else "Nạp Credit",
-            "amount": int(r.amount_vnd or 0),
-            "credits": r.credits or 0,
-            "status": r.status or "COMPLETED",
-            "createdAt": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "",
-            "paymentMethod": r.payment_method or "VietQR Banking",
+            "id": tx.transaction_code or tx.id,
+            "packageName": display_name,
+            "amount": int(tx.amount_vnd or 0),
+            "credits": credits_num,
+            "status": tx.status or "COMPLETED",
+            "createdAt": tx.created_at.strftime("%Y-%m-%d %H:%M") if tx.created_at else "",
+            "paymentMethod": tx.payment_gateway or "VietQR Banking (SePay)",
         })
 
     return ok(data=orders)
