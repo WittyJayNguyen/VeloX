@@ -671,9 +671,10 @@
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 24px);
-  max-width: 710px;
+  max-width: 680px;
   z-index: 200;
   pointer-events: auto;
+  transition: max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.2s ease;
 }
 
 .controlContainer {
@@ -684,19 +685,20 @@
 
 // Main Sleek Prompt Box
 .promptInputBox {
-  background: #19191b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(25, 25, 27, 0.96);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 10px 14px 10px 14px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  padding: 8px 12px 8px 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   cursor: text;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:focus-within {
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.25);
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
   }
 
@@ -719,8 +721,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  min-height: 36px;
+  gap: 6px;
+  min-height: 32px;
 }
 
 .slotsGroup {
@@ -742,10 +744,10 @@
 .refSlotBtn {
   background: #242427;
   border: 1px dashed rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
-  padding: 2px 4px;
-  min-width: 38px;
-  height: 36px;
+  border-radius: 6px;
+  padding: 2px 5px;
+  min-width: 32px;
+  height: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -755,6 +757,7 @@
   cursor: pointer;
   position: relative;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 
   &:hover {
     background: #2e2e32;
@@ -787,7 +790,7 @@
   }
 
   .slotLabel {
-    font-size: 0.58rem;
+    font-size: 0.6rem;
     font-weight: 500;
     line-height: 1;
     white-space: nowrap;
@@ -798,7 +801,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 5px;
   }
 
   .clearSlotBtn {
@@ -809,8 +812,8 @@
     color: #fff;
     border: none;
     border-radius: 50%;
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     font-size: 8px;
     display: flex;
     align-items: center;
@@ -830,9 +833,10 @@
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  padding: 3px 8px;
+  padding: 3px 7px;
   border-radius: 6px;
   transition: all 0.15s ease;
+  white-space: nowrap;
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -843,47 +847,55 @@
 
 .inspireMeBtn {
   background: transparent;
-  border: none;
-  color: #a1a1aa;
-  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #d4d4d8;
+  font-size: 11.5px;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 3px 8px;
   border-radius: 6px;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 
   &:hover {
     color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
   }
 
   .sparkleIcon {
-    color: #a1a1aa;
-    font-size: 12px;
+    color: #ff6b35;
+    font-size: 11px;
+  }
+
+  .inspireText {
+    white-space: nowrap;
   }
 }
 
+// MIDDLE ROW: Clean Borderless Auto-Expanding Textarea
 // MIDDLE ROW: Clean Borderless Auto-Expanding Textarea
 .promptTextarea {
   background: transparent;
   border: none;
   outline: none;
   color: #ffffff;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13.5px;
+  line-height: 1.5;
   resize: none;
   font-family: inherit;
   width: 100%;
-  min-height: 50px;
-  max-height: 240px;
-  padding: 6px 2px;
+  min-height: 44px;
+  max-height: 220px;
+  padding: 4px 2px;
   margin: 0;
   transition: height 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
 
-  // Thanh cuộn Cyberpunk siêu mỏng, TRIỆT TIÊU HOÀN TOÀN MŨI TÊN SCROLL THÔ CỦA WINDOWS
+  // Thanh cuộn Cyberpunk siêu mỏng
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 107, 53, 0.3) transparent;
 
@@ -908,12 +920,12 @@
 
   &::placeholder {
     color: #71717a;
-    font-size: 13.5px;
+    font-size: 13px;
   }
 
   &.textareaExpanded {
-    min-height: 140px;
-    max-height: 360px;
+    min-height: 130px;
+    max-height: 340px;
   }
 }
 
@@ -921,8 +933,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 6px;
+  padding-top: 2px;
   overflow: visible;
   position: relative;
 }
@@ -930,10 +942,10 @@
 .toolbarLeft {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex: 1;
   min-width: 0;
-  overflow: visible; // Để dropdown popover bung tự do lên trên, không bị che khuất
+  overflow: visible;
 }
 
 // Segmented Mode Switcher [Ảnh] [Video] [Âm thanh]
@@ -942,26 +954,28 @@
   align-items: center;
   background: #242427;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border-radius: 7px;
   padding: 2px;
   gap: 2px;
-  height: 30px;
+  height: 28px;
+  flex-shrink: 0;
 
   .modeTabBtn {
     background: transparent;
     border: none;
     color: #8e8e93;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 500;
     padding: 0 6px;
-    height: 26px;
-    border-radius: 6px;
+    height: 24px;
+    border-radius: 5px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
     transition: all 0.15s ease;
+    white-space: nowrap;
 
     &:hover {
       color: #ffffff;
@@ -970,7 +984,7 @@
     &.modeTabActive {
       background: #323236;
       color: #ffffff;
-      padding: 0 9px;
+      padding: 0 8px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
   }
@@ -979,20 +993,22 @@
 // Book Icon Button & Presets Popover
 .bookPopoverWrapper {
   position: relative;
+  flex-shrink: 0;
 }
 
 .iconBookBtn {
   background: #242427;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  width: 30px;
-  height: 30px;
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #d4d4d8;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 
   &:hover,
   &.iconBookBtnActive {
@@ -1083,21 +1099,21 @@
 .modelPillBtn {
   background: #242427;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 0 9px;
-  height: 30px;
+  border-radius: 7px;
+  padding: 0 8px;
+  height: 28px;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 1;
-  min-width: 60px;
-  max-width: 220px;
+  min-width: 48px;
+  max-width: 165px;
 
   span {
     overflow: hidden;
@@ -1111,8 +1127,8 @@
   }
 
   .starIcon {
-    color: #ffffff;
-    font-size: 11px;
+    color: #ff6b35;
+    font-size: 10px;
     flex-shrink: 0;
   }
 
@@ -1125,21 +1141,21 @@
 .paramsPillBtn {
   background: #242427;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 0 9px;
-  height: 30px;
+  border-radius: 7px;
+  padding: 0 8px;
+  height: 28px;
   color: #d4d4d8;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 1;
-  min-width: 60px;
-  max-width: 175px;
+  min-width: 48px;
+  max-width: 130px;
 
   span {
     overflow: hidden;
@@ -1162,9 +1178,9 @@
 .speakerToolbarBtn {
   background: #242427;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  width: 30px;
-  height: 30px;
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1189,7 +1205,7 @@
 .toolbarRight {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   margin-left: auto;
   position: relative;
@@ -1199,12 +1215,12 @@
 .creditCostBadge {
   display: inline-flex;
   align-items: center;
-  gap: 3.5px;
+  gap: 3px;
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid rgba(56, 189, 248, 0.22);
   border-radius: 999px;
-  padding: 3px 8px;
-  font-size: 0.72rem;
+  padding: 2px 7px;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #38bdf8;
   cursor: default;
@@ -1212,6 +1228,7 @@
   transition: all 0.2s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  height: 25px;
 
   .costSparkleIcon {
     color: #38bdf8;
@@ -1220,7 +1237,7 @@
 
   .costValue {
     font-family: 'JetBrains Mono', 'SF Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     font-weight: 800;
     color: #f1f5f9;
     letter-spacing: -0.02em;
@@ -1276,6 +1293,8 @@
   color: #8e8e93;
   cursor: pointer;
   padding: 2px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1292,8 +1311,8 @@
 }
 
 .pinkNeonSubmitBtn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: #ff2ea6;
   border: none;
@@ -1303,7 +1322,8 @@
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-  box-shadow: 0 2px 10px rgba(255, 46, 166, 0.45);
+  box-shadow: 0 2px 8px rgba(255, 46, 166, 0.45);
+  flex-shrink: 0;
 
   &:hover:not(:disabled) {
     transform: scale(1.06);
@@ -2125,15 +2145,100 @@
   40% { transform: scale(1); opacity: 1; }
 }
 
+/* ── 13-Inch Laptops & Standard Notebooks (1025px - 1366px) ── */
+@media (max-width: 1366px) {
+  .bottomControlPanel {
+    max-width: 630px;
+    bottom: 12px;
+  }
+
+  .modelPillBtn {
+    max-width: 135px;
+    font-size: 11px;
+    padding: 0 7px;
+  }
+
+  .paramsPillBtn {
+    max-width: 110px;
+    font-size: 11px;
+    padding: 0 7px;
+  }
+
+  .inspireMeBtn .inspireText {
+    max-width: 85px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ── Small Laptops & Netbooks (769px - 1024px) ── */
+@media (max-width: 1024px) {
+  .bottomControlPanel {
+    max-width: 580px;
+    width: calc(100% - 20px);
+    bottom: 10px;
+  }
+
+  .promptInputBox {
+    padding: 6px 10px;
+  }
+
+  .modelPillBtn {
+    max-width: 120px;
+    font-size: 10.5px;
+  }
+
+  .paramsPillBtn {
+    max-width: 95px;
+    font-size: 10.5px;
+  }
+
+  .toolbarLeft {
+    gap: 4px;
+  }
+
+  .slotsGroup {
+    gap: 3px;
+  }
+}
+
+/* ── Tablets & Mobile (<= 768px) ── */
 @media (max-width: 768px) {
   .bottomControlPanel {
     bottom: 8px;
-    width: calc(100% - 16px);
+    width: calc(100% - 14px);
+    max-width: 100%;
   }
 
   .promptInputBox {
     padding: 6px 10px;
     border-radius: 14px;
+  }
+
+  .promptTopBar {
+    gap: 4px;
+  }
+
+  .slotsGroup {
+    gap: 3px;
+    overflow-x: auto;
+    max-width: calc(100% - 95px);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .refSlotBtn {
+    min-width: 28px;
+    height: 28px;
+    padding: 1px 3px;
+
+    .slotLabel {
+      font-size: 0.55rem;
+    }
   }
 
   .promptBottomToolbar {
@@ -2142,9 +2247,9 @@
 
   .toolbarLeft {
     overflow-x: auto;
-    max-width: calc(100% - 75px);
-    padding-bottom: 2px;
+    max-width: calc(100% - 105px);
     scrollbar-width: none;
+    padding-bottom: 1px;
     -webkit-overflow-scrolling: touch;
     &::-webkit-scrollbar {
       display: none;
@@ -2158,10 +2263,10 @@
 
   .modeSwitcherGroup {
     flex-shrink: 0;
-    
+
     .modeTabBtn {
-      padding: 0 6px;
-      font-size: 11px;
+      padding: 0 5px;
+      font-size: 10.5px;
     }
   }
 
@@ -2172,12 +2277,41 @@
 
   .modelPillBtn,
   .paramsPillBtn {
-    padding: 0 7px;
-    font-size: 11px;
+    padding: 0 6px;
+    font-size: 10.5px;
+    max-width: 110px;
   }
 
   .chatConversationArea {
     padding: 16px 12px 140px;
+  }
+}
+
+/* ── Small Mobile Phones (<= 480px) ── */
+@media (max-width: 480px) {
+  .modeSwitcherGroup .modeTabBtn span {
+    display: none;
+  }
+
+  .modeSwitcherGroup .modeTabBtn {
+    padding: 0 6px;
+  }
+
+  .expandPromptBtn span {
+    display: none;
+  }
+
+  .inspireMeBtn .inspireText {
+    display: none;
+  }
+
+  .creditCostBadge {
+    padding: 2px 5px;
+    font-size: 0.65rem;
+
+    .costUnit {
+      display: none;
+    }
   }
 }
 
