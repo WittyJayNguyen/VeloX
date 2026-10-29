@@ -691,6 +691,7 @@
     "maintenance_tag": "Maintenance"
   },
   "notifications": {
+    "view_all": "View all notifications",
     "mark_all_read": "Mark all as read",
     "empty": "No notifications available",
     "from_system": "System Notification",

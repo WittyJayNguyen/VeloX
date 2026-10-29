@@ -691,6 +691,7 @@
     "maintenance_tag": "Bảo Trì"
   },
   "notifications": {
+    "view_all": "Xem tất cả thông báo",
     "mark_all_read": "Đã đọc tất cả",
     "empty": "Bạn không có thông báo nào",
     "from_system": "Thông Báo Từ Hệ Thống",

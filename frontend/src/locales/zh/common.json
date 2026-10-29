@@ -684,6 +684,7 @@
     "maintenance_tag": "系统维护"
   },
   "notifications": {
+    "view_all": "查看全部通知",
     "mark_all_read": "全部标记为已读",
     "empty": "暂无系统通知",
     "from_system": "系统通知",

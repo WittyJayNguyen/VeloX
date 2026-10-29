@@ -684,6 +684,7 @@
     "maintenance_tag": "점검 중"
   },
   "notifications": {
+    "view_all": "모든 알림 보기",
     "mark_all_read": "모두 읽음으로 표시",
     "empty": "새로운 알림이 없습니다",
     "from_system": "시스템 알림",
