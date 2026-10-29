@@ -11,6 +11,7 @@ import {
   HiOutlineXMark,
   HiOutlineCheckCircle,
   HiOutlineSparkles,
+  HiOutlineArrowsPointingOut,
 } from 'react-icons/hi2';
 import { translationService, type TranslationItem } from '@modules/system/services/translationService';
 import { applyTranslationOverrides } from '@/i18n';
@@ -51,6 +52,25 @@ export const TranslationsPage: React.FC = () => {
     ja: '',
     ko: '',
   });
+
+  // Inline 1-row edit state
+  const [inlineKey, setInlineKey] = useState<string | null>(null);
+  const [inlineForm, setInlineForm] = useState<{
+    category: string;
+    vi: string;
+    en: string;
+    zh: string;
+    ja: string;
+    ko: string;
+  }>({
+    category: 'common',
+    vi: '',
+    en: '',
+    zh: '',
+    ja: '',
+    ko: '',
+  });
+  const [savingInline, setSavingInline] = useState(false);
 
   // Create modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -118,6 +138,26 @@ export const TranslationsPage: React.FC = () => {
     }
   };
 
+  const updateLiveDictionary = (key: string, form: { vi: string; en: string; zh: string; ja: string; ko: string }) => {
+    const keyParts = key.split('.');
+    const updateNested = (lang: string, val: string) => {
+      if (!val) return;
+      const obj: Record<string, unknown> = {};
+      let curr = obj;
+      for (let i = 0; i < keyParts.length - 1; i++) {
+        curr[keyParts[i]] = {};
+        curr = curr[keyParts[i]] as Record<string, unknown>;
+      }
+      curr[keyParts[keyParts.length - 1]] = val;
+      i18n.addResourceBundle(lang, 'translation', obj, true, true);
+    };
+    updateNested('vi', form.vi);
+    updateNested('en', form.en);
+    updateNested('zh', form.zh);
+    updateNested('ja', form.ja);
+    updateNested('ko', form.ko);
+  };
+
   const handleOpenEdit = (item: TranslationItem) => {
     setEditingItem(item);
     setEditForm({
@@ -130,6 +170,41 @@ export const TranslationsPage: React.FC = () => {
     });
   };
 
+  const handleStartInlineEdit = (item: TranslationItem) => {
+    setInlineKey(item.key);
+    setInlineForm({
+      category: item.category || 'common',
+      vi: item.vi || '',
+      en: item.en || '',
+      zh: item.zh || '',
+      ja: item.ja || '',
+      ko: item.ko || '',
+    });
+  };
+
+  const handleCancelInlineEdit = () => {
+    setInlineKey(null);
+  };
+
+  const handleSaveInlineEdit = async (key: string) => {
+    setSavingInline(true);
+    try {
+      const res = await translationService.updateTranslation(key, inlineForm);
+      if (res && res.item) {
+        setItems((prev) =>
+          prev.map((it) => (it.key === key ? res.item : it))
+        );
+        updateLiveDictionary(key, inlineForm);
+        setInlineKey(null);
+        showToast(t('admin.translations.update_success', 'Cập nhật bản dịch thành công!'));
+      }
+    } catch (err) {
+      alert(t('common.error_occurred', 'Không thể lưu bản dịch'));
+    } finally {
+      setSavingInline(false);
+    }
+  };
+
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
@@ -140,25 +215,7 @@ export const TranslationsPage: React.FC = () => {
         setItems((prev) =>
           prev.map((it) => (it.key === editingItem.key ? res.item : it))
         );
-        // Live update current i18n dictionary
-        const keyParts = editingItem.key.split('.');
-        const updateNested = (lang: string, val: string) => {
-          if (!val) return;
-          let obj: Record<string, unknown> = {};
-          let curr = obj;
-          for (let i = 0; i < keyParts.length - 1; i++) {
-            curr[keyParts[i]] = {};
-            curr = curr[keyParts[i]] as Record<string, unknown>;
-          }
-          curr[keyParts[keyParts.length - 1]] = val;
-          i18n.addResourceBundle(lang, 'translation', obj, true, true);
-        };
-        updateNested('vi', editForm.vi);
-        updateNested('en', editForm.en);
-        updateNested('zh', editForm.zh);
-        updateNested('ja', editForm.ja);
-        updateNested('ko', editForm.ko);
-
+        updateLiveDictionary(editingItem.key, editForm);
         setEditingItem(null);
         showToast(t('admin.translations.update_success', 'Cập nhật bản dịch thành công!'));
       }
@@ -423,162 +480,358 @@ export const TranslationsPage: React.FC = () => {
           overflowX: 'auto',
           marginBottom: '20px',
         }}>
-          <table style={{ width: '100%', minWidth: '1180px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px', tableLayout: 'fixed' }}>
+          <table style={{ width: '100%', minWidth: '1680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ background: '#0d111a', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8' }}>
-                <th style={{ padding: '12px 14px', width: '220px', whiteSpace: 'nowrap' }}>Key & Nhóm</th>
-                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇻🇳 Tiếng Việt (vi)</th>
-                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇺🇸 English (en)</th>
-                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇨🇳 中文 (zh)</th>
-                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇯🇵 日本語 (ja)</th>
-                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇰🇷 한국어 (ko)</th>
-                <th style={{ padding: '12px 14px', width: '90px', textAlign: 'right', whiteSpace: 'nowrap' }}>Thao Tác</th>
+                <th style={{ padding: '12px 14px', width: '280px', whiteSpace: 'nowrap' }}>Key & Nhóm</th>
+                <th style={{ padding: '12px 14px', width: '270px', whiteSpace: 'nowrap' }}>🇻🇳 Tiếng Việt (vi)</th>
+                <th style={{ padding: '12px 14px', width: '270px', whiteSpace: 'nowrap' }}>🇺🇸 English (en)</th>
+                <th style={{ padding: '12px 14px', width: '250px', whiteSpace: 'nowrap' }}>🇨🇳 中文 (zh)</th>
+                <th style={{ padding: '12px 14px', width: '250px', whiteSpace: 'nowrap' }}>🇯🇵 日本語 (ja)</th>
+                <th style={{ padding: '12px 14px', width: '250px', whiteSpace: 'nowrap' }}>🇰🇷 한국어 (ko)</th>
+                <th style={{ padding: '12px 14px', width: '130px', textAlign: 'right', whiteSpace: 'nowrap' }}>Thao Tác</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
-                <tr
-                  key={item.key}
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.15s' }}
-                >
-                  {/* Key & Category */}
-                  <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <div
-                      style={{
+              {items.map((item) => {
+                const isInline = inlineKey === item.key;
+
+                return (
+                  <tr
+                    key={item.key}
+                    onDoubleClick={() => !isInline && handleStartInlineEdit(item)}
+                    style={{
+                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      transition: 'background 0.15s',
+                      background: isInline ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
+                    }}
+                  >
+                    {/* Key & Category */}
+                    <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: isInline ? '#38bdf8' : '#f8fafc',
+                          fontFamily: 'monospace',
+                          fontSize: '12px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={item.key}
+                      >
+                        {item.key}
+                      </div>
+                      <span style={{
+                        display: 'inline-block',
+                        marginTop: '3px',
+                        background: 'rgba(99, 102, 241, 0.12)',
+                        color: '#a5b4fc',
+                        fontSize: '10px',
                         fontWeight: 600,
-                        color: '#f8fafc',
-                        fontFamily: 'monospace',
-                        fontSize: '12px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                      title={item.key}
-                    >
-                      {item.key}
-                    </div>
-                    <span style={{
-                      display: 'inline-block',
-                      marginTop: '3px',
-                      background: 'rgba(99, 102, 241, 0.12)',
-                      color: '#a5b4fc',
-                      fontSize: '10px',
-                      fontWeight: 600,
-                      padding: '1px 6px',
-                      borderRadius: '4px',
-                    }}>
-                      {item.category}
-                    </span>
-                  </td>
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                      }}>
+                        {item.category}
+                      </span>
+                    </td>
 
-                  {/* Languages columns - All strictly on 1 single row */}
-                  <td
-                    style={{
-                      padding: '10px 14px',
-                      color: '#cbd5e1',
-                      lineHeight: 1.4,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    title={item.vi}
-                  >
-                    {item.vi || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
-                  </td>
-                  <td
-                    style={{
-                      padding: '10px 14px',
-                      color: '#cbd5e1',
-                      lineHeight: 1.4,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    title={item.en}
-                  >
-                    {item.en || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
-                  </td>
-                  <td
-                    style={{
-                      padding: '10px 14px',
-                      color: '#cbd5e1',
-                      lineHeight: 1.4,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    title={item.zh}
-                  >
-                    {item.zh || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
-                  </td>
-                  <td
-                    style={{
-                      padding: '10px 14px',
-                      color: '#cbd5e1',
-                      lineHeight: 1.4,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    title={item.ja}
-                  >
-                    {item.ja || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
-                  </td>
-                  <td
-                    style={{
-                      padding: '10px 14px',
-                      color: '#cbd5e1',
-                      lineHeight: 1.4,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    title={item.ko}
-                  >
-                    {item.ko || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
-                  </td>
+                    {/* Languages columns - Inline Input or Single Line Text */}
+                    {isInline ? (
+                      <>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input
+                            type="text"
+                            value={inlineForm.vi}
+                            onChange={(e) => setInlineForm({ ...inlineForm, vi: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveInlineEdit(item.key);
+                              if (e.key === 'Escape') handleCancelInlineEdit();
+                            }}
+                            placeholder="Tiếng Việt..."
+                            autoFocus
+                            style={{
+                              width: '100%',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              background: '#0a0d14',
+                              border: '1px solid #38bdf8',
+                              color: '#fff',
+                              fontSize: '12px',
+                              outline: 'none',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input
+                            type="text"
+                            value={inlineForm.en}
+                            onChange={(e) => setInlineForm({ ...inlineForm, en: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveInlineEdit(item.key);
+                              if (e.key === 'Escape') handleCancelInlineEdit();
+                            }}
+                            placeholder="English..."
+                            style={{
+                              width: '100%',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              background: '#0a0d14',
+                              border: '1px solid #38bdf8',
+                              color: '#fff',
+                              fontSize: '12px',
+                              outline: 'none',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input
+                            type="text"
+                            value={inlineForm.zh}
+                            onChange={(e) => setInlineForm({ ...inlineForm, zh: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveInlineEdit(item.key);
+                              if (e.key === 'Escape') handleCancelInlineEdit();
+                            }}
+                            placeholder="中文..."
+                            style={{
+                              width: '100%',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              background: '#0a0d14',
+                              border: '1px solid #38bdf8',
+                              color: '#fff',
+                              fontSize: '12px',
+                              outline: 'none',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input
+                            type="text"
+                            value={inlineForm.ja}
+                            onChange={(e) => setInlineForm({ ...inlineForm, ja: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveInlineEdit(item.key);
+                              if (e.key === 'Escape') handleCancelInlineEdit();
+                            }}
+                            placeholder="日本語..."
+                            style={{
+                              width: '100%',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              background: '#0a0d14',
+                              border: '1px solid #38bdf8',
+                              color: '#fff',
+                              fontSize: '12px',
+                              outline: 'none',
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <input
+                            type="text"
+                            value={inlineForm.ko}
+                            onChange={(e) => setInlineForm({ ...inlineForm, ko: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveInlineEdit(item.key);
+                              if (e.key === 'Escape') handleCancelInlineEdit();
+                            }}
+                            placeholder="한국어..."
+                            style={{
+                              width: '100%',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              background: '#0a0d14',
+                              border: '1px solid #38bdf8',
+                              color: '#fff',
+                              fontSize: '12px',
+                              outline: 'none',
+                            }}
+                          />
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td
+                          style={{
+                            padding: '10px 14px',
+                            color: '#cbd5e1',
+                            lineHeight: 1.4,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleStartInlineEdit(item)}
+                          title={`${item.vi || 'Trống'} (Nhấp đúp để sửa)`}
+                        >
+                          {item.vi || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
+                        </td>
+                        <td
+                          style={{
+                            padding: '10px 14px',
+                            color: '#cbd5e1',
+                            lineHeight: 1.4,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleStartInlineEdit(item)}
+                          title={`${item.en || 'Empty'} (Nhấp đúp để sửa)`}
+                        >
+                          {item.en || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
+                        </td>
+                        <td
+                          style={{
+                            padding: '10px 14px',
+                            color: '#cbd5e1',
+                            lineHeight: 1.4,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleStartInlineEdit(item)}
+                          title={`${item.zh || 'Empty'} (Nhấp đúp để sửa)`}
+                        >
+                          {item.zh || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
+                        </td>
+                        <td
+                          style={{
+                            padding: '10px 14px',
+                            color: '#cbd5e1',
+                            lineHeight: 1.4,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleStartInlineEdit(item)}
+                          title={`${item.ja || 'Empty'} (Nhấp đúp để sửa)`}
+                        >
+                          {item.ja || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
+                        </td>
+                        <td
+                          style={{
+                            padding: '10px 14px',
+                            color: '#cbd5e1',
+                            lineHeight: 1.4,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleStartInlineEdit(item)}
+                          title={`${item.ko || 'Empty'} (Nhấp đúp để sửa)`}
+                        >
+                          {item.ko || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
+                        </td>
+                      </>
+                    )}
 
-                  {/* Actions */}
-                  <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        title={t('common.edit', 'Sửa bản dịch')}
-                        style={{
-                          padding: '6px 8px',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(14, 165, 233, 0.3)',
-                          background: 'rgba(14, 165, 233, 0.1)',
-                          color: '#38bdf8',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <HiOutlinePencilSquare size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.key)}
-                        title={t('common.delete', 'Xóa')}
-                        style={{
-                          padding: '6px 8px',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(239, 68, 68, 0.2)',
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          color: '#f87171',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <HiOutlineTrash size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    {/* Actions */}
+                    <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      {isInline ? (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                          <button
+                            onClick={() => handleSaveInlineEdit(item.key)}
+                            disabled={savingInline}
+                            title="Lưu bản dịch (Enter)"
+                            style={{
+                              padding: '5px 9px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(16, 185, 129, 0.4)',
+                              background: 'rgba(16, 185, 129, 0.15)',
+                              color: '#34d399',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            <HiOutlineCheck size={14} /> Lưu
+                          </button>
+                          <button
+                            onClick={handleCancelInlineEdit}
+                            title="Hủy (Esc)"
+                            style={{
+                              padding: '5px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              background: '#181e2b',
+                              color: '#94a3b8',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <HiOutlineXMark size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px' }}>
+                          <button
+                            onClick={() => handleStartInlineEdit(item)}
+                            title="Sửa trực tiếp 1 dòng"
+                            style={{
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(14, 165, 233, 0.3)',
+                              background: 'rgba(14, 165, 233, 0.1)',
+                              color: '#38bdf8',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <HiOutlinePencilSquare size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            title="Mở hộp thoại chỉnh sửa đầy đủ"
+                            style={{
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(168, 85, 247, 0.3)',
+                              background: 'rgba(168, 85, 247, 0.1)',
+                              color: '#c084fc',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <HiOutlineArrowsPointingOut size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.key)}
+                            title={t('common.delete', 'Xóa')}
+                            style={{
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(239, 68, 68, 0.2)',
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              color: '#f87171',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <HiOutlineTrash size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
