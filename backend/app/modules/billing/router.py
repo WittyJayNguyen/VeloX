@@ -433,8 +433,8 @@ async def process_single_sepay_transaction(
         logger.info(f"[SEPAY] Transaction {sepay_tx_id} already processed. Skipping.")
         return {"success": True, "message": "Transaction already processed", "status": "DUPLICATE"}
 
-    # Extract user identifier from content (Supports "VL 10004", "VL10004", "V 10004", "VELOX 10004", "10004")
-    user_match = re.search(r"(?:VELOX|VL|V)\s*([A-Za-z0-9\-_]+)", content, re.IGNORECASE)
+    # Extract user identifier from content (Supports "SEVQR TKPVL 10004", "SEVQR TKPVL DH10004", "SEVQR VL 10004", "TKPVL 10004", "VL 10004", "VELOX 10004", "10004")
+    user_match = re.search(r"(?:SEVQR\s*)?(?:TKPVL|VELOX|VL|V)\s*(?:DH)?([A-Za-z0-9\-_]+)", content, re.IGNORECASE)
     user_code = user_match.group(1).strip() if user_match else ""
 
     # Also fallback: look for pure 5-6 digit sequence (e.g. 10004)
