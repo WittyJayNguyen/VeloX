@@ -51,11 +51,24 @@ const LogsPage = () => {
   const [mediaLogs, setMediaLogs] = useState<MediaCdnRecord[]>([]);
   const [mediaTotal, setMediaTotal] = useState(0);
   const [mediaPage, setMediaPage] = useState(1);
+  const [mediaPageSize, setMediaPageSize] = useState(20);
   const [mediaTypeFilter, setMediaTypeFilter] = useState<'ALL' | 'IMAGE' | 'VIDEO'>('ALL');
   const [mediaSearch, setMediaSearch] = useState('');
   const [mediaUserFilter, setMediaUserFilter] = useState('ALL');
   const [mediaLoading, setMediaLoading] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [allUsers, setAllUsers] = useState<{ id: string; email: string }[]>([]);
+
+  // Fetch registered users list for dropdown filter
+  useEffect(() => {
+    apiClient.get('/users', { params: { page: 1, page_size: 100 } })
+      .then((res) => {
+        if (res.data?.items) {
+          setAllUsers(res.data.items);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Load real API transaction logs from backend
   const fetchApiLogs = useCallback(async () => {
@@ -86,17 +99,17 @@ const LogsPage = () => {
     }
   }, []);
 
-  // Load real CDN Media Generation history for all users
+  // Load real CDN Media Generation history for all users with server pagination
   const fetchMediaLogs = useCallback(async () => {
     setMediaLoading(true);
     try {
       const res = await apiClient.get('/logs/all-media', {
         params: {
           media_type: mediaTypeFilter === 'ALL' ? undefined : mediaTypeFilter,
-          search: mediaSearch || undefined,
+          search: mediaSearch.trim() || undefined,
           user_id: mediaUserFilter === 'ALL' ? undefined : mediaUserFilter,
           page: mediaPage,
-          page_size: 20,
+          page_size: mediaPageSize,
         }
       });
       setMediaLogs(res.data?.items || []);
@@ -106,7 +119,8 @@ const LogsPage = () => {
     } finally {
       setMediaLoading(false);
     }
-  }, [mediaTypeFilter, mediaSearch, mediaUserFilter, mediaPage]);
+  }, [mediaTypeFilter, mediaSearch, mediaUserFilter, mediaPage, mediaPageSize]);
+
 
   useEffect(() => {
     fetchApiLogs();
@@ -323,11 +337,17 @@ const LogsPage = () => {
                   <SearchInput
                     placeholder="Tìm theo prompt tác phẩm..."
                     value={mediaSearch}
-                    onChange={(e) => setMediaSearch(e.target.value)}
-                    onClear={() => setMediaSearch('')}
+                    onChange={(e) => {
+                      setMediaSearch(e.target.value);
+                      setMediaPage(1);
+                    }}
+                    onClear={() => {
+                      setMediaSearch('');
+                      setMediaPage(1);
+                    }}
                   />
                 </div>
-                <div style={{ flex: '0 0 130px' }}>
+                <div style={{ flex: '0 0 120px' }}>
                   <Select
                     options={[
                       { value: 'ALL', label: 'Tất cả loại' },
@@ -335,17 +355,41 @@ const LogsPage = () => {
                       { value: 'VIDEO', label: 'Chỉ Video' },
                     ]}
                     value={mediaTypeFilter}
-                    onChange={(e) => setMediaTypeFilter(e.target.value as any)}
+                    onChange={(e) => {
+                      setMediaTypeFilter(e.target.value as any);
+                      setMediaPage(1);
+                    }}
                   />
                 </div>
                 <div style={{ flex: '0 0 160px' }}>
                   <Select
                     options={[
                       { value: 'ALL', label: 'Tất cả user' },
-                      ...Array.from(new Set(mediaLogs.map((m) => m.user_email || 'guest@velox.ai'))).map((u) => ({ value: u, label: u }))
+                      ...(allUsers.length > 0
+                        ? allUsers.map((u) => ({ value: u.id, label: u.email }))
+                        : Array.from(new Set(mediaLogs.map((m) => m.user_email || 'guest@velox.ai'))).map((u) => ({ value: u, label: u }))
+                      ),
                     ]}
                     value={mediaUserFilter}
-                    onChange={(e) => setMediaUserFilter(e.target.value)}
+                    onChange={(e) => {
+                      setMediaUserFilter(e.target.value);
+                      setMediaPage(1);
+                    }}
+                  />
+                </div>
+                <div style={{ flex: '0 0 110px' }}>
+                  <Select
+                    options={[
+                      { value: '10', label: '10 / trang' },
+                      { value: '20', label: '20 / trang' },
+                      { value: '50', label: '50 / trang' },
+                      { value: '100', label: '100 / trang' },
+                    ]}
+                    value={String(mediaPageSize)}
+                    onChange={(e) => {
+                      setMediaPageSize(Number(e.target.value));
+                      setMediaPage(1);
+                    }}
                   />
                 </div>
               </div>
@@ -360,17 +404,26 @@ const LogsPage = () => {
             </div>
           </Card>
 
-          {/* CDN Media Table */}
-          <Card title="Danh Sách Tác Phẩm Lưu Trữ CDN Cho Từng User" subtitle={`Tìm thấy ${mediaLogs.length} tác phẩm`} padding="none">
+          {/* CDN Media Table with Full Pagination */}
+          <Card
+            title="Danh Sách Tác Phẩm Lưu Trữ CDN Cho Từng User"
+            subtitle={`Tìm thấy ${mediaTotal.toLocaleString()} tác phẩm (Trang ${mediaPage}/${Math.max(1, Math.ceil(mediaTotal / mediaPageSize))})`}
+            padding="none"
+          >
             <Table
               columns={mediaColumns}
               data={mediaLogs}
               rowKey={(m) => m.id}
               page={mediaPage}
-              pageSize={20}
-              onPageChange={setMediaPage}
+              pageSize={mediaPageSize}
+              totalItems={mediaTotal}
+              loading={mediaLoading}
+              onPageChange={(newPage) => {
+                setMediaPage(newPage);
+              }}
             />
           </Card>
+
         </>
       ) : (
         <>

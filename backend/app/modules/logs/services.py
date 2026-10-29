@@ -7,9 +7,10 @@ Zero-Disk Cloud CDN storage: all images/videos routed to public CDNs.
 """
 from typing import Optional, List, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, func, delete
+from sqlalchemy import select, desc, func, delete, or_
 
 from app.modules.logs.models import MediaGenerationLog, ApiCallLog
+
 from app.modules.users.models import User
 from app.modules.logs.schemas import (
     MediaJobResponse, MediaJobListResponse,
@@ -135,8 +136,19 @@ async def list_all_media_jobs(
     count_query = select(func.count()).select_from(MediaGenerationLog)
 
     if user_id and user_id != "ALL":
-        base_query = base_query.where(MediaGenerationLog.user_id == user_id)
-        count_query = count_query.where(MediaGenerationLog.user_id == user_id)
+        base_query = base_query.where(
+            or_(
+                MediaGenerationLog.user_id == user_id,
+                User.email == user_id,
+            )
+        )
+        count_query = count_query.outerjoin(User, MediaGenerationLog.user_id == User.id).where(
+            or_(
+                MediaGenerationLog.user_id == user_id,
+                User.email == user_id,
+            )
+        )
+
 
     if media_type and media_type.upper() in ["IMAGE", "VIDEO"]:
         base_query = base_query.where(MediaGenerationLog.media_type == media_type.upper())
