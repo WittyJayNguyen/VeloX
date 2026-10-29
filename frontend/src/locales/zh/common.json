@@ -16,8 +16,8 @@
   },
   "hero": {
     "badge": "新一代AI网关平台",
-    "title_1": "统一AI中心",
-    "title_highlight": "人工智能",
+    "title_1": "AI 统一调度中心",
+    "title_highlight": "多模型 VeloX 平台",
     "subtitle": "以最低成本连接OpenAI、Claude、Gemini、Midjourney等100多个AI模型。一个API密钥即可使用所有模型。",
     "cta_start": "免费开始",
     "cta_docs": "查看文档"

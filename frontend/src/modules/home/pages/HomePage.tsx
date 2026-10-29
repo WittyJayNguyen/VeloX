@@ -603,10 +603,10 @@ console.log(response.choices[0].message.content);`;
             </div>
 
             <h1 className={styles.heroHeadline}>
-              <span>{t('hero.title_1', 'Trung Tâm Điều Phối')}</span>
+              <span>{t('hero.title_1', 'Cổng Điều Phối AI')}</span>
               <br />
               <span className={styles.highlightOrange}>
-                {t('hero.title_highlight', 'Trí Tuệ Nhân Tạo VeloX')}
+                {t('hero.title_highlight', 'Đa Nền Tảng VeloX')}
               </span>
             </h1>
 
