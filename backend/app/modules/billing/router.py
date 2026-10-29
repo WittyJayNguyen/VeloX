@@ -216,7 +216,7 @@ async def check_payment_status(
             parsed_dt = datetime.fromisoformat(clean_since)
             if parsed_dt.tzinfo is not None:
                 parsed_dt = parsed_dt.replace(tzinfo=None)
-            cutoff = max(cutoff, parsed_dt - timedelta(seconds=10))
+            cutoff = max(cutoff, parsed_dt - timedelta(seconds=5))
         except Exception:
             pass
 
@@ -226,16 +226,29 @@ async def check_payment_status(
         .where(
             PaymentTransaction.user_id == current_user.id,
             PaymentTransaction.status.in_(["SUCCESS", "COMPLETED"]),
-            PaymentTransaction.created_at >= cutoff,
         )
         .order_by(desc(PaymentTransaction.created_at))
+        .limit(10)
     )
 
     if expected_amount and expected_amount > 0:
         query = query.where(PaymentTransaction.amount_vnd == expected_amount)
 
     res = await db.execute(query)
-    tx = res.scalar_one_or_none()
+    candidates = res.scalars().all()
+
+    tx = None
+    for cand in candidates:
+        cand_dt = cand.created_at
+        if isinstance(cand_dt, str):
+            clean_str = cand_dt.replace("T", " ")
+            try:
+                cand_dt = datetime.fromisoformat(clean_str)
+            except Exception:
+                continue
+        if cand_dt >= cutoff:
+            tx = cand
+            break
 
     if tx:
         return ok(
