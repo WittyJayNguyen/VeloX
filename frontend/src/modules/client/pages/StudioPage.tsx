@@ -159,10 +159,27 @@ export interface PromptPresetGroup {
   items: PromptPresetItem[];
 }
 
-// Clean redundant provider prefixes from model display names
-export const cleanModelDisplayName = (name: string): string => {
+// Clean redundant provider prefixes and long suffix names for sleek compact display
+export const cleanModelDisplayName = (name: string, isCompact = false): string => {
   if (!name) return '';
-  return name.replace(/^OpenAI\s+/i, '').replace(/^Google\s+/i, '').trim();
+  let cleaned = name
+    .replace(/^OpenAI\s+/i, '')
+    .replace(/^Google\s+/i, '')
+    .replace(/^ByteDance\s+/i, '')
+    .replace(/^Anthropic\s+/i, '')
+    .replace(/^Kling\s*AI\s+/i, 'Kling ')
+    .replace(/^Minimax\s+/i, '')
+    .replace(/^Meta\s+/i, '')
+    .trim();
+
+  if (isCompact) {
+    cleaned = cleaned
+      .replace(/\s*Standard$/i, ' Std')
+      .replace(/\s*Professional$/i, ' Pro')
+      .replace(/\s*Lightning$/i, ' Fast')
+      .replace(/\s*Instruct$/i, '');
+  }
+  return cleaned;
 };
 
 // 4-Bar Sound Wave Icon (1:1 with Krea/Audio mockup)
@@ -1807,7 +1824,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlinePhoto size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>{t('studio.end_frame', 'Kết th...')}</span>
+                          <span className={styles.slotLabel}>{t('studio.end_frame', 'Kết thúc')}</span>
                         </>
                       )}
                     </button>
@@ -1900,7 +1917,7 @@ export const StudioPage: React.FC = () => {
                             <HiOutlineMusicalNote size={15} />
                             <span className={styles.subPlus}>+</span>
                           </span>
-                          <span className={styles.slotLabel}>{t('studio.audio_track', 'Âm th...')}</span>
+                          <span className={styles.slotLabel}>{t('studio.audio_track', 'Audio')}</span>
                         </>
                       )}
                     </button>
@@ -1932,9 +1949,10 @@ export const StudioPage: React.FC = () => {
                     setIsModelMenuOpen(false);
                     setIsParamsMenuOpen(false);
                   }}
+                  title={t('studio.inspire_me', 'Truyền cảm hứng')}
                 >
                   <span className={styles.sparkleIcon}>※</span>
-                  <span>{t('studio.inspire_me', 'Truyền cảm hứng cho tôi')}</span>
+                  <span className={styles.inspireText}>{t('studio.inspire_me', 'Truyền cảm hứng')}</span>
                   <HiOutlineChevronDown size={13} />
                 </button>
 
@@ -2193,9 +2211,10 @@ export const StudioPage: React.FC = () => {
                       setIsPresetsMenuOpen(false);
                       setIsInspireMenuOpen(false);
                     }}
+                    title={currentModel?.name || t('studio.select_model', 'Chọn Model')}
                   >
                     <span className={styles.starIcon}>✦</span>
-                    <span>{cleanModelDisplayName(currentModel?.name || t('studio.select_model', 'Chọn Model'))}</span>
+                    <span>{cleanModelDisplayName(currentModel?.name || t('studio.select_model', 'Chọn Model'), true)}</span>
                     <HiOutlineChevronDown className={styles.chevron} size={12} />
                   </button>
 
@@ -2239,7 +2258,7 @@ export const StudioPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* 4. Params Dropdown (1K · Tự động · Cao ⌵ hoặc 1080p · Tự động · 5s ⌵) */}
+                {/* 4. Params Dropdown (1K · Auto · Std ⌵ hoặc 1080p · Auto · 5s ⌵) */}
                 <div className={styles.paramsPillDropdown}>
                   <button
                     type="button"
@@ -2251,12 +2270,19 @@ export const StudioPage: React.FC = () => {
                       setIsPresetsMenuOpen(false);
                       setIsInspireMenuOpen(false);
                     }}
-                  >
-                    <span>
-                      {activeTab === 'image'
+                    title={
+                      activeTab === 'image'
                         ? `${resolution} · ${translateParamOption(aspectRatio, t)} · ${translateParamOption(quality, t)}`
                         : activeTab === 'video'
                         ? `${videoResolution} · ${translateParamOption(aspectRatio, t)} · ${videoDuration}`
+                        : audioVoice
+                    }
+                  >
+                    <span>
+                      {activeTab === 'image'
+                        ? `${resolution} · ${aspectRatio === 'Auto' || aspectRatio === 'Tự động' ? 'Auto' : aspectRatio} · ${quality === 'Standard' || quality === 'Tiêu chuẩn' ? 'Std' : quality}`
+                        : activeTab === 'video'
+                        ? `${videoResolution} · ${aspectRatio === 'Auto' || aspectRatio === 'Tự động' ? 'Auto' : aspectRatio} · ${videoDuration}`
                         : audioVoice}
                     </span>
                     <HiOutlineChevronDown className={styles.chevron} size={13} />
