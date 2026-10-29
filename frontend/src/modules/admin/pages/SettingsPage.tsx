@@ -12,6 +12,8 @@ import {
   HiOutlineSpeakerWave,
   HiOutlineMegaphone,
 } from 'react-icons/hi2';
+import { FcGoogle } from 'react-icons/fc';
+import { FaTelegram } from 'react-icons/fa';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';
 import { Select } from '@modules/core/design-system/Select';
@@ -58,6 +60,13 @@ const SettingsPage = () => {
   const [autoBackup, setAutoBackup] = useState(true);
   const [emailNotif, setEmailNotif] = useState(true);
   const [webhookUrl, setWebhookUrl] = useState('');
+
+  // Social Auth (Google & Telegram) states
+  const [googleClientId, setGoogleClientId] = useState('');
+  const [googleClientSecret, setGoogleClientSecret] = useState('');
+  const [telegramBotUsername, setTelegramBotUsername] = useState('');
+  const [telegramBotToken, setTelegramBotToken] = useState('');
+
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -92,6 +101,10 @@ const SettingsPage = () => {
           setAutoBackup(Boolean(d.auto_backup));
           setEmailNotif(Boolean(d.email_notif));
           setWebhookUrl(d.webhook_url || '');
+          setGoogleClientId(d.google_client_id || '');
+          setGoogleClientSecret(d.google_client_secret || '');
+          setTelegramBotUsername(d.telegram_bot_username || '');
+          setTelegramBotToken(d.telegram_bot_token || '');
         }
       } catch {
         // Fallback to store
@@ -175,6 +188,10 @@ const SettingsPage = () => {
         auto_backup: autoBackup,
         email_notif: emailNotif,
         webhook_url: webhookUrl,
+        google_client_id: googleClientId.trim(),
+        google_client_secret: googleClientSecret.trim(),
+        telegram_bot_username: telegramBotUsername.trim(),
+        telegram_bot_token: telegramBotToken.trim(),
         broadcast_update: notifyOnSave,
         broadcast_message: notifyOnSave ? `Hệ thống vừa cập nhật cấu hình thương hiệu: "${siteName}".` : undefined,
       } as any);
@@ -282,7 +299,87 @@ const SettingsPage = () => {
         </div>
       </Card>
 
-      {/* ── 2. CHẾ ĐỘ BẢO TRÌ & VẬN HÀNH ── */}
+      {/* ── 2. CẤU HÌNH ĐĂNG NHẬP GOOGLE & TELEGRAM (OAUTH 2.0 & SSO) ── */}
+      <Card
+        title="Cấu Hình Đăng Nhập Google & Telegram (OAuth 2.0 & SSO)"
+        headerRight={<FcGoogle size={22} />}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{
+            background: 'rgba(66, 133, 244, 0.08)',
+            border: '1px solid rgba(66, 133, 244, 0.25)',
+            borderRadius: 8,
+            padding: '12px 16px',
+            fontSize: '0.84rem',
+            lineHeight: 1.5,
+            color: '#93c5fd',
+          }}>
+            <strong style={{ color: '#60a5fa', display: 'block', marginBottom: 4 }}>
+              💡 Hướng Dẫn Cấu Hình Google Cloud Console (OAuth 2.0 Client):
+            </strong>
+            Khi tạo mã OAuth trên <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>Google Cloud Console</a>, bạn điền cấu hình như sau:
+            <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+              <li><strong>Authorized JavaScript origins:</strong> <code>https://velox.nexoratech.com.vn</code>, <code>https://testvelox.nexoratech.com.vn</code></li>
+              <li><strong>Authorized redirect URIs:</strong> <code>https://velox.nexoratech.com.vn/login</code>, <code>https://testvelox.nexoratech.com.vn/login</code></li>
+            </ul>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+            <Input
+              label="Google Client ID"
+              value={googleClientId}
+              onChange={(e) => setGoogleClientId(e.target.value)}
+              placeholder="Ví dụ: 123456789-xxxx.apps.googleusercontent.com"
+              fullWidth
+            />
+
+            <Input
+              label="Google Client Secret"
+              type="password"
+              value={googleClientSecret}
+              onChange={(e) => setGoogleClientSecret(e.target.value)}
+              placeholder="Mã bí mật Client Secret từ Google"
+              fullWidth
+            />
+          </div>
+
+          <div style={{
+            borderTop: '1px solid #27272a',
+            paddingTop: '1.25rem',
+            marginTop: '0.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            color: '#38bdf8',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+          }}>
+            <FaTelegram size={18} color="#229ED9" />
+            <span>Cấu Hình Telegram Bot SSO</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+            <Input
+              label="Telegram Bot Username"
+              value={telegramBotUsername}
+              onChange={(e) => setTelegramBotUsername(e.target.value)}
+              placeholder="Ví dụ: VeloxAiBot (không cần @)"
+              fullWidth
+            />
+
+            <Input
+              label="Telegram Bot Token"
+              type="password"
+              value={telegramBotToken}
+              onChange={(e) => setTelegramBotToken(e.target.value)}
+              placeholder="Token cấp từ @BotFather"
+              fullWidth
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* ── 3. CHẾ ĐỘ BẢO TRÌ & VẬN HÀNH ── */}
       <Card
         title="Chế Độ Bảo Trì & Vận Hành Hệ Thống"
         headerRight={<HiOutlineShieldCheck size={20} style={{ color: maintenanceMode ? '#ef4444' : '#10b981' }} />}

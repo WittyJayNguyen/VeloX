@@ -71,6 +71,10 @@ class FullSettingsResponse(PublicSettingsResponse):
     auto_backup: bool
     email_notif: bool
     webhook_url: Optional[str] = None
+    google_client_id: Optional[str] = None
+    google_client_secret: Optional[str] = None
+    telegram_bot_username: Optional[str] = None
+    telegram_bot_token: Optional[str] = None
     updated_at: Optional[datetime] = None
 
 
@@ -86,6 +90,10 @@ class UpdateSettingsRequest(BaseModel):
     auto_backup: Optional[bool] = None
     email_notif: Optional[bool] = None
     webhook_url: Optional[str] = None
+    google_client_id: Optional[str] = None
+    google_client_secret: Optional[str] = None
+    telegram_bot_username: Optional[str] = None
+    telegram_bot_token: Optional[str] = None
     broadcast_update: Optional[bool] = False
     broadcast_message: Optional[str] = None
 
@@ -192,6 +200,10 @@ async def get_admin_settings(
         auto_backup=setting.auto_backup,
         email_notif=setting.email_notif,
         webhook_url=setting.webhook_url,
+        google_client_id=getattr(setting, "google_client_id", None),
+        google_client_secret=getattr(setting, "google_client_secret", None),
+        telegram_bot_username=getattr(setting, "telegram_bot_username", None),
+        telegram_bot_token=getattr(setting, "telegram_bot_token", None),
         updated_at=setting.updated_at,
     )
 
@@ -254,6 +266,10 @@ async def update_admin_settings(
         auto_backup=setting.auto_backup,
         email_notif=setting.email_notif,
         webhook_url=setting.webhook_url,
+        google_client_id=getattr(setting, "google_client_id", None),
+        google_client_secret=getattr(setting, "google_client_secret", None),
+        telegram_bot_username=getattr(setting, "telegram_bot_username", None),
+        telegram_bot_token=getattr(setting, "telegram_bot_token", None),
         updated_at=setting.updated_at,
     )
 

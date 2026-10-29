@@ -99,6 +99,7 @@ async def lifespan(app: FastAPI):
                         ("google_client_id", "VARCHAR(255)"),
                         ("google_client_secret", "VARCHAR(255)"),
                         ("telegram_bot_username", "VARCHAR(128)"),
+                        ("telegram_bot_token", "VARCHAR(255)"),
                     ]:
                         if col_name not in cols:
                             sync_conn.execute(text(f"ALTER TABLE system_settings ADD COLUMN {col_name} {col_type} DEFAULT NULL"))
