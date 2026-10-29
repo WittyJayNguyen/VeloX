@@ -531,6 +531,7 @@ def build_token_response(user: User) -> dict:
             "avatar_url": user.avatar_url,
             "credit_balance": user.credit_balance or 0,
             "tier": getattr(user, "tier", "FREE"),
+            "subscription_expires_at": user.subscription_expires_at.isoformat() if getattr(user, "subscription_expires_at", None) else None,
             "is_active": user.is_active,
             "roles": roles,
             "permissions": list(perms_set),

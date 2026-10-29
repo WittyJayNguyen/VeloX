@@ -48,6 +48,7 @@ class UserRead(BaseModel):
     avatar_url: Optional[str] = None
     credit_balance: Optional[int] = 0
     tier: Optional[str] = "FREE"
+    subscription_expires_at: Optional[str] = None
     is_active: bool
     roles: List[str] = []
     permissions: List[str] = []

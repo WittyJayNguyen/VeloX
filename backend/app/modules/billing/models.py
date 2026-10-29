@@ -27,6 +27,7 @@ class CreditPackage(Base, UUIDMixin, TimestampMixin):
     is_popular = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     sort_order = Column(Integer, default=0)
+    duration_days = Column(Integer, default=30, nullable=True)
 
 
 class PaymentTransaction(Base, UUIDMixin, TimestampMixin):

@@ -219,6 +219,13 @@ async def get_current_user(
             detail="Tài khoản của bạn đã bị tạm khóa hoặc vô hiệu hóa bởi Ban Quản Trị"
         )
 
+    # Enforce 30-day subscription expiration
+    try:
+        from app.modules.billing.subscription_service import enforce_user_subscription
+        await enforce_user_subscription(user, db)
+    except Exception:
+        pass
+
     # Check lockout window
     if user.locked_until:
         try:

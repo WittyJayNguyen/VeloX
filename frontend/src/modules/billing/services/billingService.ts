@@ -105,6 +105,8 @@ export const billingService = {
     credits: number;
     method: string;
     note?: string;
+    tier?: string;
+    duration_days?: number;
   }): Promise<any> => {
     const res = await apiClient.post<any>('/billing/admin/manual-topup', payload);
     return res.data?.data || res.data;

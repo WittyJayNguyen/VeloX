@@ -1,5 +1,5 @@
 """VeloX AI Gateway — User, Role & Audit Models (Production Grade)"""
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table, Text
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table, Text, DateTime
 from sqlalchemy.orm import relationship
 from app.common.base_model import Base, UUIDMixin, TimestampMixin
 import app.modules.billing.models  # ensure UserWallet mapper is registered
@@ -35,6 +35,7 @@ class User(Base, UUIDMixin, TimestampMixin):
 
     # Production Security & Ops Fields
     tier = Column(String(32), default="FREE", nullable=False)          # 'FREE', 'PRO', 'ENTERPRISE'
+    subscription_expires_at = Column(DateTime(timezone=True), nullable=True, index=True)
     failed_login_attempts = Column(Integer, default=0, nullable=False)
     locked_until = Column(String(64), nullable=True)                  # ISO timestamp if temporarily locked
     last_login_at = Column(String(64), nullable=True)

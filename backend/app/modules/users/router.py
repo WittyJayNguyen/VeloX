@@ -601,6 +601,7 @@ async def list_users(
             "email": u.email,
             "role": primary_role,
             "tier": getattr(u, "tier", "FREE"),
+            "subscriptionExpiresAt": u.subscription_expires_at.isoformat() if getattr(u, "subscription_expires_at", None) else None,
             "creditBalance": u.credit_balance or 0,
             "isActive": u.is_active,
             "registeredDate": u.created_at.strftime("%Y-%m-%d") if u.created_at else "2026-01-01",

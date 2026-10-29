@@ -48,6 +48,7 @@ class CreditPackageCreateRequest(BaseModel):
     is_popular: Optional[bool] = False
     is_active: Optional[bool] = True
     sort_order: Optional[int] = 0
+    duration_days: Optional[int] = 30
 
 
 class CreditPackageUpdateRequest(BaseModel):
@@ -63,6 +64,7 @@ class CreditPackageUpdateRequest(BaseModel):
     is_popular: Optional[bool] = None
     is_active: Optional[bool] = None
     sort_order: Optional[int] = None
+    duration_days: Optional[int] = None
 
 
 def serialize_package(p: CreditPackage) -> dict:
@@ -86,6 +88,7 @@ def serialize_package(p: CreditPackage) -> dict:
         "is_active": p.is_active,
         "tag_badge": p.tag_badge or "",
         "sort_order": p.sort_order or 0,
+        "duration_days": getattr(p, "duration_days", 30) or 30,
         "features": parsed_features,
         "created_at": p.created_at.isoformat() if p.created_at else None,
         "updated_at": p.updated_at.isoformat() if p.updated_at else None,
@@ -198,6 +201,8 @@ class ManualTopupRequest(BaseModel):
     credits: int = Field(..., ge=1)
     method: str = Field(default="VietQR")
     note: Optional[str] = "Nạp tiền thủ công từ Admin"
+    tier: Optional[str] = None
+    duration_days: Optional[int] = 30
 
 
 @router.get("/admin/transactions")
@@ -294,6 +299,12 @@ async def manual_topup(
     balance_before = target_user.credit_balance or 0
     target_user.credit_balance = balance_before + body.credits
 
+    from app.modules.billing.subscription_service import extend_subscription
+    if body.duration_days and body.duration_days > 0:
+        extend_subscription(target_user, duration_days=body.duration_days, new_tier=body.tier)
+    elif body.tier:
+        target_user.tier = body.tier
+
     # Update or create wallet
     w_res = await db.execute(select(UserWallet).where(UserWallet.user_id == target_user.id))
     wallet = w_res.scalar_one_or_none()
@@ -341,7 +352,20 @@ async def manual_topup(
         "transaction_code": tx_code,
         "new_balance": target_user.credit_balance,
         "email": target_user.email,
+        "tier": target_user.tier,
+        "subscription_expires_at": target_user.subscription_expires_at.isoformat() if target_user.subscription_expires_at else None,
     }, message=f"Đã nạp thành công {body.credits:,} Credits cho {target_user.email}")
+
+
+@router.post("/admin/subscriptions/enforce-expired")
+async def trigger_enforce_expired_subscriptions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("users.manage")),
+):
+    """Admin triggers batch scan to downgrade all expired subscriptions and revoke excess credits."""
+    from app.modules.billing.subscription_service import batch_enforce_all_expired_subscriptions
+    processed = await batch_enforce_all_expired_subscriptions(db)
+    return ok(data={"processed_count": processed}, message=f"Đã quét và hạ gói {processed} tài khoản hết hạn chu kỳ")
 
 
 @router.get("/check-payment-status")
@@ -691,6 +715,10 @@ async def process_single_sepay_transaction(
     balance_before = user_obj.credit_balance or 0
     new_balance = balance_before + added_credits
     user_obj.credit_balance = new_balance
+
+    from app.modules.billing.subscription_service import extend_subscription
+    days_to_add = getattr(pkg, "duration_days", 30) or 30
+    extend_subscription(user_obj, duration_days=days_to_add, new_tier=new_tier)
 
     audit = CreditAuditLog(
         user_id=user_obj.id,

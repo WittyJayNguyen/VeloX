@@ -147,6 +147,7 @@ export interface UserDto {
   email: string;
   role: string;
   tier?: string;
+  subscriptionExpiresAt?: string;
   creditBalance: number;
   isActive: boolean;
   registeredDate: string;
