@@ -20,6 +20,27 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=8)
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: Optional[str] = None      # Google ID Token (GIS JWT)
+    access_token: Optional[str] = None    # Google OAuth access token
+    code: Optional[str] = None            # OAuth auth code
+    redirect_uri: Optional[str] = None
+    email: Optional[str] = None
+    google_id: Optional[str] = None
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class TelegramAuthRequest(BaseModel):
+    id: str | int
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    username: Optional[str] = None
+    photo_url: Optional[str] = None
+    auth_date: Optional[int] = None
+    hash: Optional[str] = None
+
+
 class UserRead(BaseModel):
     id: str
     email: str

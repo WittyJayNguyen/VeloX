@@ -54,6 +54,46 @@ export const authService = {
     }
   },
 
+  loginWithGoogle: async (payload: import('../types/auth.types').GoogleAuthPayload): Promise<TokenResponse> => {
+    try {
+      const res = await apiClient.post('/auth/google', payload);
+      const data = res.data?.data || res.data;
+      if (!data?.access_token || !data?.user) {
+        throw new Error('Dữ liệu phản hồi Google không hợp lệ');
+      }
+      return data as TokenResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string; message?: string } }; message?: string };
+      const serverMsg = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.message || axiosErr?.message;
+      throw new Error(serverMsg || 'Xác thực Google thất bại.');
+    }
+  },
+
+  loginWithTelegram: async (payload: import('../types/auth.types').TelegramAuthPayload): Promise<TokenResponse> => {
+    try {
+      const res = await apiClient.post('/auth/telegram', payload);
+      const data = res.data?.data || res.data;
+      if (!data?.access_token || !data?.user) {
+        throw new Error('Dữ liệu phản hồi Telegram không hợp lệ');
+      }
+      return data as TokenResponse;
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string; message?: string } }; message?: string };
+      const serverMsg = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.message || axiosErr?.message;
+      throw new Error(serverMsg || 'Xác thực Telegram thất bại.');
+    }
+  },
+
+  getSocialConfig: async (): Promise<import('../types/auth.types').SocialConfigResponse> => {
+    try {
+      const res = await apiClient.get('/auth/social/config');
+      const data = res.data?.data || res.data;
+      return data as import('../types/auth.types').SocialConfigResponse;
+    } catch {
+      return { google_client_id: '', telegram_bot_username: '' };
+    }
+  },
+
   logout: async (): Promise<void> => {
     try {
       await apiClient.post('/auth/logout');

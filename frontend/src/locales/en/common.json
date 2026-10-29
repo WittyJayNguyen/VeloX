@@ -64,7 +64,22 @@
     "register_link": "Sign Up here",
     "or": "or",
     "login_error": "Invalid email or password",
-    "register_error": "Registration failed. Please try again."
+    "register_error": "Registration failed. Please try again.",
+    "or_continue_with": "Or continue with",
+    "continue_with_google": "Continue with Google",
+    "continue_with_telegram": "Continue with Telegram",
+    "telegram_modal_title": "Authenticate with Telegram",
+    "telegram_modal_desc": "Automatically logs in or creates a new account if it doesn't exist.",
+    "telegram_username_or_id": "Telegram Username or ID",
+    "telegram_name": "Display Name (Optional)",
+    "telegram_quick_btn": "Sign In / Register with Telegram",
+    "social_auth_in_progress": "Authenticating details...",
+    "social_auth_failed": "Authentication failed. Please try again.",
+    "google_enter_email_title": "Sign In with Google",
+    "google_enter_email_desc": "Automatically registers if account doesn't exist, or logs in if it exists.",
+    "google_email_placeholder": "Enter Gmail address...",
+    "google_name_placeholder": "Google Full Name",
+    "google_quick_btn": "Confirm with Google"
   },
   "common": {
     "loading": "Loading...",

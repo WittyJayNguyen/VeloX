@@ -43,3 +43,27 @@ export interface ChangePasswordPayload {
   old_password: string;
   new_password: string;
 }
+
+export interface GoogleAuthPayload {
+  credential?: string;
+  access_token?: string;
+  email?: string;
+  google_id?: string;
+  full_name?: string;
+  avatar_url?: string;
+}
+
+export interface TelegramAuthPayload {
+  id: string | number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date?: number;
+  hash?: string;
+}
+
+export interface SocialConfigResponse {
+  google_client_id: string;
+  telegram_bot_username: string;
+}

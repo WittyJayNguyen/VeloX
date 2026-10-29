@@ -64,7 +64,22 @@
     "register_link": "こちらから新規登録",
     "or": "または",
     "login_error": "メールアドレスまたはパスワードが正しくありません",
-    "register_error": "登録に失敗しました。もう一度お試しください。"
+    "register_error": "登録に失敗しました。もう一度お試しください。",
+    "or_continue_with": "または次で続行",
+    "continue_with_google": "Google で続行",
+    "continue_with_telegram": "Telegram で続行",
+    "telegram_modal_title": "Telegram で認証",
+    "telegram_modal_desc": "アカウントが存在しない場合は自動で登録、存在する場合はログインします。",
+    "telegram_username_or_id": "Telegram ユーザー名または ID",
+    "telegram_name": "表示名（任意）",
+    "telegram_quick_btn": "Telegram でログイン / 登録",
+    "social_auth_in_progress": "認証処理中...",
+    "social_auth_failed": "認証に失敗しました。再試行してください。",
+    "google_enter_email_title": "Google でログイン",
+    "google_enter_email_desc": "アカウントが未登録の場合は自動登録、登録済みの場合はログインします。",
+    "google_email_placeholder": "Gmail アドレスを入力...",
+    "google_name_placeholder": "Google 登録名",
+    "google_quick_btn": "Google で確定"
   },
   "common": {
     "loading": "読み込み中...",

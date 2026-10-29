@@ -26,6 +26,8 @@ class SystemSetting(Base):
     auto_backup = Column(Boolean, default=True, nullable=False)
     email_notif = Column(Boolean, default=True, nullable=False)
     webhook_url = Column(String(512), nullable=True)
+    google_client_id = Column(String(255), nullable=True)
+    telegram_bot_username = Column(String(128), nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
