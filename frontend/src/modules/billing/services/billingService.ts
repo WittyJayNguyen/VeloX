@@ -80,14 +80,39 @@ export const billingService = {
     return billingService.getPublicPackages();
   },
 
-  // ─── Transactions ───
-  getTransactions: async (): Promise<TransactionDto[]> => {
+  // ─── Admin Wallet & Transactions ───
+  getAdminTransactions: async (): Promise<any[]> => {
     try {
-      const res = await apiClient.get<any>('/billing/transactions');
+      const res = await apiClient.get<any>('/billing/admin/transactions');
       return Array.isArray(res.data) ? res.data : (res.data?.data || []);
     } catch {
       return [];
     }
+  },
+
+  getAdminCashFlow: async (): Promise<any[]> => {
+    try {
+      const res = await apiClient.get<any>('/billing/admin/cashflow');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    } catch {
+      return [];
+    }
+  },
+
+  manualTopUp: async (payload: {
+    email: string;
+    amount_vnd: number;
+    credits: number;
+    method: string;
+    note?: string;
+  }): Promise<any> => {
+    const res = await apiClient.post<any>('/billing/admin/manual-topup', payload);
+    return res.data?.data || res.data;
+  },
+
+  // ─── Legacy aliases for backward compatibility ───
+  getTransactions: async (): Promise<TransactionDto[]> => {
+    return billingService.getAdminTransactions();
   },
 
   refundTransaction: async (id: string): Promise<void> => {

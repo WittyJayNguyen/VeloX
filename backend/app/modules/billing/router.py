@@ -21,7 +21,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user, require_super_admin, require_permission
 from app.common.responses import ok
 from app.modules.users.models import User, CreditAuditLog
-from app.modules.billing.models import CreditPackage, PaymentTransaction, BankAccount
+from app.modules.billing.models import CreditPackage, PaymentTransaction, BankAccount, UserWallet
 from app.modules.users.router import get_client_ip
 
 router = APIRouter(prefix="/billing", tags=["Billing & Top-Up"])
@@ -190,6 +190,158 @@ async def get_my_orders(
         })
 
     return ok(data=orders)
+
+
+class ManualTopupRequest(BaseModel):
+    email: str
+    amount_vnd: int = Field(..., ge=0)
+    credits: int = Field(..., ge=1)
+    method: str = Field(default="VietQR")
+    note: Optional[str] = "Nạp tiền thủ công từ Admin"
+
+
+@router.get("/admin/transactions")
+@router.get("/transactions")
+async def get_admin_transactions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("wallet.view")),
+):
+    """List all transactions for admin wallet & history monitoring."""
+    stmt = (
+        select(
+            PaymentTransaction,
+            User.email.label("user_email"),
+            User.full_name.label("user_name"),
+            CreditPackage.name.label("package_name"),
+        )
+        .outerjoin(User, PaymentTransaction.user_id == User.id)
+        .outerjoin(CreditPackage, PaymentTransaction.package_id == CreditPackage.id)
+        .order_by(desc(PaymentTransaction.created_at))
+        .limit(200)
+    )
+    res = await db.execute(stmt)
+    records = res.all()
+
+    items = []
+    for tx, u_email, u_name, pkg_name in records:
+        method = tx.payment_gateway or "VietQR"
+        status_val = tx.status or "SUCCESS"
+        if status_val in ["PAID", "COMPLETED"]:
+            status_val = "SUCCESS"
+
+        items.append({
+            "id": tx.transaction_code or tx.id,
+            "rawId": tx.id,
+            "userEmail": u_email or "Khách Vãng Lai",
+            "userName": u_name or "",
+            "packageName": pkg_name or f"Nạp {int(tx.credits_credited or 0):,} Credit",
+            "amountVnd": int(tx.amount_vnd or 0),
+            "creditsGiven": int(tx.credits_credited or 0),
+            "method": method,
+            "status": status_val,
+            "createdAt": tx.created_at.strftime("%Y-%m-%d %H:%M") if tx.created_at else "",
+        })
+    return ok(data=items)
+
+
+@router.get("/admin/cashflow")
+async def get_admin_cashflow(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("wallet.view")),
+):
+    """List ledger entries / balance movements across the system."""
+    stmt = (
+        select(
+            CreditAuditLog,
+            User.email.label("user_email"),
+        )
+        .outerjoin(User, CreditAuditLog.user_id == User.id)
+        .order_by(desc(CreditAuditLog.created_at))
+        .limit(200)
+    )
+    res = await db.execute(stmt)
+    records = res.all()
+
+    items = []
+    for log, u_email in records:
+        log_type = "TOPUP" if log.delta > 0 else "CONSUME"
+        items.append({
+            "id": log.id,
+            "type": log_type,
+            "amount": abs(log.delta),
+            "balanceAfter": log.balance_after,
+            "description": f"{log.reason} ({u_email or 'Hệ thống'})",
+            "userEmail": u_email or "",
+            "createdAt": log.created_at.strftime("%Y-%m-%d %H:%M") if log.created_at else "",
+        })
+    return ok(data=items)
+
+
+@router.post("/admin/manual-topup")
+async def manual_topup(
+    body: ManualTopupRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("wallet.topup_manual")),
+):
+    """Admin manually adds credits/money to customer account and creates ledger + transaction."""
+    email_clean = body.email.strip().lower()
+    res = await db.execute(select(User).where(User.email.ilike(email_clean)))
+    target_user = res.scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy tài khoản với email '{body.email}'")
+
+    balance_before = target_user.credit_balance or 0
+    target_user.credit_balance = balance_before + body.credits
+
+    # Update or create wallet
+    w_res = await db.execute(select(UserWallet).where(UserWallet.user_id == target_user.id))
+    wallet = w_res.scalar_one_or_none()
+    if wallet:
+        wallet.balance_credits = (wallet.balance_credits or 0) + body.credits
+        wallet.total_deposited = (wallet.total_deposited or 0) + body.amount_vnd
+    else:
+        wallet = UserWallet(
+            user_id=target_user.id,
+            balance_credits=target_user.credit_balance,
+            total_deposited=body.amount_vnd,
+            total_spent=0,
+        )
+        db.add(wallet)
+
+    # Create transaction
+    tx_code = f"MAN_{datetime.now().strftime('%Y%m%d%H%M%S')}_{str(uuid.uuid4())[:4].upper()}"
+    tx = PaymentTransaction(
+        id=str(uuid.uuid4()),
+        transaction_code=tx_code,
+        user_id=target_user.id,
+        amount_vnd=body.amount_vnd,
+        credits_credited=body.credits,
+        payment_gateway=body.method or "Bank_Transfer",
+        status="SUCCESS",
+    )
+    db.add(tx)
+
+    # Create CreditAuditLog
+    c_log = CreditAuditLog(
+        id=str(uuid.uuid4()),
+        user_id=target_user.id,
+        actor_id=current_user.id,
+        actor_email=current_user.email,
+        delta=body.credits,
+        balance_before=balance_before,
+        balance_after=target_user.credit_balance,
+        reason=body.note or f"Nạp thủ công ({tx_code})",
+        ip_address=get_client_ip(request),
+    )
+    db.add(c_log)
+
+    await db.commit()
+    return ok(data={
+        "transaction_code": tx_code,
+        "new_balance": target_user.credit_balance,
+        "email": target_user.email,
+    }, message=f"Đã nạp thành công {body.credits:,} Credits cho {target_user.email}")
 
 
 @router.get("/check-payment-status")
