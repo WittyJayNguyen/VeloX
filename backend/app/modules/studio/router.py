@@ -77,6 +77,25 @@ def save_media_file_if_base64(data_uri: str, file_prefix: str = "media") -> str:
         return data_uri
 
 
+def ensure_public_url(val: Optional[str], file_prefix: str = "media") -> Optional[str]:
+    """
+    Ensure a media reference (image/video/audio) is an absolute HTTPS public URL
+    that remote upstream AI providers (like Tuân Sử) can fetch directly.
+    """
+    if not val:
+        return None
+    val = val.strip()
+    if val.startswith("data:"):
+        # Save base64 payload to local disk first
+        saved_rel_path = save_media_file_if_base64(val, file_prefix=file_prefix)
+        if saved_rel_path and saved_rel_path.startswith("/"):
+            return f"https://velox.nexoratech.com.vn{saved_rel_path}"
+        return val
+    if val.startswith("/"):
+        return f"https://velox.nexoratech.com.vn{val}"
+    return val
+
+
 DEFAULT_CREDIT_COSTS = {
     "CHAT": 15,
     "IMAGE": 35,
@@ -654,6 +673,12 @@ async def generate_video_from_upstream(
     if not db:
         return None
     try:
+        # Pre-process media references into public URLs so upstream can fetch them
+        pub_image_url = ensure_public_url(image_url, file_prefix="start_frame")
+        pub_image_end_url = ensure_public_url(image_end_url, file_prefix="end_frame")
+        pub_video_url = ensure_public_url(video_url, file_prefix="ref_video")
+        pub_audio_url = ensure_public_url(audio_url, file_prefix="ref_audio")
+
         stmt = (
             select(ProviderCredential, ServicePool)
             .join(ServicePool, ProviderCredential.pool_id == ServicePool.id)
@@ -672,13 +697,18 @@ async def generate_video_from_upstream(
         if not pairs:
             return None
 
-        # Determine upstream target model name (Veo-3.1 is verified high-performance & reliable on Tuân Sử)
+        # Determine upstream target model name:
+        # If voice/audio reference is provided or seedance/speech requested, use seedance_2.0_fast (supports audio & frames)
         clean_code = (model_code or "").lower().strip()
-        target_model = model_code
-        if any(k in clean_code for k in ["grok", "veo", "meta", "seedance", "omni", "imagine"]):
+        has_audio = bool(pub_audio_url)
+        if has_audio or any(k in clean_code for k in ["seedance", "voice", "audio", "talk", "sound", "lipsync", "thoại", "giong"]):
+            target_model = "seedance_2.0_fast"
+        elif "veo" in clean_code:
             target_model = "Veo-3.1"
+        else:
+            target_model = "seedance_2.0_fast" if has_audio else "Veo-3.1"
 
-        # Valid seconds for Veo-3.1 are 4, 6, 8
+        # Valid seconds for the selected model:
         if target_model == "Veo-3.1":
             if seconds <= 4:
                 valid_seconds = 4
@@ -686,6 +716,9 @@ async def generate_video_from_upstream(
                 valid_seconds = 6
             else:
                 valid_seconds = 8
+        elif "seedance" in target_model:
+            allowed_sec = [5, 8, 10, 12, 15, 30]
+            valid_seconds = min(allowed_sec, key=lambda x: abs(x - seconds))
         else:
             valid_seconds = seconds
 
@@ -701,16 +734,16 @@ async def generate_video_from_upstream(
                 "seconds": valid_seconds,
                 "size": size or "1280x720",
             }
-            if image_url:
-                payload["image_url"] = image_url
-            if image_end_url:
-                payload["image_end_url"] = image_end_url
-            if video_url:
-                payload["video_url"] = video_url
-            if audio_url:
-                payload["audio_url"] = audio_url
+            if pub_image_url:
+                payload["image_url"] = pub_image_url
+            if pub_image_end_url:
+                payload["image_end_url"] = pub_image_end_url
+            if pub_video_url:
+                payload["video_url"] = pub_video_url
+            if pub_audio_url:
+                payload["audio_url"] = pub_audio_url
 
-            async with httpx.AsyncClient(timeout=httpx.Timeout(45.0, connect=10.0)) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=15.0)) as client:
                 try:
                     # Try /videos first (standard TuanSu docs), fallback to /video/generations
                     resp = None
@@ -731,10 +764,18 @@ async def generate_video_from_upstream(
                     if not task_id:
                         continue
 
-                    # Poll for video completion: up to 120 seconds (30 polls * 4s)
-                    for _ in range(30):
-                        await asyncio.sleep(4.0)
-                        poll_res = await client.get(f"{base_url}/videos/{task_id}", headers=headers)
+                    # Poll for video completion:
+                    # As requested: "không cần kiểm tra vì cứ bên kia bao h trả mình lấy thôi"
+                    # Keep waiting without premature timeout until provider completes or errors
+                    max_polls = 600  # Up to ~45 minutes
+                    for _ in range(max_polls):
+                        await asyncio.sleep(4.5)
+                        try:
+                            poll_res = await client.get(f"{base_url}/videos/{task_id}", headers=headers)
+                        except Exception as poll_err:
+                            print(f"[Studio Video Poll Warning]: {poll_err}")
+                            continue
+
                         if poll_res.status_code == 200:
                             p_data = poll_res.json()
                             p_status = p_data.get("status")
@@ -751,7 +792,7 @@ async def generate_video_from_upstream(
                                         v_url,
                                         headers={"Authorization": f"Bearer {cred.key_val}"},
                                         follow_redirects=True,
-                                        timeout=httpx.Timeout(90.0, connect=15.0)
+                                        timeout=httpx.Timeout(180.0, connect=20.0)
                                     )
                                     if dl_resp.status_code == 200 and len(dl_resp.content) > 1000:
                                         local_filename = f"video_{task_id}_{uuid.uuid4().hex[:8]}.mp4"
@@ -771,6 +812,8 @@ async def generate_video_from_upstream(
                             elif p_status in ["failed", "error"]:
                                 print(f"[Studio Video Task Failed]: {p_data.get('error')}")
                                 break
+                            elif p_status in ["queued", "in_progress", "processing"]:
+                                pass
                 except Exception as call_err:
                     print(f"[Studio Video Call Error]: {call_err}")
     except Exception as ex:
@@ -959,23 +1002,11 @@ async def generate_studio_media(
                 except Exception as ex:
                     print(f"[Studio Video Error]: Account '{cred.name}' error: {ex}. Trying next account...")
 
-        # 3. High fidelity video match with authentic user input frames as poster
-        prompt_lower = clean_prompt.lower()
-        matched_item = None
-        for item in CINEMATIC_VIDEOS:
-            if any(k in prompt_lower for k in item["keywords"]):
-                matched_item = item
-                break
-        if not matched_item:
-            idx = abs(hash(clean_prompt)) % len(CINEMATIC_VIDEOS)
-            matched_item = CINEMATIC_VIDEOS[idx]
-
-        return {
-            "output_url": matched_item["video_url"],
-            "poster_url": ref_image or end_frame or matched_item.get("poster_url"),
-            "render_seconds": 4.2,
-            "media_type": "VIDEO",
-        }
+        # 3. If upstream and session pools failed, do NOT return random pre-recorded video!
+        raise HTTPException(
+            status_code=500,
+            detail="Cổng AI Video từ chối hoặc đang bận từ nhà cung cấp. Vui lòng thử lại sau ít phút."
+        )
 
     elif job_type == "audio":
         voice_opt = options.get("voice", "Tiếng Việt · Hà Nội")
