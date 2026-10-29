@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   HiOutlineWallet,
@@ -8,8 +8,10 @@ import {
   HiOutlineCheckCircle,
   HiOutlineBanknotes,
   HiOutlinePlus,
+  HiOutlineArrowPath,
 } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
+import { billingService } from '../services/billingService';
 import { Input } from '@modules/core/design-system/Input';
 import { Select } from '@modules/core/design-system/Select';
 import { Modal } from '@modules/core/design-system/Modal';
@@ -40,46 +42,37 @@ export interface CashFlowRecord {
   createdAt: string;
 }
 
-const initialTopUpTx: TopUpTransaction[] = [];
-const initialCashFlow: CashFlowRecord[] = [];
-
 const WalletPage = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'topup' | 'cashflow'>('topup');
-  const [topUpList, setTopUpList] = useState<TopUpTransaction[]>(() => {
-    const s = localStorage.getItem('velox_topup_tx');
-    if (s) {
-      try {
-        const parsed = JSON.parse(s);
-        // Clean out legacy mock data if present
-        if (Array.isArray(parsed) && parsed.some((x: any) => x.id === 'TX-88219')) {
-          localStorage.removeItem('velox_topup_tx');
-          return [];
-        }
-        return parsed;
-      } catch {
-        return [];
+  const [topUpList, setTopUpList] = useState<TopUpTransaction[]>([]);
+  const [cashFlowList, setCashFlowList] = useState<CashFlowRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [txs, flow] = await Promise.all([
+        billingService.getAdminTransactions(),
+        billingService.getAdminCashFlow(),
+      ]);
+      if (Array.isArray(txs)) {
+        setTopUpList(txs);
       }
-    }
-    return initialTopUpTx;
-  });
-  const [cashFlowList, setCashFlowList] = useState<CashFlowRecord[]>(() => {
-    const s = localStorage.getItem('velox_cashflow_records');
-    if (s) {
-      try {
-        const parsed = JSON.parse(s);
-        // Clean out legacy mock data if present
-        if (Array.isArray(parsed) && parsed.some((x: any) => x.id === 'cf_1')) {
-          localStorage.removeItem('velox_cashflow_records');
-          return [];
-        }
-        return parsed;
-      } catch {
-        return [];
+      if (Array.isArray(flow)) {
+        setCashFlowList(flow);
       }
+    } catch (err) {
+      console.error('Failed to load wallet data:', err);
+    } finally {
+      setLoading(false);
     }
-    return initialCashFlow;
-  });
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMethod, setFilterMethod] = useState('ALL');
@@ -99,40 +92,27 @@ const WalletPage = () => {
   const currentBalance = Math.max(0, totalTopUp - totalConsume);
   const successTxCount = topUpList.filter((t) => t.status === 'SUCCESS').length;
 
-  const handleManualTopUp = (e: React.FormEvent) => {
+  const handleManualTopUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!modalEmail.trim()) return;
 
-    const newTx: TopUpTransaction = {
-      id: `TX-${Math.floor(10000 + Math.random() * 90000)}`,
-      userEmail: modalEmail.trim(),
-      packageName: 'Cộng Thủ Công (Admin)',
-      amountVnd: Number(modalAmount),
-      creditsGiven: Number(modalCredits),
-      method: modalMethod,
-      status: 'SUCCESS',
-      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-    };
-
-    const newFlow: CashFlowRecord = {
-      id: `cf_${Date.now()}`,
-      type: 'TOPUP',
-      amount: Number(modalAmount),
-      balanceAfter: currentBalance + Number(modalAmount),
-      description: `Nạp thủ công cho ${modalEmail} (${newTx.id})`,
-      createdAt: newTx.createdAt,
-    };
-
-    const updatedTx = [newTx, ...topUpList];
-    const updatedFlow = [newFlow, ...cashFlowList];
-
-    setTopUpList(updatedTx);
-    setCashFlowList(updatedFlow);
-    localStorage.setItem('velox_topup_tx', JSON.stringify(updatedTx));
-    localStorage.setItem('velox_cashflow_records', JSON.stringify(updatedFlow));
-
-    setShowTopUpModal(false);
-    setModalEmail('');
+    setSubmitting(true);
+    try {
+      await billingService.manualTopUp({
+        email: modalEmail.trim(),
+        amount_vnd: Number(modalAmount),
+        credits: Number(modalCredits),
+        method: modalMethod,
+        note: `Nạp thủ công Admin (${Number(modalCredits).toLocaleString()} credits)`,
+      });
+      setShowTopUpModal(false);
+      setModalEmail('');
+      await loadData();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || err.message || 'Không thể thực hiện nạp tiền');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // TopUp table columns
@@ -285,6 +265,9 @@ const WalletPage = () => {
           />
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button variant="outline" size="md" onClick={loadData} loading={loading}>
+              <HiOutlineArrowPath size={16} /> Làm Mới
+            </Button>
             <Button variant="primary" size="md" onClick={() => setShowTopUpModal(true)}>
               <HiOutlinePlus size={16} /> {t('admin.wallet.btn_manual_topup', 'Nạp Tiền Thủ Công')}
             </Button>
@@ -358,10 +341,10 @@ const WalletPage = () => {
         size="md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setShowTopUpModal(false)}>
+            <Button variant="secondary" onClick={() => setShowTopUpModal(false)} disabled={submitting}>
               Hủy
             </Button>
-            <Button variant="primary" onClick={handleManualTopUp}>
+            <Button variant="primary" onClick={handleManualTopUp} loading={submitting}>
               Xác Nhận Nạp Tiền
             </Button>
           </>
