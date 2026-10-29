@@ -148,9 +148,41 @@ export const SubscriptionPage: React.FC = () => {
                 {isAuthenticated ? (user?.tier || 'Thành Viên VeloX') : 'Khám Phá Toàn Diện 150+ Mô Hình AI'}
               </div>
               <div style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '4px', lineHeight: 1.45 }}>
-                {isAuthenticated ? (
-                  <>Số dư hiện tại: <strong style={{ color: '#38bdf8' }}>💎 {(user?.credit_balance ?? 0).toLocaleString()} Credits</strong></>
-                ) : (
+                {isAuthenticated ? (() => {
+                  const hasSub = Boolean(user?.subscription_expires_at);
+                  let subDays = 0;
+                  let subFormatted = '';
+                  let isExpired = false;
+                  if (hasSub && user?.subscription_expires_at) {
+                    const d = new Date(user.subscription_expires_at);
+                    subFormatted = d.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                    const diff = d.getTime() - Date.now();
+                    subDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    isExpired = subDays <= 0;
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginTop: 4 }}>
+                      <span>Số dư hiện tại: <strong style={{ color: '#38bdf8' }}>💎 {(user?.credit_balance ?? 0).toLocaleString()} Credits</strong></span>
+                      {hasSub && (
+                        <span style={{
+                          background: isExpired ? 'rgba(244, 63, 94, 0.15)' : subDays <= 5 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                          border: `1px solid ${isExpired ? 'rgba(244, 63, 94, 0.35)' : subDays <= 5 ? 'rgba(245, 158, 11, 0.35)' : 'rgba(16, 185, 129, 0.35)'}`,
+                          padding: '3px 10px',
+                          borderRadius: 8,
+                          color: isExpired ? '#f43f5e' : subDays <= 5 ? '#fbbf24' : '#34d399',
+                          fontWeight: 600,
+                          fontSize: '0.82rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                        }}>
+                          ⏱️ {isExpired ? 'Hết hạn chu kỳ' : `Còn ${subDays} ngày (Hết hạn: ${subFormatted})`}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })() : (
                   'Nạp Credit linh hoạt, trải nghiệm các mô hình AI đỉnh cao thế giới (Claude 3.5 Sonnet, Midjourney, Kling, FLUX, Veo 3.1).'
                 )}
               </div>
