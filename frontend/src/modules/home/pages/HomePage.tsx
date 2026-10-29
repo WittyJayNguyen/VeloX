@@ -586,6 +586,12 @@ console.log(response.choices[0].message.content);`;
           <div className={styles.ambientGlow1} />
           <div className={styles.ambientGlow2} />
           <div className={styles.cyberGrid} />
+          <div className={styles.heroOrbitTrack}>
+            <div className={styles.orbitRing1} />
+            <div className={styles.orbitComet1} />
+            <div className={styles.orbitRing2} />
+            <div className={styles.orbitComet2} />
+          </div>
           <div className={styles.particleSpark1} />
           <div className={styles.particleSpark2} />
         </div>

@@ -237,6 +237,87 @@ $font-mono: 'JetBrains Mono', monospace;
   100% { transform: translateY(10px) scale(0.9); opacity: 0.5; }
 }
 
+// ── Fluid Cosmic Orbit Track & Luminous Comets Around Hero ──
+.heroOrbitTrack {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  width: 960px;
+  height: 540px;
+  transform: translate(-50%, -50%) perspective(1100px) rotateX(66deg) rotateZ(-15deg);
+  pointer-events: none;
+  z-index: 1;
+
+  @media (max-width: 992px) {
+    width: 680px;
+    height: 400px;
+  }
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.orbitRing1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 107, 53, 0.22);
+  box-shadow: 0 0 35px rgba(255, 107, 53, 0.08), inset 0 0 35px rgba(56, 189, 248, 0.05);
+}
+
+.orbitRing2 {
+  position: absolute;
+  inset: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.orbitComet1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  border-radius: 50%;
+  background: #ff6b35;
+  box-shadow: 0 0 16px 4px #ff6b35, 0 0 32px 8px rgba(255, 46, 166, 0.6);
+  offset-path: ellipse(480px 270px at center);
+  animation: cometOrbit 12s linear infinite;
+
+  @media (max-width: 992px) {
+    offset-path: ellipse(340px 200px at center);
+  }
+}
+
+.orbitComet2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 14px 4px #38bdf8, 0 0 28px 6px rgba(192, 132, 252, 0.7);
+  offset-path: ellipse(438px 228px at center);
+  animation: cometOrbit 9s linear infinite reverse;
+
+  @media (max-width: 992px) {
+    offset-path: ellipse(298px 158px at center);
+  }
+}
+
+@keyframes cometOrbit {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
 .heroContainer {
   position: relative;
   z-index: 2;
@@ -523,13 +604,62 @@ $font-mono: 'JetBrains Mono', monospace;
   max-width: 440px;
   border-radius: 22px;
   padding: 1.5px;
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.5) 0%, rgba(255, 46, 166, 0.35) 50%, rgba(56, 189, 248, 0.45) 100%);
-  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 107, 53, 0.18);
+  overflow: hidden;
+  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.9), 0 0 35px rgba(255, 107, 53, 0.15);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.06);
+
+  // Rotating energetic beam running smoothly around the card border
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 250deg,
+      rgba(56, 189, 248, 0.6) 295deg,
+      rgba(255, 46, 166, 0.85) 330deg,
+      #ff6b35 360deg
+    );
+    animation: rotateBorderBeam 4.5s linear infinite;
+    z-index: 0;
+  }
+
+  // Soft neon halo that radiates outward as the beam spins
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 260deg,
+      rgba(56, 189, 248, 0.35) 305deg,
+      rgba(255, 46, 166, 0.6) 335deg,
+      #ff6b35 360deg
+    );
+    filter: blur(20px);
+    animation: rotateBorderBeam 4.5s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.85;
+  }
 
   &:hover {
-    box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.95), 0 0 50px rgba(255, 107, 53, 0.28);
+    box-shadow: 0 25px 75px -10px rgba(0, 0, 0, 0.95), 0 0 50px rgba(255, 107, 53, 0.32);
     transform: translateY(-3px);
+
+    &::after {
+      opacity: 1;
+      filter: blur(26px);
+    }
   }
 
   @media (max-width: 640px) {
@@ -538,7 +668,18 @@ $font-mono: 'JetBrains Mono', monospace;
   }
 }
 
+@keyframes rotateBorderBeam {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .interactiveCard {
+  position: relative;
+  z-index: 1;
   background: linear-gradient(180deg, #0e1424 0%, #070a12 100%);
   border-radius: 20.5px;
   padding: 1.15rem 1.25rem;
