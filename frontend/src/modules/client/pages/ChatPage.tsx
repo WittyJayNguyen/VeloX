@@ -6,7 +6,6 @@ import {
   HiOutlinePlus,
   HiOutlineTrash,
   HiOutlinePencilSquare,
-  HiOutlinePaperAirplane,
   HiOutlineSparkles,
   HiOutlineBars3,
   HiOutlineXMark,
@@ -15,8 +14,9 @@ import {
   HiOutlineClipboardDocument,
   HiOutlineAdjustmentsHorizontal,
   HiOutlineChevronDown,
-  HiOutlineStop,
   HiOutlineLightBulb,
+  HiArrowUp,
+  HiStop,
 } from 'react-icons/hi2';
 import { RiSparklingFill, RiOpenaiFill } from 'react-icons/ri';
 import { SiAnthropic, SiGoogle, SiMeta } from 'react-icons/si';
@@ -987,227 +987,161 @@ export const ChatPage: React.FC = () => {
 
         {/* Messages Pane */}
         <div className={styles.messagesPane}>
-          {activeSession.messages.length === 0 ? (
-            /* Empty State / Welcome Screen */
-            <div className={styles.emptyState}>
-              <div className={styles.welcomeGlowIcon}>
-                <RiSparklingFill size={34} />
-              </div>
-              <h2 className={styles.emptyStateTitle}>Hôm nay bạn cần VeloX AI hỗ trợ gì?</h2>
-              <p className={styles.emptyStateSubtitle}>
-                Trò chuyện trực tiếp cùng <strong>{currentModel.name}</strong> ({currentModel.provider}). Hãy
-                chọn một gợi ý bên dưới hoặc nhập câu hỏi bất kỳ để bắt đầu!
-              </p>
-
-              {/* Starter Prompt Cards */}
-              <div className={styles.startersGrid}>
-                <div
-                  className={styles.starterCard}
-                  onClick={() =>
-                    handleSendMessage(
-                      'Viết một hàm Python FastAPI đơn giản có xác thực JWT Bearer token và phân quyền RBAC.'
-                    )
-                  }
-                >
-                  <div className={styles.starterIcon}>💻</div>
-                  <div className={styles.starterTitle}>Lập trình & API Backend</div>
-                  <div className={styles.starterPrompt}>
-                    Viết một hàm Python FastAPI có xác thực JWT Bearer token và phân quyền RBAC.
-                  </div>
+          <div className={styles.messagesInner}>
+            {activeSession.messages.length === 0 ? (
+              /* Empty State / Welcome Screen */
+              <div className={styles.emptyState}>
+                <div className={styles.welcomeGlowIcon}>
+                  <RiSparklingFill size={26} />
                 </div>
+                <h2 className={styles.emptyStateTitle}>
+                  {t('chat.welcome_title', 'Hôm nay tôi có thể giúp gì cho bạn?')}
+                </h2>
+                <p className={styles.emptyStateSubtitle}>
+                  Trò chuyện trực tiếp cùng <strong>{currentModel.name}</strong> ({currentModel.provider}). Hãy
+                  chọn một gợi ý bên dưới hoặc bắt đầu nhập câu hỏi.
+                </p>
 
-                <div
-                  className={styles.starterCard}
-                  onClick={() =>
-                    handleSendMessage(
-                      'Lập kế hoạch ra mắt sản phẩm SaaS AI cho thị trường Việt Nam trong vòng 30 ngày.'
-                    )
-                  }
-                >
-                  <div className={styles.starterIcon}>📊</div>
-                  <div className={styles.starterTitle}>Chiến lược & Kế hoạch</div>
-                  <div className={styles.starterPrompt}>
-                    Lập kế hoạch ra mắt sản phẩm SaaS AI cho thị trường Việt Nam trong vòng 30 ngày.
-                  </div>
-                </div>
-
-                <div
-                  className={styles.starterCard}
-                  onClick={() =>
-                    handleSendMessage(
-                      'So sánh ưu nhược điểm giữa kiến trúc Microservices và Monolithic kèm ví dụ thực tế.'
-                    )
-                  }
-                >
-                  <div className={styles.starterIcon}>🧠</div>
-                  <div className={styles.starterTitle}>Tư duy & Phân tích Logic</div>
-                  <div className={styles.starterPrompt}>
-                    So sánh ưu nhược điểm giữa kiến trúc Microservices và Monolithic chi tiết.
-                  </div>
-                </div>
-
-                <div
-                  className={styles.starterCard}
-                  onClick={() =>
-                    handleSendMessage(
-                      'Soạn thảo kịch bản video ngắn 60 giây giới thiệu giải pháp AI Gateway cho doanh nghiệp.'
-                    )
-                  }
-                >
-                  <div className={styles.starterIcon}>✍️</div>
-                  <div className={styles.starterTitle}>Soạn thảo & Sáng tạo</div>
-                  <div className={styles.starterPrompt}>
-                    Soạn thảo kịch bản video ngắn 60 giây giới thiệu giải pháp AI Gateway cho khách hàng.
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Render Messages */
-            activeSession.messages.map((m) => (
-              <div
-                key={m.id}
-                className={`${styles.messageRow} ${
-                  m.role === 'user' ? styles.userRow : styles.assistantRow
-                }`}
-              >
-                <div className={styles.avatar}>
-                  {m.role === 'user' ? (
-                    'U'
-                  ) : (
-                    renderProviderIcon(m.provider || currentModel.provider, 18)
-                  )}
-                </div>
-
-                <div className={styles.messageBubble}>
-                  {m.role === 'assistant' && (
-                    <div className={styles.messageHeader}>
-                      <span className={styles.modelBadgeTag}>
-                        <HiOutlineSparkles size={14} />
-                        {m.model || currentModel.name}
-                      </span>
-                      {m.latency_ms !== undefined && (
-                        <span className={styles.latencyTag}>⚡ {(m.latency_ms / 1000).toFixed(2)}s</span>
-                      )}
+                {/* Starter Prompt Cards */}
+                <div className={styles.startersGrid}>
+                  <div
+                    className={styles.starterCard}
+                    onClick={() =>
+                      handleSendMessage(
+                        'Viết một hàm Python FastAPI đơn giản có xác thực JWT Bearer token và phân quyền RBAC.'
+                      )
+                    }
+                  >
+                    <div className={styles.starterIcon}>💻</div>
+                    <div className={styles.starterTitle}>Lập trình & API Backend</div>
+                    <div className={styles.starterPrompt}>
+                      Viết hàm Python FastAPI có xác thực JWT Bearer và phân quyền RBAC.
                     </div>
-                  )}
+                  </div>
 
-                  {renderMessageContent(m.content)}
+                  <div
+                    className={styles.starterCard}
+                    onClick={() =>
+                      handleSendMessage(
+                        'Lập kế hoạch ra mắt sản phẩm SaaS AI cho thị trường Việt Nam trong vòng 30 ngày.'
+                      )
+                    }
+                  >
+                    <div className={styles.starterIcon}>📊</div>
+                    <div className={styles.starterTitle}>Chiến lược & Kế hoạch</div>
+                    <div className={styles.starterPrompt}>
+                      Lập kế hoạch ra mắt sản phẩm SaaS AI cho thị trường trong 30 ngày.
+                    </div>
+                  </div>
 
-                  {m.role === 'assistant' && (
-                    <div className={styles.messageFooter}>
-                      <button
-                        type="button"
-                        className={styles.msgActionBtn}
-                        onClick={() => handleCopyMessage(m.id, m.content)}
-                        title="Sao chép tin nhắn"
-                      >
-                        {copiedMsgId === m.id ? (
-                          <>
-                            <HiOutlineCheck size={14} color="#10a37f" /> Đã chép
-                          </>
-                        ) : (
-                          <>
-                            <HiOutlineClipboardDocument size={14} /> Sao chép
-                          </>
+                  <div
+                    className={styles.starterCard}
+                    onClick={() =>
+                      handleSendMessage(
+                        'So sánh ưu nhược điểm giữa kiến trúc Microservices và Monolithic kèm ví dụ thực tế.'
+                      )
+                    }
+                  >
+                    <div className={styles.starterIcon}>🧠</div>
+                    <div className={styles.starterTitle}>Tư duy & Phân tích Logic</div>
+                    <div className={styles.starterPrompt}>
+                      So sánh chi tiết ưu nhược điểm Microservices vs Monolithic.
+                    </div>
+                  </div>
+
+                  <div
+                    className={styles.starterCard}
+                    onClick={() =>
+                      handleSendMessage(
+                        'Soạn thảo kịch bản video ngắn 60 giây giới thiệu giải pháp AI Gateway cho doanh nghiệp.'
+                      )
+                    }
+                  >
+                    <div className={styles.starterIcon}>✍️</div>
+                    <div className={styles.starterTitle}>Soạn thảo & Sáng tạo</div>
+                    <div className={styles.starterPrompt}>
+                      Soạn kịch bản video ngắn 60 giây giới thiệu giải pháp AI Gateway.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Render Messages */
+              activeSession.messages.map((m) =>
+                m.role === 'user' ? (
+                  <div key={m.id} className={`${styles.messageRow} ${styles.userRow}`}>
+                    <div className={styles.userBubble}>{m.content}</div>
+                  </div>
+                ) : (
+                  <div key={m.id} className={`${styles.messageRow} ${styles.assistantRow}`}>
+                    <div className={styles.avatar}>
+                      {renderProviderIcon(m.provider || currentModel.provider, 16)}
+                    </div>
+
+                    <div className={styles.assistantContent}>
+                      <div className={styles.messageHeader}>
+                        <span className={styles.modelBadgeTag}>
+                          {m.model || currentModel.name}
+                        </span>
+                        {m.latency_ms !== undefined && (
+                          <span className={styles.latencyTag}>⚡ {(m.latency_ms / 1000).toFixed(2)}s</span>
                         )}
-                      </button>
+                      </div>
+
+                      {renderMessageContent(m.content)}
+
+                      <div className={styles.messageFooter}>
+                        <button
+                          type="button"
+                          className={styles.msgActionBtn}
+                          onClick={() => handleCopyMessage(m.id, m.content)}
+                          title={t('chat.copy_btn', 'Sao chép')}
+                        >
+                          {copiedMsgId === m.id ? (
+                            <>
+                              <HiOutlineCheck size={14} color="#10a37f" />
+                              <span>{t('chat.copied', 'Đã chép')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <HiOutlineClipboardDocument size={14} />
+                              <span>{t('chat.copy_btn', 'Sao chép')}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-
-          {/* Generating Indicator */}
-          {isGenerating && (
-            <div className={`${styles.messageRow} ${styles.assistantRow}`}>
-              <div className={styles.avatar}>
-                {renderProviderIcon(currentModel.provider, 18)}
-              </div>
-              <div className={`${styles.messageBubble} ${styles.generatingBubble}`}>
-                <div className={styles.generatingRow}>
-                  <div className={styles.dots}>
-                    <span />
-                    <span />
-                    <span />
                   </div>
-                  <span>{currentModel.name} đang suy luận và xử lý câu trả lời...</span>
+                )
+              )
+            )}
+
+            {/* Generating Indicator */}
+            {isGenerating && (
+              <div className={`${styles.messageRow} ${styles.assistantRow}`}>
+                <div className={styles.avatar}>
+                  {renderProviderIcon(currentModel.provider, 16)}
+                </div>
+                <div className={styles.assistantContent}>
+                  <div className={styles.generatingRow}>
+                    <div className={styles.dots}>
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                    <span>{currentModel.name} đang suy nghĩ và phản hồi...</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        {/* ── BOTTOM AREA (INPUT & STRICT CHAT MODEL SELECTOR) ── */}
+        {/* ── BOTTOM AREA: CHATGPT FLOATING INPUT PILL ── */}
         <div className={styles.bottomArea}>
-          {/* Controls Bar Above Input */}
-          <div className={styles.controlsBar}>
-            <div className={styles.controlsLeft}>
-              {/* Bottom Model Picker Button */}
-              <button
-                type="button"
-                className={styles.bottomModelPickerBtn}
-                onClick={() => setIsModelModalOpen(true)}
-                title="Bấm để chọn Model Chat khác"
-              >
-                {renderProviderIcon(currentModel.provider, 14)}
-                <span>{currentModel.name}</span>
-                <HiOutlineChevronDown size={12} className={styles.chevronIcon} />
-              </button>
-
-              {/* Tone Selector */}
-              <div className={styles.toneSelector}>
-                <button
-                  type="button"
-                  className={activeSession.tone === 'creative' ? styles.active : ''}
-                  onClick={() => handleSelectTone('creative')}
-                  title="Sáng tạo cao (0.9)"
-                >
-                  Sáng tạo
-                </button>
-                <button
-                  type="button"
-                  className={activeSession.tone === 'balanced' ? styles.active : ''}
-                  onClick={() => handleSelectTone('balanced')}
-                  title="Cân bằng (0.7)"
-                >
-                  Cân bằng
-                </button>
-                <button
-                  type="button"
-                  className={activeSession.tone === 'precise' ? styles.active : ''}
-                  onClick={() => handleSelectTone('precise')}
-                  title="Chính xác logic (0.2)"
-                >
-                  Chính xác
-                </button>
-              </div>
-
-              {/* System Prompt Button */}
-              <button
-                type="button"
-                className={`${styles.sysPromptBtn} ${activeSession.system_prompt ? styles.hasSysPrompt : ''}`}
-                onClick={() => setIsSysPromptModalOpen(true)}
-                title="Cài đặt chỉ dẫn hệ thống (System Prompt)"
-              >
-                <HiOutlineAdjustmentsHorizontal size={13} />
-                <span>{activeSession.system_prompt ? 'Chỉ dẫn (Bật)' : 'Chỉ dẫn AI'}</span>
-              </button>
-            </div>
-
-            <div className={styles.controlsRight}>
-              <span className={styles.creditEstimationBadge}>
-                <RiSparklingFill size={12} color="#2dd4bf" />
-                {currentModel.credits}
-              </span>
-            </div>
-          </div>
-
-          {/* Input Card */}
-          <div className={styles.inputCard}>
+          <div className={styles.inputPillContainer}>
             {activeSession.system_prompt && (
               <div className={styles.systemPromptBanner}>
                 <HiOutlineLightBulb size={14} color="#38bdf8" />
@@ -1229,7 +1163,7 @@ export const ChatPage: React.FC = () => {
               className={styles.chatTextarea}
               placeholder={t(
                 'chat.input_placeholder',
-                'Hỏi bất kỳ điều gì hoặc yêu cầu viết code, phân tích... (Enter để gửi, Shift+Enter xuống dòng)'
+                'Nhắn tin cho VeloX AI... (Enter để gửi, Shift+Enter xuống dòng)'
               )}
               value={inputPrompt}
               onChange={handleTextareaChange}
@@ -1237,32 +1171,94 @@ export const ChatPage: React.FC = () => {
               rows={1}
             />
 
-            <div className={styles.inputActionsRow}>
-              <span className={styles.inputHint}>
-                Enter để gửi · Shift + Enter để xuống dòng
-              </span>
+            <div className={styles.pillBottomRow}>
+              <div className={styles.pillToolsLeft}>
+                {/* Model Picker Button */}
+                <button
+                  type="button"
+                  className={styles.bottomModelPickerBtn}
+                  onClick={() => setIsModelModalOpen(true)}
+                  title="Đổi mô hình AI"
+                >
+                  {renderProviderIcon(currentModel.provider, 14)}
+                  <span>{currentModel.name}</span>
+                  <HiOutlineChevronDown size={12} className={styles.chevronIcon} />
+                </button>
 
-              {isGenerating ? (
+                {/* Tone Selector */}
+                <div className={styles.toneSelector}>
+                  <button
+                    type="button"
+                    className={activeSession.tone === 'creative' ? styles.active : ''}
+                    onClick={() => handleSelectTone('creative')}
+                    title="Sáng tạo cao (0.9)"
+                  >
+                    {t('chat.tone_creative', 'Sáng tạo')}
+                  </button>
+                  <button
+                    type="button"
+                    className={activeSession.tone === 'balanced' ? styles.active : ''}
+                    onClick={() => handleSelectTone('balanced')}
+                    title="Cân bằng (0.7)"
+                  >
+                    {t('chat.tone_balanced', 'Cân bằng')}
+                  </button>
+                  <button
+                    type="button"
+                    className={activeSession.tone === 'precise' ? styles.active : ''}
+                    onClick={() => handleSelectTone('precise')}
+                    title="Chính xác logic (0.2)"
+                  >
+                    {t('chat.tone_precise', 'Chính xác')}
+                  </button>
+                </div>
+
+                {/* System Prompt Button */}
                 <button
                   type="button"
-                  className={`${styles.sendBtn} ${styles.stopBtn}`}
-                  onClick={handleStopGenerating}
-                  title="Dừng phản hồi"
+                  className={`${styles.sysPromptBtn} ${activeSession.system_prompt ? styles.hasSysPrompt : ''}`}
+                  onClick={() => setIsSysPromptModalOpen(true)}
+                  title="Cài đặt chỉ dẫn hệ thống (System Prompt)"
                 >
-                  <HiOutlineStop size={18} />
+                  <HiOutlineAdjustmentsHorizontal size={13} />
+                  <span>{activeSession.system_prompt ? 'Chỉ dẫn (Bật)' : 'Chỉ dẫn'}</span>
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.sendBtn}
-                  disabled={!inputPrompt.trim()}
-                  onClick={() => handleSendMessage()}
-                  title={t('chat.send_btn', 'Gửi')}
-                >
-                  <HiOutlinePaperAirplane size={18} />
-                </button>
-              )}
+              </div>
+
+              <div className={styles.pillToolsRight}>
+                <span className={styles.creditEstimationBadge} title="Chi phí sử dụng">
+                  <RiSparklingFill size={11} color="#10a37f" />
+                  {currentModel.credits}
+                </span>
+
+                {isGenerating ? (
+                  <button
+                    type="button"
+                    className={`${styles.circleSendBtn} ${styles.stopBtnActive}`}
+                    onClick={handleStopGenerating}
+                    title={t('chat.stop_btn', 'Dừng phản hồi')}
+                  >
+                    <HiStop size={16} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={`${styles.circleSendBtn} ${
+                      inputPrompt.trim() ? styles.sendBtnActive : styles.sendBtnDisabled
+                    }`}
+                    disabled={!inputPrompt.trim()}
+                    onClick={() => handleSendMessage()}
+                    title={t('chat.send_btn', 'Gửi')}
+                  >
+                    <HiArrowUp size={18} />
+                  </button>
+                )}
+              </div>
             </div>
+          </div>
+
+          <div className={styles.disclaimerText}>
+            {t('chat.disclaimer', 'VeloX AI có thể mắc sai sót. Hãy kiểm tra lại các thông tin quan trọng.')}
           </div>
         </div>
       </main>

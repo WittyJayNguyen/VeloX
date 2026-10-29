@@ -693,7 +693,9 @@
     "clear_all": "Clear all history",
     "out_of_credits_title": "Insufficient Credits",
     "out_of_credits_desc": "Please top up your credits to continue chatting with AI.",
-    "topup_btn": "Top Up Credits"
+    "topup_btn": "Top Up Credits",
+    "welcome_title": "What can I help with today?",
+    "disclaimer": "VeloX AI can make mistakes. Check important info."
   },
   "system": {
     "maintenance_active": "System Maintenance",

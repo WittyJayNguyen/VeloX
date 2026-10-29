@@ -686,7 +686,9 @@
     "clear_all": "전체 기록 삭제",
     "out_of_credits_title": "크레딧 잔액 부족",
     "out_of_credits_desc": "AI와 대화를 계속하려면 크레딧을 충전하세요.",
-    "topup_btn": "지금 충전하기"
+    "topup_btn": "지금 충전하기",
+    "welcome_title": "오늘 무엇을 도와드릴까요?",
+    "disclaimer": "VeloX AI는 실수를 할 수 있습니다. 중요한 정보를 확인하세요."
   },
   "system": {
     "maintenance_active": "시스템 점검 중",
