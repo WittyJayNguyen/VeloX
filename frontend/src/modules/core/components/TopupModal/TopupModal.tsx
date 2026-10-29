@@ -10,6 +10,7 @@ import {
   HiOutlineArrowLeft,
   HiOutlineArrowPath,
   HiOutlineCheck,
+  HiOutlineBolt,
 } from 'react-icons/hi2';
 import { RiSparklingFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
@@ -19,20 +20,30 @@ import styles from './TopupModal.module.scss';
 
 interface TopupOption {
   id: string;
+  name: string;
+  category: string;
   priceVnd: number;
   credits: number;
   bonusPercent: number;
   label: string;
+  tagBadge?: string;
+  durationDays?: number;
   popular?: boolean;
 }
 
 const TOPUP_OPTIONS: TopupOption[] = [
-  { id: 't50', priceVnd: 50000, credits: 400, bonusPercent: 0, label: 'Trải nghiệm' },
-  { id: 't100', priceVnd: 100000, credits: 1000, bonusPercent: 0, label: 'Tiêu chuẩn' },
-  { id: 't200', priceVnd: 200000, credits: 2000, bonusPercent: 10, label: 'BÁN CHẠY NHẤT', popular: true },
-  { id: 't500', priceVnd: 500000, credits: 5500, bonusPercent: 10, label: '+10% Thưởng' },
-  { id: 't1000', priceVnd: 1000000, credits: 12500, bonusPercent: 25, label: '+25% Thưởng' },
-  { id: 't2000', priceVnd: 2000000, credits: 27000, bonusPercent: 35, label: 'Super VIP' },
+  // Gói Thuê Bao Tháng (30 Ngày)
+  { id: 'sub-starter', name: 'Creator Standard', category: 'STARTER', priceVnd: 189000, credits: 2000, bonusPercent: 0, label: 'Creator Standard', durationDays: 30 },
+  { id: 'sub-pro', name: 'Pro Studio', category: 'PRO', priceVnd: 489000, credits: 5500, bonusPercent: 10, label: 'Pro Studio', popular: true, durationDays: 30 },
+  { id: 'sub-business', name: 'Business & Agency', category: 'ENTERPRISE', priceVnd: 1290000, credits: 15000, bonusPercent: 15, label: 'Business & Agency', durationDays: 30 },
+  { id: 'sub-enterprise', name: 'Enterprise Scale', category: 'ENTERPRISE', priceVnd: 2890000, credits: 35000, bonusPercent: 20, label: 'Enterprise Scale', durationDays: 30 },
+
+  // Gói Nạp Thêm Credit (Pay-as-you-go)
+  { id: 'topup-100', name: 'Nạp Tiêu Chuẩn', category: 'TOPUP', priceVnd: 100000, credits: 1000, bonusPercent: 0, label: '1,000 Credits', durationDays: 0 },
+  { id: 'topup-200', name: 'Nạp Cơ Bản', category: 'TOPUP', priceVnd: 200000, credits: 2050, bonusPercent: 2.5, label: '2,050 Credits', durationDays: 0 },
+  { id: 'topup-500', name: 'Nạp Tăng Tốc', category: 'TOPUP', priceVnd: 500000, credits: 5300, bonusPercent: 6, label: '5,300 Credits', popular: true, durationDays: 0 },
+  { id: 'topup-1000', name: 'Nạp Nâng Cao', category: 'TOPUP', priceVnd: 1000000, credits: 11000, bonusPercent: 10, label: '11,000 Credits', durationDays: 0 },
+  { id: 'topup-2000', name: 'Nạp Doanh Nghiệp', category: 'TOPUP', priceVnd: 2000000, credits: 23000, bonusPercent: 15, label: '23,000 Credits', durationDays: 0 },
 ];
 
 interface TopupModalProps {
@@ -47,8 +58,9 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
   const { user } = useAuthStore();
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [categoryTab, setCategoryTab] = useState<'SUBSCRIPTION' | 'TOPUP'>('SUBSCRIPTION');
   const [topupOptions, setTopupOptions] = useState<TopupOption[]>(TOPUP_OPTIONS);
-  const [selectedOption, setSelectedOption] = useState<TopupOption>(TOPUP_OPTIONS[2]);
+  const [selectedOption, setSelectedOption] = useState<TopupOption>(TOPUP_OPTIONS[1]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [availableBanks, setAvailableBanks] = useState<any[]>([]);
   const [selectedBank, setSelectedBank] = useState<any | null>(null);
@@ -68,14 +80,21 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
       .then((data) => {
         if (isMounted && data && data.length > 0) {
           const paidPackages = data.filter((p) => p.price_vnd > 0);
-          const mapped: TopupOption[] = paidPackages.map((p) => ({
-            id: p.id,
-            priceVnd: p.price_vnd,
-            credits: p.credits_given,
-            bonusPercent: p.bonus_percentage || 0,
-            label: p.tag_badge ? `${p.tag_badge} - ${p.name}` : p.name,
-            popular: p.is_popular,
-          }));
+          const mapped: TopupOption[] = paidPackages.map((p) => {
+            const isSub = p.category !== 'TOPUP';
+            return {
+              id: p.id,
+              name: p.name,
+              category: p.category || (isSub ? 'STARTER' : 'TOPUP'),
+              priceVnd: p.price_vnd,
+              credits: p.credits_given,
+              bonusPercent: p.bonus_percentage || 0,
+              label: p.name,
+              tagBadge: p.tag_badge || '',
+              durationDays: (p as any).duration_days || (isSub ? 30 : 0),
+              popular: p.is_popular,
+            };
+          });
           setTopupOptions(mapped);
 
           // Select matching package if provided
@@ -83,16 +102,18 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
             const found = mapped.find(
               (o) =>
                 o.id === initialPackageId ||
+                o.name.toLowerCase().includes(initialPackageId.toLowerCase()) ||
                 o.label.toLowerCase().includes(initialPackageId.toLowerCase())
             );
             if (found) {
               setSelectedOption(found);
+              setCategoryTab(found.category !== 'TOPUP' ? 'SUBSCRIPTION' : 'TOPUP');
               return;
             }
           }
-          setSelectedOption(
-            (prev) => mapped.find((o) => o.id === prev.id) || mapped.find((o) => o.popular) || mapped[0]
-          );
+          const defaultOpt = mapped.find((o) => o.popular && o.category !== 'TOPUP') || mapped[0];
+          setSelectedOption(defaultOpt);
+          setCategoryTab(defaultOpt.category !== 'TOPUP' ? 'SUBSCRIPTION' : 'TOPUP');
         }
       })
       .catch(() => {});
@@ -356,50 +377,153 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
           {/* ═══════════════ STEP 1: CHỌN GÓI NẠP ═══════════════ */}
           {currentStep === 1 && (
             <div className={styles.step1Container}>
+              {/* Category Segment Tabs */}
+              <div className={styles.categoryTabs}>
+                <button
+                  type="button"
+                  className={`${styles.catTab} ${categoryTab === 'SUBSCRIPTION' ? styles.catTabActive : ''}`}
+                  onClick={() => {
+                    setCategoryTab('SUBSCRIPTION');
+                    const firstSub = topupOptions.find((o) => o.category !== 'TOPUP');
+                    if (firstSub && selectedOption.category === 'TOPUP') {
+                      setSelectedOption(firstSub);
+                    }
+                  }}
+                >
+                  <HiOutlineSparkles size={16} />
+                  <span>{t('topup.tab_subscription', 'Gói Hội Viên Tháng (30 Ngày)')}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.catTab} ${categoryTab === 'TOPUP' ? styles.catTabActive : ''}`}
+                  onClick={() => {
+                    setCategoryTab('TOPUP');
+                    const firstTopup = topupOptions.find((o) => o.category === 'TOPUP');
+                    if (firstTopup && selectedOption.category !== 'TOPUP') {
+                      setSelectedOption(firstTopup);
+                    }
+                  }}
+                >
+                  <HiOutlineBolt size={16} />
+                  <span>{t('topup.tab_topup', 'Nạp Thêm Credit (Pay-as-you-go)')}</span>
+                </button>
+              </div>
+
+              {/* Section Sub-header */}
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionLabel}>{t('topup.choose_package', '1. Chọn Gói Nạp')}</span>
+                <span className={styles.sectionLabel}>
+                  {categoryTab === 'SUBSCRIPTION'
+                    ? '✨ GÓI HỘI VIÊN TIẾT KIỆM (-30% GIÁ & ĐẦY ĐỦ QUYỀN LỢI)'
+                    : '⚡ NẠP CREDIT BỔ SUNG (BẢO LƯU VĨNH VIỄN • DÙNG BAO NHIÊU NẠP BẤY NHIÊU)'}
+                </span>
                 <span className={styles.sectionHint}>
-                  {t('topup.current_selected', 'Gói đang chọn')}:{' '}
-                  <strong style={{ color: '#2dd4bf' }}>{selectedOption.label}</strong>
+                  {t('topup.current_selected', 'Đang chọn')}:{' '}
+                  <strong style={{ color: '#2dd4bf' }}>{selectedOption.name || selectedOption.label}</strong>
                 </span>
               </div>
 
               {/* Package cards grid */}
-              <div className={styles.optionsGrid}>
-                {topupOptions.map((opt) => {
-                  const isSelected = selectedOption.id === opt.id;
-                  return (
-                    <div
-                      key={opt.id}
-                      className={`${styles.optionCard} ${isSelected ? styles.selected : ''}`}
-                      onClick={() => setSelectedOption(opt)}
-                    >
-                      {opt.popular && (
-                        <span className={styles.popularBadge}>
-                          <HiOutlineSparkles size={11} /> HOT
-                        </span>
-                      )}
-                      <div className={styles.optionCredits}>
-                        <RiSparklingFill size={15} color="#2dd4bf" /> {opt.credits.toLocaleString()}{' '}
-                        <span className={styles.crUnit}>credit</span>
+              <div
+                className={`${styles.optionsGrid} ${
+                  categoryTab === 'SUBSCRIPTION' ? styles.gridSubscription : styles.gridTopup
+                }`}
+              >
+                {topupOptions
+                  .filter((opt) =>
+                    categoryTab === 'SUBSCRIPTION' ? opt.category !== 'TOPUP' : opt.category === 'TOPUP'
+                  )
+                  .map((opt) => {
+                    const isSelected = selectedOption.id === opt.id;
+                    const isSub = opt.category !== 'TOPUP';
+
+                    return (
+                      <div
+                        key={opt.id}
+                        className={`${styles.optionCard} ${isSelected ? styles.selected : ''} ${
+                          isSub ? styles.cardSubscription : ''
+                        }`}
+                        onClick={() => setSelectedOption(opt)}
+                      >
+                        {/* Card Header Row */}
+                        <div className={styles.cardHeader}>
+                          <span
+                            className={`${styles.tierPill} ${
+                              opt.category === 'ENTERPRISE'
+                                ? styles.tierEnterprise
+                                : opt.category === 'PRO'
+                                ? styles.tierPro
+                                : opt.category === 'STARTER'
+                                ? styles.tierStarter
+                                : styles.tierTopup
+                            }`}
+                          >
+                            {opt.category === 'STARTER'
+                              ? 'STARTER'
+                              : opt.category === 'PRO'
+                              ? 'PRO STUDIO'
+                              : opt.category === 'ENTERPRISE'
+                              ? 'BUSINESS'
+                              : 'TOP-UP'}
+                          </span>
+
+                          <div className={styles.cardBadges}>
+                            {opt.popular && (
+                              <span className={styles.popularBadge}>
+                                <HiOutlineSparkles size={10} /> HOT
+                              </span>
+                            )}
+                            {opt.tagBadge && !opt.popular && (
+                              <span className={styles.customBadge}>{opt.tagBadge}</span>
+                            )}
+                            {isSelected && (
+                              <span className={styles.checkPill}>
+                                <HiOutlineCheck size={12} />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Package Name */}
+                        <div className={styles.optionName}>{opt.name || opt.label}</div>
+
+                        {/* Credits Amount */}
+                        <div className={styles.optionCredits}>
+                          <RiSparklingFill size={18} color="#2dd4bf" />
+                          <span className={styles.creditsVal}>{opt.credits.toLocaleString()}</span>
+                          <span className={styles.crUnit}>Credits</span>
+                        </div>
+
+                        {/* Card Footer: Price & Duration / Bonus */}
+                        <div className={styles.cardFooter}>
+                          <div className={styles.optionPrice}>
+                            {opt.priceVnd.toLocaleString()} ₫
+                          </div>
+                          <div className={styles.metaRow}>
+                            {opt.bonusPercent > 0 && (
+                              <span className={styles.bonusBadge}>+{opt.bonusPercent}% Thưởng</span>
+                            )}
+                            <span className={styles.durationBadge}>
+                              {isSub ? '⏱️ 30 Ngày' : '⚡ Vĩnh viễn'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className={styles.optionPrice}>{opt.priceVnd.toLocaleString()} đ</div>
-                      {opt.bonusPercent > 0 && (
-                        <span className={styles.bonusBadge}>+{opt.bonusPercent}% Thưởng</span>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
 
               {/* Selected package summary & Proceed button */}
               <div className={styles.selectedSummaryBox}>
                 <div className={styles.selectedInfo}>
-                  <span className={styles.selectedTitle}>{t('topup.current_selected', 'Gói Đang Chọn')}</span>
+                  <span className={styles.selectedTitle}>{t('topup.current_selected', 'GÓI ĐANG CHỌN')}</span>
                   <div className={styles.selectedValues}>
-                    {selectedOption.label} —{' '}
-                    <span className={styles.highlightAmount}>{selectedOption.priceVnd.toLocaleString()} đ</span>{' '}
-                    (+{selectedOption.credits.toLocaleString()} credit)
+                    <span className={styles.selectedName}>{selectedOption.name || selectedOption.label}</span>
+                    <span className={styles.selectedSeparator}>—</span>
+                    <span className={styles.highlightAmount}>{selectedOption.priceVnd.toLocaleString()} ₫</span>
+                    <span className={styles.highlightCredits}>
+                      (+{selectedOption.credits.toLocaleString()} Credits
+                      {selectedOption.category !== 'TOPUP' ? ' • Chu kỳ 30 ngày' : ' • Vĩnh viễn'})
+                    </span>
                   </div>
                 </div>
                 <button type="button" className={styles.step1ProceedBtn} onClick={goToStep2}>
