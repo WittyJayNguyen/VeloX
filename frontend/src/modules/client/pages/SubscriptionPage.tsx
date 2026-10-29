@@ -137,106 +137,57 @@ export const SubscriptionPage: React.FC = () => {
       </div>
 
       {/* Current plan banner */}
-      <div className={styles.contentCard} style={{ background: 'linear-gradient(135deg, #131a29 0%, #1a2238 100%)', borderColor: '#2d3b58' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ color: '#38bdf8', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {isAuthenticated ? t('subscription.current_plan', 'Gói Dịch Vụ Đang Dùng') : 'Cổng Kết Nối AI Gateway Chuyên Nghiệp'}
-            </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
-              {isAuthenticated ? (user?.tier || 'Thành Viên VeloX') : 'Khám Phá Toàn Diện 150+ Mô Hình AI'}
-            </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '4px' }}>
-              {isAuthenticated ? (
-                <>Số dư hiện tại: <strong style={{ color: '#38bdf8' }}>💎 {(user?.credit_balance ?? 0).toLocaleString()} Credits</strong></>
-              ) : (
-                'Nạp Credit linh hoạt, trải nghiệm các mô hình AI đỉnh cao thế giới (Claude 3.5 Sonnet, Midjourney, Kling, FLUX, Veo 3.1).'
-              )}
+      <div className={styles.currentPlanBanner}>
+        <div className={styles.bannerInner}>
+          <div className={styles.bannerContent}>
+            <div>
+              <div style={{ color: '#38bdf8', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {isAuthenticated ? t('subscription.current_plan', 'Gói Dịch Vụ Đang Dùng') : 'Cổng Kết Nối AI Gateway Chuyên Nghiệp'}
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>
+                {isAuthenticated ? (user?.tier || 'Thành Viên VeloX') : 'Khám Phá Toàn Diện 150+ Mô Hình AI'}
+              </div>
+              <div style={{ color: '#94a3b8', fontSize: '0.88rem', marginTop: '4px', lineHeight: 1.45 }}>
+                {isAuthenticated ? (
+                  <>Số dư hiện tại: <strong style={{ color: '#38bdf8' }}>💎 {(user?.credit_balance ?? 0).toLocaleString()} Credits</strong></>
+                ) : (
+                  'Nạp Credit linh hoạt, trải nghiệm các mô hình AI đỉnh cao thế giới (Claude 3.5 Sonnet, Midjourney, Kling, FLUX, Veo 3.1).'
+                )}
+              </div>
             </div>
           </div>
-          <button type="button" className={styles.primaryBtn} onClick={() => handleAction()}>
+          <button type="button" className={`${styles.primaryBtn} ${styles.bannerActionBtn}`} onClick={() => handleAction()}>
             <HiOutlineSparkles /> {isAuthenticated ? 'Nâng Cấp Gói Ngay' : 'Đăng Ký / Đăng Nhập'}
           </button>
         </div>
       </div>
 
-      {/* Tab Switcher: Gói Tháng vs Nạp Trực Tiếp */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem', marginBottom: '1rem' }}>
-        <div
-          style={{
-            display: 'inline-flex',
-            background: '#0e1422',
-            padding: '4px',
-            borderRadius: '12px',
-            border: '1px solid #1f293d',
-            gap: '6px',
-          }}
-        >
+      {/* Tab Switcher: Gói Tháng vs Nạp Trực Tiếp vs Bảng Giá Models */}
+      <div className={styles.subscriptionTabWrapper}>
+        <div className={styles.subscriptionTabContainer}>
           <button
             type="button"
             onClick={() => setActiveTab('SUBSCRIPTION')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '0.92rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              border: 'none',
-              background: activeTab === 'SUBSCRIPTION' ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'transparent',
-              color: activeTab === 'SUBSCRIPTION' ? '#fff' : '#94a3b8',
-              boxShadow: activeTab === 'SUBSCRIPTION' ? '0 4px 12px rgba(99, 102, 241, 0.3)' : 'none',
-            }}
+            className={`${styles.subTabBtn} ${activeTab === 'SUBSCRIPTION' ? styles.subTabActiveSubscription : ''}`}
           >
             <HiOutlineCalendarDays size={18} />
-            Gói Hội Viên Tháng (Ưu đãi tới 30%)
+            <span>Gói Hội Viên Tháng (-30%)</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('TOPUP')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '0.92rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              border: 'none',
-              background: activeTab === 'TOPUP' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
-              color: activeTab === 'TOPUP' ? '#fff' : '#94a3b8',
-              boxShadow: activeTab === 'TOPUP' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
-            }}
+            className={`${styles.subTabBtn} ${activeTab === 'TOPUP' ? styles.subTabActiveTopup : ''}`}
           >
             <HiOutlineBolt size={18} />
-            Nạp Credit VietQR (Vĩnh viễn không hết hạn)
+            <span>Nạp Credit VietQR (Vĩnh viễn)</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('MODELS')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '0.92rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              border: 'none',
-              background: activeTab === 'MODELS' ? 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)' : 'transparent',
-              color: activeTab === 'MODELS' ? '#fff' : '#94a3b8',
-              boxShadow: activeTab === 'MODELS' ? '0 4px 12px rgba(255, 107, 53, 0.3)' : 'none',
-            }}
+            className={`${styles.subTabBtn} ${activeTab === 'MODELS' ? styles.subTabActiveModels : ''}`}
           >
             <HiOutlineServerStack size={18} />
-            Bảng Giá 150+ Model AI
+            <span>Bảng Giá 150+ Model AI</span>
           </button>
         </div>
       </div>
@@ -245,20 +196,7 @@ export const SubscriptionPage: React.FC = () => {
       {activeTab === 'MODELS' ? (
         <div style={{ marginTop: '1.5rem' }}>
           {/* Header Info Banner */}
-          <div
-            style={{
-              background: 'linear-gradient(135deg, #0e1526 0%, #151e36 100%)',
-              border: '1px solid #1f2c4a',
-              borderRadius: '14px',
-              padding: '1.25rem 1.5rem',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '1rem',
-            }}
-          >
+          <div className={styles.modelsHeaderBanner}>
             <div>
               <div style={{ color: '#ff6b35', fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 QUY ĐỔI MINH BẠCH & TIẾT KIỆM 50-70%
@@ -492,7 +430,7 @@ export const SubscriptionPage: React.FC = () => {
             Đang tải thông tin bảng giá cập nhật từ hệ thống...
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
+          <div className={styles.plansGrid}>
             {displayedPackages.map((tier) => {
               const isUserCurrent =
                 isAuthenticated &&

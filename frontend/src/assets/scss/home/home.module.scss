@@ -115,6 +115,10 @@ $font-mono: 'JetBrains Mono', monospace;
     padding: 3.5rem 1.25rem 4rem;
     min-height: auto;
   }
+
+  @media (max-width: 480px) {
+    padding: 2.25rem 0.75rem 2.75rem;
+  }
 }
 
 // Ambient Background Glows & Cyber Grid
@@ -324,6 +328,7 @@ $font-mono: 'JetBrains Mono', monospace;
 .heroWidgetCol {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .interactiveCard {
@@ -333,9 +338,22 @@ $font-mono: 'JetBrains Mono', monospace;
   padding: 1.5rem;
   width: 100%;
   max-width: 490px;
+  box-sizing: border-box;
+  overflow: hidden;
   backdrop-filter: blur(20px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 107, 53, 0.12);
   transition: transform 0.3s ease, border-color 0.3s ease;
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+    border-radius: 16px;
+    max-width: 100%;
+  }
+
+  @media (max-width: 400px) {
+    padding: 0.75rem;
+    border-radius: 14px;
+  }
 
   &:hover {
     border-color: rgba(255, 107, 53, 0.45);
@@ -347,6 +365,10 @@ $font-mono: 'JetBrains Mono', monospace;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
+
+  @media (max-width: 480px) {
+    margin-bottom: 0.85rem;
+  }
 }
 
 .widgetBrandMark {
@@ -367,6 +389,10 @@ $font-mono: 'JetBrains Mono', monospace;
     font-weight: 700;
     color: #e2e8f0;
     letter-spacing: 0.05em;
+
+    @media (max-width: 400px) {
+      font-size: 0.76rem;
+    }
   }
 }
 
@@ -381,6 +407,11 @@ $font-mono: 'JetBrains Mono', monospace;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 9999px;
+
+  @media (max-width: 400px) {
+    font-size: 0.7rem;
+    padding: 2px 7px;
+  }
 }
 
 // Mode Switcher Tabs (Image / Chat / Video)
@@ -392,6 +423,13 @@ $font-mono: 'JetBrains Mono', monospace;
   padding: 4px;
   border-radius: 12px;
   margin-bottom: 1.25rem;
+
+  @media (max-width: 480px) {
+    gap: 3px;
+    padding: 3px;
+    margin-bottom: 0.85rem;
+    border-radius: 10px;
+  }
 }
 
 .widgetTabBtn {
@@ -409,6 +447,16 @@ $font-mono: 'JetBrains Mono', monospace;
   cursor: pointer;
   transition: all 0.2s ease;
 
+  @media (max-width: 480px) {
+    font-size: 0.72rem;
+    padding: 6px 2px;
+    gap: 3px;
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
   &.active {
     background: $bg-lighter;
     color: #ffffff;
@@ -423,6 +471,11 @@ $font-mono: 'JetBrains Mono', monospace;
   border-radius: 12px;
   padding: 0.85rem 1rem;
   margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .promptLabelRow {
@@ -442,6 +495,11 @@ $font-mono: 'JetBrains Mono', monospace;
   color: #f1f5f9;
   line-height: 1.45;
   font-style: italic;
+  word-break: break-word;
+
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+  }
 }
 
 .promptSuggestions {
@@ -631,6 +689,12 @@ $font-mono: 'JetBrains Mono', monospace;
   transition: all 0.25s ease;
   position: relative;
   overflow: hidden;
+
+  @media (max-width: 480px) {
+    font-size: 0.82rem;
+    padding: 0.65rem 0.85rem;
+    gap: 6px;
+  }
 
   &::after {
     content: '';
