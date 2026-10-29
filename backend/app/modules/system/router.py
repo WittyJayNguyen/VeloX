@@ -5,18 +5,55 @@ import os
 import uuid
 import base64
 from datetime import datetime
-from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
 from app.core.database import get_db
-from app.modules.auth.dependencies import get_current_user, require_admin, get_optional_user
+from app.core.security import get_current_user
 from app.modules.users.models import User
 from app.modules.system.models import SystemSetting, SystemNotification
 
 router = APIRouter(prefix="/system", tags=["System Settings & Notifications"])
+
+
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Verify that current user is an admin or super admin."""
+    roles = current_user.roles or []
+    is_admin = (
+        getattr(current_user, "is_superuser", False)
+        or any(r.id in ["ROLE_SUPER_ADMIN", "ROLE_ADMIN"] or getattr(r, "code", "") in ["ROLE_SUPER_ADMIN", "ROLE_ADMIN"] for r in roles)
+        or getattr(current_user, "role", "") in ["ADMIN", "ROLE_ADMIN", "SUPER_ADMIN"]
+    )
+    if not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bảo mật cấp cao: Thao tác này chỉ dành riêng cho Quản trị viên (Admin)",
+        )
+    return current_user
+
+
+async def get_optional_user(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """Extract user if valid Bearer token provided, else None."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.split(" ")[1]
+    try:
+        from app.core.security import decode_token
+        payload = decode_token(token)
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        res = await db.execute(select(User).where(User.id == user_id))
+        return res.scalar_one_or_none()
+    except Exception:
+        return None
 
 
 class PublicSettingsResponse(BaseModel):
@@ -100,7 +137,11 @@ async def check_system_maintenance(db: AsyncSession, user: Optional[User] = None
         if user:
             if getattr(user, "is_superuser", False):
                 is_admin = True
-            elif hasattr(user, "roles") and any(r.code in ["ROLE_ADMIN", "ADMIN"] for r in getattr(user, "roles", [])):
+            elif hasattr(user, "roles") and any(
+                getattr(r, "id", "") in ["ROLE_ADMIN", "ROLE_SUPER_ADMIN"]
+                or getattr(r, "code", "") in ["ROLE_ADMIN", "ADMIN"]
+                for r in getattr(user, "roles", [])
+            ):
                 is_admin = True
             elif getattr(user, "role", "") in ["ADMIN", "ROLE_ADMIN", "SUPER_ADMIN"]:
                 is_admin = True
