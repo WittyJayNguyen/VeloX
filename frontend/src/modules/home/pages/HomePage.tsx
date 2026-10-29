@@ -577,14 +577,17 @@ console.log(response.choices[0].message.content);`;
   return (
     <div className={styles.homePage}>
       {/* ══════════════════════════════════════════════════════════════
-          1. HERO SECTION
+          1. HERO SECTION (RICH SAAS GLOW & DYNAMIC EFFECTS)
       ══════════════════════════════════════════════════════════════ */}
       <section className={styles.heroSection}>
-        {/* Ambient Glows & Cyber Grid Background */}
+        {/* Ambient Glows, Aurora Waves & Cyber Grid Background */}
         <div className={styles.heroBgWrapper}>
+          <div className={styles.auroraGlow} />
           <div className={styles.ambientGlow1} />
           <div className={styles.ambientGlow2} />
           <div className={styles.cyberGrid} />
+          <div className={styles.particleSpark1} />
+          <div className={styles.particleSpark2} />
         </div>
 
         <div className={styles.heroContainer}>
@@ -592,10 +595,11 @@ console.log(response.choices[0].message.content);`;
           <div className={styles.heroContent}>
             <div className={styles.heroBadge}>
               <span className={styles.badgePulseDot} />
-              <RiSparklingFill size={14} color="#ff6b35" />
+              <RiSparklingFill size={15} color="#ff6b35" className={styles.badgeSparkle} />
               <span className={styles.badgeText}>
                 {t('hero.badge', 'Nền Tảng AI Gateway & Studio Thế Hệ Mới')}
               </span>
+              <span className={styles.badgeArrow}>✨</span>
             </div>
 
             <h1 className={styles.heroHeadline}>
@@ -607,10 +611,7 @@ console.log(response.choices[0].message.content);`;
             </h1>
 
             <p className={styles.heroSubtitle}>
-              {t(
-                'hero.subtitle',
-                'Kết nối hơn 100+ mô hình AI từ OpenAI, Claude, Gemini, Midjourney, Runway với chi phí tối ưu nhất. Một API Key duy nhất cho tất cả.'
-              )}
+              Kết nối hơn <strong style={{ color: '#ffffff', fontWeight: 700 }}>156+ mô hình AI</strong> từ OpenAI, Claude, Gemini, Midjourney, Runway với chi phí tối ưu nhất. <span style={{ color: '#38bdf8', fontWeight: 600 }}>Một API Key duy nhất cho tất cả</span>.
             </p>
 
             <div className={styles.heroCtas}>
@@ -625,22 +626,34 @@ console.log(response.choices[0].message.content);`;
               </Link>
             </div>
 
-            {/* Key Trust Stats */}
+            {/* Key Trust Stats (Rich Glassmorphism Cards) */}
             <div className={styles.heroStats}>
-              <div className={styles.statCol}>
-                <div className={styles.statNumber}>100+</div>
+              <div className={styles.statCard}>
+                <div className={styles.statCardHeader}>
+                  <HiOutlineCpuChip size={18} color="#38bdf8" />
+                  <div className={styles.statNumber}>156+</div>
+                </div>
                 <div className={styles.statLabel}>{t('stats.models', 'Mô Hình AI')}</div>
               </div>
-              <div className={styles.statCol}>
-                <div className={styles.statNumber}>99.9%</div>
+              <div className={styles.statCard}>
+                <div className={styles.statCardHeader}>
+                  <HiOutlineShieldCheck size={18} color="#10b981" />
+                  <div className={styles.statNumber}>99.9%</div>
+                </div>
                 <div className={styles.statLabel}>{t('stats.uptime', 'Uptime Sẵn Sàng')}</div>
               </div>
-              <div className={styles.statCol}>
-                <div className={styles.statNumber}>80%</div>
+              <div className={styles.statCard}>
+                <div className={styles.statCardHeader}>
+                  <HiOutlineBolt size={18} color="#f59e0b" />
+                  <div className={styles.statNumber}>80%</div>
+                </div>
                 <div className={styles.statLabel}>Tiết Kiệm Cache</div>
               </div>
-              <div className={styles.statCol}>
-                <div className={styles.statNumber}>&lt; 180ms</div>
+              <div className={styles.statCard}>
+                <div className={styles.statCardHeader}>
+                  <RiSparklingFill size={17} color="#c084fc" />
+                  <div className={styles.statNumber}>&lt; 180ms</div>
+                </div>
                 <div className={styles.statLabel}>Độ Trễ Phản Hồi</div>
               </div>
             </div>
@@ -648,110 +661,122 @@ console.log(response.choices[0].message.content);`;
 
           {/* Right Column: Interactive Studio & Gateway Simulator Widget */}
           <div className={styles.heroWidgetCol}>
-            <div className={styles.interactiveCard}>
-              <div className={styles.widgetHeaderRow}>
-                <div className={styles.widgetBrandMark}>
-                  <div className={styles.widgetDotLive} />
-                  <span>VELOX LIVE STUDIO</span>
+            <div className={styles.interactiveCardGlowWrapper}>
+              <div className={styles.interactiveCard}>
+                <div className={styles.widgetHeaderRow}>
+                  <div className={styles.widgetBrandMark}>
+                    <div className={styles.widgetDotLive} />
+                    <span>VELOX LIVE STUDIO</span>
+                    <span className={styles.liveTagPill}>LIVE</span>
+                  </div>
+                  <div className={styles.widgetCreditBadge}>
+                    <RiSparklingFill size={13} />
+                    <span>Trừ {currentDemo.creditCost}</span>
+                  </div>
                 </div>
-                <div className={styles.widgetCreditBadge}>
-                  <RiSparklingFill size={12} />
-                  <span>Trừ {currentDemo.creditCost}</span>
+
+                {/* Segmented Switcher Tabs */}
+                <div className={styles.widgetTabs}>
+                  <button
+                    type="button"
+                    className={`${styles.widgetTabBtn} ${activeMode === 'image' ? styles.active : ''}`}
+                    onClick={() => handleModeChange('image')}
+                  >
+                    <HiOutlinePhoto size={16} />
+                    <span>Tạo Ảnh</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.widgetTabBtn} ${activeMode === 'chat' ? styles.active : ''}`}
+                    onClick={() => handleModeChange('chat')}
+                  >
+                    <HiOutlineChatBubbleLeftRight size={16} />
+                    <span>Chat AI</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.widgetTabBtn} ${activeMode === 'video' ? styles.active : ''}`}
+                    onClick={() => handleModeChange('video')}
+                  >
+                    <HiOutlineFilm size={16} />
+                    <span>Video AI</span>
+                  </button>
                 </div>
-              </div>
 
-              {/* Segmented Switcher Tabs */}
-              <div className={styles.widgetTabs}>
-                <button
-                  type="button"
-                  className={`${styles.widgetTabBtn} ${activeMode === 'image' ? styles.active : ''}`}
-                  onClick={() => handleModeChange('image')}
-                >
-                  <HiOutlinePhoto size={15} />
-                  <span>Tạo Ảnh</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.widgetTabBtn} ${activeMode === 'chat' ? styles.active : ''}`}
-                  onClick={() => handleModeChange('chat')}
-                >
-                  <HiOutlineChatBubbleLeftRight size={15} />
-                  <span>Chat AI</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.widgetTabBtn} ${activeMode === 'video' ? styles.active : ''}`}
-                  onClick={() => handleModeChange('video')}
-                >
-                  <HiOutlineFilm size={15} />
-                  <span>Video AI</span>
-                </button>
-              </div>
-
-              {/* Interactive Prompt Box */}
-              <div className={styles.promptBoxWrapper}>
-                <div className={styles.promptLabelRow}>
-                  <span>Prompt Trực Quan</span>
-                  <span style={{ color: '#ff6b35' }}>{currentDemo.model}</span>
+                {/* Interactive Prompt Box */}
+                <div className={styles.promptBoxWrapper}>
+                  <div className={styles.promptLabelRow}>
+                    <span className={styles.promptPillTag}>PROMPT TRỰC QUAN</span>
+                    <span className={styles.promptModelTag}>{currentDemo.model}</span>
+                  </div>
+                  <div className={styles.promptInputMock}>"{currentPrompt}"</div>
+                  <div className={styles.promptSuggestions}>
+                    {currentDemo.chips.map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`${styles.promptChip} ${currentPrompt === chip.prompt ? styles.activeChip : ''}`}
+                        onClick={() => handleSelectChip(chip)}
+                        title="Bấm để xem mẫu này"
+                      >
+                        {chip.text}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className={styles.promptInputMock}>"{currentPrompt}"</div>
-                <div className={styles.promptSuggestions}>
-                  {currentDemo.chips.map((chip, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`${styles.promptChip} ${currentPrompt === chip.prompt ? styles.activeChip : ''}`}
-                      onClick={() => handleSelectChip(chip)}
-                      title="Bấm để xem mẫu này"
-                    >
-                      {chip.text}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Visual Preview Frame with Real Media */}
-              <div className={styles.previewFrame}>
-                {/* Ambient Blurred Backdrop */}
-                <div
-                  className={styles.previewBackdrop}
-                  style={{ backgroundImage: `url(${currentImg})` }}
-                />
+                {/* Visual Preview Frame with Real Media */}
+                <div className={styles.previewFrame}>
+                  {/* Ambient Blurred Backdrop */}
+                  <div
+                    className={styles.previewBackdrop}
+                    style={{ backgroundImage: `url(${currentImg})` }}
+                  />
 
-                <img
-                  key={currentImg}
-                  src={currentImg}
-                  alt={currentDemo.model}
-                  className={styles.previewImageAnim}
-                />
+                  {/* Top Floating Glass Badges */}
+                  <div className={styles.floatingPreviewTagLeft}>
+                    <span className={styles.greenDotPulse} />
+                    <span>AI RENDERED</span>
+                  </div>
+                  <div className={styles.floatingPreviewTagRight}>
+                    <span>⚡ 2.1s • 4K ULTRA HD</span>
+                  </div>
 
-                {currentDemo.isVideo && (
-                  <div className={styles.videoPlayOverlay}>
-                    <div className={styles.videoPlayBtnPulse}>
-                      <RiPlayFill size={26} color="#ffffff" />
+                  <img
+                    key={currentImg}
+                    src={currentImg}
+                    alt={currentDemo.model}
+                    className={styles.previewImageAnim}
+                  />
+
+                  {currentDemo.isVideo && (
+                    <div className={styles.videoPlayOverlay}>
+                      <div className={styles.videoPlayBtnPulse}>
+                        <RiPlayFill size={26} color="#ffffff" />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div className={styles.previewOverlay}>
-                  <div className={styles.modelBadgeTag}>
-                    <RiSparklingFill size={13} color="#2dd4bf" />
-                    <span>{currentDemo.model}</span>
+                  <div className={styles.previewOverlay}>
+                    <div className={styles.modelBadgeTag}>
+                      <RiSparklingFill size={13} color="#2dd4bf" />
+                      <span>{currentDemo.model}</span>
+                    </div>
+                    <div className={styles.resolutionPill}>{currentDemo.resolution}</div>
                   </div>
-                  <div className={styles.resolutionPill}>{currentDemo.resolution}</div>
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className={styles.widgetActionRow}>
-                <Link
-                  to={`/studio?category=${activeMode}`}
-                  className={styles.btnWidgetTry}
-                >
-                  <RiOpenaiFill size={16} />
-                  <span>Thử Ngay Trên Studio</span>
-                  <HiOutlineArrowRight size={14} />
-                </Link>
+                {/* Action Buttons */}
+                <div className={styles.widgetActionRow}>
+                  <Link
+                    to={`/studio?category=${activeMode}`}
+                    className={styles.btnWidgetTry}
+                  >
+                    <RiOpenaiFill size={17} />
+                    <span>Thử Ngay Trên Studio</span>
+                    <HiOutlineArrowRight size={15} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
