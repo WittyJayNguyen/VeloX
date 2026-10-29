@@ -1,0 +1,197 @@
+.popoverOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+}
+
+.popoverContainer {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 360px;
+  max-width: 90vw;
+  background: #121622;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.08);
+  backdrop-filter: blur(16px);
+  z-index: 999;
+  overflow: hidden;
+  animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+
+  .headerTitleBox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+
+  .headerBadge {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 999px;
+  }
+
+  .markReadBtn {
+    background: transparent;
+    border: none;
+    color: #38bdf8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #7dd3fc;
+      text-decoration: underline;
+    }
+  }
+}
+
+.maintenanceAlertCard {
+  margin: 10px 12px 6px;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  .alertIcon {
+    color: #f87171;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .alertBody {
+    flex: 1;
+    min-width: 0;
+
+    .alertTitle {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 3px;
+    }
+
+    .alertDesc {
+      font-size: 0.75rem;
+      color: #fecaca;
+      line-height: 1.4;
+    }
+  }
+}
+
+.notifList {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 8px 0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+  }
+}
+
+.notifItem {
+  display: flex;
+  gap: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  position: relative;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  &.isUnread {
+    background: rgba(56, 189, 248, 0.05);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 18px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #38bdf8;
+    }
+  }
+
+  .itemIconBox {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .itemContent {
+    flex: 1;
+    min-width: 0;
+
+    .itemTitle {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 2px;
+      line-height: 1.35;
+    }
+
+    .itemMessage {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .itemTime {
+      font-size: 0.68rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+  }
+}
+
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.84rem;
+}

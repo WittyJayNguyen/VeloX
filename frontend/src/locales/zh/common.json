@@ -610,5 +610,14 @@
     "scan_zalo_group": "加入Zalo支持群",
     "channel_notice": "通知频道",
     "contact_admin": "联系管理员"
+  },
+  "system": {
+    "maintenance_active": "系统维护中",
+    "maintenance_marquee_default": "系统当前正在进行定期维护和基础设施升级。所有AI生成任务（图像、视频、音频）和API网关服务已暂停。请稍后再试！",
+    "maintenance_tag": "系统维护"
+  },
+  "notifications": {
+    "mark_all_read": "全部已读",
+    "empty": "暂无系统通知"
   }
 }

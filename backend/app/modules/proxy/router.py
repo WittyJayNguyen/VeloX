@@ -68,6 +68,8 @@ async def api_proxy_generate_image(
     Routes to Meta Imagine via internal Pool.
     """
     api_key, user = auth_data
+    from app.modules.system.router import check_system_maintenance
+    await check_system_maintenance(db, user)
     return await proxy_generate_image(payload=payload, api_key=api_key, user=user, db=db)
 
 
@@ -82,6 +84,8 @@ async def api_proxy_generate_video(
     Routes to Meta Video Gen / Imagine Animate via internal Pool.
     """
     api_key, user = auth_data
+    from app.modules.system.router import check_system_maintenance
+    await check_system_maintenance(db, user)
     return await proxy_generate_video(payload=payload, api_key=api_key, user=user, db=db)
 
 
@@ -95,6 +99,8 @@ async def api_proxy_chat_completions(
     OpenAI-compatible Chat Completions Endpoint.
     """
     api_key, user = auth_data
+    from app.modules.system.router import check_system_maintenance
+    await check_system_maintenance(db, user)
     return await proxy_chat_completion(payload=payload, api_key=api_key, user=user, db=db)
 
 

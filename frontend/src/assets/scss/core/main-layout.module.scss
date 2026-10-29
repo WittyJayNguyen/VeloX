@@ -913,6 +913,17 @@ $font-body: 'Barlow', sans-serif;
   }
 }
 
+.brandCustomLogo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.notifBtnWrapper {
+  position: relative;
+}
+
 .bellBtn {
   background: transparent;
   border: none;
@@ -923,11 +934,42 @@ $font-body: 'Barlow', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   transition: all 0.2s ease;
 
-  &:hover {
+  &:hover,
+  &.bellBtnActive {
     color: #fff;
     background: #141b2e;
   }
 }
+
+.bellBadge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid $bg-dark;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  pointer-events: none;
+}
+
+.mainWithMaintenance {
+  padding-top: 116px !important;
+
+  &.chatMainLayout {
+    padding-top: 116px !important;
+  }
+}
+
 

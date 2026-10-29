@@ -21,16 +21,41 @@ import UserProfileDropdown from '../UserProfileDropdown/UserProfileDropdown';
 import TopupModal from '../TopupModal/TopupModal';
 import QuickSearchModal from '../QuickSearchModal/QuickSearchModal';
 import StudioMegaMenu from '../StudioMegaMenu/StudioMegaMenu';
+import MaintenanceTickerBar from '../MaintenanceTickerBar/MaintenanceTickerBar';
+import NotificationPopover from '../NotificationPopover/NotificationPopover';
+import { useSystemStore } from '@modules/core/states/systemStore';
 import styles from '@assets/scss/core/main-layout.module.scss';
 
 const MainLayout = () => {
   const { t } = useTranslation();
   const { isAuthenticated, user, isSuperAdmin, logout } = useAuthStore();
+  const {
+    siteName,
+    brandLogoUrl,
+    maintenanceMode,
+    unreadCount,
+    fetchPublicSettings,
+    fetchNotifications,
+  } = useSystemStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [topupOpen, setTopupOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  // Sync public system settings and notifications
+  useEffect(() => {
+    fetchPublicSettings();
+    fetchNotifications();
+
+    const interval = setInterval(() => {
+      fetchPublicSettings();
+      fetchNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchPublicSettings, fetchNotifications]);
 
   // Ctrl+K / Cmd+K listener for quick search
   useEffect(() => {
@@ -88,28 +113,36 @@ const MainLayout = () => {
       {/* ── FIXED TOP NAVIGATION ── */}
       <header className={styles.header}>
         <div className={styles.headerContainer}>
-          {/* VeloX Brand Logo */}
+          {/* Brand Logo & Name */}
           <Link to="/" className={styles.brandLink} onClick={closeMobileMenu}>
-            <div className={styles.logoSquare}>
-              <svg
-                className={styles.boltIcon}
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 4.5L10.5 19.5H13.5L21 4.5H16.8L12 14.5L7.2 4.5H3Z"
-                  fill="#ffffff"
-                />
-                <path
-                  d="M16 12L20.8 20H17.2L13.8 14.2L15 12H16Z"
-                  fill="#ffeedd"
-                  opacity="0.95"
-                />
-              </svg>
-            </div>
+            {brandLogoUrl ? (
+              <img src={brandLogoUrl} alt={siteName} className={styles.brandCustomLogo} />
+            ) : (
+              <div className={styles.logoSquare}>
+                <svg
+                  className={styles.boltIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5L10.5 19.5H13.5L21 4.5H16.8L12 14.5L7.2 4.5H3Z"
+                    fill="#ffffff"
+                  />
+                  <path
+                    d="M16 12L20.8 20H17.2L13.8 14.2L15 12H16Z"
+                    fill="#ffeedd"
+                    opacity="0.95"
+                  />
+                </svg>
+              </div>
+            )}
             <span className={styles.brandTitle}>
-              Velo<span className={styles.brandAccent}>X</span>
+              {siteName || (
+                <>
+                  Velo<span className={styles.brandAccent}>X</span>
+                </>
+              )}
             </span>
           </Link>
 
@@ -177,15 +210,27 @@ const MainLayout = () => {
                   </button>
                 </div>
 
-                {/* Notifications Bell */}
-                <button
-                  type="button"
-                  className={styles.bellBtn}
-                  title={t('header.notifications', 'Thông báo')}
-                  onClick={() => alert('Không có thông báo mới.')}
-                >
-                  <HiOutlineBell size={20} />
-                </button>
+                {/* Notifications Bell with Popover */}
+                <div className={styles.notifBtnWrapper}>
+                  <button
+                    type="button"
+                    className={`${styles.bellBtn} ${notifOpen ? styles.bellBtnActive : ''}`}
+                    title={t('header.notifications', 'Thông báo')}
+                    onClick={() => setNotifOpen(!notifOpen)}
+                  >
+                    <HiOutlineBell size={20} />
+                    {unreadCount > 0 && (
+                      <span className={styles.bellBadge}>
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  <NotificationPopover
+                    isOpen={notifOpen}
+                    onClose={() => setNotifOpen(false)}
+                  />
+                </div>
 
                 {/* User Dropdown matching user mockup */}
                 <UserProfileDropdown onOpenTopup={() => setTopupOpen(true)} />
@@ -318,8 +363,11 @@ const MainLayout = () => {
         )}
       </header>
 
+      {/* Marquee Ticker Bar when Maintenance Mode is ON */}
+      <MaintenanceTickerBar />
+
       {/* Main Content View */}
-      <main className={`${styles.main} ${isChatRoute ? styles.chatMainLayout : ''}`}>
+      <main className={`${styles.main} ${isChatRoute ? styles.chatMainLayout : ''} ${maintenanceMode ? styles.mainWithMaintenance : ''}`}>
         <Outlet />
       </main>
 
@@ -331,26 +379,34 @@ const MainLayout = () => {
             {/* Brand column */}
             <div className={styles.footerBrandCol}>
               <Link to="/" className={styles.brandLink}>
-                <div className={styles.logoSquare}>
-                  <svg
-                    className={styles.boltIcon}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M3 4.5L10.5 19.5H13.5L21 4.5H16.8L12 14.5L7.2 4.5H3Z"
-                      fill="#ffffff"
-                    />
-                    <path
-                      d="M16 12L20.8 20H17.2L13.8 14.2L15 12H16Z"
-                      fill="#ffeedd"
-                      opacity="0.95"
-                    />
-                  </svg>
-                </div>
+                {brandLogoUrl ? (
+                  <img src={brandLogoUrl} alt={siteName} className={styles.brandCustomLogo} />
+                ) : (
+                  <div className={styles.logoSquare}>
+                    <svg
+                      className={styles.boltIcon}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5L10.5 19.5H13.5L21 4.5H16.8L12 14.5L7.2 4.5H3Z"
+                        fill="#ffffff"
+                      />
+                      <path
+                        d="M16 12L20.8 20H17.2L13.8 14.2L15 12H16Z"
+                        fill="#ffeedd"
+                        opacity="0.95"
+                      />
+                    </svg>
+                  </div>
+                )}
                 <span className={styles.brandTitle}>
-                  Velo<span className={styles.brandAccent}>X</span>
+                  {siteName || (
+                    <>
+                      Velo<span className={styles.brandAccent}>X</span>
+                    </>
+                  )}
                 </span>
               </Link>
               <p className={styles.footerDesc}>

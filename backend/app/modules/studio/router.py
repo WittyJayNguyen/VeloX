@@ -961,6 +961,10 @@ async def create_studio_job(
     job_type = body.type.strip().lower()
     cat_lookup = job_type.upper()
 
+    # 0. Check system maintenance mode
+    from app.modules.system.router import check_system_maintenance
+    await check_system_maintenance(db, current_user)
+
     # 1. Lookup model selling credit price from catalog
     stmt = select(AIModel).where(AIModel.model_code == body.model_code)
     res = await db.execute(stmt)

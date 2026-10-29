@@ -623,5 +623,14 @@
     "scan_zalo_group": "Zaloサポートグループ",
     "channel_notice": "お知らせチャンネル",
     "contact_admin": "管理者へ連絡"
+  },
+  "system": {
+    "maintenance_active": "システムメンテナンス中",
+    "maintenance_marquee_default": "現在、定期メンテナンスおよびアップグレードを実施中です。AI生成（画像・動画・音声）およびAPIゲートウェイは一時停止しています。しばらくお待ちください！",
+    "maintenance_tag": "メンテナンス"
+  },
+  "notifications": {
+    "mark_all_read": "すべて既読にする",
+    "empty": "通知はありません"
   }
 }

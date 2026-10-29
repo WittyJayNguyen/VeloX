@@ -29,6 +29,7 @@ import { useAuthStore } from '@modules/auth/states/authStore';
 import { modelService, type PublicModelItem, type ModelConfig } from '@modules/models/services/modelService';
 import apiClient from '@modules/core/lib/apiClient';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
+import { useSystemStore } from '@modules/core/states/systemStore';
 import styles from './StudioPage.module.scss';
 
 export interface GenerationJob {
@@ -442,7 +443,8 @@ export const StudioPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, syncProfile, updateUser, addCredits } = useAuthStore();
+  const { user, isAuthenticated, isSuperAdmin, syncProfile, updateUser, addCredits } = useAuthStore();
+  const { maintenanceMode, maintenanceMessage } = useSystemStore();
 
   // Enforce authentication: Must be logged in to enter VeloX Studio
   useEffect(() => {
@@ -1042,6 +1044,12 @@ export const StudioPage: React.FC = () => {
       setTimeout(() => setTextareaShake(false), 600);
       setToastMsg('💡 ' + t('studio.prompt_required', 'Vui lòng nhập mô tả ý tưởng hoặc chọn một gợi ý mẫu bên dưới!'));
       setTimeout(() => setToastMsg(null), 3500);
+      return;
+    }
+
+    if (maintenanceMode && !isSuperAdmin) {
+      setToastMsg(`⚠️ ${maintenanceMessage || 'Hệ thống đang trong thời gian bảo trì nâng cấp. Mọi tiến trình tạo AI tạm dừng. Vui lòng quay lại sau!'}`);
+      setTimeout(() => setToastMsg(null), 4500);
       return;
     }
 
