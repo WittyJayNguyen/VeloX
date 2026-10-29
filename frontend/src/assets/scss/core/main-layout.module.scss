@@ -13,8 +13,8 @@ $text-light: #ffffff;
 $text-muted: #9ca3af;
 $accent-green: #22c55e;
 
-$font-heading: 'Barlow Condensed', sans-serif;
-$font-body: 'Barlow', sans-serif;
+$font-heading: Roboto, Arial, sans-serif;
+$font-body: Roboto, Arial, sans-serif;
 
 .layout {
   min-height: 100vh;
@@ -22,7 +22,8 @@ $font-body: 'Barlow', sans-serif;
   flex-direction: column;
   background-color: $bg-dark;
   color: $text-light;
-  font-family: $font-body;
+  font-family: Roboto, Arial, sans-serif;
+  font-variation-settings: "wdth" 100;
   position: relative;
   width: 100%;
   overflow-x: hidden;
