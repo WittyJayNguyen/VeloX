@@ -665,6 +665,101 @@ $font-body: 'Barlow', sans-serif;
   }
 }
 
+// Zalo QR Code & Contact Channels in Footer
+.zaloQrCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  max-width: 250px;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: rgba(255, 107, 53, 0.35);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 107, 53, 0.12);
+  }
+}
+
+.qrImageWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .qrImage {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .qrScanHint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0284c7; // Zalo Blue Brand
+    letter-spacing: -0.01em;
+  }
+}
+
+.contactLines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.84rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+
+  .contactIcon {
+    color: #94a3b8;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .contactLabel {
+    color: #94a3b8;
+    white-space: nowrap;
+  }
+
+  .contactUsername {
+    color: #38bdf8;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease, text-decoration 0.15s ease;
+
+    &:hover {
+      color: #7dd3fc;
+      text-decoration: underline;
+    }
+  }
+}
+
 .footerBottomBar {
   padding-top: 2rem;
   border-top: 1px solid $border;

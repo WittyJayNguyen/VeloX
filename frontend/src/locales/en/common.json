@@ -619,5 +619,11 @@
     "out_of_credits_title": "Insufficient Credits",
     "out_of_credits_desc": "Please top up your credits to continue chatting with AI.",
     "topup_btn": "Top Up Credits"
+  },
+  "footer": {
+    "support": "Support",
+    "scan_zalo_group": "Zalo Support Group",
+    "channel_notice": "Notice channel",
+    "contact_admin": "Contact admin"
   }
 }

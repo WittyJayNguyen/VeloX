@@ -619,5 +619,11 @@
     "out_of_credits_title": "Hết số dư Credit",
     "out_of_credits_desc": "Bạn cần nạp thêm credit để tiếp tục trò chuyện cùng AI.",
     "topup_btn": "Nạp Credit Ngay"
+  },
+  "footer": {
+    "support": "Hỗ Trợ",
+    "scan_zalo_group": "Nhóm Zalo Hỗ Trợ",
+    "channel_notice": "Kênh thông báo",
+    "contact_admin": "Liên hệ admin"
   }
 }

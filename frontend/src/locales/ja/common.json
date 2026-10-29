@@ -617,5 +617,11 @@
     "out_of_credits_title": "クレジット残高不足",
     "out_of_credits_desc": "AI との会話を続けるにはクレジットをチャージしてください。",
     "topup_btn": "今すぐチャージ"
+  },
+  "footer": {
+    "support": "サポート",
+    "scan_zalo_group": "Zaloサポートグループ",
+    "channel_notice": "お知らせチャンネル",
+    "contact_admin": "管理者へ連絡"
   }
 }
