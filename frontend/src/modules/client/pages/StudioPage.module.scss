@@ -1076,10 +1076,11 @@
 .modelPillDropdown,
 .paramsPillDropdown {
   position: relative;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
-.modelPillBtn,
-.paramsPillBtn {
+.modelPillBtn {
   background: #242427;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
@@ -1094,13 +1095,15 @@
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
-  flex-shrink: 0;
-  max-width: 240px;
+  flex-shrink: 1;
+  min-width: 60px;
+  max-width: 220px;
 
   span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: inline-block;
   }
 
   &:hover {
@@ -1120,9 +1123,39 @@
 }
 
 .paramsPillBtn {
+  background: #242427;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0 9px;
+  height: 30px;
   color: #d4d4d8;
+  font-size: 12px;
   font-weight: 500;
-  max-width: 190px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 60px;
+  max-width: 175px;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  &:hover {
+    background: #323236;
+  }
+
+  .chevron {
+    color: #8e8e93;
+    flex-shrink: 0;
+  }
 }
 
 // Speaker Toggle Button for Video Mode (Integrated in Toolbar)
@@ -1157,7 +1190,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0; // LUÔN BẢO VỆ CREDIT BADGE + MIC + SUBMIT BUTTON KHÔNG BỊ TRÀN
+  flex-shrink: 0;
+  margin-left: auto;
+  position: relative;
+  z-index: 10;
 }
 
 .creditCostBadge {
@@ -1175,6 +1211,7 @@
   user-select: none;
   transition: all 0.2s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 
   .costSparkleIcon {
     color: #38bdf8;

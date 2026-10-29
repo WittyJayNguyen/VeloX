@@ -117,20 +117,20 @@ export const getFallbackModelConfig = (category: string, modelCode?: string): Mo
     return {
       durations: is30s ? ['5s', '10s', '15s', '30s'] : ['5s', '10s'],
       resolutions: ['720p', '1080p', '4K'],
-      aspectRatios: ['Tự động', '16:9', '9:16', '1:1'],
+      aspectRatios: ['Auto', '16:9', '9:16', '1:1'],
       defaultDuration: '5s',
       defaultResolution: '1080p',
-      defaultAspectRatio: 'Tự động',
+      defaultAspectRatio: 'Auto',
     };
   }
   if (cat === 'IMAGE') {
     return {
       resolutions: ['1K', '2K', '4K'],
-      aspectRatios: ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9'],
-      qualities: ['Tiêu chuẩn', 'Cao', 'Ultra'],
+      aspectRatios: ['Auto', '1:1', '16:9', '9:16', '4:3', '21:9'],
+      qualities: ['Standard', 'High', 'Ultra'],
       defaultResolution: '1K',
-      defaultAspectRatio: 'Tự động',
-      defaultQuality: 'Cao',
+      defaultAspectRatio: 'Auto',
+      defaultQuality: 'High',
     };
   }
   if (cat === 'AUDIO') {
@@ -200,13 +200,73 @@ export const matchModelCode = (rawCode: string, list: PublicModelItem[]): Public
   return null;
 };
 
+export const sanitizeParamRatio = (val?: string): string => {
+  if (!val) return 'Auto';
+  const clean = val.trim();
+  if (
+    clean === 'Tự động' ||
+    clean.toLowerCase() === 'auto' ||
+    clean.toLowerCase().includes('tự') ||
+    clean.toLowerCase().includes('tu dong') ||
+    /^[Tt][\?\ufffd\s_]/.test(clean) ||
+    clean.includes('???')
+  ) {
+    return 'Auto';
+  }
+  return clean;
+};
+
+export const sanitizeParamQuality = (val?: string): string => {
+  if (!val) return 'Standard';
+  const clean = val.trim();
+  if (
+    clean === 'Tiêu chuẩn' ||
+    clean.toLowerCase() === 'standard' ||
+    clean.toLowerCase().includes('tiêu') ||
+    clean.toLowerCase().includes('tieu chuan') ||
+    /^[Tt]i[eê][\?\ufffd\s_]/.test(clean) ||
+    clean.includes('???')
+  ) {
+    return 'Standard';
+  }
+  if (clean === 'Cao' || clean.toLowerCase() === 'high' || clean.toLowerCase().includes('cao')) {
+    return 'High';
+  }
+  if (clean.toLowerCase() === 'ultra') return 'Ultra';
+  return clean;
+};
+
 export const translateParamOption = (val: string, tFn: any) => {
   if (!val) return '';
-  if (val === 'Tự động' || val === 'Auto') return tFn('studio.auto', 'Tự động');
-  if (val === 'Tiêu chuẩn' || val === 'Standard') return tFn('studio.standard', 'Tiêu chuẩn');
-  if (val === 'Cao' || val === 'High') return tFn('studio.high', 'Cao');
-  if (val === 'Ultra') return tFn('studio.ultra', 'Ultra');
-  return val;
+  const clean = val.trim();
+  if (
+    clean === 'Tự động' ||
+    clean.toLowerCase() === 'auto' ||
+    clean.toLowerCase().includes('tự') ||
+    clean.toLowerCase().includes('tu dong') ||
+    /^[Tt][\?\ufffd\s_]/.test(clean) ||
+    clean.includes('???')
+  ) {
+    return tFn('studio.auto', 'Tự động');
+  }
+  if (
+    clean === 'Tiêu chuẩn' ||
+    clean.toLowerCase() === 'standard' ||
+    clean.toLowerCase().includes('tiêu') ||
+    clean.toLowerCase().includes('tieu chuan') ||
+    /^[Tt]i[eê][\?\ufffd\s_]/.test(clean)
+  ) {
+    return tFn('studio.standard', 'Tiêu chuẩn');
+  }
+  if (
+    clean === 'Cao' ||
+    clean.toLowerCase() === 'high' ||
+    clean.toLowerCase().includes('cao')
+  ) {
+    return tFn('studio.high', 'Cao');
+  }
+  if (clean.toLowerCase() === 'ultra') return tFn('studio.ultra', 'Ultra');
+  return clean;
 };
 
 // ── Smooth Image Thumbnail with Shimmer Placeholder ──
@@ -438,8 +498,8 @@ export const StudioPage: React.FC = () => {
   const [resolution, setResolution] = useState<string>('1K');
   const [videoResolution, setVideoResolution] = useState<string>('1080p');
   const [videoDuration, setVideoDuration] = useState<string>('5s');
-  const [aspectRatio, setAspectRatio] = useState<string>('Tự động');
-  const [quality, setQuality] = useState<string>('Cao');
+  const [aspectRatio, setAspectRatio] = useState<string>('Auto');
+  const [quality, setQuality] = useState<string>('High');
   const [audioVoice, setAudioVoice] = useState<string>('English · American');
 
   // Active generating jobs
@@ -735,14 +795,18 @@ export const StudioPage: React.FC = () => {
       return {
         durations: durations,
         resolutions: Array.isArray(dbConfig.resolutions) && dbConfig.resolutions.length > 0 ? dbConfig.resolutions : fallback.resolutions,
-        aspectRatios: Array.isArray(dbConfig.aspectRatios) && dbConfig.aspectRatios.length > 0 ? dbConfig.aspectRatios : fallback.aspectRatios,
-        qualities: Array.isArray(dbConfig.qualities) && dbConfig.qualities.length > 0 ? dbConfig.qualities : fallback.qualities,
+        aspectRatios: (Array.isArray(dbConfig.aspectRatios) && dbConfig.aspectRatios.length > 0
+          ? dbConfig.aspectRatios
+          : (fallback.aspectRatios || ['Auto'])).map(sanitizeParamRatio),
+        qualities: (Array.isArray(dbConfig.qualities) && dbConfig.qualities.length > 0
+          ? dbConfig.qualities
+          : (fallback.qualities || ['Standard'])).map(sanitizeParamQuality),
         voices: Array.isArray(dbConfig.voices) && dbConfig.voices.length > 0 ? dbConfig.voices : fallback.voices,
         tones: Array.isArray(dbConfig.tones) && dbConfig.tones.length > 0 ? dbConfig.tones : fallback.tones,
         defaultDuration: dbConfig.defaultDuration || fallback.defaultDuration,
         defaultResolution: dbConfig.defaultResolution || fallback.defaultResolution,
-        defaultAspectRatio: dbConfig.defaultAspectRatio || fallback.defaultAspectRatio,
-        defaultQuality: dbConfig.defaultQuality || fallback.defaultQuality,
+        defaultAspectRatio: sanitizeParamRatio(dbConfig.defaultAspectRatio || fallback.defaultAspectRatio),
+        defaultQuality: sanitizeParamQuality(dbConfig.defaultQuality || fallback.defaultQuality),
         defaultVoice: dbConfig.defaultVoice || fallback.defaultVoice,
         defaultTone: dbConfig.defaultTone || fallback.defaultTone,
       };
@@ -761,18 +825,24 @@ export const StudioPage: React.FC = () => {
       if (!allowedResolutions.includes(videoResolution)) {
         setVideoResolution(activeModelConfig.defaultResolution || allowedResolutions[0]);
       }
-      const allowedRatios = activeModelConfig.aspectRatios || ['Tự động', '16:9', '9:16'];
-      if (!allowedRatios.includes(aspectRatio)) {
+      const allowedRatios = (activeModelConfig.aspectRatios || ['Auto', '16:9', '9:16']).map(sanitizeParamRatio);
+      const curRatio = sanitizeParamRatio(aspectRatio);
+      if (!allowedRatios.includes(curRatio)) {
         setAspectRatio(activeModelConfig.defaultAspectRatio || '16:9');
+      } else if (aspectRatio !== curRatio) {
+        setAspectRatio(curRatio);
       }
     } else if (activeTab === 'image') {
       const allowedResolutions = activeModelConfig.resolutions || ['1K', '2K'];
       if (!allowedResolutions.includes(resolution)) {
         setResolution(activeModelConfig.defaultResolution || allowedResolutions[0]);
       }
-      const allowedQualities = activeModelConfig.qualities || ['Tiêu chuẩn', 'Cao'];
-      if (quality && !allowedQualities.includes(quality)) {
+      const allowedQualities = (activeModelConfig.qualities || ['Standard', 'High']).map(sanitizeParamQuality);
+      const curQuality = sanitizeParamQuality(quality);
+      if (quality && !allowedQualities.includes(curQuality)) {
         setQuality(activeModelConfig.defaultQuality || allowedQualities[0]);
+      } else if (quality !== curQuality) {
+        setQuality(curQuality);
       }
     }
   }, [selectedModelCode, activeTab, activeModelConfig]);
@@ -2205,12 +2275,12 @@ export const StudioPage: React.FC = () => {
 
                           <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
                           <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.aspectRatios || ['Tự động', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
+                            {(activeModelConfig.aspectRatios || ['Auto', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
                               <button
                                 key={ratio}
                                 type="button"
-                                className={`${styles.paramChip} ${aspectRatio === ratio ? styles.paramActive : ''}`}
-                                onClick={() => setAspectRatio(ratio)}
+                                className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
+                                onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
                               >
                                 {translateParamOption(ratio, t)}
                               </button>
@@ -2219,12 +2289,12 @@ export const StudioPage: React.FC = () => {
 
                           <div className={styles.paramGroupTitle}>{t('studio.render_quality', 'Chất lượng Render')}</div>
                           <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.qualities || ['Tiêu chuẩn', 'Cao', 'Ultra']).map((q) => (
+                            {(activeModelConfig.qualities || ['Standard', 'High', 'Ultra']).map((q) => (
                               <button
                                 key={q}
                                 type="button"
-                                className={`${styles.paramChip} ${quality === q ? styles.paramActive : ''}`}
-                                onClick={() => setQuality(q)}
+                                className={`${styles.paramChip} ${sanitizeParamQuality(quality) === sanitizeParamQuality(q) ? styles.paramActive : ''}`}
+                                onClick={() => setQuality(sanitizeParamQuality(q))}
                               >
                                 {translateParamOption(q, t)}
                               </button>
@@ -2251,12 +2321,12 @@ export const StudioPage: React.FC = () => {
 
                           <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
                           <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.aspectRatios || ['Tự động', '16:9', '9:16']).map((ratio) => (
+                            {(activeModelConfig.aspectRatios || ['Auto', '16:9', '9:16']).map((ratio) => (
                               <button
                                 key={ratio}
                                 type="button"
-                                className={`${styles.paramChip} ${aspectRatio === ratio ? styles.paramActive : ''}`}
-                                onClick={() => setAspectRatio(ratio)}
+                                className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
+                                onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
                               >
                                 {translateParamOption(ratio, t)}
                               </button>

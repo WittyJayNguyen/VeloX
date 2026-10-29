@@ -378,10 +378,10 @@ def get_model_config(item: dict) -> dict:
         return {
             "durations": ["5s", "10s"],
             "resolutions": ["720p", "1080p"],
-            "aspectRatios": ["Tự động", "16:9", "9:16", "1:1"],
+            "aspectRatios": ["Auto", "16:9", "9:16", "1:1"],
             "defaultDuration": "5s",
             "defaultResolution": "1080p",
-            "defaultAspectRatio": "Tự động",
+            "defaultAspectRatio": "Auto",
         }
     if "runway" in code:
         return {
@@ -396,10 +396,10 @@ def get_model_config(item: dict) -> dict:
         return {
             "durations": ["6s"],
             "resolutions": ["720p", "1080p"],
-            "aspectRatios": ["Tự động", "16:9", "9:16", "1:1"],
+            "aspectRatios": ["Auto", "16:9", "9:16", "1:1"],
             "defaultDuration": "6s",
             "defaultResolution": "1080p",
-            "defaultAspectRatio": "Tự động",
+            "defaultAspectRatio": "Auto",
         }
     if "kling" in code:
         return {
@@ -434,7 +434,7 @@ def get_model_config(item: dict) -> dict:
         return {
             "resolutions": ["1K", "2K", "4K"],
             "aspectRatios": ["1:1", "16:9", "9:16", "4:3", "21:9"],
-            "qualities": ["Tiêu chuẩn", "Cao", "Ultra"],
+            "qualities": ["Standard", "High", "Ultra"],
             "defaultResolution": "2K",
             "defaultAspectRatio": "16:9",
             "defaultQuality": "Ultra",
@@ -443,16 +443,16 @@ def get_model_config(item: dict) -> dict:
         return {
             "resolutions": ["1K", "2K"],
             "aspectRatios": ["1:1", "16:9", "9:16", "4:3"],
-            "qualities": ["Tiêu chuẩn", "Cao"],
+            "qualities": ["Standard", "High"],
             "defaultResolution": "1K",
             "defaultAspectRatio": "1:1",
-            "defaultQuality": "Cao",
+            "defaultQuality": "High",
         }
     if "dall-e" in code:
         return {
             "resolutions": ["1K", "2K"],
             "aspectRatios": ["1:1", "16:9", "9:16"],
-            "qualities": ["Tiêu chuẩn", "HD"],
+            "qualities": ["Standard", "HD"],
             "defaultResolution": "1K",
             "defaultAspectRatio": "1:1",
             "defaultQuality": "HD",
@@ -463,19 +463,19 @@ def get_model_config(item: dict) -> dict:
         return {
             "durations": ["5s", "10s"],
             "resolutions": ["720p", "1080p"],
-            "aspectRatios": ["Tự động", "16:9", "9:16", "1:1"],
+            "aspectRatios": ["Auto", "16:9", "9:16", "1:1"],
             "defaultDuration": "5s",
             "defaultResolution": "1080p",
-            "defaultAspectRatio": "Tự động",
+            "defaultAspectRatio": "Auto",
         }
     if cat == "IMAGE":
         return {
             "resolutions": ["1K", "2K", "4K"],
-            "aspectRatios": ["Tự động", "1:1", "16:9", "9:16", "4:3", "21:9"],
-            "qualities": ["Tiêu chuẩn", "Cao", "Ultra"],
+            "aspectRatios": ["Auto", "1:1", "16:9", "9:16", "4:3", "21:9"],
+            "qualities": ["Standard", "High", "Ultra"],
             "defaultResolution": "1K",
-            "defaultAspectRatio": "Tự động",
-            "defaultQuality": "Cao",
+            "defaultAspectRatio": "Auto",
+            "defaultQuality": "High",
         }
     if cat == "AUDIO":
         return {
