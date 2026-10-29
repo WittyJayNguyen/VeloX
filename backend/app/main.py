@@ -97,6 +97,7 @@ async def lifespan(app: FastAPI):
                     cols = [c["name"] for c in inspector.get_columns("system_settings")]
                     for col_name, col_type in [
                         ("google_client_id", "VARCHAR(255)"),
+                        ("google_client_secret", "VARCHAR(255)"),
                         ("telegram_bot_username", "VARCHAR(128)"),
                     ]:
                         if col_name not in cols:

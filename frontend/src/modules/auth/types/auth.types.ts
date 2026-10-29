@@ -47,6 +47,8 @@ export interface ChangePasswordPayload {
 export interface GoogleAuthPayload {
   credential?: string;
   access_token?: string;
+  code?: string;
+  redirect_uri?: string;
   email?: string;
   google_id?: string;
   full_name?: string;
