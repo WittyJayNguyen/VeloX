@@ -180,22 +180,19 @@
       "credit-audits": "Sổ Cái Credit",
       "credit_audits": "Sổ Cái Credit",
       "ip_abuse": "Chống Bào IP",
-      "ip-abuse": "Chống Bào IP",
       "notifications": "Thông Báo",
+      "translations": "Quản Lý Đa Ngôn Ngữ",
+      "creative_vault": "Kho Prompt & Tác Phẩm",
       "settings": "Cài Đặt"
     },
-    "dashboard": {
-      "title": "Bảng Điều Khiển Quản Trị CRM",
-      "total_users": "Tổng Người Dùng",
-      "total_revenue": "Doanh Thu Nạp Tiền",
-      "lead_conversion": "Tỉ Lệ Thành Công",
-      "daily_income": "Doanh Thu TB Ngày",
-      "total_requests": "Tổng Yêu Cầu API",
-      "sales_forecast": "Doanh Số Theo Gói Nạp",
-      "model_types": "Thống Kê 4 Nhóm Model",
-      "balance_overview": "Cân Bằng Doanh Thu & Chi Phí Token",
-      "deals_status": "Giao Dịch Nạp Tiền Gần Nhất",
-      "pool_alerts": "Giám Sát Tình Trạng Pool"
+    "badge": {
+      "all_prompts": "Toàn Bộ",
+      "my_library": "Kho Của Tôi",
+      "profit": "Lợi Nhuận",
+      "inventory": "Kiểm Kê",
+      "expense": "Phiếu Chi",
+      "cashflow": "Dòng Tiền",
+      "languages": "5 Ngôn Ngữ"
     },
     "audit": {
       "iam_title": "Nhật Ký Kiểm Toán IAM & Bảo Mật",

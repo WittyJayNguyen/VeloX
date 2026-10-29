@@ -423,16 +423,16 @@ export const TranslationsPage: React.FC = () => {
           overflowX: 'auto',
           marginBottom: '20px',
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px' }}>
+          <table style={{ width: '100%', minWidth: '1180px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ background: '#0d111a', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8' }}>
-                <th style={{ padding: '12px 14px', width: '220px' }}>Key & Nhóm</th>
-                <th style={{ padding: '12px 14px', width: '20%' }}>🇻🇳 Tiếng Việt (vi)</th>
-                <th style={{ padding: '12px 14px', width: '20%' }}>🇺🇸 English (en)</th>
-                <th style={{ padding: '12px 14px', width: '18%' }}>🇨🇳 中文 (zh)</th>
-                <th style={{ padding: '12px 14px', width: '18%' }}>🇯🇵 日本語 (ja)</th>
-                <th style={{ padding: '12px 14px', width: '18%' }}>🇰🇷 한국어 (ko)</th>
-                <th style={{ padding: '12px 14px', width: '90px', textAlign: 'right' }}>Thao Tác</th>
+                <th style={{ padding: '12px 14px', width: '220px', whiteSpace: 'nowrap' }}>Key & Nhóm</th>
+                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇻🇳 Tiếng Việt (vi)</th>
+                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇺🇸 English (en)</th>
+                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇨🇳 中文 (zh)</th>
+                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇯🇵 日本語 (ja)</th>
+                <th style={{ padding: '12px 14px', width: '180px', whiteSpace: 'nowrap' }}>🇰🇷 한국어 (ko)</th>
+                <th style={{ padding: '12px 14px', width: '90px', textAlign: 'right', whiteSpace: 'nowrap' }}>Thao Tác</th>
               </tr>
             </thead>
             <tbody>
@@ -442,13 +442,24 @@ export const TranslationsPage: React.FC = () => {
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.15s' }}
                 >
                   {/* Key & Category */}
-                  <td style={{ padding: '10px 14px' }}>
-                    <div style={{ fontWeight: 600, color: '#f8fafc', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '12px' }}>
+                  <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        color: '#f8fafc',
+                        fontFamily: 'monospace',
+                        fontSize: '12px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title={item.key}
+                    >
                       {item.key}
                     </div>
                     <span style={{
                       display: 'inline-block',
-                      marginTop: '4px',
+                      marginTop: '3px',
                       background: 'rgba(99, 102, 241, 0.12)',
                       color: '#a5b4fc',
                       fontSize: '10px',
@@ -460,25 +471,75 @@ export const TranslationsPage: React.FC = () => {
                     </span>
                   </td>
 
-                  {/* Languages columns */}
-                  <td style={{ padding: '10px 14px', color: '#cbd5e1', lineHeight: 1.4, wordBreak: 'break-word' }}>
-                    {item.vi || <span style={{ color: '#475569', fontStyle: 'italic' }}>Trống</span>}
+                  {/* Languages columns - All strictly on 1 single row */}
+                  <td
+                    style={{
+                      padding: '10px 14px',
+                      color: '#cbd5e1',
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    title={item.vi}
+                  >
+                    {item.vi || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
                   </td>
-                  <td style={{ padding: '10px 14px', color: '#cbd5e1', lineHeight: 1.4, wordBreak: 'break-word' }}>
-                    {item.en || <span style={{ color: '#475569', fontStyle: 'italic' }}>Empty</span>}
+                  <td
+                    style={{
+                      padding: '10px 14px',
+                      color: '#cbd5e1',
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    title={item.en}
+                  >
+                    {item.en || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
                   </td>
-                  <td style={{ padding: '10px 14px', color: '#cbd5e1', lineHeight: 1.4, wordBreak: 'break-word' }}>
-                    {item.zh || <span style={{ color: '#475569', fontStyle: 'italic' }}>Empty</span>}
+                  <td
+                    style={{
+                      padding: '10px 14px',
+                      color: '#cbd5e1',
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    title={item.zh}
+                  >
+                    {item.zh || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
                   </td>
-                  <td style={{ padding: '10px 14px', color: '#cbd5e1', lineHeight: 1.4, wordBreak: 'break-word' }}>
-                    {item.ja || <span style={{ color: '#475569', fontStyle: 'italic' }}>Empty</span>}
+                  <td
+                    style={{
+                      padding: '10px 14px',
+                      color: '#cbd5e1',
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    title={item.ja}
+                  >
+                    {item.ja || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
                   </td>
-                  <td style={{ padding: '10px 14px', color: '#cbd5e1', lineHeight: 1.4, wordBreak: 'break-word' }}>
-                    {item.ko || <span style={{ color: '#475569', fontStyle: 'italic' }}>Empty</span>}
+                  <td
+                    style={{
+                      padding: '10px 14px',
+                      color: '#cbd5e1',
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    title={item.ko}
+                  >
+                    {item.ko || <span style={{ color: '#475569', fontStyle: 'italic' }}>—</span>}
                   </td>
 
                   {/* Actions */}
-                  <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
                       <button
                         onClick={() => handleOpenEdit(item)}
@@ -524,7 +585,7 @@ export const TranslationsPage: React.FC = () => {
       )}
 
       {/* Pagination Footer */}
-      {totalPages > 1 && (
+      {total > 0 && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -544,12 +605,12 @@ export const TranslationsPage: React.FC = () => {
             })}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <select
               value={pageSize}
               onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               style={{
-                padding: '5px 10px',
+                padding: '6px 10px',
                 borderRadius: '6px',
                 background: '#0a0d14',
                 border: '1px solid rgba(255,255,255,0.1)',
@@ -580,6 +641,34 @@ export const TranslationsPage: React.FC = () => {
             >
               {t('common.prev', 'Trước')}
             </button>
+
+            {/* Direct Page Numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pNum = i + 1;
+              if (totalPages > 5 && page > 3) {
+                pNum = Math.min(totalPages - 4 + i, Math.max(1, page - 2 + i));
+              }
+              const isActive = pNum === page;
+              return (
+                <button
+                  key={pNum}
+                  onClick={() => setPage(pNum)}
+                  style={{
+                    padding: '6px 10px',
+                    minWidth: '32px',
+                    borderRadius: '6px',
+                    border: isActive ? '1px solid #0284c7' : '1px solid rgba(255,255,255,0.1)',
+                    background: isActive ? '#0284c7' : '#111520',
+                    color: isActive ? '#fff' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {pNum}
+                </button>
+              );
+            })}
 
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}

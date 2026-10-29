@@ -741,16 +741,16 @@ export const PromptVaultPage: React.FC = () => {
           overflowX: 'auto',
           marginBottom: '24px',
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+          <table style={{ width: '100%', minWidth: '980px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
             <thead>
               <tr style={{ background: '#0d111a', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#94a3b8' }}>
-                <th style={{ padding: '12px 16px', width: '70px' }}>Media</th>
-                <th style={{ padding: '12px 16px' }}>Prompt</th>
-                <th style={{ padding: '12px 16px', width: '140px' }}>Model</th>
-                <th style={{ padding: '12px 16px', width: '180px' }}>Người Tạo</th>
-                <th style={{ padding: '12px 16px', width: '100px' }}>Credits</th>
-                <th style={{ padding: '12px 16px', width: '130px' }}>Thời Gian</th>
-                <th style={{ padding: '12px 16px', width: '110px', textAlign: 'right' }}>Thao Tác</th>
+                <th style={{ padding: '12px 16px', width: '70px', whiteSpace: 'nowrap' }}>Media</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Prompt</th>
+                <th style={{ padding: '12px 16px', width: '140px', whiteSpace: 'nowrap' }}>Model</th>
+                <th style={{ padding: '12px 16px', width: '180px', whiteSpace: 'nowrap' }}>Người Tạo</th>
+                <th style={{ padding: '12px 16px', width: '100px', whiteSpace: 'nowrap' }}>Credits</th>
+                <th style={{ padding: '12px 16px', width: '150px', whiteSpace: 'nowrap' }}>Thời Gian</th>
+                <th style={{ padding: '12px 16px', width: '110px', textAlign: 'right', whiteSpace: 'nowrap' }}>Thao Tác</th>
               </tr>
             </thead>
             <tbody>
@@ -764,7 +764,7 @@ export const PromptVaultPage: React.FC = () => {
                     key={job.id}
                     style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.15s' }}
                   >
-                    <td style={{ padding: '10px 16px' }}>
+                    <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
                       <div
                         style={{
                           width: '46px',
@@ -791,18 +791,17 @@ export const PromptVaultPage: React.FC = () => {
                       </div>
                     </td>
                     <td style={{ padding: '10px 16px', maxWidth: '380px' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <p style={{
                           margin: 0,
                           fontSize: '12.5px',
                           color: '#e2e8f0',
                           lineHeight: 1.4,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
+                          whiteSpace: 'nowrap',
                           overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                           flex: 1,
-                        }}>
+                        }} title={job.prompt}>
                           {job.prompt}
                         </p>
                         <button
@@ -815,25 +814,26 @@ export const PromptVaultPage: React.FC = () => {
                             borderRadius: '4px',
                             padding: '4px',
                             cursor: 'pointer',
+                            flexShrink: 0,
                           }}
                         >
                           {isCopied ? <HiOutlineClipboardDocumentCheck size={14} /> : <HiOutlineClipboardDocument size={14} />}
                         </button>
                       </div>
                     </td>
-                    <td style={{ padding: '10px 16px', color: '#818cf8', fontWeight: 600, fontSize: '12px' }}>
+                    <td style={{ padding: '10px 16px', color: '#818cf8', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }} title={job.model_id}>
                       {job.model_id || 'AI Model'}
                     </td>
-                    <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: '12px' }}>
+                    <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }} title={job.user_email}>
                       {job.user_email || 'user@velox.ai'}
                     </td>
-                    <td style={{ padding: '10px 16px', color: '#facc15', fontWeight: 600, fontSize: '12px' }}>
+                    <td style={{ padding: '10px 16px', color: '#facc15', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap' }}>
                       {job.credits_charged} cr
                     </td>
-                    <td style={{ padding: '10px 16px', color: '#64748b', fontSize: '12px' }}>
+                    <td style={{ padding: '10px 16px', color: '#64748b', fontSize: '12px', whiteSpace: 'nowrap' }}>
                       {job.created_at ? new Date(job.created_at).toLocaleString() : ''}
                     </td>
-                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
+                    <td style={{ padding: '10px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
                         <button
                           onClick={() => handleOpenInPlayground(job.prompt, job.model_id)}
@@ -874,7 +874,7 @@ export const PromptVaultPage: React.FC = () => {
       )}
 
       {/* Pagination Footer */}
-      {totalPages > 1 && (
+      {total > 0 && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -885,6 +885,7 @@ export const PromptVaultPage: React.FC = () => {
           padding: '12px 18px',
           borderRadius: '10px',
           border: '1px solid rgba(255,255,255,0.06)',
+          marginTop: '16px',
         }}>
           <div style={{ fontSize: '12.5px', color: '#94a3b8' }}>
             {t('common.showing_page', 'Trang {{current}} / {{total}} (Tổng số {{count}} tác phẩm)', {
@@ -894,12 +895,12 @@ export const PromptVaultPage: React.FC = () => {
             })}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <select
               value={pageSize}
               onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               style={{
-                padding: '5px 10px',
+                padding: '6px 10px',
                 borderRadius: '6px',
                 background: '#0a0d14',
                 border: '1px solid rgba(255,255,255,0.1)',
@@ -911,6 +912,7 @@ export const PromptVaultPage: React.FC = () => {
               <option value="12">12 / trang</option>
               <option value="24">24 / trang</option>
               <option value="48">48 / trang</option>
+              <option value="96">96 / trang</option>
             </select>
 
             <button
@@ -929,6 +931,34 @@ export const PromptVaultPage: React.FC = () => {
             >
               {t('common.prev', 'Trước')}
             </button>
+
+            {/* Direct Page Numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pNum = i + 1;
+              if (totalPages > 5 && page > 3) {
+                pNum = Math.min(totalPages - 4 + i, Math.max(1, page - 2 + i));
+              }
+              const isActive = pNum === page;
+              return (
+                <button
+                  key={pNum}
+                  onClick={() => setPage(pNum)}
+                  style={{
+                    padding: '6px 10px',
+                    minWidth: '32px',
+                    borderRadius: '6px',
+                    border: isActive ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)',
+                    background: isActive ? '#6366f1' : '#111520',
+                    color: isActive ? '#fff' : '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {pNum}
+                </button>
+              );
+            })}
 
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
