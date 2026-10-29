@@ -1088,21 +1088,27 @@ async def delete_user(
     if user_obj.id == current_user.id:
         raise HTTPException(status_code=400, detail="Bảo mật: Bạn không thể tự xóa tài khoản của chính mình")
 
-    # Record deletion audit log before removing
+    deleted_email = user_obj.email
+    deleted_name = user_obj.full_name or ""
+    deleted_id = user_obj.id
+
+    # 1. Delete user (and all cascaded relations: wallet, api keys, credit logs)
+    await db.delete(user_obj)
+
+    # 2. Record deletion audit log after removing target user
     a_log = UserAuditLog(
-        target_user_id=user_obj.id,
+        target_user_id=deleted_id,
         actor_id=current_user.id,
         actor_email=current_user.email,
         action="DELETE_USER",
-        details=json.dumps({"email": user_obj.email, "full_name": user_obj.full_name}, ensure_ascii=False),
+        details=json.dumps({"target_user_id": deleted_id, "email": deleted_email, "full_name": deleted_name}, ensure_ascii=False),
         reason="Xóa tài khoản khỏi hệ thống",
         ip_address=get_client_ip(request),
     )
     db.add(a_log)
-    await db.delete(user_obj)
     await db.commit()
 
-    return ok(message="Đã xóa người dùng khỏi hệ thống thành công")
+    return ok(message=f"Đã xóa người dùng {deleted_email} khỏi hệ thống thành công")
 
 
 # ── System-wide Audit Logs Endpoints ──

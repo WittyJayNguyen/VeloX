@@ -3,6 +3,7 @@ from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table, Text
 from sqlalchemy.orm import relationship
 from app.common.base_model import Base, UUIDMixin, TimestampMixin
 import app.modules.billing.models  # ensure UserWallet mapper is registered
+import app.modules.developers.models  # ensure UserApiKey mapper is registered
 
 # Many-to-Many: User <-> Role
 user_roles = Table(
@@ -49,6 +50,7 @@ class User(Base, UUIDMixin, TimestampMixin):
     wallet = relationship("UserWallet", uselist=False, back_populates="user", cascade="all, delete-orphan", lazy="selectin")
     credit_logs = relationship("CreditAuditLog", back_populates="user", cascade="all, delete-orphan", lazy="selectin")
     audit_logs = relationship("UserAuditLog", back_populates="target_user", cascade="all, delete-orphan", lazy="selectin")
+    api_keys = relationship("UserApiKey", back_populates="user", cascade="all, delete-orphan", lazy="selectin")
 
 
 class CreditAuditLog(Base, UUIDMixin, TimestampMixin):
@@ -71,7 +73,7 @@ class UserAuditLog(Base, UUIDMixin, TimestampMixin):
     """Security audit log for tracking all sensitive admin operations on users."""
     __tablename__ = "user_audit_logs"
 
-    target_user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     actor_id = Column(String(36), nullable=True)
     actor_email = Column(String(255), nullable=True)
     action = Column(String(64), nullable=False)                      # CREATE, UPDATE, ROLE_CHANGE, CREDIT_ADJUST, STATUS_CHANGE, PASSWORD_RESET, DELETE
