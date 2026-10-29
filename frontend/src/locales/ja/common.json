@@ -691,7 +691,9 @@
     "clear_all": "履歴をすべて消去",
     "out_of_credits_title": "クレジット残高不足",
     "out_of_credits_desc": "AI との会話を続けるにはクレジットをチャージしてください。",
-    "topup_btn": "今すぐチャージ"
+    "topup_btn": "今すぐチャージ",
+    "welcome_title": "今日はどのようなご用件でしょうか？",
+    "disclaimer": "VeloX AI は誤りを含む可能性があります。重要な情報は確認してください。"
   },
   "system": {
     "maintenance_active": "システムメンテナンス中",

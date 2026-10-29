@@ -686,7 +686,9 @@
     "clear_all": "清空所有历史",
     "out_of_credits_title": "积分余额不足",
     "out_of_credits_desc": "请充值积分以继续与 AI 进行对话。",
-    "topup_btn": "立即充值"
+    "topup_btn": "立即充值",
+    "welcome_title": "今天有什么我可以帮您的？",
+    "disclaimer": "VeloX AI 可能会犯错。请核实重要信息。"
   },
   "system": {
     "maintenance_active": "系统维护中",

@@ -693,7 +693,9 @@
     "clear_all": "Xóa toàn bộ lịch sử",
     "out_of_credits_title": "Hết số dư Credit",
     "out_of_credits_desc": "Bạn cần nạp thêm credit để tiếp tục trò chuyện cùng AI.",
-    "topup_btn": "Nạp Credit Ngay"
+    "topup_btn": "Nạp Credit Ngay",
+    "welcome_title": "Hôm nay tôi có thể giúp gì cho bạn?",
+    "disclaimer": "VeloX AI có thể mắc sai sót. Hãy kiểm tra lại các thông tin quan trọng."
   },
   "system": {
     "maintenance_active": "Bảo trì hệ thống",
