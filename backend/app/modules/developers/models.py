@@ -22,7 +22,7 @@ class UserApiKey(Base, UUIDMixin, TimestampMixin):
     last_used_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationship back to User
-    user = relationship("User", backref="api_keys", lazy="selectin")
+    user = relationship("User", back_populates="api_keys", lazy="selectin")
 
     def record_usage(self) -> None:
         """Updates total requests count and last used timestamp."""
