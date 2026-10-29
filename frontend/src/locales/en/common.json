@@ -180,22 +180,19 @@
       "credit_audits": "Credit Ledger",
       "credit-audits": "Credit Ledger",
       "ip_abuse": "Anti-Abuse IP",
-      "ip-abuse": "Anti-Abuse IP",
       "notifications": "Notifications",
+      "translations": "Multilingual Manager",
+      "creative_vault": "Prompt & Media Vault",
       "settings": "Settings"
     },
-    "dashboard": {
-      "title": "CRM Dashboard Overview",
-      "total_users": "Total Users",
-      "total_revenue": "Top-Up Revenue",
-      "lead_conversion": "Success Rate",
-      "daily_income": "Daily Avg Income",
-      "total_requests": "Total API Requests",
-      "sales_forecast": "Package Sales Forecast",
-      "model_types": "4 Model Categories Distribution",
-      "balance_overview": "Revenue vs Token Cost Balance",
-      "deals_status": "Recent Transactions",
-      "pool_alerts": "Pool Health & Depletion Alerts"
+    "badge": {
+      "all_prompts": "All Prompts",
+      "my_library": "My Library",
+      "profit": "Profit",
+      "inventory": "Inventory",
+      "expense": "Expense",
+      "cashflow": "Cashflow",
+      "languages": "5 Languages"
     },
     "audit": {
       "iam_title": "IAM & Security Audit Log",

@@ -155,6 +155,8 @@ const AdminLayout = () => {
     if (p === '/admin/credit-audits') return t('admin.audit.credit_ledger_title', 'Sổ Cái Biến Động Tín Dụng (Credit Ledger)');
     if (p === '/admin/ip-abuse') return t('admin.audit.ip_abuse_title', 'Giám Sát IP & Chống Bào Free');
     if (p === '/admin/notifications') return t('admin.sidebar.notifications', 'Thông Báo');
+    if (p === '/admin/translations') return t('admin.sidebar.translations', 'Quản Lý Đa Ngôn Ngữ');
+    if (p === '/admin/creative-vault') return t('admin.sidebar.creative_vault', 'Kho Prompt & Tác Phẩm');
     if (p === '/admin/wallet') return t('admin.sidebar.wallet', 'Ví & Lịch Sử');
     if (p === '/admin/accounting') return t('admin.sidebar.accounting', 'Kế Toán & Kiểm Toán Tài Sản');
     // Extract last segment → look up in sidebar translations

@@ -173,18 +173,19 @@
       "credit_audits": "크레딧 원장",
       "credit-audits": "크레딧 원장",
       "ip_abuse": "IP 어뷰징 방지",
-      "ip-abuse": "IP 어뷰징 방지",
       "notifications": "알림 관리",
+      "translations": "다국어 관리",
+      "creative_vault": "프롬프트 및 작품 보관소",
       "settings": "설정"
     },
-    "dashboard": {
-      "title": "CRM 관리 대시보드",
-      "total_users": "총 사용자",
-      "total_revenue": "오늘 충전 수익",
-      "total_credits_used": "사용 크레딧",
-      "pool_health": "풀 상태",
-      "revenue_chart": "수익 차트",
-      "consumption": "소비 내역"
+    "badge": {
+      "all_prompts": "전체",
+      "my_library": "내 보관소",
+      "profit": "마진 수익",
+      "inventory": "재고 실사",
+      "expense": "지출 결의",
+      "cashflow": "현금 흐름",
+      "languages": "5개 언어"
     },
     "audit": {
       "iam_title": "IAM 및 보안 감사 로그",

@@ -178,22 +178,19 @@
       "credit_audits": "クレジット台帳",
       "credit-audits": "クレジット台帳",
       "ip_abuse": "IP 乱用防止",
-      "ip-abuse": "IP 乱用防止",
       "notifications": "通知管理",
+      "translations": "多言語管理",
+      "creative_vault": "プロンプト＆作品保管庫",
       "settings": "設定"
     },
-    "dashboard": {
-      "title": "CRM 管理ダッシュボード",
-      "total_users": "総ユーザー数",
-      "total_revenue": "チャージ売上",
-      "lead_conversion": "成功率",
-      "daily_income": "日次平均売上",
-      "total_requests": "総 API リクエスト数",
-      "sales_forecast": "プラン別売上予測",
-      "model_types": "4 つのモデル分類統計",
-      "balance_overview": "売上とトークン原価バランス",
-      "deals_status": "最新の決済取引",
-      "pool_alerts": "プールの状態と枯渇警告"
+    "badge": {
+      "all_prompts": "全件",
+      "my_library": "マイ保管庫",
+      "profit": "利益",
+      "inventory": "棚卸し",
+      "expense": "出金伝票",
+      "cashflow": "キャッシュフロー",
+      "languages": "5言語"
     },
     "audit": {
       "iam_title": "IAM & セキュリティ監査ログ",

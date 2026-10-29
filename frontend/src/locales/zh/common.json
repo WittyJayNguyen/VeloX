@@ -173,18 +173,19 @@
       "credit-audits": "积分变动明细",
       "credit_audits": "积分变动明细",
       "ip_abuse": "IP 防刷盾",
-      "ip-abuse": "IP 防刷盾",
       "notifications": "通知中心",
+      "translations": "多语言管理",
+      "creative_vault": "提示词与作品库",
       "settings": "系统设置"
     },
-    "dashboard": {
-      "title": "CRM 管理仪表盘",
-      "total_users": "总用户数",
-      "total_revenue": "今日充值收入",
-      "total_credits_used": "已消耗积分",
-      "pool_health": "池健康度",
-      "revenue_chart": "收入图表",
-      "consumption": "消耗明细"
+    "badge": {
+      "all_prompts": "全量",
+      "my_library": "我的库",
+      "profit": "利润",
+      "inventory": "盘点",
+      "expense": "支出",
+      "cashflow": "现金流",
+      "languages": "5国语言"
     },
     "audit": {
       "iam_title": "IAM 与安全审计日志",
