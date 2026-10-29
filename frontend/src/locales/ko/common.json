@@ -16,8 +16,8 @@
   },
   "hero": {
     "badge": "차세대 AI 게이트웨이 플랫폼",
-    "title_1": "통합 AI 허브",
-    "title_highlight": "인공지능",
+    "title_1": "통합 AI 오케스트레이션",
+    "title_highlight": "멀티모델 VeloX",
     "subtitle": "OpenAI, Claude, Gemini, Midjourney 등 100개 이상의 AI 모델을 최저 비용으로 연결합니다. 하나의 API 키로 모든 것을.",
     "cta_start": "무료로 시작",
     "cta_docs": "문서 보기"
