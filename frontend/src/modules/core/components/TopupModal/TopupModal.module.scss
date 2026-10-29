@@ -12,12 +12,12 @@
 }
 
 .modal {
-  background: #0f131f;
-  border: 1px solid #1e263d;
-  border-radius: 22px;
+  background: linear-gradient(180deg, #0b111e 0%, #060913 100%);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 24px;
   width: 100%;
-  max-width: 620px;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 45px rgba(45, 212, 191, 0.12);
+  max-width: 760px;
+  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.95), 0 0 50px rgba(14, 165, 233, 0.15);
   overflow: hidden;
   animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   color: #f1f5f9;
@@ -103,8 +103,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.75rem;
-  background: #111726;
-  border-bottom: 1px solid #192135;
+  background: #090e18;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .stepItem {
@@ -183,18 +183,58 @@
 .step1Container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
+}
+
+.categoryTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: #090e18;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px;
+  border-radius: 14px;
+  margin-bottom: 0.25rem;
+
+  .catTab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #94a3b8;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    &.catTabActive {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.25) 0%, rgba(14, 165, 233, 0.15) 100%);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.2);
+    }
+  }
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 
   .sectionLabel {
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-size: 0.76rem;
+    font-weight: 800;
     letter-spacing: 0.05em;
     color: #38bdf8;
   }
@@ -207,82 +247,207 @@
 
 .optionsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
+
+  &.gridSubscription {
+    grid-template-columns: repeat(2, 1fr);
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &.gridTopup {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
 }
 
 .optionCard {
   position: relative;
-  background: #141a29;
-  border: 1px solid #202b44;
-  border-radius: 14px;
-  padding: 0.85rem 0.75rem;
+  background: rgba(15, 22, 38, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(30, 41, 63, 0.85);
+  border-radius: 16px;
+  padding: 1rem 1rem 0.95rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 
   &:hover {
     border-color: #38bdf8;
-    background: #182033;
+    background: rgba(20, 30, 52, 0.85);
     transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.7), 0 0 16px rgba(56, 189, 248, 0.15);
   }
 
   &.selected {
-    background: linear-gradient(180deg, rgba(45, 212, 191, 0.12) 0%, rgba(14, 165, 233, 0.08) 100%);
+    background: linear-gradient(180deg, rgba(45, 212, 191, 0.15) 0%, rgba(14, 165, 233, 0.08) 100%);
     border-color: #2dd4bf;
-    box-shadow: 0 0 18px rgba(45, 212, 191, 0.25);
+    box-shadow: 0 0 25px rgba(45, 212, 191, 0.28);
   }
 
-  .popularBadge {
-    position: absolute;
-    top: -9px;
-    right: 8px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 2px 7px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+  &.cardSubscription {
+    padding: 1.1rem 1.15rem;
   }
 
-  .optionCredits {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: #fff;
+  .cardHeader {
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: space-between;
+    gap: 6px;
 
-    .crUnit {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #94a3b8;
+    .tierPill {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      text-transform: uppercase;
+
+      &.tierStarter {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+      }
+
+      &.tierPro {
+        background: rgba(168, 85, 247, 0.15);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+      }
+
+      &.tierEnterprise {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.35);
+      }
+
+      &.tierTopup {
+        background: rgba(45, 212, 191, 0.12);
+        color: #2dd4bf;
+        border: 1px solid rgba(45, 212, 191, 0.25);
+      }
+    }
+
+    .cardBadges {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .popularBadge {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: #fff;
+        font-size: 0.62rem;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        box-shadow: 0 2px 6px rgba(234, 88, 12, 0.4);
+      }
+
+      .customBadge {
+        background: rgba(234, 179, 8, 0.15);
+        color: #facc15;
+        border: 1px solid rgba(234, 179, 8, 0.35);
+        font-size: 0.62rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .checkPill {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2dd4bf;
+        color: #042f2e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 8px rgba(45, 212, 191, 0.6);
+      }
     }
   }
 
-  .optionPrice {
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: #2dd4bf;
+  .optionName {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-top: 2px;
+    line-height: 1.3;
   }
 
-  .bonusBadge {
-    display: inline-block;
-    align-self: flex-start;
-    background: rgba(234, 179, 8, 0.15);
-    border: 1px solid rgba(234, 179, 8, 0.35);
-    color: #facc15;
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 6px;
-    margin-top: 0.15rem;
+  .optionCredits {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #fff;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    text-shadow: 0 0 16px rgba(45, 212, 191, 0.35);
+    margin: 2px 0;
+
+    .creditsVal {
+      letter-spacing: -0.5px;
+    }
+
+    .crUnit {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-shadow: none;
+    }
+  }
+
+  .cardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+    .optionPrice {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #2dd4bf;
+    }
+
+    .metaRow {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .bonusBadge {
+        background: rgba(245, 158, 11, 0.16);
+        border: 1px solid rgba(245, 158, 11, 0.38);
+        color: #fbbf24;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .durationBadge {
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        color: #38bdf8;
+        font-size: 0.68rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+    }
   }
 }
 
@@ -290,61 +455,81 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #141a29;
-  border: 1px solid #23304c;
-  padding: 0.85rem 1.15rem;
-  border-radius: 14px;
+  background: rgba(15, 22, 38, 0.9);
+  border: 1.5px solid rgba(56, 189, 248, 0.25);
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
   margin-top: 0.5rem;
 
-  @media (max-width: 520px) {
+  @media (max-width: 580px) {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.85rem;
     align-items: stretch;
   }
 
   .selectedInfo {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
 
     .selectedTitle {
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
+      font-weight: 700;
     }
 
     .selectedValues {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: #fff;
-      font-weight: 700;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .selectedName {
+        font-weight: 800;
+        color: #f1f5f9;
+      }
+
+      .selectedSeparator {
+        color: #475569;
+      }
 
       .highlightAmount {
         color: #2dd4bf;
+        font-weight: 800;
+        font-size: 1.05rem;
+      }
+
+      .highlightCredits {
+        color: #94a3b8;
+        font-size: 0.82rem;
       }
     }
   }
 
   .step1ProceedBtn {
-    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
     color: #fff;
     border: none;
-    font-weight: 700;
-    font-size: 0.92rem;
-    padding: 0.65rem 1.35rem;
-    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 0.75rem 1.6rem;
+    border-radius: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 18px rgba(6, 182, 212, 0.38);
 
     &:hover {
       filter: brightness(1.1);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(6, 182, 212, 0.55);
     }
   }
 }
