@@ -16,7 +16,7 @@ import {
   HiOutlineFilm,
   HiOutlineCodeBracket,
 } from 'react-icons/hi2';
-import { RiOpenaiFill, RiSparklingFill } from 'react-icons/ri';
+import { RiOpenaiFill, RiSparklingFill, RiQrCodeLine, RiBroadcastLine, RiChat1Line } from 'react-icons/ri';
 import UserProfileDropdown from '../UserProfileDropdown/UserProfileDropdown';
 import TopupModal from '../TopupModal/TopupModal';
 import QuickSearchModal from '../QuickSearchModal/QuickSearchModal';
@@ -380,15 +380,57 @@ const MainLayout = () => {
               </ul>
             </div>
 
-            {/* Support links */}
+            {/* Support column with Zalo QR & contact info */}
             <div className={styles.footerCol}>
-              <h4 className={styles.footerColTitle}>Hỗ Trợ</h4>
-              <ul className={styles.footerList}>
-                <li><Link to="/docs#part-13">FAQ & Trợ Giúp</Link></li>
-                <li><Link to="/docs">API Documentation</Link></li>
-                <li><a href="#">Điều Khoản Dịch Vụ</a></li>
-                <li><a href="#">Chính Sách Bảo Mật</a></li>
-              </ul>
+              <h4 className={styles.footerColTitle}>{t('footer.support', 'Hỗ Trợ')}</h4>
+
+              <div className={styles.zaloQrCard}>
+                <a
+                  href="https://zalo.me/g/hc6acyaphhgkh0knuny5"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.qrImageWrapper}
+                  title="Nhấp hoặc quét mã QR để vào nhóm Zalo Hỗ Trợ VeloX"
+                >
+                  <img
+                    src="/zalo_group_qr.png"
+                    alt="Zalo Group QR"
+                    className={styles.qrImage}
+                  />
+                  <div className={styles.qrScanHint}>
+                    <RiQrCodeLine size={13} />
+                    <span>{t('footer.scan_zalo_group', 'Nhóm Zalo Hỗ Trợ')}</span>
+                  </div>
+                </a>
+
+                <div className={styles.contactLines}>
+                  <div className={styles.contactItem}>
+                    <RiBroadcastLine className={styles.contactIcon} size={16} />
+                    <span className={styles.contactLabel}>{t('footer.channel_notice', 'Kênh thông báo')}:</span>
+                    <a
+                      href="https://t.me/JoinNguyen08"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.contactUsername}
+                    >
+                      @JoinNguyen08
+                    </a>
+                  </div>
+
+                  <div className={styles.contactItem}>
+                    <RiChat1Line className={styles.contactIcon} size={16} />
+                    <span className={styles.contactLabel}>{t('footer.contact_admin', 'Liên hệ admin')}:</span>
+                    <a
+                      href="https://t.me/JoinNguyen08"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.contactUsername}
+                    >
+                      @JoinNguyen08
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

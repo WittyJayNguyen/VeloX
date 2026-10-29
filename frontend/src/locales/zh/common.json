@@ -604,5 +604,11 @@
     "out_of_credits_title": "积分余额不足",
     "out_of_credits_desc": "请充值积分以继续与 AI 进行对话。",
     "topup_btn": "立即充值"
+  },
+  "footer": {
+    "support": "支持",
+    "scan_zalo_group": "加入Zalo支持群",
+    "channel_notice": "通知频道",
+    "contact_admin": "联系管理员"
   }
 }

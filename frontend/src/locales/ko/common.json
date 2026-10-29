@@ -604,5 +604,11 @@
     "out_of_credits_title": "크레딧 잔액 부족",
     "out_of_credits_desc": "AI와 대화를 계속하려면 크레딧을 충전하세요.",
     "topup_btn": "지금 충전하기"
+  },
+  "footer": {
+    "support": "고객 지원",
+    "scan_zalo_group": "Zalo 지원 그룹",
+    "channel_notice": "공지 채널",
+    "contact_admin": "관리자 문의"
   }
 }
