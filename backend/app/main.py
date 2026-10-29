@@ -5,7 +5,7 @@ FastAPI App Factory with CORS, Router Registration and Lifespan Events.
 """
 from typing import Optional
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
@@ -176,3 +176,13 @@ async def api_pricing_alias(
 ):
     from app.modules.proxy.router import get_model_pricing
     return await get_model_pricing(model=model, category=category, currency=currency, db=db)
+
+
+@app.post("/webhook/sepay")
+@app.post("/api/webhook/sepay")
+@app.post("/api/v1/webhook/sepay")
+async def sepay_webhook_root_alias(request: Request, db: AsyncSession = Depends(get_db)):
+    """Allow multiple SePay webhook URL patterns without requiring strict subpath."""
+    from app.modules.billing.router import sepay_webhook
+    return await sepay_webhook(request, db)
+

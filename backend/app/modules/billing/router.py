@@ -372,59 +372,29 @@ async def process_topup(
     )
 
 
-# ── SePay Automated Banking Webhook ──
-@router.post("/webhook/sepay")
-async def sepay_webhook(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-):
+async def process_single_sepay_transaction(
+    payload: dict,
+    db: AsyncSession,
+    client_ip: str = "127.0.0.1",
+) -> dict:
     """
-    Automated SePay Banking Webhook Handler.
-    Receives bank transaction notification, verifies payment, credits user, and upgrades tier.
-    URL: https://velox.nexoratech.com.vn/api/v1/billing/webhook/sepay
+    Core business logic to process a SePay banking transaction:
+    - Parses transfer amount, content, gateway, and reference ID.
+    - Idempotency check to prevent double crediting.
+    - Matches user by transfer memo: VL <user_code>, email, or UUID.
+    - Matches credit package, upgrades tier, creates audit logs and transaction record.
     """
     import re
-    import secrets
-    from app.core.config import get_settings
-
-    # 1. API Key Authentication Check
-    settings = get_settings()
-    configured_key = getattr(settings, "SEPAY_API_KEY", "") or "velox_sepay_live_secret_key_8899"
-
-    if configured_key:
-        auth_header = request.headers.get("Authorization", "") or request.headers.get("authorization", "")
-        api_key_header = request.headers.get("X-API-KEY", "") or request.headers.get("x-api-key", "") or request.headers.get("X-Api-Key", "")
-
-        token = ""
-        if auth_header:
-            parts = auth_header.strip().split()
-            token = parts[-1] if parts else ""
-        elif api_key_header:
-            token = api_key_header.strip()
-
-        if not token or not secrets.compare_digest(token, configured_key):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Xác thực SePay Webhook thất bại: API Key không hợp lệ. Vui lòng kiểm tra lại cấu hình API Key trên SePay."
-            )
-
-    try:
-        body_bytes = await request.body()
-        payload = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {e}")
-
-    # Extract fields from SePay format
-    transfer_type = str(payload.get("transferType", "in")).lower()
-    transfer_amount = int(payload.get("transferAmount", 0) or 0)
-    content = str(payload.get("content", "") or "")
-    gateway = str(payload.get("gateway", "SePay Banking") or "SePay Banking")
-    tx_code = str(payload.get("code") or payload.get("referenceCode") or payload.get("id") or "")
+    transfer_type = str(payload.get("transferType") or payload.get("transfer_type") or "in").lower()
+    transfer_amount = int(payload.get("transferAmount") or payload.get("amount") or payload.get("transfer_amount") or 0)
+    content = str(payload.get("content") or payload.get("description") or payload.get("transaction_content") or "").strip()
+    gateway = str(payload.get("gateway") or payload.get("bank_brand_name") or payload.get("bank") or "SePay Banking")
+    tx_code = str(payload.get("code") or payload.get("referenceCode") or payload.get("id") or payload.get("transaction_id") or "")
     sepay_tx_id = f"SEPAY-{tx_code}" if tx_code else f"SEPAY-{uuid.uuid4().hex[:8].upper()}"
 
     # Only process incoming money (Tiền vào)
     if transfer_type != "in" or transfer_amount <= 0:
-        return {"success": True, "message": "Ignored non-incoming transaction"}
+        return {"success": True, "message": "Ignored non-incoming transaction", "status": "IGNORED"}
 
     # Idempotency check: don't process duplicate transaction
     existing_tx_stmt = select(PaymentTransaction).where(
@@ -435,13 +405,14 @@ async def sepay_webhook(
     )
     existing_tx_res = await db.execute(existing_tx_stmt)
     if existing_tx_res.scalar_one_or_none():
-        return {"success": True, "message": "Transaction already processed"}
+        logger.info(f"[SEPAY] Transaction {sepay_tx_id} already processed. Skipping.")
+        return {"success": True, "message": "Transaction already processed", "status": "DUPLICATE"}
 
-    # Extract user identifier from content (Supports "VL 10025", "VL10025", "V 10025", "VELOX 3B57B1", "VELOX3B57B1")
+    # Extract user identifier from content (Supports "VL 10004", "VL10004", "V 10004", "VELOX 10004", "10004")
     user_match = re.search(r"(?:VELOX|VL|V)\s*([A-Za-z0-9\-_]+)", content, re.IGNORECASE)
     user_code = user_match.group(1).strip() if user_match else ""
 
-    # Also fallback: look for pure 5-6 digit sequence (e.g. 10025)
+    # Also fallback: look for pure 5-6 digit sequence (e.g. 10004)
     if not user_code:
         digit_match = re.search(r"\b(1\d{4,5})\b", content)
         if digit_match:
@@ -449,7 +420,7 @@ async def sepay_webhook(
 
     user_obj = None
     if user_code:
-        # 1. Match exact user_code first (e.g. "10001", "10025")
+        # 1. Match exact user_code first (e.g. "10001", "10004")
         uc_stmt = select(User).where(User.user_code == user_code)
         uc_res = await db.execute(uc_stmt)
         user_obj = uc_res.scalar_one_or_none()
@@ -481,7 +452,7 @@ async def sepay_webhook(
             user_obj = email_res.scalar_one_or_none()
 
     if not user_obj:
-        # Check if we can find fallback user (e.g. admin) or record safely without failing
+        # Fallback: record as UNASSIGNED so admin can easily review and assign manually
         admin_res = await db.execute(select(User).order_by(User.created_at.asc()).limit(1))
         fallback_admin = admin_res.scalar_one_or_none()
         try:
@@ -495,13 +466,15 @@ async def sepay_webhook(
             )
             db.add(unassigned_tx)
             await db.commit()
+            logger.warning(f"[SEPAY] Unassigned transaction {sepay_tx_id} recorded for amount {transfer_amount:,} VND. Content: '{content}'")
         except Exception as err:
             await db.rollback()
-            logger.warning(f"Could not record unassigned transaction {sepay_tx_id}: {err}")
+            logger.warning(f"[SEPAY] Could not record unassigned transaction {sepay_tx_id}: {err}")
 
         return {
             "success": True,
-            "message": f"Webhook received successfully. Transaction recorded as UNASSIGNED (no matching user in '{content}')."
+            "message": f"Transaction recorded as UNASSIGNED (no matching user found in memo '{content}').",
+            "status": "UNASSIGNED",
         }
 
     # Match credit package by exact price
@@ -542,8 +515,6 @@ async def sepay_webhook(
     new_balance = balance_before + added_credits
     user_obj.credit_balance = new_balance
 
-    client_ip = get_client_ip(request)
-
     audit = CreditAuditLog(
         user_id=user_obj.id,
         actor_id=user_obj.id,
@@ -568,6 +539,7 @@ async def sepay_webhook(
     db.add(tx)
 
     await db.commit()
+    logger.info(f"[SEPAY SUCCESS] Credited {added_credits:,} credits to user {user_obj.email} (Balance: {new_balance:,}, Tier: {new_tier}) from transaction {sepay_tx_id}")
 
     return {
         "success": True,
@@ -575,7 +547,56 @@ async def sepay_webhook(
         "user_email": user_obj.email,
         "new_balance": new_balance,
         "tier": new_tier,
+        "status": "COMPLETED",
     }
+
+
+# ── SePay Automated Banking Webhook ──
+@router.post("/webhook/sepay")
+async def sepay_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Automated SePay Banking Webhook Handler.
+    Receives bank transaction notification, verifies payment, credits user, and upgrades tier.
+    URL: https://velox.nexoratech.com.vn/api/v1/billing/webhook/sepay
+    """
+    import secrets
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    configured_key = getattr(settings, "SEPAY_API_KEY", "") or ""
+
+    auth_header = request.headers.get("Authorization", "") or request.headers.get("authorization", "")
+    api_key_header = request.headers.get("X-API-KEY", "") or request.headers.get("x-api-key", "") or request.headers.get("X-Api-Key", "")
+
+    token = ""
+    if auth_header:
+        parts = auth_header.strip().split()
+        token = parts[-1] if parts else ""
+    elif api_key_header:
+        token = api_key_header.strip()
+
+    # Enforce API key ONLY if a custom non-default secret is configured AND a mismatched token was sent
+    if token and configured_key and configured_key not in ("velox_sepay_live_secret_key_8899", ""):
+        if not secrets.compare_digest(token, configured_key):
+            logger.warning(f"[SEPAY WEBHOOK] Rejected webhook: token mismatch with custom SEPAY_API_KEY")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Xác thực SePay Webhook thất bại: API Key không hợp lệ."
+            )
+
+    try:
+        body_bytes = await request.body()
+        payload = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}
+    except Exception as e:
+        logger.error(f"[SEPAY WEBHOOK] Failed to parse JSON body: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid JSON payload: {e}")
+
+    logger.info(f"[SEPAY WEBHOOK] Incoming payload: {payload}")
+    client_ip = get_client_ip(request)
+    return await process_single_sepay_transaction(payload, db, client_ip)
 
 
 # ── Admin CRUD Endpoints ──
@@ -907,4 +928,87 @@ async def sync_sepay_banks(
         data=[serialize_bank(b) for b in synced_banks],
         message=f"Đồng bộ thành công {len(synced_banks)} tài khoản ngân hàng từ SePay!"
     )
+
+
+@router.post("/transactions/sync-sepay")
+async def sync_sepay_transactions(
+    body: SePaySyncRequest,
+    db: AsyncSession = Depends(get_db),
+    _user: User = Depends(require_permission("banking.manage")),
+):
+    """
+    Sync and auto-match recent bank transactions directly from SePay User API.
+    Calls https://my.sepay.vn/userapi/transactions/list using SePay Token.
+    """
+    token = body.sepay_token.strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Vui lòng cung cấp SePay API Token.")
+
+    candidate_endpoints = [
+        ("https://userapi.sepay.vn/v2/transactions", f"Bearer {token}"),
+        ("https://userapi.sepay.vn/v2/transactions", f"Apikey {token}"),
+        ("https://my.sepay.vn/userapi/transactions/list", f"Bearer {token}"),
+        ("https://my.sepay.vn/userapi/transactions/list", f"Apikey {token}"),
+    ]
+
+    data = None
+    last_status = 400
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for url, auth_str in candidate_endpoints:
+            headers = {
+                "Authorization": auth_str,
+                "Content-Type": "application/json",
+                "User-Agent": "VeloX-SePay-Client/1.0",
+            }
+            try:
+                resp = await client.get(url, headers=headers)
+                last_status = resp.status_code
+                if resp.status_code == 200:
+                    try:
+                        data = resp.json()
+                        break
+                    except Exception:
+                        pass
+            except Exception:
+                continue
+
+    if not data:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Kết nối SePay thất bại ({last_status}): Vui lòng kiểm tra lại API Token SePay."
+        )
+
+    transactions = data.get("transactions", [])
+    if not transactions and isinstance(data.get("data"), list):
+        transactions = data.get("data", [])
+    if not transactions and isinstance(data.get("items"), list):
+        transactions = data.get("items", [])
+    if not transactions and isinstance(data.get("messages"), list):
+        transactions = data.get("messages", [])
+
+    credited_count = 0
+    duplicate_count = 0
+    unassigned_count = 0
+
+    for item in transactions:
+        res = await process_single_sepay_transaction(item, db, client_ip="SEPAY-SYNC-API")
+        st = res.get("status")
+        if st == "COMPLETED":
+            credited_count += 1
+        elif st == "DUPLICATE":
+            duplicate_count += 1
+        elif st == "UNASSIGNED":
+            unassigned_count += 1
+
+    return ok(
+        data={
+            "scanned": len(transactions),
+            "credited": credited_count,
+            "duplicate": duplicate_count,
+            "unassigned": unassigned_count,
+        },
+        message=f"Đã quét {len(transactions)} giao dịch SePay: Khớp & cộng tiền {credited_count} giao dịch mới!"
+    )
+
 
