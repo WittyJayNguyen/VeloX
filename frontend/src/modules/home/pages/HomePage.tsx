@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   HiOutlineArrowRight,
   HiOutlineSparkles,
@@ -16,7 +16,220 @@ import {
   HiOutlineChatBubbleLeftRight,
 } from 'react-icons/hi2';
 import { RiOpenaiFill, RiSparklingFill, RiPlayFill } from 'react-icons/ri';
+import { useAuthStore } from '@modules/auth/states/authStore';
+import { billingService, type CreditPackageDto } from '@modules/billing/services/billingService';
+import TopupModal from '@modules/core/components/TopupModal/TopupModal';
 import styles from '@assets/scss/home/home.module.scss';
+
+// Fallback dynamic packages if DB call is loading
+const DEFAULT_PACKAGES: CreditPackageDto[] = [
+  {
+    id: 'ae0b9b9a-5479-4b8c-957a-3872e6667db3',
+    name: 'Creator Standard',
+    category: 'STARTER',
+    price_vnd: 189000,
+    credits_given: 2000,
+    bonus_percentage: 0,
+    is_popular: false,
+    tag_badge: 'TIẾT KIỆM',
+    is_active: true,
+    features: [
+      '2,000 Credits/tháng (~60 ảnh FLUX hoặc 800 câu chat)',
+      'Mở khóa trọn bộ 156+ Model AI hàng đầu thế giới',
+      'Tạo ảnh & video chuẩn HD với Kling, Luma & FLUX',
+      'Ưu tiên xử lý nhanh, không lo nghẽn mạng',
+      'Hỗ trợ kỹ thuật cộng đồng 24/7',
+    ],
+  },
+  {
+    id: 'e66c630f-b34f-4ad4-b682-147534c475ec',
+    name: 'Pro Studio',
+    category: 'PRO',
+    price_vnd: 489000,
+    credits_given: 5500,
+    bonus_percentage: 10,
+    is_popular: true,
+    tag_badge: 'KHUYÊN DÙNG',
+    is_active: true,
+    features: [
+      '5,500 Credits/tháng (~150 ảnh 4K hoặc 65 video Full HD)',
+      'Mở khóa 156+ Model AI (Claude 3.5 Sonnet, Midjourney, Kling)',
+      'Hàng đợi VIP ưu tiên, render 4K không chờ đợi',
+      'API Key kết nối MCP, Cursor, IDEs & bên thứ 3',
+      'Không giới hạn Workflows tự động hóa',
+      'Hỗ trợ kỹ thuật 1-1 chuyên sâu',
+    ],
+  },
+  {
+    id: '76a1923c-52a1-4d3f-a1fc-244d881ecf63',
+    name: 'Business & Agency',
+    category: 'ENTERPRISE',
+    price_vnd: 1290000,
+    credits_given: 15000,
+    bonus_percentage: 15,
+    is_popular: false,
+    tag_badge: 'DOANH NGHIỆP',
+    is_active: true,
+    features: [
+      '15,000 Credits/tháng (~400 ảnh 4K hoặc 180 video AI)',
+      'Khai thác 156+ Model cao cấp với độ trễ thấp nhất',
+      'Workspace nhóm tối đa 10 nhân sự độc lập',
+      'Băng thông riêng biệt, tốc độ xử lý ưu tiên hàng đầu',
+      'Tùy biến Custom Domain Gateway cho doanh nghiệp',
+      'Hỗ trợ kỹ thuật 1-1 chuyên sâu',
+    ],
+  },
+  {
+    id: 'afa28506-0de0-4930-a7a1-f287b4387602',
+    name: 'Enterprise Scale',
+    category: 'ENTERPRISE',
+    price_vnd: 2890000,
+    credits_given: 35000,
+    bonus_percentage: 20,
+    is_popular: false,
+    tag_badge: 'ENTERPRISE VIP',
+    is_active: true,
+    features: [
+      '35,000 Credits/tháng (~950 ảnh 4K hoặc 420 video AI)',
+      'Tối ưu sản lượng lớn cho Agency & Studio quy mô',
+      'Workspace không giới hạn số lượng nhân sự',
+      'Cổng Gateway API riêng biệt chịu tải cực cao',
+      'Tùy biến Prompt Engineering chuyên biệt',
+      'Băng thông chuyên dụng độc quyền tốc độ cao nhất',
+    ],
+  },
+  {
+    id: 'cef6ab80-bb2b-4fc4-b94c-23cdc184217e',
+    name: 'Gói Nạp Khởi Động',
+    category: 'TOPUP',
+    price_vnd: 100000,
+    credits_given: 1000,
+    bonus_percentage: 0,
+    is_popular: false,
+    tag_badge: 'KHỞI ĐỘNG',
+    is_active: true,
+    features: [
+      '1,000 Credits sử dụng vĩnh viễn không hết hạn',
+      'Tạo ~30 ảnh chất lượng cao hoặc 500 câu chat AI',
+      'Truy cập đầy đủ 156+ mô hình AI đỉnh cao',
+      'Kích hoạt tự động qua VietQR trong 3 giây',
+    ],
+  },
+  {
+    id: '7f0ccbc4-73c5-43c9-9c88-1ef309db1659',
+    name: 'Gói Nạp Tiêu Chuẩn',
+    category: 'TOPUP',
+    price_vnd: 200000,
+    credits_given: 2050,
+    bonus_percentage: 2.5,
+    is_popular: false,
+    tag_badge: '+2.5% THƯỞNG',
+    is_active: true,
+    features: [
+      '2,050 Credits (Đã gồm 50 credits thưởng thêm)',
+      'Tạo ~60 ảnh FLUX / Midjourney 4K',
+      'Tạo 26 video điện ảnh Kling / Runway',
+      'Ưu tiên băng thông cao và tốc độ xử lý hàng chờ',
+    ],
+  },
+  {
+    id: '4f3aae1a-b5f3-4066-bbd0-3bdc265f47b8',
+    name: 'Gói Nạp Bán Chạy',
+    category: 'TOPUP',
+    price_vnd: 500000,
+    credits_given: 5300,
+    bonus_percentage: 6,
+    is_popular: true,
+    tag_badge: 'BÁN CHẠY NHẤT',
+    is_active: true,
+    features: [
+      '5,300 Credits (Đã gồm 300 credits thưởng thêm 6%)',
+      'Tạo ~150 ảnh 4K hoặc 65 video Full HD',
+      'Chat ~2,600 câu AI hoặc gọi API thoải mái',
+      'Ưu tiên băng thông cao, không phải xếp hàng',
+    ],
+  },
+  {
+    id: '09188e61-af4a-4af6-8a02-8c1aa35562d3',
+    name: 'Gói VIP Sáng Tạo',
+    category: 'TOPUP',
+    price_vnd: 1000000,
+    credits_given: 11000,
+    bonus_percentage: 10,
+    is_popular: false,
+    tag_badge: '+10% THƯỞNG',
+    is_active: true,
+    features: [
+      '11,000 Credits (Đã gồm 1,000 credits thưởng thêm 10%)',
+      'Tạo ~320 ảnh 4K hoặc 150 video AI thương mại',
+      'Hạ tầng Dedicated Pool & Custom Rate Limit riêng biệt',
+      'Kênh hỗ trợ VIP 1-1 với kỹ sư VeloX',
+    ],
+  },
+  {
+    id: '99afa89b-9df3-4243-8585-34193cce1050',
+    name: 'Gói Super VIP Doanh Nghiệp',
+    category: 'TOPUP',
+    price_vnd: 2000000,
+    credits_given: 23000,
+    bonus_percentage: 15,
+    is_popular: false,
+    tag_badge: 'SUPER VIP +15%',
+    is_active: true,
+    features: [
+      '23,000 Credits (Đã gồm 3,000 credits thưởng thêm 15%)',
+      'Tạo ~680 ảnh 4K hoặc 300 video AI',
+      'Băng thông riêng chuyên biệt, cam kết SLA 99.9%',
+      'Hỗ trợ cấu hình tích hợp hệ thống riêng',
+    ],
+  },
+];
+
+const getPackageFeatures = (pkg: CreditPackageDto): string[] => {
+  if (Array.isArray(pkg.features) && pkg.features.length > 0) {
+    return pkg.features;
+  }
+  if (typeof pkg.features === 'string') {
+    try {
+      const parsed = JSON.parse(pkg.features);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+  }
+  if (pkg.category === 'STARTER') {
+    return [
+      `${pkg.credits_given.toLocaleString()} Credits/tháng (~60 ảnh FLUX hoặc 800 câu chat)`,
+      'Mở khóa trọn bộ 156+ Model AI hàng đầu thế giới',
+      'Tạo ảnh & video chuẩn HD với Kling, Luma & FLUX',
+      'Ưu tiên xử lý nhanh, không lo nghẽn mạng',
+      'Hỗ trợ kỹ thuật cộng đồng 24/7',
+    ];
+  }
+  if (pkg.category === 'PRO') {
+    return [
+      `${pkg.credits_given.toLocaleString()} Credits/tháng (~150 ảnh 4K hoặc 65 video Full HD)`,
+      'Mở khóa 156+ Model AI (Claude 3.5 Sonnet, Midjourney, Kling)',
+      'Hàng đợi VIP ưu tiên, render 4K không chờ đợi',
+      'API Key kết nối MCP, Cursor, IDEs & bên thứ 3',
+      'Không giới hạn Workflows tự động hóa',
+      'Hỗ trợ kỹ thuật 1-1 chuyên sâu',
+    ];
+  }
+  if (pkg.category === 'ENTERPRISE') {
+    return [
+      `${pkg.credits_given.toLocaleString()} Credits/tháng (~400 ảnh 4K hoặc 180 video AI)`,
+      'Khai thác 156+ Model cao cấp với độ trễ thấp nhất',
+      'Băng thông riêng biệt, tốc độ xử lý ưu tiên hàng đầu',
+      'Cổng Gateway API riêng biệt chịu tải cực cao',
+      'Hỗ trợ kỹ thuật 1-1 chuyên sâu 24/7',
+    ];
+  }
+  return [
+    `${pkg.credits_given.toLocaleString()} Credits sử dụng vĩnh viễn không hết hạn`,
+    'Tạo ảnh chất lượng cao hoặc chat AI tốc độ cao',
+    'Truy cập đầy đủ 156+ mô hình AI đỉnh cao',
+    'Kích hoạt tự động qua VietQR trong 3 giây',
+  ];
+};
 
 // Curated Models for Showcase Section
 interface ShowcaseModel {
@@ -252,6 +465,40 @@ const runningModels: RunningModel[] = [
 
 const HomePage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+
+  const [packages, setPackages] = useState<CreditPackageDto[]>(DEFAULT_PACKAGES);
+  const [pricingTab, setPricingTab] = useState<'SUBSCRIPTION' | 'TOPUP'>('SUBSCRIPTION');
+  const [topupOpen, setTopupOpen] = useState(false);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>();
+
+  useEffect(() => {
+    let isMounted = true;
+    billingService
+      .getPublicPackages()
+      .then((data) => {
+        if (isMounted && data && data.length > 0) {
+          const paid = data.filter((p) => p.price_vnd > 0);
+          if (paid.length > 0) {
+            setPackages(paid);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSelectPackage = (pkg: CreditPackageDto) => {
+    if (isAuthenticated) {
+      setSelectedPackageId(pkg.id);
+      setTopupOpen(true);
+    } else {
+      navigate(`/login?redirect=${encodeURIComponent('/#pricing')}`);
+    }
+  };
 
   // Interactive Hero Widget State with Real Media
   const [activeMode, setActiveMode] = useState<'image' | 'chat' | 'video'>('image');
@@ -819,145 +1066,178 @@ console.log(response.choices[0].message.content);`;
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          6. TRANSPARENT PRICING CARDS
+          6. TRANSPARENT PRICING CARDS (DYNAMIC FROM DATABASE)
       ══════════════════════════════════════════════════════════════ */}
       <section id="pricing" className={styles.pricingSection}>
         <div className={styles.sectionHeaderCenter}>
           <span className={styles.tagBadge}>
-            <HiOutlineBolt size={14} />
-            <span>BẢNG GIÁ TÍN DỤNG</span>
+            <HiOutlineSparkles size={14} />
+            <span>{t('landing.pricing_tag', 'BẢNG GIÁ & HỘI VIÊN')}</span>
           </span>
-          <h2 className={styles.sectionHeading}>Nạp Bao Nhiêu, Dùng Bấy Nhiêu</h2>
+          <h2 className={styles.sectionHeading}>
+            {pricingTab === 'SUBSCRIPTION'
+              ? 'Gói Hội Viên Tháng Tiết Kiệm'
+              : 'Nạp Bao Nhiêu, Dùng Bấy Nhiêu'}
+          </h2>
           <p className={styles.sectionSubDesc}>
-            Không bị bó buộc vào hợp đồng cố định. Tín dụng không có ngày hết hạn và được nạp tự động qua VietQR trong 3 giây.
+            {pricingTab === 'SUBSCRIPTION'
+              ? t(
+                  'landing.sub_heading_sub',
+                  'Đầy đủ đặc quyền hội viên, mở khóa 156+ mô hình AI đỉnh cao thế giới và băng thông ưu tiên cao nhất.'
+                )
+              : t(
+                  'landing.sub_heading_topup',
+                  'Không bị bó buộc hợp đồng cố định. Tín dụng sử dụng vĩnh viễn không hết hạn, nạp tự động qua VietQR trong 3 giây.'
+                )}
           </p>
         </div>
 
-        <div className={styles.pricingGrid}>
-          {/* Plan 1 */}
-          <div className={styles.pricingCard}>
-            <div>
-              <h3 className={styles.planName}>Gói Khởi Động (Starter)</h3>
-              <p className={styles.planDesc}>Phù hợp cho cá nhân trải nghiệm và thử nghiệm các mô hình AI.</p>
-              <div className={styles.priceRow}>
-                <span className={styles.priceNumber}>100.000đ</span>
-                <span className={styles.pricePeriod}>/ lần nạp</span>
-              </div>
-              <div className={styles.planCreditsHighlight}>
-                <RiSparklingFill size={14} />
-                <span>Nhận ngay 1.000 Credits</span>
-              </div>
-
-              <ul className={styles.planFeaturesList}>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>1.000 Credits sử dụng vĩnh viễn không hết hạn</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tạo ~30 ảnh chất lượng cao hoặc 500 câu chat AI</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Truy cập đầy đủ 100+ mô hình AI đỉnh cao</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Kích hoạt tự động qua VietQR trong 3 giây</span>
-                </li>
-              </ul>
-            </div>
-
-            <Link to="/subscription?tab=topup" className={styles.btnPlanSelect}>
-              Nạp Ngay Qua VietQR
-            </Link>
+        {/* Category Tabs Switcher */}
+        <div className={styles.pricingTabsWrapper}>
+          <div className={styles.pricingCategoryTabs}>
+            <button
+              type="button"
+              className={`${styles.pricingCatTab} ${
+                pricingTab === 'SUBSCRIPTION' ? styles.pricingCatTabActive : ''
+              }`}
+              onClick={() => setPricingTab('SUBSCRIPTION')}
+            >
+              <HiOutlineSparkles size={16} />
+              <span>{t('landing.tab_subscription', 'Gói Hội Viên Tháng (30 Ngày)')}</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.pricingCatTab} ${
+                pricingTab === 'TOPUP' ? styles.pricingCatTabActive : ''
+              }`}
+              onClick={() => setPricingTab('TOPUP')}
+            >
+              <HiOutlineBolt size={16} />
+              <span>{t('landing.tab_topup', 'Nạp Thêm Credit (Pay-as-you-go)')}</span>
+            </button>
           </div>
+        </div>
 
-          {/* Plan 2: Popular */}
-          <div className={`${styles.pricingCard} ${styles.popular}`}>
-            <div className={styles.popularBadge}>PHỔ BIẾN NHẤT (+2.5% THƯỞNG)</div>
-            <div>
-              <h3 className={styles.planName}>Gói Sáng Tạo (Pro Creator)</h3>
-              <p className={styles.planDesc}>Dành cho Creator, Designer và Developer xây dựng sản phẩm.</p>
-              <div className={styles.priceRow}>
-                <span className={styles.priceNumber}>200.000đ</span>
-                <span className={styles.pricePeriod}>/ lần nạp</span>
-              </div>
-              <div className={styles.planCreditsHighlight} style={{ background: 'rgba(255, 107, 53, 0.15)', borderColor: 'rgba(255, 107, 53, 0.35)', color: '#ffedd5' }}>
-                <RiSparklingFill size={14} color="#ff6b35" />
-                <span>Nhận 2.050 Credits (Tặng 50 Credits)</span>
-              </div>
+        {/* Dynamic Cards Grid */}
+        <div
+          className={`${styles.pricingGrid} ${
+            pricingTab === 'SUBSCRIPTION' ? styles.gridSubscription : styles.gridTopup
+          }`}
+        >
+          {packages
+            .filter((p) =>
+              pricingTab === 'SUBSCRIPTION' ? p.category !== 'TOPUP' : p.category === 'TOPUP'
+            )
+            .sort((a, b) => a.price_vnd - b.price_vnd)
+            .map((pkg) => {
+              const features = getPackageFeatures(pkg);
+              const isSub = pkg.category !== 'TOPUP';
 
-              <ul className={styles.planFeaturesList}>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>2.050 Credits (Đã gồm 50 credits thưởng thêm)</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tạo ~60 ảnh FLUX / Midjourney 4K hoặc 26 video điện ảnh</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Ưu tiên băng thông cao và tốc độ xử lý hàng chờ</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Không giới hạn số lượng API Key tạo mới</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Hỗ trợ kỹ thuật ưu tiên 24/7</span>
-                </li>
-              </ul>
-            </div>
+              return (
+                <div
+                  key={pkg.id}
+                  className={`${styles.pricingCard} ${pkg.is_popular ? styles.popular : ''}`}
+                >
+                  {pkg.is_popular && (
+                    <div className={styles.popularBadge}>
+                      {pkg.tag_badge || (isSub ? 'KHUYÊN DÙNG' : 'BÁN CHẠY NHẤT')}
+                    </div>
+                  )}
 
-            <Link to="/subscription?tab=topup" className={`${styles.btnPlanSelect} ${styles.popularBtn}`}>
-              Nạp Gói Sáng Tạo
-            </Link>
-          </div>
+                  <div>
+                    <div className={styles.cardHeaderRow}>
+                      <span
+                        className={`${styles.tierPill} ${
+                          pkg.category === 'ENTERPRISE'
+                            ? styles.tierEnterprise
+                            : pkg.category === 'PRO'
+                            ? styles.tierPro
+                            : pkg.category === 'STARTER'
+                            ? styles.tierStarter
+                            : styles.tierTopup
+                        }`}
+                      >
+                        {pkg.category === 'STARTER'
+                          ? 'Starter'
+                          : pkg.category === 'PRO'
+                          ? 'Pro Studio'
+                          : pkg.category === 'ENTERPRISE'
+                          ? 'Enterprise'
+                          : 'Topup'}
+                      </span>
+                      <span className={styles.durationPill}>
+                        {isSub ? '⏱️ 30 Ngày' : '♾️ Vĩnh Viễn'}
+                      </span>
+                    </div>
 
-          {/* Plan 3 */}
-          <div className={styles.pricingCard}>
-            <div className={styles.popularBadge} style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}>
-              TIẾT KIỆM (+10% THƯỞNG)
-            </div>
-            <div>
-              <h3 className={styles.planName}>Gói Doanh Nghiệp (VIP Studio)</h3>
-              <p className={styles.planDesc}>Giải pháp tối ưu cho doanh nghiệp và đội ngũ cần tích hợp API liên tục.</p>
-              <div className={styles.priceRow}>
-                <span className={styles.priceNumber}>1.000.000đ</span>
-                <span className={styles.pricePeriod}>/ lần nạp</span>
-              </div>
-              <div className={styles.planCreditsHighlight}>
-                <RiSparklingFill size={14} />
-                <span>Nhận 11.000 Credits (Tặng 1.000 Credits)</span>
-              </div>
+                    <h3 className={styles.planName}>{pkg.name}</h3>
+                    <p className={styles.planDesc}>
+                      {pkg.description ||
+                        (isSub
+                          ? 'Mở khóa đặc quyền thành viên và khai thác toàn bộ 156+ AI Models.'
+                          : 'Nạp bao nhiêu dùng bấy nhiêu, bảo lưu vĩnh viễn không thời hạn.')}
+                    </p>
 
-              <ul className={styles.planFeaturesList}>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>11.000 Credits (Đã gồm 1.000 credits thưởng lớn 10%)</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Tạo ~300 ảnh 4K hoặc 140 video AI chất lượng cao</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Hạ tầng Dedicated Pool & Custom Rate Limit riêng biệt</span>
-                </li>
-                <li className={styles.planFeatureItem}>
-                  <HiOutlineCheck size={16} className={styles.checkIcon} />
-                  <span>Kênh hỗ trợ VIP 1-1 với đội ngũ kỹ sư VeloX</span>
-                </li>
-              </ul>
-            </div>
+                    <div className={styles.priceRow}>
+                      <span className={styles.priceNumber}>
+                        {pkg.price_vnd.toLocaleString('vi-VN')}đ
+                      </span>
+                      <span className={styles.pricePeriod}>{isSub ? '/ tháng' : '/ lần nạp'}</span>
+                      {pkg.bonus_percentage > 0 && (
+                        <span className={styles.bonusBadge}>+{pkg.bonus_percentage}% Thưởng</span>
+                      )}
+                    </div>
 
-            <Link to="/subscription?tab=topup" className={styles.btnPlanSelect}>
-              Nạp Gói Doanh Nghiệp
-            </Link>
-          </div>
+                    <div className={styles.planCreditsHighlight}>
+                      <RiSparklingFill size={14} />
+                      <span>
+                        {pkg.credits_given.toLocaleString('vi-VN')} Credits
+                        {pkg.bonus_percentage > 0 &&
+                          ` (+${Math.round(
+                            (pkg.credits_given * pkg.bonus_percentage) / 100
+                          ).toLocaleString('vi-VN')} tặng)`}
+                      </span>
+                    </div>
+
+                    <ul className={styles.planFeaturesList}>
+                      {features.map((feat, idx) => (
+                        <li key={idx} className={styles.planFeatureItem}>
+                          <HiOutlineCheck size={16} className={styles.checkIcon} />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`${styles.btnPlanSelect} ${pkg.is_popular ? styles.popularBtn : ''}`}
+                    onClick={() => handleSelectPackage(pkg)}
+                  >
+                    <span>
+                      {isSub
+                        ? t('landing.subscribe_now', 'Đăng Ký Gói Ngay')
+                        : t('landing.topup_now_btn', 'Nạp Ngay Qua VietQR')}
+                    </span>
+                    <HiOutlineArrowRight size={15} />
+                  </button>
+                </div>
+              );
+            })}
+        </div>
+
+        {/* Quota & Feature Comparison Link */}
+        <div className={styles.comparePlansBanner}>
+          <Link to="/subscription" className={styles.compareLink}>
+            <HiOutlineSparkles size={16} />
+            <span>
+              {t(
+                'landing.view_comparison',
+                'Xem chi tiết so sánh tính năng & hạn ngạch toàn diện tại Trang Quản Lý Gói'
+              )}
+            </span>
+            <HiOutlineArrowRight size={15} />
+          </Link>
         </div>
       </section>
 
@@ -988,6 +1268,13 @@ console.log(response.choices[0].message.content);`;
           </div>
         </div>
       </section>
+
+      {/* Topup Modal Directly on HomePage */}
+      <TopupModal
+        isOpen={topupOpen}
+        onClose={() => setTopupOpen(false)}
+        initialPackageId={selectedPackageId}
+      />
     </div>
   );
 };
