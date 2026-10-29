@@ -23,6 +23,7 @@ import QuickSearchModal from '../QuickSearchModal/QuickSearchModal';
 import StudioMegaMenu from '../StudioMegaMenu/StudioMegaMenu';
 import MaintenanceTickerBar from '../MaintenanceTickerBar/MaintenanceTickerBar';
 import NotificationPopover from '../NotificationPopover/NotificationPopover';
+import SystemNotificationToast from '../SystemNotificationToast/SystemNotificationToast';
 import { useSystemStore } from '@modules/core/states/systemStore';
 import styles from '@assets/scss/core/main-layout.module.scss';
 
@@ -214,7 +215,7 @@ const MainLayout = () => {
                 <div className={styles.notifBtnWrapper}>
                   <button
                     type="button"
-                    className={`${styles.bellBtn} ${notifOpen ? styles.bellBtnActive : ''}`}
+                    className={`${styles.bellBtn} ${notifOpen ? styles.bellBtnActive : ''} ${unreadCount > 0 ? styles.bellRinging : ''}`}
                     title={t('header.notifications', 'Thông báo')}
                     onClick={() => setNotifOpen(!notifOpen)}
                   >
@@ -237,6 +238,28 @@ const MainLayout = () => {
               </div>
             ) : (
               <>
+                {/* Notifications Bell for Guest with Popover */}
+                <div className={styles.notifBtnWrapper}>
+                  <button
+                    type="button"
+                    className={`${styles.bellBtn} ${notifOpen ? styles.bellBtnActive : ''} ${unreadCount > 0 ? styles.bellRinging : ''}`}
+                    title={t('header.notifications', 'Thông báo')}
+                    onClick={() => setNotifOpen(!notifOpen)}
+                  >
+                    <HiOutlineBell size={20} />
+                    {unreadCount > 0 && (
+                      <span className={styles.bellBadge}>
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  <NotificationPopover
+                    isOpen={notifOpen}
+                    onClose={() => setNotifOpen(false)}
+                  />
+                </div>
+
                 <div className={styles.langWrapper}>
                   <LangSwitcher />
                 </div>
@@ -362,6 +385,9 @@ const MainLayout = () => {
           </>
         )}
       </header>
+
+      {/* Real-time System Notification Toast */}
+      <SystemNotificationToast onOpenNotifications={() => setNotifOpen(true)} />
 
       {/* Marquee Ticker Bar when Maintenance Mode is ON */}
       <MaintenanceTickerBar />

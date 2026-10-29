@@ -9,6 +9,8 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlineCheckCircle,
   HiOutlineSparkles,
+  HiOutlineSpeakerWave,
+  HiOutlineMegaphone,
 } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
 import { Input } from '@modules/core/design-system/Input';
@@ -27,6 +29,13 @@ const LANG_OPTIONS = [
   { value: 'zh', label: '中文' },
 ];
 
+const BROADCAST_TYPE_OPTIONS = [
+  { value: 'info', label: 'ℹ️ Thông Tin Cập Nhật (Xanh Dương)' },
+  { value: 'success', label: '✅ Tin Vui / Sự Kiện Mới (Xanh Lá)' },
+  { value: 'warning', label: '⚠️ Lưu Ý / Nhắc Nhở (Vàng Cam)' },
+  { value: 'danger', label: '🚨 Khẩn Cấp / Sự Cố (Đỏ)' },
+];
+
 const SettingsPage = () => {
   const {
     siteName: storeSiteName,
@@ -37,6 +46,8 @@ const SettingsPage = () => {
     updateSettings,
     uploadLogo,
     resetLogo,
+    broadcastNotification,
+    playTestChime,
   } = useSystemStore();
 
   const [siteName, setSiteName] = useState(storeSiteName || 'VeloX AI Gateway');
@@ -55,6 +66,16 @@ const SettingsPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Broadcast announcement states
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastType, setBroadcastType] = useState<'info' | 'warning' | 'danger' | 'success'>('info');
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [broadcastSuccess, setBroadcastSuccess] = useState(false);
+
+  // Notify users on saving settings
+  const [notifyOnSave, setNotifyOnSave] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -123,6 +144,26 @@ const SettingsPage = () => {
     }
   };
 
+  const handleBroadcast = async () => {
+    if (!broadcastTitle.trim() || !broadcastMessage.trim()) {
+      setErrorMsg('Vui lòng nhập đầy đủ tiêu đề và nội dung thông báo phát sóng.');
+      return;
+    }
+    try {
+      setIsBroadcasting(true);
+      setErrorMsg(null);
+      await broadcastNotification(broadcastTitle, broadcastMessage, broadcastType);
+      setBroadcastSuccess(true);
+      setBroadcastTitle('');
+      setBroadcastMessage('');
+      setTimeout(() => setBroadcastSuccess(false), 4500);
+    } catch (err: any) {
+      setErrorMsg(err?.response?.data?.detail || 'Gửi thông báo thất bại.');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -138,7 +179,9 @@ const SettingsPage = () => {
         auto_backup: autoBackup,
         email_notif: emailNotif,
         webhook_url: webhookUrl,
-      });
+        broadcast_update: notifyOnSave,
+        broadcast_message: notifyOnSave ? `Hệ thống vừa cập nhật cấu hình thương hiệu: "${siteName}".` : undefined,
+      } as any);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
@@ -295,9 +338,77 @@ const SettingsPage = () => {
         </div>
       </Card>
 
-      {/* ── 3. THÔNG BÁO & WEBHOOK ── */}
+      {/* ── 3. PHÁT THÔNG BÁO TỨC THÌ ĐẾN TOÀN BỘ NGƯỜI DÙNG ── */}
       <Card
-        title="Thông Báo & Kênh Tích Hợp"
+        title="Phát Thông Báo Tức Thì Đến Toàn Bộ Người Dùng (Kèm Tiếng Chuông)"
+        headerRight={<HiOutlineMegaphone size={20} style={{ color: '#38bdf8' }} />}
+      >
+        <div className={styles.broadcastCardBody}>
+          <div className={styles.broadcastHint}>
+            <span>📢 Khi gửi thông báo phát sóng, toàn bộ người dùng đang truy cập hệ thống sẽ ngay lập tức nhận được thẻ thông báo nổi, cập nhật chuông và phát âm thanh chuông thông báo (Notification Chime).</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+            <Input
+              label="Tiêu Đề Thông Báo Phát Sóng"
+              value={broadcastTitle}
+              onChange={(e) => setBroadcastTitle(e.target.value)}
+              placeholder="Ví dụ: Nâng Cấp Hệ Thống / Ra Mắt Model Mới"
+              fullWidth
+            />
+            <Select
+              label="Mức Độ Ưu Tiên"
+              options={BROADCAST_TYPE_OPTIONS}
+              value={broadcastType}
+              onChange={(e) => setBroadcastType(e.target.value as any)}
+              fullWidth
+            />
+          </div>
+
+          <Input
+            label="Nội Dung Thông Báo Chi Tiết"
+            value={broadcastMessage}
+            onChange={(e) => setBroadcastMessage(e.target.value)}
+            placeholder="Nhập nội dung thông điệp gửi tới tất cả người dùng..."
+            fullWidth
+          />
+
+          <div className={styles.broadcastActionsRow}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={styles.soundTestBtn}
+                onClick={playTestChime}
+                title="Bấm để nghe thử tiếng chuông thông báo"
+              >
+                <HiOutlineSpeakerWave size={17} />
+                Thử Tiếng Chuông (Test Chime)
+              </button>
+
+              {broadcastSuccess && (
+                <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <HiOutlineCheckCircle size={18} /> Đã phát thông báo & rung chuông thành công đến toàn bộ User!
+                </span>
+              )}
+            </div>
+
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={isBroadcasting}
+              onClick={handleBroadcast}
+              style={{ background: 'linear-gradient(135deg, #0284c7, #2563eb)' }}
+            >
+              <HiOutlineMegaphone size={16} />
+              {isBroadcasting ? 'Đang phát sóng...' : 'Phát Thông Báo Ngay'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* ── 4. THÔNG BÁO & WEBHOOK ── */}
+      <Card
+        title="Thông Báo Sự Cố & Kênh Webhook"
         headerRight={<HiOutlineBell size={20} style={{ color: '#f59e0b' }} />}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -318,7 +429,13 @@ const SettingsPage = () => {
 
       {/* ── FLOATING SAVE BAR ── */}
       <div className={styles.saveFloatingBar}>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+          <Toggle
+            label="Gửi thông báo & rung chuông User khi lưu cài đặt"
+            checked={notifyOnSave}
+            onChange={setNotifyOnSave}
+          />
+
           {saveSuccess && (
             <span style={{ color: '#10b981', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
               <HiOutlineCheckCircle size={18} /> Đã lưu và đồng bộ cài đặt thành công!

@@ -86,6 +86,8 @@ class UpdateSettingsRequest(BaseModel):
     auto_backup: Optional[bool] = None
     email_notif: Optional[bool] = None
     webhook_url: Optional[str] = None
+    broadcast_update: Optional[bool] = False
+    broadcast_message: Optional[str] = None
 
 
 class NotificationItem(BaseModel):
@@ -206,7 +208,8 @@ async def update_admin_settings(
     prev_maintenance = setting.maintenance_mode
 
     for field, val in payload.dict(exclude_unset=True).items():
-        setattr(setting, field, val)
+        if hasattr(setting, field):
+            setattr(setting, field, val)
 
     setting.updated_at = datetime.utcnow()
 
@@ -214,7 +217,7 @@ async def update_admin_settings(
     if payload.maintenance_mode is True and not prev_maintenance:
         notif = SystemNotification(
             title="Thông báo Bảo Trì Hệ Thống",
-            message=setting.maintenance_message or "Hệ thống đang bảo trì định kỳ.",
+            message=setting.maintenance_message or "Hệ thống đang bảo trì định kỳ. Mọi tiến trình AI và API tạm dừng.",
             type="danger",
             is_broadcast=True,
         )
@@ -224,6 +227,14 @@ async def update_admin_settings(
             title="Hệ thống đã hoạt động bình thường",
             message="Quá trình bảo trì đã hoàn tất. Cảm ơn sự kiên nhẫn của bạn!",
             type="success",
+            is_broadcast=True,
+        )
+        db.add(notif)
+    elif payload.broadcast_update and payload.broadcast_message:
+        notif = SystemNotification(
+            title=f"Cập nhật hệ thống: {setting.site_name}",
+            message=payload.broadcast_message,
+            type="info",
             is_broadcast=True,
         )
         db.add(notif)

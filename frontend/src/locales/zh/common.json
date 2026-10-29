@@ -617,7 +617,11 @@
     "maintenance_tag": "系统维护"
   },
   "notifications": {
-    "mark_all_read": "全部已读",
-    "empty": "暂无系统通知"
+    "mark_all_read": "全部标记为已读",
+    "empty": "暂无系统通知",
+    "from_system": "系统通知",
+    "just_now": "刚刚",
+    "sound_test": "测试提示音",
+    "broadcast_success": "已成功向所有在线用户广播通知与铃声！"
   }
 }
