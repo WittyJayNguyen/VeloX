@@ -27,6 +27,10 @@ export interface FullSystemSettings extends PublicSystemSettings {
   auto_backup: boolean;
   email_notif: boolean;
   webhook_url?: string;
+  google_client_id?: string;
+  google_client_secret?: string;
+  telegram_bot_username?: string;
+  telegram_bot_token?: string;
   updated_at?: string;
 }
 

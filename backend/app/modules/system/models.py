@@ -29,6 +29,7 @@ class SystemSetting(Base):
     google_client_id = Column(String(255), nullable=True)
     google_client_secret = Column(String(255), nullable=True)
     telegram_bot_username = Column(String(128), nullable=True)
+    telegram_bot_token = Column(String(255), nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
