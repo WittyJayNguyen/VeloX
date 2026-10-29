@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
-import LangSwitcher from '../LangSwitcher/LangSwitcher';
 import {
   HiOutlineBars3,
   HiOutlineXMark,
@@ -260,9 +259,6 @@ const MainLayout = () => {
                   />
                 </div>
 
-                <div className={styles.langWrapper}>
-                  <LangSwitcher />
-                </div>
 
                 <div className={styles.authGroup}>
                   <Link to="/login" className={styles.loginBtn}>

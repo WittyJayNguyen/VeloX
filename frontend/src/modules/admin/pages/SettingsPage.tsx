@@ -22,11 +22,7 @@ import apiClient from '@modules/core/lib/apiClient';
 import styles from './SettingsPage.module.scss';
 
 const LANG_OPTIONS = [
-  { value: 'vi', label: 'Tiếng Việt' },
-  { value: 'en', label: 'English' },
-  { value: 'ja', label: '日本語' },
-  { value: 'ko', label: '한국어' },
-  { value: 'zh', label: '中文' },
+  { value: 'vi', label: 'Tiếng Việt (Cố định toàn hệ thống)' },
 ];
 
 const BROADCAST_TYPE_OPTIONS = [
@@ -276,10 +272,11 @@ const SettingsPage = () => {
           />
 
           <Select
-            label="Ngôn Ngữ Mặc Định"
+            label="Ngôn Ngữ Hệ Thống (Cố Định Tiếng Việt)"
             options={LANG_OPTIONS}
             value={defaultLang}
             onChange={(e) => setDefaultLang(e.target.value)}
+            disabled
             fullWidth
           />
         </div>

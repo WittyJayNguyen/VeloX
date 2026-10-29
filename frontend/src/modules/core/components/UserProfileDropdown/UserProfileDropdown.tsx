@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
-import { SUPPORTED_LANGUAGES } from '@modules/core/utils/constants';
 import {
   HiOutlineUser,
   HiOutlineShieldCheck,
@@ -27,7 +26,7 @@ interface UserProfileDropdownProps {
 }
 
 export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpenTopup }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isSuperAdmin, logout, addCredits } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -98,13 +97,6 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
     navigate('/');
     setIsOpen(false);
   };
-
-  const changeLanguage = (langCode: string) => {
-    i18n.changeLanguage(langCode);
-    localStorage.setItem('i18nextLng', langCode);
-  };
-
-  const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
 
   return (
     <div className={styles.dropdownContainer} ref={dropdownRef}>
@@ -299,18 +291,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
           {/* DROPDOWN FOOTER */}
           <div className={styles.footerRow}>
             <div className={styles.langSelector}>
-              <span className={styles.langLabel}>{t('menu.language', 'Ngôn ngữ')}</span>
-              <select
-                className={styles.langSelect}
-                value={currentLang.code}
-                onChange={(e) => changeLanguage(e.target.value)}
-              >
-                {SUPPORTED_LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
+              <span className={styles.langLabel}>Tiếng Việt 🇻🇳</span>
             </div>
 
             <button type="button" className={styles.logoutBtn} onClick={handleLogout}>

@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 import vi from '../locales/vi/common.json';
 import en from '../locales/en/common.json';
@@ -8,8 +7,13 @@ import ja from '../locales/ja/common.json';
 import ko from '../locales/ko/common.json';
 import zh from '../locales/zh/common.json';
 
+// Cố định ngôn ngữ toàn hệ thống là Tiếng Việt (vi)
+if (typeof window !== 'undefined') {
+  localStorage.setItem('velox_lang', 'vi');
+  localStorage.setItem('i18nextLng', 'vi');
+}
+
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
@@ -19,22 +23,16 @@ i18n
       ko: { translation: ko },
       zh: { translation: zh },
     },
+    lng: 'vi',
+    fallbackLng: 'vi',
     supportedLngs: ['vi', 'en', 'ja', 'ko', 'zh'],
     nonExplicitSupportedLngs: true,
     load: 'languageOnly',
-    fallbackLng: 'vi',
-    detection: {
-      order: ['localStorage', 'navigator'],
-      lookupLocalStorage: 'velox_lang',
-      caches: ['localStorage'],
-    },
     interpolation: { escapeValue: false },
   });
 
-// Keep document.documentElement.lang in sync with i18n
-i18n.on('languageChanged', (lng) => {
-  const clean = (lng || 'vi').split('-')[0];
-  document.documentElement.lang = clean;
-});
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = 'vi';
+}
 
 export default i18n;
