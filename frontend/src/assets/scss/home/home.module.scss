@@ -16,14 +16,15 @@ $text-muted: #94a3b8;
 $border: rgba(255, 255, 255, 0.08);
 $border-hover: rgba(255, 107, 53, 0.35);
 
-$font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+$font-heading: Roboto, Arial, sans-serif;
 $font-mono: 'JetBrains Mono', monospace;
 
 // ── Root Wrapper ──
 .homePage {
   background-color: $bg-dark;
   color: $text-light;
-  font-family: $font-heading;
+  font-family: Roboto, Arial, sans-serif;
+  font-variation-settings: "wdth" 100;
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
