@@ -174,6 +174,66 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onOpen
             </button>
           </div>
 
+          {/* Subscription Tier & Expiration Status */}
+          {user?.tier && user.tier !== 'FREE' && (() => {
+            const hasSub = Boolean(user?.subscription_expires_at);
+            let daysRemaining = 0;
+            let formattedExpiry = '';
+            let isExpired = false;
+
+            if (hasSub && user.subscription_expires_at) {
+              const expDate = new Date(user.subscription_expires_at);
+              formattedExpiry = expDate.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+              });
+              const diffMs = expDate.getTime() - Date.now();
+              daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+              isExpired = daysRemaining <= 0;
+            }
+
+            return (
+              <div
+                onClick={() => handleNavigate('/subscription')}
+                style={{
+                  margin: '0.4rem 1rem 0.6rem',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 8,
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
+                  border: '1px solid rgba(56, 189, 248, 0.28)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>Gói thuê bao:</span>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#38bdf8' }}>
+                    {user.tier === 'STARTER' ? 'Creator Standard' : user.tier === 'PRO' ? 'Pro Developer' : user.tier}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>Thời hạn còn:</span>
+                  <span style={{
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: isExpired ? '#f43f5e' : daysRemaining <= 5 ? '#f59e0b' : '#10b981'
+                  }}>
+                    {isExpired ? 'Hết hạn chu kỳ' : `Còn ${daysRemaining} ngày`}
+                  </span>
+                </div>
+                {formattedExpiry && (
+                  <div style={{ fontSize: '0.7rem', color: '#64748b', textAlign: 'right', marginTop: 2 }}>
+                    Hết hạn: {formattedExpiry}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Daily VeloX Reward */}
           <div
             className={`${styles.attendanceRow} ${checkedInToday ? styles.attended : ''}`}

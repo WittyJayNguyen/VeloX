@@ -193,6 +193,53 @@ const MainLayout = () => {
             {/* Desktop Auth Controls */}
             {isAuthenticated ? (
               <div className={styles.topbarAuthControls}>
+                {/* Subscription Tier & Days Pill */}
+                {user?.tier && user.tier !== 'FREE' && (() => {
+                  const hasSub = Boolean(user?.subscription_expires_at);
+                  let subDays = 0;
+                  let isExpired = false;
+                  if (hasSub && user.subscription_expires_at) {
+                    const diff = new Date(user.subscription_expires_at).getTime() - Date.now();
+                    subDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    isExpired = subDays <= 0;
+                  }
+
+                  return (
+                    <div
+                      onClick={() => navigate('/subscription')}
+                      title={`Gói ${user.tier} - Nhấn để xem chi tiết hoặc gia hạn`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '4px 10px',
+                        borderRadius: 16,
+                        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        color: '#38bdf8',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <span>{user.tier === 'STARTER' ? 'Creator' : user.tier === 'PRO' ? 'Pro' : user.tier}</span>
+                      {hasSub && (
+                        <span style={{
+                          color: isExpired ? '#f43f5e' : subDays <= 5 ? '#fbbf24' : '#34d399',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          background: 'rgba(255,255,255,0.08)',
+                          padding: '1px 6px',
+                          borderRadius: 8,
+                        }}>
+                          {isExpired ? '0d' : `${subDays}d`}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Credit Badge + Nạp */}
                 <div className={styles.creditBadgeBox}>
                   <div className={styles.creditPill} onClick={() => setTopupOpen(true)} title="Số dư Credit">
