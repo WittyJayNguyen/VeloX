@@ -274,17 +274,20 @@ export const TopupModal: React.FC<TopupModalProps> = ({ isOpen, onClose, initial
     (user as any)?.userCode ||
     (user?.id ? user.id.replace(/-/g, '').slice(-6).toUpperCase() : '10001');
 
-  // Neutral transfer memo: VL <user_code> (e.g. VL 10001)
-  const transferContent = `VL ${userIdentifier}`;
+  // Official SePay transfer memo: SEVQR TKPVL <user_code> (e.g. SEVQR TKPVL 10001)
+  const transferContent = `SEVQR TKPVL ${userIdentifier}`;
 
-  // SePay Official VietQR generator URL with compact template
-  const qrUrl = `https://qr.sepay.vn/img?bank=${encodeURIComponent(bankCode)}&acc=${encodeURIComponent(
+  // SePay Official VietQR generator URL as requested by user
+  const normalizedBank = bankCode === 'ICB' ? 'VietinBank' : bankCode;
+  const qrUrl = `https://vietqr.app/img?bank=${encodeURIComponent(normalizedBank)}&acc=${encodeURIComponent(
+    accountNumber
+  )}&amount=${selectedOption.priceVnd}&des=${encodeURIComponent(transferContent)}&showinfo=true&holder=${encodeURIComponent(
+    accountHolder
+  )}&store=veloX`;
+
+  const fallbackQrUrl = `https://qr.sepay.vn/img?bank=${encodeURIComponent(normalizedBank)}&acc=${encodeURIComponent(
     accountNumber
   )}&template=compact&amount=${selectedOption.priceVnd}&des=${encodeURIComponent(transferContent)}`;
-
-  const fallbackQrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${
-    selectedOption.priceVnd
-  }&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountHolder)}`;
 
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);
