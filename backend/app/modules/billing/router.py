@@ -158,7 +158,13 @@ async def get_my_orders(
     """List real payment transactions / top-up orders for the currently authenticated user."""
     stmt = (
         select(PaymentTransaction, CreditPackage.name.label("package_name"), CreditPackage.tag_badge)
-        .outerjoin(CreditPackage, PaymentTransaction.package_id == CreditPackage.id)
+        .outerjoin(
+            CreditPackage,
+            or_(
+                PaymentTransaction.package_id == CreditPackage.id,
+                PaymentTransaction.amount_vnd == CreditPackage.price_vnd,
+            ),
+        )
         .where(PaymentTransaction.user_id == current_user.id)
         .order_by(desc(PaymentTransaction.created_at))
         .limit(100)
