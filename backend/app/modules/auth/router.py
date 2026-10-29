@@ -77,6 +77,44 @@ async def google_auth(
     full_name = body.full_name
     avatar_url = body.avatar_url
 
+    # 0. If OAuth auth code is provided, exchange for tokens with Google
+    if body.code:
+        settings = get_settings()
+        google_client_id = settings.GOOGLE_CLIENT_ID
+        google_client_secret = settings.GOOGLE_CLIENT_SECRET
+        try:
+            from app.modules.system.models import SystemSetting
+            s_res = await db.execute(select(SystemSetting).where(SystemSetting.id == "default"))
+            s_setting = s_res.scalar_one_or_none()
+            if s_setting:
+                if getattr(s_setting, "google_client_id", None):
+                    google_client_id = s_setting.google_client_id
+                if getattr(s_setting, "google_client_secret", None):
+                    google_client_secret = s_setting.google_client_secret
+        except Exception:
+            pass
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                token_resp = await client.post(
+                    "https://oauth2.googleapis.com/token",
+                    data={
+                        "client_id": google_client_id,
+                        "client_secret": google_client_secret,
+                        "code": body.code,
+                        "grant_type": "authorization_code",
+                        "redirect_uri": body.redirect_uri or "",
+                    },
+                )
+                if token_resp.status_code == 200:
+                    t_data = token_resp.json()
+                    if t_data.get("id_token"):
+                        body.credential = t_data["id_token"]
+                    if t_data.get("access_token"):
+                        body.access_token = t_data["access_token"]
+        except Exception as ex:
+            print(f"[Google OAuth Code Exchange Exception]: {ex}")
+
     # 1. If Google ID Token (credential) is provided, verify against Google API
     if body.credential:
         try:
