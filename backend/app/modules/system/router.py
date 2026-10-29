@@ -6,8 +6,9 @@ import uuid
 import base64
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, status, Query
 from pydantic import BaseModel
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, or_, func
 
