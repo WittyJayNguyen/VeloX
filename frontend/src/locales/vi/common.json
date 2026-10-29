@@ -625,5 +625,14 @@
     "scan_zalo_group": "Nhóm Zalo Hỗ Trợ",
     "channel_notice": "Kênh thông báo",
     "contact_admin": "Liên hệ admin"
+  },
+  "system": {
+    "maintenance_active": "Bảo trì hệ thống",
+    "maintenance_marquee_default": "Hệ thống đang trong thời gian bảo trì định kỳ / nâng cấp hạ tầng. Toàn bộ tiến trình tạo AI (Ảnh, Video, Âm thanh) và API Gateway tạm thời ngưng phục vụ để đảm bảo dữ liệu. Vui lòng quay lại sau!",
+    "maintenance_tag": "Bảo Trì"
+  },
+  "notifications": {
+    "mark_all_read": "Đã đọc tất cả",
+    "empty": "Bạn không có thông báo nào"
   }
 }

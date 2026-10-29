@@ -610,5 +610,14 @@
     "scan_zalo_group": "Zalo 지원 그룹",
     "channel_notice": "공지 채널",
     "contact_admin": "관리자 문의"
+  },
+  "system": {
+    "maintenance_active": "시스템 점검 중",
+    "maintenance_marquee_default": "현재 정기 점검 및 인프라 업그레이드가 진행 중입니다. 모든 AI 생성(이미지, 비디오, 오디오) 및 API 게이트웨이가 일시 중단됩니다. 잠시 후 다시 이용해 주세요!",
+    "maintenance_tag": "점검 중"
+  },
+  "notifications": {
+    "mark_all_read": "모두 읽음으로 표시",
+    "empty": "새로운 알림이 없습니다"
   }
 }

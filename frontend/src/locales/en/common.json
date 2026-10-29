@@ -625,5 +625,14 @@
     "scan_zalo_group": "Zalo Support Group",
     "channel_notice": "Notice channel",
     "contact_admin": "Contact admin"
+  },
+  "system": {
+    "maintenance_active": "System Maintenance",
+    "maintenance_marquee_default": "The system is currently undergoing scheduled maintenance and infrastructure upgrades. All AI generation jobs (Image, Video, Audio) and API Gateway are temporarily paused. Please check back later!",
+    "maintenance_tag": "Maintenance"
+  },
+  "notifications": {
+    "mark_all_read": "Mark all as read",
+    "empty": "No notifications available"
   }
 }

@@ -20,6 +20,7 @@ import app.modules.models_catalog.models  # noqa
 import app.modules.logs.models  # noqa
 import app.modules.developers.models  # noqa
 import app.modules.accounting.models  # noqa
+import app.modules.system.models  # noqa
 from app.modules.pools.router import router as pools_router
 from app.modules.models_catalog.router import router as models_router
 from app.modules.playground.router import router as playground_router
@@ -29,6 +30,7 @@ from app.modules.proxy.router import router as proxy_router
 from app.modules.accounting.router import router as accounting_router
 from app.modules.billing.router import router as billing_router
 from app.modules.studio.router import router as studio_router
+from app.modules.system.router import router as system_router, get_or_create_system_setting
 from app.modules.pools.seed import seed_gateway_data
 
 settings = get_settings()
@@ -95,7 +97,8 @@ async def lifespan(app: FastAPI):
             await seed_gateway_data(db)
             await seed_default_models(db)
             await seed_default_packages(db)
-        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, and Credit Packages verified")
+            await get_or_create_system_setting(db)
+        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, Credit Packages, and System Settings verified")
     except Exception as e:
         print(f"[WARN] Database initialization warning: {e}")
     yield
@@ -130,6 +133,7 @@ app.include_router(logs_router, prefix="/api/v1")
 app.include_router(accounting_router, prefix="/api/v1")
 app.include_router(billing_router, prefix="/api/v1")
 app.include_router(studio_router, prefix="/api/v1")
+app.include_router(system_router, prefix="/api/v1")
 app.include_router(proxy_router)
 
 

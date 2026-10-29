@@ -1,6 +1,7 @@
 import { Suspense, useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { useAuthStore } from '@modules/auth/states/authStore';
+import { useSystemStore } from '@modules/core/states/systemStore';
 import router from './routes/router';
 import './i18n';
 import './assets/scss/global.scss';
@@ -11,6 +12,7 @@ const App = () => {
 
   useEffect(() => {
     hydrate();
+    useSystemStore.getState().fetchPublicSettings().catch(() => {});
     if (localStorage.getItem('velox_token')) {
       syncProfile().catch(() => {});
     }
