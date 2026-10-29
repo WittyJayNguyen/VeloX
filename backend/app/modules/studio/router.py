@@ -697,125 +697,166 @@ async def generate_video_from_upstream(
         if not pairs:
             return None
 
-        # Determine upstream target model name:
-        # If voice/audio reference is provided or seedance/speech requested, use seedance_2.0_fast (supports audio & frames)
         clean_code = (model_code or "").lower().strip()
         has_audio = bool(pub_audio_url)
-        if has_audio or any(k in clean_code for k in ["seedance", "voice", "audio", "talk", "sound", "lipsync", "thoại", "giong"]):
-            target_model = "seedance_2.0_fast"
-        elif "veo" in clean_code:
-            target_model = "Veo-3.1"
+        
+        # Supported models on Tuansu video API:
+        # veo-3.1 is the verified stable video generator on Tuansu
+        # If user explicitly wants seedance or has audio, try seedance-2.5, fallback to veo-3.1
+        if has_audio or "seedance" in clean_code or "talk" in clean_code or "lipsync" in clean_code:
+            candidate_models = ["seedance-2.5", "veo-3.1"]
         else:
-            target_model = "seedance_2.0_fast" if has_audio else "Veo-3.1"
+            candidate_models = ["veo-3.1", "seedance-2.5"]
 
-        # Valid seconds for the selected model:
-        if target_model == "Veo-3.1":
-            if seconds <= 4:
-                valid_seconds = 4
-            elif seconds <= 6:
-                valid_seconds = 6
-            else:
-                valid_seconds = 8
-        elif "seedance" in target_model:
-            allowed_sec = [5, 8, 10, 12, 15, 30]
-            valid_seconds = min(allowed_sec, key=lambda x: abs(x - seconds))
-        else:
-            valid_seconds = seconds
+        ua_header = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 
         for cred, pool in pairs:
             base_url = (pool.base_url or "").rstrip("/")
             headers = {
                 "Authorization": f"Bearer {cred.key_val}",
                 "Content-Type": "application/json",
+                "User-Agent": ua_header,
             }
-            payload = {
-                "model": target_model,
-                "prompt": prompt,
-                "seconds": valid_seconds,
-                "size": size or "1280x720",
-            }
-            if pub_image_url:
-                payload["image_url"] = pub_image_url
-            if pub_image_end_url:
-                payload["image_end_url"] = pub_image_end_url
-            if pub_video_url:
-                payload["video_url"] = pub_video_url
-            if pub_audio_url:
-                payload["audio_url"] = pub_audio_url
 
-            async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=15.0)) as client:
-                try:
-                    # Try /videos first (standard TuanSu docs), fallback to /video/generations
-                    resp = None
-                    for endpoint in [f"{base_url}/videos", f"{base_url}/video/generations"]:
-                        try:
-                            r = await client.post(endpoint, json=payload, headers=headers)
-                            if r.status_code == 200:
-                                resp = r
-                                break
-                        except Exception:
+            for target_model in candidate_models:
+                # Size adaptation per model:
+                # veo-3.1 strictly accepts 1280x720 (horizontal) or 720x1280 (vertical)
+                # seedance-2.5 accepts 1280x720, 720x1280, 1024x1024, 1024x768, 768x1024
+                parsed_w, parsed_h = 1280, 720
+                if size and "x" in size:
+                    try:
+                        pw, ph = [int(x) for x in size.split("x")[:2]]
+                        parsed_w, parsed_h = pw, ph
+                    except Exception:
+                        pass
+                
+                is_vertical = parsed_h > parsed_w
+                if target_model == "veo-3.1":
+                    adapted_size = "720x1280" if is_vertical else "1280x720"
+                    if seconds <= 4:
+                        valid_seconds = 4
+                    elif seconds <= 6:
+                        valid_seconds = 6
+                    else:
+                        valid_seconds = 8
+                else:
+                    if is_vertical:
+                        adapted_size = "720x1280"
+                    elif parsed_w == parsed_h:
+                        adapted_size = "1024x1024"
+                    else:
+                        adapted_size = "1280x720"
+                    allowed_sec = [5, 8, 10, 12, 15, 30]
+                    valid_seconds = min(allowed_sec, key=lambda x: abs(x - seconds))
+
+                payload = {
+                    "model": target_model,
+                    "prompt": prompt,
+                    "seconds": valid_seconds,
+                    "size": adapted_size,
+                }
+                if pub_image_url:
+                    payload["image_url"] = pub_image_url
+                if pub_image_end_url and target_model != "veo-3.1":
+                    payload["image_end_url"] = pub_image_end_url
+                if pub_video_url:
+                    payload["video_url"] = pub_video_url
+                if pub_audio_url and target_model != "veo-3.1":
+                    payload["audio_url"] = pub_audio_url
+
+                async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=15.0)) as client:
+                    try:
+                        # Try /videos first (standard TuanSu docs), fallback to /video/generations
+                        resp = None
+                        for endpoint in [f"{base_url}/videos", f"{base_url}/video/generations"]:
+                            try:
+                                r = await client.post(endpoint, json=payload, headers=headers)
+                                if r.status_code == 200:
+                                    resp = r
+                                    break
+                            except Exception:
+                                continue
+
+                        if not resp or resp.status_code != 200:
                             continue
 
-                    if not resp or resp.status_code != 200:
-                        continue
+                        data = resp.json()
+                        task_id = (
+                            data.get("id")
+                            or data.get("task_id")
+                            or (data.get("data") and isinstance(data["data"], dict) and data["data"].get("id"))
+                            or (data.get("data") and isinstance(data["data"], list) and len(data["data"]) > 0 and data["data"][0].get("id"))
+                        )
 
-                    task_data = resp.json()
-                    task_id = task_data.get("id")
-                    if not task_id:
-                        continue
+                        # If immediate video returned:
+                        direct_url = (
+                            data.get("video_url")
+                            or data.get("url")
+                            or (data.get("data") and isinstance(data["data"], list) and len(data["data"]) > 0 and (data["data"][0].get("url") or data["data"][0].get("video_url")))
+                        )
+                        if direct_url and not task_id:
+                            cred.record_usage(1)
+                            await db.commit()
+                            return direct_url
 
-                    # Poll for video completion:
-                    # As requested: "không cần kiểm tra vì cứ bên kia bao h trả mình lấy thôi"
-                    # Keep waiting without premature timeout until provider completes or errors
-                    max_polls = 600  # Up to ~45 minutes
-                    for _ in range(max_polls):
-                        await asyncio.sleep(4.5)
-                        try:
-                            poll_res = await client.get(f"{base_url}/videos/{task_id}", headers=headers)
-                        except Exception as poll_err:
-                            print(f"[Studio Video Poll Warning]: {poll_err}")
+                        if not task_id:
                             continue
 
-                        if poll_res.status_code == 200:
-                            p_data = poll_res.json()
-                            p_status = p_data.get("status")
-                            if p_status in ["completed", "succeeded"]:
-                                v_url = p_data.get("video_url") or p_data.get("url")
-                                if not v_url and p_data.get("data") and isinstance(p_data["data"], list) and len(p_data["data"]) > 0:
-                                    v_url = p_data["data"][0].get("url") or p_data["data"][0].get("video_url")
-                                if not v_url:
-                                    v_url = f"{base_url}/videos/{task_id}/content"
+                        # Poll for video completion:
+                        # As requested: "không cần kiểm tra vì cứ bên kia bao h trả mình lấy thôi"
+                        # Keep waiting without premature timeout until provider completes or errors
+                        max_polls = 600  # Up to ~45 minutes
+                        for _ in range(max_polls):
+                            await asyncio.sleep(4.5)
+                            try:
+                                poll_res = await client.get(f"{base_url}/videos/{task_id}", headers=headers)
+                            except Exception as poll_err:
+                                print(f"[Studio Video Poll Warning]: {poll_err}")
+                                continue
 
-                                # Authenticated download of video MP4 binary to local VeloX storage
-                                try:
-                                    dl_resp = await client.get(
-                                        v_url,
-                                        headers={"Authorization": f"Bearer {cred.key_val}"},
-                                        follow_redirects=True,
-                                        timeout=httpx.Timeout(180.0, connect=20.0)
-                                    )
-                                    if dl_resp.status_code == 200 and len(dl_resp.content) > 1000:
-                                        local_filename = f"video_{task_id}_{uuid.uuid4().hex[:8]}.mp4"
-                                        local_path = os.path.join(MEDIA_DIR, local_filename)
-                                        with open(local_path, "wb") as f:
-                                            f.write(dl_resp.content)
-                                        cred.record_usage(1)
-                                        await db.commit()
-                                        return f"/api/v1/studio/media/{local_filename}"
-                                except Exception as dl_err:
-                                    print(f"[Studio Video Download Error]: {dl_err}")
+                            if poll_res.status_code == 200:
+                                p_data = poll_res.json()
+                                p_status = p_data.get("status")
+                                if p_status in ["completed", "succeeded"]:
+                                    v_url = p_data.get("video_url") or p_data.get("url")
+                                    if not v_url and p_data.get("data") and isinstance(p_data["data"], list) and len(p_data["data"]) > 0:
+                                        v_url = p_data["data"][0].get("url") or p_data["data"][0].get("video_url")
+                                    if not v_url:
+                                        v_url = f"{base_url}/videos/{task_id}/content?variant=video"
 
-                                cred.record_usage(1)
-                                await db.commit()
-                                return v_url
+                                    # Authenticated download of video MP4 binary to local VeloX storage
+                                    try:
+                                        dl_resp = await client.get(
+                                            v_url,
+                                            headers={
+                                                "Authorization": f"Bearer {cred.key_val}",
+                                                "User-Agent": ua_header,
+                                            },
+                                            follow_redirects=True,
+                                            timeout=httpx.Timeout(180.0, connect=20.0)
+                                        )
+                                        if dl_resp.status_code == 200 and len(dl_resp.content) > 1000:
+                                            local_filename = f"video_{task_id}_{uuid.uuid4().hex[:8]}.mp4"
+                                            local_path = os.path.join(MEDIA_DIR, local_filename)
+                                            with open(local_path, "wb") as f:
+                                                f.write(dl_resp.content)
+                                            cred.record_usage(1)
+                                            await db.commit()
+                                            return f"/api/v1/studio/media/{local_filename}"
+                                    except Exception as dl_err:
+                                        print(f"[Studio Video Download Error]: {dl_err}")
 
-                            elif p_status in ["failed", "error"]:
-                                print(f"[Studio Video Task Failed]: {p_data.get('error')}")
-                                break
-                            elif p_status in ["queued", "in_progress", "processing"]:
-                                pass
-                except Exception as call_err:
-                    print(f"[Studio Video Call Error]: {call_err}")
+                                    cred.record_usage(1)
+                                    await db.commit()
+                                    return v_url
+
+                                elif p_status in ["failed", "error"]:
+                                    print(f"[Studio Video Task Failed]: {p_data.get('error')}")
+                                    break
+                                elif p_status in ["queued", "in_progress", "processing"]:
+                                    pass
+                    except Exception as call_err:
+                        print(f"[Studio Video Call Error]: {call_err}")
     except Exception as ex:
         print(f"[Studio Video Upstream Error]: {ex}")
     return None
