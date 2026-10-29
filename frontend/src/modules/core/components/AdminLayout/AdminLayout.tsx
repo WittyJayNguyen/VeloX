@@ -3,7 +3,6 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { useUIStore } from '../../states/uiStore';
-import LangSwitcher from '../LangSwitcher/LangSwitcher';
 import {
   HiOutlineChartBarSquare,
   HiOutlineServerStack,
@@ -255,8 +254,6 @@ const AdminLayout = () => {
           </div>
 
           <div className={styles.topRight}>
-            <LangSwitcher />
-
             <button className={styles.iconBtn} type="button" title="Theme">
               <HiOutlineMoon size={18} />
             </button>
