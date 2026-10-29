@@ -206,6 +206,7 @@ const MainLayout = () => {
 
                   return (
                     <div
+                      className={styles.tierTopPill}
                       onClick={() => navigate('/subscription')}
                       title={`Gói ${user.tier} - Nhấn để xem chi tiết hoặc gia hạn`}
                       style={{
@@ -246,7 +247,14 @@ const MainLayout = () => {
                     <span className={styles.diamondIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>
                       <RiSparklingFill color="#2dd4bf" size={14} />
                     </span>
-                    <span className={styles.creditValue}>{(user?.credit_balance ?? 0).toLocaleString()}</span>
+                    <span className={styles.creditValueDesktop}>{(user?.credit_balance ?? 0).toLocaleString()}</span>
+                    <span className={styles.creditValueMobile}>
+                      {(user?.credit_balance ?? 0) >= 1_000_000
+                        ? `${((user?.credit_balance ?? 0) / 1_000_000).toFixed(1)}M`
+                        : (user?.credit_balance ?? 0) >= 100_000
+                        ? `${Math.round((user?.credit_balance ?? 0) / 1_000)}k`
+                        : (user?.credit_balance ?? 0).toLocaleString()}
+                    </span>
                   </div>
                   <button
                     type="button"
