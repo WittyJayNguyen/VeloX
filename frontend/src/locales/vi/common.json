@@ -64,7 +64,22 @@
     "register_link": "Đăng ký tại đây",
     "or": "hoặc",
     "login_error": "Email hoặc mật khẩu không chính xác",
-    "register_error": "Không thể đăng ký tài khoản lúc này"
+    "register_error": "Không thể đăng ký tài khoản lúc này",
+    "or_continue_with": "Hoặc tiếp tục với",
+    "continue_with_google": "Tiếp tục với Google",
+    "continue_with_telegram": "Tiếp tục với Telegram",
+    "telegram_modal_title": "Xác thực qua Telegram",
+    "telegram_modal_desc": "Hệ thống tự động đăng nhập hoặc tạo tài khoản mới nếu chưa tồn tại.",
+    "telegram_username_or_id": "Telegram Username hoặc ID",
+    "telegram_name": "Tên hiển thị (Tùy chọn)",
+    "telegram_quick_btn": "Đăng nhập / Đăng ký Telegram",
+    "social_auth_in_progress": "Đang xác thực thông tin...",
+    "social_auth_failed": "Xác thực không thành công. Vui lòng thử lại.",
+    "google_enter_email_title": "Đăng Nhập Bằng Google",
+    "google_enter_email_desc": "Tự động đăng ký nếu tài khoản chưa có, hoặc đăng nhập nếu đã có.",
+    "google_email_placeholder": "Nhập địa chỉ Gmail...",
+    "google_name_placeholder": "Họ và tên Google",
+    "google_quick_btn": "Xác nhận với Google"
   },
   "common": {
     "loading": "Đang tải dữ liệu...",

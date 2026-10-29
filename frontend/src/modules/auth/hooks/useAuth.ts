@@ -23,6 +23,18 @@ export const useAuth = () => {
     return res;
   };
 
+  const handleGoogleAuth = async (payload: import('../types/auth.types').GoogleAuthPayload) => {
+    const res = await authService.loginWithGoogle(payload);
+    login(res.user, res.access_token);
+    return res;
+  };
+
+  const handleTelegramAuth = async (payload: import('../types/auth.types').TelegramAuthPayload) => {
+    const res = await authService.loginWithTelegram(payload);
+    login(res.user, res.access_token);
+    return res;
+  };
+
   const handleLogout = async () => {
     await authService.logout();
     logout();
@@ -35,6 +47,8 @@ export const useAuth = () => {
     isAdmin,
     login: handleLogin,
     register: handleRegister,
+    loginWithGoogle: handleGoogleAuth,
+    loginWithTelegram: handleTelegramAuth,
     changePassword: handleChangePassword,
     logout: handleLogout,
     updateUser,

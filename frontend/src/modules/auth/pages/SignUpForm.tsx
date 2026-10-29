@@ -10,6 +10,7 @@ import {
   HiOutlineXMark,
 } from 'react-icons/hi2';
 import Button from '@modules/core/design-system/Button';
+import { SocialAuthButtons } from '../components/SocialAuthButtons';
 import { useAuth } from '../hooks/useAuth';
 import styles from '@assets/scss/auth/auth.module.scss';
 
@@ -293,7 +294,9 @@ export const SignUpForm = () => {
           </div>
         </form>
 
-        <p className={styles.switch} style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.84rem', color: '#71717a' }}>
+        <SocialAuthButtons onError={setError} />
+
+        <p className={styles.switch} style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.84rem', color: '#71717a' }}>
           {t('auth.has_account', 'Đã có tài khoản?')}{' '}
           <Link to="/login" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none' }}>
             {t('auth.login_link', 'Đăng nhập')}

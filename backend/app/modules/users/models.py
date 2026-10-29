@@ -39,6 +39,11 @@ class User(Base, UUIDMixin, TimestampMixin):
     last_login_at = Column(String(64), nullable=True)
     last_login_ip = Column(String(64), nullable=True)
     token_version = Column(Integer, default=1, nullable=False)
+    # Social Auth & SSO Fields
+    auth_provider = Column(String(32), default="LOCAL", nullable=False)  # 'LOCAL', 'GOOGLE', 'TELEGRAM'
+    google_id = Column(String(128), unique=True, nullable=True, index=True)
+    telegram_id = Column(String(128), unique=True, nullable=True, index=True)
+    telegram_username = Column(String(128), nullable=True)
 
     roles = relationship("Role", secondary=user_roles, back_populates="users", lazy="selectin")
     wallet = relationship("UserWallet", uselist=False, back_populates="user", cascade="all, delete-orphan", lazy="selectin")

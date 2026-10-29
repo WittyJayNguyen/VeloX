@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     SEPAY_API_KEY: str = "velox_sepay_live_secret_key_8899"
     USER_JOB_RETENTION_LIMIT: int = 50  # Cap maximum job history records per user to preserve server disk
 
+    # Social Auth & SSO (Google & Telegram)
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_BOT_USERNAME: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = True

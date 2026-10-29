@@ -70,6 +70,15 @@ async def lifespan(app: FastAPI):
                     if "user_code" not in cols:
                         sync_conn.execute(text("ALTER TABLE users ADD COLUMN user_code VARCHAR(32)"))
                         print("[DB] Added 'user_code' column to users")
+                    for col_name, col_type, col_def in [
+                        ("auth_provider", "VARCHAR(32)", "'LOCAL'"),
+                        ("google_id", "VARCHAR(128)", "NULL"),
+                        ("telegram_id", "VARCHAR(128)", "NULL"),
+                        ("telegram_username", "VARCHAR(128)", "NULL"),
+                    ]:
+                        if col_name not in cols:
+                            sync_conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type} DEFAULT {col_def}"))
+                            print(f"[DB] Added '{col_name}' column to users")
                     rows = sync_conn.execute(text("SELECT id, user_code FROM users ORDER BY created_at ASC")).fetchall()
                     current_num = 10001
                     for r in rows:
@@ -84,6 +93,15 @@ async def lifespan(app: FastAPI):
                                     current_num = n + 1
                             except ValueError:
                                 pass
+                if "system_settings" in tables:
+                    cols = [c["name"] for c in inspector.get_columns("system_settings")]
+                    for col_name, col_type in [
+                        ("google_client_id", "VARCHAR(255)"),
+                        ("telegram_bot_username", "VARCHAR(128)"),
+                    ]:
+                        if col_name not in cols:
+                            sync_conn.execute(text(f"ALTER TABLE system_settings ADD COLUMN {col_name} {col_type} DEFAULT NULL"))
+                            print(f"[DB] Added '{col_name}' column to system_settings")
             await conn.run_sync(ensure_table_columns)
         print("[DB] Database tables initialized successfully")
         
