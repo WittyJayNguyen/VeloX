@@ -40,9 +40,10 @@
     "uptime": "가동률"
   },
   "footer": {
-    "rights": "© 2026 VeloX AI. 모든 권리 보유.",
-    "terms": "이용약관",
-    "privacy": "개인정보"
+    "support": "고객 지원",
+    "scan_zalo_group": "Zalo 지원 그룹",
+    "channel_notice": "공지 채널",
+    "contact_admin": "관리자 문의"
   },
   "auth": {
     "login_title": "로그인",
@@ -202,7 +203,28 @@
       "inventory": "재고 실사",
       "expense": "지출 전표",
       "cashflow": "자금 흐름",
-      "my_library": "내 보관함"
+      "my_library": "내 보관함",
+      "all_prompts": "전체",
+      "languages": "5개 언어"
+    },
+    "nav": {
+      "creative_vault": "프롬프트 및 미디어 보관소",
+      "translations": "다국어 관리"
+    },
+    "translations": {
+      "subtitle": "베트남어, 영어, 중국어, 일본어, 한국어 5개 언어로 시스템 전체 문구를 맞춤 설정하고 관리합니다.",
+      "sync_now": "런타임 동기화",
+      "sync_success": "최신 번역을 시스템에 성공적으로 동기화했습니다!",
+      "add_key": "새 키 추가",
+      "search_placeholder": "키 이름 또는 언어별 문구로 검색...",
+      "empty_title": "번역 키를 찾을 수 없습니다",
+      "empty_desc": "다른 키워드를 검색하거나 \"새 키 추가\"를 클릭하세요.",
+      "edit_title": "번역 편집",
+      "add_title": "새 번역 추가",
+      "update_success": "번역이 성공적으로 업데이트되었습니다!",
+      "create_success": "새 다국어 키가 성공적으로 추가되었습니다!",
+      "delete_success": "번역이 성공적으로 삭제되었습니다!",
+      "confirm_delete": "이 번역을 삭제하시겠습니까?"
     }
   },
   "home": {
@@ -624,12 +646,6 @@
     "out_of_credits_desc": "AI와 대화를 계속하려면 크레딧을 충전하세요.",
     "topup_btn": "지금 충전하기"
   },
-  "footer": {
-    "support": "고객 지원",
-    "scan_zalo_group": "Zalo 지원 그룹",
-    "channel_notice": "공지 채널",
-    "contact_admin": "관리자 문의"
-  },
   "system": {
     "maintenance_active": "시스템 점검 중",
     "maintenance_marquee_default": "현재 정기 점검 및 인프라 업그레이드가 진행 중입니다. 모든 AI 생성(이미지, 비디오, 오디오) 및 API 게이트웨이가 일시 중단됩니다. 잠시 후 다시 이용해 주세요!",
@@ -642,5 +658,19 @@
     "just_now": "방금 전",
     "sound_test": "알림음 테스트",
     "broadcast_success": "모든 사용자에게 브로드캐스트 알림과 차임벨이 전송되었습니다!"
+  },
+  "library": {
+    "vault_subtitle": "모든 사용자의 창작 프롬프트와 전체 AI 이미지 및 비디오 보관소를 저장합니다.",
+    "total_prompts": "총 프롬프트 수",
+    "total_images": "이미지 보관소",
+    "total_videos": "비디오 보관소",
+    "total_credits_spent": "총 사용 크레딧",
+    "all_models": "— 모든 AI 모델 —",
+    "has_media_only": "이미지/비디오 파일이 있는 항목만",
+    "search_vault_placeholder": "프롬프트 또는 생성자 이메일 검색...",
+    "empty_vault_title": "프롬프트나 미디어가 없습니다",
+    "empty_vault_desc": "검색 필터를 변경하거나 VeloX Playground에서 새 이미지/비디오를 생성해 보세요.",
+    "remix_playground": "Playground에서 열기",
+    "run_in_playground": "이 프롬프트를 Playground에서 다시 실행"
   }
 }

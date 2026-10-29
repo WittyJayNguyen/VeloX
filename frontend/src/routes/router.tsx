@@ -14,14 +14,17 @@ const RegisterPage = lazy(() => import('@modules/auth/pages/RegisterPage'));
 const DashboardPage = lazy(() => import('@modules/admin/pages/DashboardPage'));
 const NotificationsPage = lazy(() => import('@modules/admin/pages/NotificationsPage'));
 const SettingsPage = lazy(() => import('@modules/admin/pages/SettingsPage'));
+const TranslationsPage = lazy(() => import('@modules/admin/pages/TranslationsPage'));
 
 // Vận Hành & Sáng Tạo
 const ModelsPage = lazy(() => import('@modules/models/pages/ModelsPage'));
 const ModelPricingPage = lazy(() => import('@modules/models/pages/ModelPricingPage'));
 const PlaygroundPage = lazy(() => import('@modules/playground/pages/PlaygroundPage'));
 const MediaLibraryPage = lazy(() => import('@modules/library/pages/MediaLibraryPage'));
+const PromptVaultPage = lazy(() => import('@modules/library/pages/PromptVaultPage'));
 const DeveloperKeysPage = lazy(() => import('@modules/developer/pages/DeveloperKeysPage'));
 const LogsPage = lazy(() => import('@modules/logs/pages/LogsPage'));
+
 
 // Thanh Toán & Ví
 const BillingPage = lazy(() => import('@modules/billing/pages/BillingPage'));
@@ -132,6 +135,7 @@ const router = createBrowserRouter([
           // Gateway AI & Sáng Tạo
           { path: '/admin/playground', element: <PlaygroundPage /> },
           { path: '/admin/library', element: <MediaLibraryPage /> },
+          { path: '/admin/creative-vault', element: <PromptVaultPage /> },
           { path: '/admin/developer-keys', element: <DeveloperKeysPage /> },
           { path: '/admin/services', element: <ServicePoolPage /> },
           { path: '/admin/pools', element: <ServicePoolPage /> },
@@ -150,9 +154,11 @@ const router = createBrowserRouter([
 
           // Cài Đặt & Tiện Ích
           { path: '/admin/notifications', element: <NotificationsPage /> },
+          { path: '/admin/translations', element: <TranslationsPage /> },
           { path: '/admin/settings', element: <SettingsPage /> },
         ],
       },
+
     ],
   },
 ]);

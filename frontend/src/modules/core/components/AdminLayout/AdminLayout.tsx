@@ -31,7 +31,10 @@ import {
   HiOutlineGlobeAlt,
   HiOutlineCommandLine,
   HiOutlinePhoto,
+  HiOutlineSparkles,
+  HiOutlineLanguage,
 } from 'react-icons/hi2';
+
 import { RiOpenaiFill } from 'react-icons/ri';
 import styles from '@assets/scss/admin/admin-layout.module.scss';
 
@@ -65,6 +68,7 @@ const navSections: NavSection[] = [
     items: [
       { path: '/admin/playground', icon: HiOutlineCommandLine, key: 'playground', badge: 'Live' },
       { path: '/admin/library', icon: HiOutlinePhoto, key: 'library', badge: 'Kho Của Tôi', badgeKey: 'admin.badge.my_library' },
+      { path: '/admin/creative-vault', icon: HiOutlineSparkles, key: 'creative_vault', badge: 'Toàn Bộ', badgeKey: 'admin.badge.all_prompts' },
     ],
   },
   {
@@ -114,9 +118,11 @@ const navSections: NavSection[] = [
     defaultHeader: 'CÀI ĐẶT & TIỆN ÍCH',
     items: [
       { path: '/admin/notifications', icon: HiOutlineBellAlert, key: 'notifications' },
+      { path: '/admin/translations', icon: HiOutlineLanguage, key: 'translations', badge: '5 Ngôn Ngữ', badgeKey: 'admin.badge.languages' },
       { path: '/admin/settings', icon: HiOutlineCog6Tooth, key: 'settings' },
     ],
   },
+
 ];
 
 const AdminLayout = () => {

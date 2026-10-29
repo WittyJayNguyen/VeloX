@@ -12,11 +12,12 @@ from app.core.database import get_db
 from app.core.security import get_current_user_payload
 from app.modules.logs.schemas import (
     MediaJobListResponse, MediaJobResponse,
-    ApiCallLogListResponse
+    MediaVaultStatsResponse, ApiCallLogListResponse
 )
 from app.modules.logs.services import (
     list_user_media_jobs, list_all_media_jobs,
-    delete_user_media_job, list_api_call_logs
+    delete_user_media_job, admin_delete_media_job,
+    get_media_vault_stats, list_api_call_logs
 )
 from app.common.cdn_service import upload_base64_to_cdn, ensure_cdn_url
 
@@ -70,10 +71,24 @@ async def api_delete_my_media_job(
     return {"status": "success", "message": "Job removed from history"}
 
 
+@router.get("/media-vault/stats", response_model=MediaVaultStatsResponse)
+async def api_get_media_vault_stats(
+    db: AsyncSession = Depends(get_db),
+    user_payload: dict = Depends(get_current_user_payload),
+):
+    """
+    Get aggregated counts and stats for Master Prompt & Media Vault.
+    """
+    return await get_media_vault_stats(db=db)
+
+
+
 @router.get("/all-media", response_model=MediaJobListResponse)
 async def api_get_all_media_jobs(
     user_id: Optional[str] = Query(None, description="Filter by specific user_id"),
+    model_id: Optional[str] = Query(None, description="Filter by specific model_id"),
     media_type: Optional[str] = Query(None, description="Filter by IMAGE or VIDEO"),
+    has_media_only: bool = Query(False, description="Filter only records with output_url"),
     search: Optional[str] = Query(None, description="Search keyword in prompt"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -85,12 +100,30 @@ async def api_get_all_media_jobs(
     """
     return await list_all_media_jobs(
         user_id=user_id,
+        model_id=model_id,
         media_type=media_type,
+        has_media_only=has_media_only,
         search=search,
         page=page,
         page_size=page_size,
         db=db
     )
+
+
+@router.delete("/all-media/{job_id}", status_code=status.HTTP_200_OK)
+async def api_admin_delete_media_job(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    user_payload: dict = Depends(get_current_user_payload),
+):
+    """
+    Admin endpoint to delete any prompt or media generation record from vault.
+    """
+    success = await admin_delete_media_job(job_id=job_id, db=db)
+    if not success:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Record not found")
+    return {"status": "success", "message": "Media record removed from vault"}
+
 
 
 @router.get("/api-calls", response_model=ApiCallLogListResponse)

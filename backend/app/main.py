@@ -112,15 +112,18 @@ async def lifespan(app: FastAPI):
         from app.modules.users.router import seed_defaults
         from app.modules.models_catalog.seed import seed_default_models
         from app.modules.billing.seed import seed_default_packages
+        from app.modules.system.router import seed_default_translations
         async with async_session() as db:
             await seed_defaults(db)
             await seed_gateway_data(db)
             await seed_default_models(db)
             await seed_default_packages(db)
             await get_or_create_system_setting(db)
-        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, Credit Packages, and System Settings verified")
+            await seed_default_translations(db)
+        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, Credit Packages, System Settings, and Multilingual Translations verified")
     except Exception as e:
         print(f"[WARN] Database initialization warning: {e}")
+
     yield
     # Shutdown: close connections, flush logs
     print(f"[STOP] {settings.APP_NAME} shutting down...")

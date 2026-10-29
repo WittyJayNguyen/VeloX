@@ -29,6 +29,15 @@ class MediaJobListResponse(BaseModel):
     page_size: int
 
 
+class MediaVaultStatsResponse(BaseModel):
+    total_prompts: int
+    total_images: int
+    total_videos: int
+    total_credits: float
+    models: List[str]
+
+
+
 class ApiCallLogResponse(BaseModel):
     id: str
     user_id: Optional[str] = None
