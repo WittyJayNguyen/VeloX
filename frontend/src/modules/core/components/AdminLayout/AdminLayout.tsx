@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { useUIStore } from '../../states/uiStore';
+import { useSystemStore } from '@modules/core/states/systemStore';
+import NotificationPopover from '../NotificationPopover/NotificationPopover';
 import {
   HiOutlineChartBarSquare,
   HiOutlineServerStack,
@@ -138,6 +140,13 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [notifOpen, setNotifOpen] = useState(false);
+  const { unreadCount, fetchNotifications } = useSystemStore();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
   // Automatically close mobile sidebar drawer on route navigation
   useEffect(() => {
     closeMobileSidebar();
@@ -266,15 +275,27 @@ const AdminLayout = () => {
               <HiOutlineMoon size={18} />
             </button>
 
-            <button
-              className={styles.iconBtn}
-              type="button"
-              title={t('admin.sidebar.notifications', 'Thông Báo')}
-              onClick={() => navigate('/admin/notifications')}
-            >
-              <HiOutlineBell size={18} />
-              <span className={styles.badgeCount}>3</span>
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                className={styles.iconBtn}
+                type="button"
+                title={t('admin.sidebar.notifications', 'Thông Báo')}
+                onClick={() => setNotifOpen(!notifOpen)}
+              >
+                <HiOutlineBell size={18} />
+                {unreadCount > 0 && (
+                  <span className={styles.badgeCount}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <NotificationPopover
+                isOpen={notifOpen}
+                onClose={() => setNotifOpen(false)}
+                onViewAll={() => navigate('/admin/notifications')}
+              />
+            </div>
 
             <div className={styles.userProfile} onClick={() => navigate('/admin')}>
               <div className={styles.avatar}>

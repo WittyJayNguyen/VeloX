@@ -689,6 +689,7 @@
     "maintenance_tag": "メンテナンス"
   },
   "notifications": {
+    "view_all": "すべての通知を見る",
     "mark_all_read": "すべて既読にする",
     "empty": "通知はありません",
     "from_system": "システム通知",

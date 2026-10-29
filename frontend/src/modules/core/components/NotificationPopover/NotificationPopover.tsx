@@ -13,9 +13,10 @@ import styles from './NotificationPopover.module.scss';
 interface NotificationPopoverProps {
   isOpen: boolean;
   onClose: () => void;
+  onViewAll?: () => void;
 }
 
-const NotificationPopover: React.FC<NotificationPopoverProps> = ({ isOpen, onClose }) => {
+const NotificationPopover: React.FC<NotificationPopoverProps> = ({ isOpen, onClose, onViewAll }) => {
   const { t } = useTranslation();
   const {
     notifications,
@@ -141,6 +142,21 @@ const NotificationPopover: React.FC<NotificationPopoverProps> = ({ isOpen, onClo
             ))
           )}
         </div>
+
+        {onViewAll && (
+          <div className={styles.popoverFooter}>
+            <button
+              type="button"
+              className={styles.viewAllBtn}
+              onClick={() => {
+                onClose();
+                onViewAll();
+              }}
+            >
+              {t('notifications.view_all', 'Xem tất cả thông báo')} &rarr;
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
