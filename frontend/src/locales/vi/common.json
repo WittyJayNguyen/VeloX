@@ -45,9 +45,10 @@
     "uptime": "Uptime Sẵn Sàng"
   },
   "footer": {
-    "rights": "© 2026 VeloX AI Gateway. Mọi quyền được bảo lưu.",
-    "terms": "Điều Khoản Dịch Vụ",
-    "privacy": "Chính Sách Bảo Mật"
+    "support": "Hỗ Trợ",
+    "scan_zalo_group": "Nhóm Zalo Hỗ Trợ",
+    "channel_notice": "Kênh thông báo",
+    "contact_admin": "Liên hệ admin"
   },
   "auth": {
     "login_title": "Đăng Nhập Quản Trị VeloX",
@@ -213,7 +214,28 @@
       "inventory": "Kiểm Kê",
       "expense": "Phiếu Chi",
       "cashflow": "Dòng Tiền",
-      "my_library": "Kho Của Tôi"
+      "my_library": "Kho Của Tôi",
+      "all_prompts": "Toàn Bộ",
+      "languages": "5 Ngôn Ngữ"
+    },
+    "nav": {
+      "creative_vault": "Kho Prompt & Tác Phẩm",
+      "translations": "Quản Lý Đa Ngôn Ngữ"
+    },
+    "translations": {
+      "subtitle": "Tùy biến, thay thế và quản lý từ ngữ trên toàn hệ thống theo 5 thứ tiếng (Việt, Anh, Trung, Nhật, Hàn).",
+      "sync_now": "Đồng Bộ Runtime",
+      "sync_success": "Đã nạp và đồng bộ toàn bộ bản dịch mới nhất vào hệ thống!",
+      "add_key": "Thêm Từ Khóa Mới",
+      "search_placeholder": "Tìm theo mã Key hoặc từ ngữ tiếng bất kỳ...",
+      "empty_title": "Không tìm thấy từ khóa nào",
+      "empty_desc": "Thử tìm từ khóa khác hoặc bấm \"Thêm Từ Khóa Mới\".",
+      "edit_title": "Chỉnh Sửa Bản Dịch",
+      "add_title": "Thêm Bản Dịch Mới",
+      "update_success": "Cập nhật bản dịch thành công!",
+      "create_success": "Đã thêm key đa ngôn ngữ mới thành công!",
+      "delete_success": "Đã xóa bản dịch thành công!",
+      "confirm_delete": "Bạn có chắc chắn muốn xóa bản dịch này?"
     }
   },
   "home": {
@@ -635,12 +657,6 @@
     "out_of_credits_desc": "Bạn cần nạp thêm credit để tiếp tục trò chuyện cùng AI.",
     "topup_btn": "Nạp Credit Ngay"
   },
-  "footer": {
-    "support": "Hỗ Trợ",
-    "scan_zalo_group": "Nhóm Zalo Hỗ Trợ",
-    "channel_notice": "Kênh thông báo",
-    "contact_admin": "Liên hệ admin"
-  },
   "system": {
     "maintenance_active": "Bảo trì hệ thống",
     "maintenance_marquee_default": "Hệ thống đang trong thời gian bảo trì định kỳ / nâng cấp hạ tầng. Toàn bộ tiến trình tạo AI (Ảnh, Video, Âm thanh) và API Gateway tạm thời ngưng phục vụ để đảm bảo dữ liệu. Vui lòng quay lại sau!",
@@ -653,5 +669,19 @@
     "just_now": "Vừa xong",
     "sound_test": "Thử Tiếng Chuông",
     "broadcast_success": "Đã phát thông báo & rung chuông thành công đến toàn bộ User!"
+  },
+  "library": {
+    "vault_subtitle": "Lưu trữ toàn bộ prompt sáng tạo cùng kho chứa hình ảnh & video AI của tất cả người dùng.",
+    "total_prompts": "Tổng Prompts",
+    "total_images": "Kho Hình Ảnh",
+    "total_videos": "Kho Video AI",
+    "total_credits_spent": "Tổng Credits Đã Chi",
+    "all_models": "— Tất Cả Mô Hình AI —",
+    "has_media_only": "Chỉ tác phẩm có file ảnh/video",
+    "search_vault_placeholder": "Tìm prompt hoặc email người tạo...",
+    "empty_vault_title": "Chưa có prompt hoặc tác phẩm nào",
+    "empty_vault_desc": "Thử thay đổi bộ lọc tìm kiếm hoặc tạo thêm ảnh/video mới qua VeloX Playground.",
+    "remix_playground": "Mở ở Playground",
+    "run_in_playground": "Chạy lại prompt này trong Playground"
   }
 }

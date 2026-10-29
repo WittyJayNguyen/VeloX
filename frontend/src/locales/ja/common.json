@@ -45,9 +45,10 @@
     "uptime": "稼働率 SLA"
   },
   "footer": {
-    "rights": "© 2026 VeloX AI Gateway. All rights reserved.",
-    "terms": "利用規約",
-    "privacy": "プライバシーポリシー"
+    "support": "サポート",
+    "scan_zalo_group": "Zaloサポートグループ",
+    "channel_notice": "お知らせチャンネル",
+    "contact_admin": "管理者へ連絡"
   },
   "auth": {
     "login_title": "管理者ログイン",
@@ -211,7 +212,28 @@
       "inventory": "棚卸",
       "expense": "出金伝票",
       "cashflow": "フロー",
-      "my_library": "マイ保管庫"
+      "my_library": "マイ保管庫",
+      "all_prompts": "すべて",
+      "languages": "5言語"
+    },
+    "nav": {
+      "creative_vault": "プロンプト＆メディア保管庫",
+      "translations": "多言語管理"
+    },
+    "translations": {
+      "subtitle": "ベトナム語、英語、中国語、日本語、韓国語の5言語でシステム全体の文言をカスタマイズ・管理します。",
+      "sync_now": "ランタイム同期",
+      "sync_success": "最新の翻訳をシステムに正常に同期しました！",
+      "add_key": "新規キー追加",
+      "search_placeholder": "キー名または任意の言語のフレーズで検索...",
+      "empty_title": "翻訳キーが見つかりません",
+      "empty_desc": "別のキーワードを試すか、「新規キー追加」をクリックしてください。",
+      "edit_title": "翻訳の編集",
+      "add_title": "新規翻訳の追加",
+      "update_success": "翻訳が正常に更新されました！",
+      "create_success": "新しい多言語キーが正常に追加されました！",
+      "delete_success": "翻訳が削除されました！",
+      "confirm_delete": "この翻訳を削除してもよろしいですか？"
     }
   },
   "home": {
@@ -633,12 +655,6 @@
     "out_of_credits_desc": "AI との会話を続けるにはクレジットをチャージしてください。",
     "topup_btn": "今すぐチャージ"
   },
-  "footer": {
-    "support": "サポート",
-    "scan_zalo_group": "Zaloサポートグループ",
-    "channel_notice": "お知らせチャンネル",
-    "contact_admin": "管理者へ連絡"
-  },
   "system": {
     "maintenance_active": "システムメンテナンス中",
     "maintenance_marquee_default": "現在、定期メンテナンスおよびアップグレードを実施中です。AI生成（画像・動画・音声）およびAPIゲートウェイは一時停止しています。しばらくお待ちください！",
@@ -651,5 +667,19 @@
     "just_now": "たった今",
     "sound_test": "通知音テスト",
     "broadcast_success": "全ユーザーへの通知とチャイム送信が完了しました！"
+  },
+  "library": {
+    "vault_subtitle": "すべてのユーザーの制作プロンプトとAI画像・動画保管庫を一元管理。",
+    "total_prompts": "総プロンプト数",
+    "total_images": "画像保管庫",
+    "total_videos": "動画保管庫",
+    "total_credits_spent": "消費クレジット合計",
+    "all_models": "— すべてのAIモデル —",
+    "has_media_only": "画像/動画ファイルがある作品のみ",
+    "search_vault_placeholder": "プロンプトまたは作成者メールで検索...",
+    "empty_vault_title": "プロンプトや作品が見つかりません",
+    "empty_vault_desc": "検索フィルターを変更するか、VeloX Playgroundで新しい作品を生成してください。",
+    "remix_playground": "Playgroundで開く",
+    "run_in_playground": "このプロンプトをPlaygroundで再実行"
   }
 }

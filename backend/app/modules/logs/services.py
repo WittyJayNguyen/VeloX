@@ -121,7 +121,9 @@ async def list_all_media_jobs(
     search: Optional[str],
     page: int,
     page_size: int,
-    db: AsyncSession
+    db: AsyncSession,
+    model_id: Optional[str] = None,
+    has_media_only: bool = False,
 ) -> MediaJobListResponse:
     """
     Admin listing: view all users' media generation history stored on CDN.
@@ -139,6 +141,14 @@ async def list_all_media_jobs(
     if media_type and media_type.upper() in ["IMAGE", "VIDEO"]:
         base_query = base_query.where(MediaGenerationLog.media_type == media_type.upper())
         count_query = count_query.where(MediaGenerationLog.media_type == media_type.upper())
+
+    if model_id and model_id.strip():
+        base_query = base_query.where(MediaGenerationLog.model_id == model_id.strip())
+        count_query = count_query.where(MediaGenerationLog.model_id == model_id.strip())
+
+    if has_media_only:
+        base_query = base_query.where(MediaGenerationLog.output_url.isnot(None), MediaGenerationLog.output_url != "")
+        count_query = count_query.where(MediaGenerationLog.output_url.isnot(None), MediaGenerationLog.output_url != "")
 
     if search:
         search_filter = f"%{search}%"
@@ -177,6 +187,31 @@ async def list_all_media_jobs(
     )
 
 
+async def get_media_vault_stats(db: AsyncSession) -> dict:
+    """
+    Get aggregated statistics for the master prompt & media vault.
+    """
+    total_q = select(func.count()).select_from(MediaGenerationLog)
+    img_q = select(func.count()).select_from(MediaGenerationLog).where(MediaGenerationLog.media_type == "IMAGE")
+    vid_q = select(func.count()).select_from(MediaGenerationLog).where(MediaGenerationLog.media_type == "VIDEO")
+    credits_q = select(func.sum(MediaGenerationLog.credits_charged)).select_from(MediaGenerationLog)
+    models_q = select(MediaGenerationLog.model_id).distinct().where(MediaGenerationLog.model_id.isnot(None))
+
+    total = (await db.execute(total_q)).scalar() or 0
+    total_imgs = (await db.execute(img_q)).scalar() or 0
+    total_vids = (await db.execute(vid_q)).scalar() or 0
+    total_credits = (await db.execute(credits_q)).scalar() or 0.0
+    models_res = (await db.execute(models_q)).scalars().all()
+
+    return {
+        "total_prompts": int(total),
+        "total_images": int(total_imgs),
+        "total_videos": int(total_vids),
+        "total_credits": float(total_credits or 0.0),
+        "models": [m for m in models_res if m],
+    }
+
+
 async def delete_user_media_job(
     job_id: str,
     user_id: str,
@@ -197,6 +232,25 @@ async def delete_user_media_job(
     await db.delete(job)
     await db.commit()
     return True
+
+
+async def admin_delete_media_job(
+    job_id: str,
+    db: AsyncSession
+) -> bool:
+    """
+    Admin-level delete: remove any media job by ID regardless of owner.
+    """
+    stmt = select(MediaGenerationLog).where(MediaGenerationLog.id == job_id)
+    res = await db.execute(stmt)
+    job = res.scalar_one_or_none()
+    if not job:
+        return False
+
+    await db.delete(job)
+    await db.commit()
+    return True
+
 
 
 async def record_api_call(

@@ -9,14 +9,15 @@ from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, or_, func
 
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.modules.users.models import User
-from app.modules.system.models import SystemSetting, SystemNotification
+from app.modules.system.models import SystemSetting, SystemNotification, SystemTranslation
 
 router = APIRouter(prefix="/system", tags=["System Settings & Notifications"])
+
 
 
 async def require_admin(current_user: User = Depends(get_current_user)) -> User:
@@ -405,3 +406,349 @@ async def create_broadcast_notification(
         is_read=notif.is_read,
         created_at=notif.created_at,
     )
+
+
+# ==========================================
+# MULTILINGUAL / TRANSLATION MANAGEMENT
+# ==========================================
+
+class TranslationItem(BaseModel):
+    key: str
+    category: str
+    vi: Optional[str] = ""
+    en: Optional[str] = ""
+    zh: Optional[str] = ""
+    ja: Optional[str] = ""
+    ko: Optional[str] = ""
+    updated_at: Optional[datetime] = None
+
+
+class TranslationListResponse(BaseModel):
+    items: List[TranslationItem]
+    total: int
+    page: int
+    page_size: int
+    categories: List[str]
+
+
+class UpdateTranslationRequest(BaseModel):
+    vi: Optional[str] = None
+    en: Optional[str] = None
+    zh: Optional[str] = None
+    ja: Optional[str] = None
+    ko: Optional[str] = None
+    category: Optional[str] = None
+
+
+class CreateTranslationRequest(BaseModel):
+    key: str
+    category: Optional[str] = "common"
+    vi: Optional[str] = ""
+    en: Optional[str] = ""
+    zh: Optional[str] = ""
+    ja: Optional[str] = ""
+    ko: Optional[str] = ""
+
+
+async def seed_default_translations(db: AsyncSession):
+    """Seed base multilingual translations into system_translations if empty or missing keys."""
+    try:
+        cnt = (await db.execute(select(func.count()).select_from(SystemTranslation))).scalar() or 0
+        
+        # Locate locales_seed.json
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), "..", "locales", "locales_seed.json"),
+            os.path.join(os.path.dirname(__file__), "..", "..", "locales", "locales_seed.json"),
+            os.path.join(os.getcwd(), "app", "locales", "locales_seed.json"),
+        ]
+        seed_path = None
+        for p in possible_paths:
+            norm = os.path.normpath(p)
+            if os.path.exists(norm):
+                seed_path = norm
+                break
+
+        if not seed_path:
+            return
+
+        import json
+        with open(seed_path, "r", encoding="utf-8") as f:
+            seed_data = json.load(f)
+
+        if cnt == 0:
+            for item in seed_data:
+                tr = SystemTranslation(
+                    key=item["key"],
+                    category=item.get("category", "common"),
+                    vi=item.get("vi", ""),
+                    en=item.get("en", ""),
+                    zh=item.get("zh", ""),
+                    ja=item.get("ja", ""),
+                    ko=item.get("ko", ""),
+                )
+                db.add(tr)
+            await db.commit()
+            print(f"[I18N] Successfully seeded {len(seed_data)} translation keys into database")
+        else:
+            # Check for any new keys that might not exist in db
+            existing_res = await db.execute(select(SystemTranslation.key))
+            existing_keys = set(existing_res.scalars().all())
+            added_cnt = 0
+            for item in seed_data:
+                k = item["key"]
+                if k not in existing_keys:
+                    tr = SystemTranslation(
+                        key=k,
+                        category=item.get("category", "common"),
+                        vi=item.get("vi", ""),
+                        en=item.get("en", ""),
+                        zh=item.get("zh", ""),
+                        ja=item.get("ja", ""),
+                        ko=item.get("ko", ""),
+                    )
+                    db.add(tr)
+                    added_cnt += 1
+            if added_cnt > 0:
+                await db.commit()
+                print(f"[I18N] Seeded {added_cnt} new translation keys into database")
+    except Exception as e:
+        print(f"[WARN] Error seeding translations: {e}")
+
+
+@router.get("/translations", response_model=TranslationListResponse)
+async def api_get_translations(
+    search: Optional[str] = Query(None, description="Search by translation key or text content"),
+    category: Optional[str] = Query(None, description="Filter by category"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Admin listing: view all translation keys with pagination, search, and category filters.
+    """
+    # Ensure seed was run
+    cnt = (await db.execute(select(func.count()).select_from(SystemTranslation))).scalar() or 0
+    if cnt == 0:
+        await seed_default_translations(db)
+
+    base_query = select(SystemTranslation)
+    count_query = select(func.count()).select_from(SystemTranslation)
+
+    if category and category != "ALL":
+        base_query = base_query.where(SystemTranslation.category == category)
+        count_query = count_query.where(SystemTranslation.category == category)
+
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        base_query = base_query.where(
+            or_(
+                SystemTranslation.key.ilike(term),
+                SystemTranslation.vi.ilike(term),
+                SystemTranslation.en.ilike(term),
+                SystemTranslation.zh.ilike(term),
+                SystemTranslation.ja.ilike(term),
+                SystemTranslation.ko.ilike(term),
+            )
+        )
+        count_query = count_query.where(
+            or_(
+                SystemTranslation.key.ilike(term),
+                SystemTranslation.vi.ilike(term),
+                SystemTranslation.en.ilike(term),
+                SystemTranslation.zh.ilike(term),
+                SystemTranslation.ja.ilike(term),
+                SystemTranslation.ko.ilike(term),
+            )
+        )
+
+    total = (await db.execute(count_query)).scalar() or 0
+    offset = (page - 1) * page_size
+    items_res = await db.execute(base_query.order_by(SystemTranslation.key.asc()).offset(offset).limit(page_size))
+    items = items_res.scalars().all()
+
+    # Get distinct categories
+    cats_res = await db.execute(select(SystemTranslation.category).distinct().order_by(SystemTranslation.category.asc()))
+    categories = [c for c in cats_res.scalars().all() if c]
+
+    return TranslationListResponse(
+        items=[
+            TranslationItem(
+                key=it.key,
+                category=it.category,
+                vi=it.vi or "",
+                en=it.en or "",
+                zh=it.zh or "",
+                ja=it.ja or "",
+                ko=it.ko or "",
+                updated_at=it.updated_at,
+            )
+            for it in items
+        ],
+        total=total,
+        page=page,
+        page_size=page_size,
+        categories=categories,
+    )
+
+
+@router.get("/translations/bundle")
+async def api_get_translations_bundle(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Public endpoint: Returns all translations formatted as nested dictionaries for i18next runtime override.
+    """
+    cnt = (await db.execute(select(func.count()).select_from(SystemTranslation))).scalar() or 0
+    if cnt == 0:
+        await seed_default_translations(db)
+
+    res = await db.execute(select(SystemTranslation))
+    translations = res.scalars().all()
+
+    def set_deep(target: dict, key_path: str, value: str):
+        parts = key_path.split(".")
+        curr = target
+        for p in parts[:-1]:
+            if p not in curr or not isinstance(curr[p], dict):
+                curr[p] = {}
+            curr = curr[p]
+        curr[parts[-1]] = value
+
+    bundle = {
+        "vi": {},
+        "en": {},
+        "zh": {},
+        "ja": {},
+        "ko": {},
+    }
+
+    for t in translations:
+        if t.vi: set_deep(bundle["vi"], t.key, t.vi)
+        if t.en: set_deep(bundle["en"], t.key, t.en)
+        if t.zh: set_deep(bundle["zh"], t.key, t.zh)
+        if t.ja: set_deep(bundle["ja"], t.key, t.ja)
+        if t.ko: set_deep(bundle["ko"], t.key, t.ko)
+
+    return {"status": "success", "bundle": bundle}
+
+
+@router.put("/translations/{key:path}")
+async def api_update_translation(
+    key: str,
+    payload: UpdateTranslationRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Admin endpoint: Update an existing translation key in any language.
+    """
+    stmt = select(SystemTranslation).where(SystemTranslation.key == key)
+    res = await db.execute(stmt)
+    item = res.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Translation key not found")
+
+    if payload.vi is not None:
+        item.vi = payload.vi
+    if payload.en is not None:
+        item.en = payload.en
+    if payload.zh is not None:
+        item.zh = payload.zh
+    if payload.ja is not None:
+        item.ja = payload.ja
+    if payload.ko is not None:
+        item.ko = payload.ko
+    if payload.category is not None:
+        item.category = payload.category
+
+    item.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(item)
+
+    return {
+        "status": "success",
+        "message": f"Translation key '{key}' updated successfully",
+        "item": TranslationItem(
+            key=item.key,
+            category=item.category,
+            vi=item.vi or "",
+            en=item.en or "",
+            zh=item.zh or "",
+            ja=item.ja or "",
+            ko=item.ko or "",
+            updated_at=item.updated_at,
+        ),
+    }
+
+
+@router.post("/translations")
+async def api_create_translation(
+    payload: CreateTranslationRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Admin endpoint: Create a new translation key.
+    """
+    clean_key = payload.key.strip()
+    if not clean_key:
+        raise HTTPException(status_code=400, detail="Key cannot be empty")
+
+    stmt = select(SystemTranslation).where(SystemTranslation.key == clean_key)
+    res = await db.execute(stmt)
+    if res.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail=f"Key '{clean_key}' already exists")
+
+    cat = payload.category.strip() if payload.category else "common"
+    if not cat and "." in clean_key:
+        cat = clean_key.split(".")[0]
+
+    item = SystemTranslation(
+        key=clean_key,
+        category=cat or "common",
+        vi=payload.vi or "",
+        en=payload.en or "",
+        zh=payload.zh or "",
+        ja=payload.ja or "",
+        ko=payload.ko or "",
+    )
+    db.add(item)
+    await db.commit()
+    await db.refresh(item)
+
+    return {
+        "status": "success",
+        "message": f"Translation key '{clean_key}' created successfully",
+        "item": TranslationItem(
+            key=item.key,
+            category=item.category,
+            vi=item.vi or "",
+            en=item.en or "",
+            zh=item.zh or "",
+            ja=item.ja or "",
+            ko=item.ko or "",
+            updated_at=item.updated_at,
+        ),
+    }
+
+
+@router.delete("/translations/{key:path}")
+async def api_delete_translation(
+    key: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """
+    Admin endpoint: Delete a translation key.
+    """
+    stmt = select(SystemTranslation).where(SystemTranslation.key == key)
+    res = await db.execute(stmt)
+    item = res.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Translation key not found")
+
+    await db.delete(item)
+    await db.commit()
+    return {"status": "success", "message": f"Translation key '{key}' deleted successfully"}
+

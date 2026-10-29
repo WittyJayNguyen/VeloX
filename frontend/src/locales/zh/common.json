@@ -40,9 +40,10 @@
     "uptime": "正常运行"
   },
   "footer": {
-    "rights": "© 2026 VeloX AI. 版权所有。",
-    "terms": "条款",
-    "privacy": "隐私"
+    "support": "支持",
+    "scan_zalo_group": "加入Zalo支持群",
+    "channel_notice": "通知频道",
+    "contact_admin": "联系管理员"
   },
   "auth": {
     "login_title": "登录账户",
@@ -202,7 +203,28 @@
       "inventory": "盘点",
       "expense": "支出单",
       "cashflow": "资金流",
-      "my_library": "作品库"
+      "my_library": "作品库",
+      "all_prompts": "全量",
+      "languages": "5 种语言"
+    },
+    "nav": {
+      "creative_vault": "提示词与作品总库",
+      "translations": "多语言管理"
+    },
+    "translations": {
+      "subtitle": "在系统范围内按 5 种语言（越语、英语、中文、日语、韩语）自定义、替换和管理词汇。",
+      "sync_now": "同步运行时",
+      "sync_success": "已成功加载并同步所有最新翻译至系统！",
+      "add_key": "添加新词条",
+      "search_placeholder": "按键名或任意语言短语搜索...",
+      "empty_title": "未找到任何翻译词条",
+      "empty_desc": "尝试搜索其他关键词或点击\"添加新词条\"。",
+      "edit_title": "编辑翻译",
+      "add_title": "添加新翻译",
+      "update_success": "翻译更新成功！",
+      "create_success": "多语言词条添加成功！",
+      "delete_success": "翻译删除成功！",
+      "confirm_delete": "您确定要删除此翻译吗？"
     }
   },
   "home": {
@@ -624,12 +646,6 @@
     "out_of_credits_desc": "请充值积分以继续与 AI 进行对话。",
     "topup_btn": "立即充值"
   },
-  "footer": {
-    "support": "支持",
-    "scan_zalo_group": "加入Zalo支持群",
-    "channel_notice": "通知频道",
-    "contact_admin": "联系管理员"
-  },
   "system": {
     "maintenance_active": "系统维护中",
     "maintenance_marquee_default": "系统当前正在进行定期维护和基础设施升级。所有AI生成任务（图像、视频、音频）和API网关服务已暂停。请稍后再试！",
@@ -642,5 +658,19 @@
     "just_now": "刚刚",
     "sound_test": "测试提示音",
     "broadcast_success": "已成功向所有在线用户广播通知与铃声！"
+  },
+  "library": {
+    "vault_subtitle": "存储所有用户的创意提示词以及全部 AI 图片与视频作品库。",
+    "total_prompts": "提示词总量",
+    "total_images": "图片库",
+    "total_videos": "视频库",
+    "total_credits_spent": "总消耗积分",
+    "all_models": "— 全部 AI 模型 —",
+    "has_media_only": "仅含图片/视频文件的作品",
+    "search_vault_placeholder": "搜索提示词或创建者邮箱...",
+    "empty_vault_title": "暂无提示词或作品",
+    "empty_vault_desc": "尝试更改过滤条件或在 VeloX Playground 中生成新的图像/视频。",
+    "remix_playground": "在 Playground 中打开",
+    "run_in_playground": "在 Playground 中再次运行此提示词"
   }
 }

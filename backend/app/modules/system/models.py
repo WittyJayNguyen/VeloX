@@ -44,3 +44,17 @@ class SystemNotification(Base):
     user_id = Column(String(36), nullable=True)  # None = broadcast all
     is_read = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class SystemTranslation(Base):
+    __tablename__ = "system_translations"
+
+    key = Column(String(255), primary_key=True)
+    category = Column(String(64), nullable=False, default="common", index=True)
+    vi = Column(Text, nullable=True)
+    en = Column(Text, nullable=True)
+    zh = Column(Text, nullable=True)
+    ja = Column(Text, nullable=True)
+    ko = Column(Text, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

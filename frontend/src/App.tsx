@@ -3,8 +3,9 @@ import { RouterProvider } from 'react-router-dom';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { useSystemStore } from '@modules/core/states/systemStore';
 import { soundEffects } from '@modules/core/lib/soundEffects';
+import { translationService } from '@modules/system/services/translationService';
 import router from './routes/router';
-import './i18n';
+import { applyTranslationOverrides } from './i18n';
 import './assets/scss/global.scss';
 
 const App = () => {
@@ -17,8 +18,16 @@ const App = () => {
     // Prepare audio context for notification chimes
     soundEffects.initUnlockListener();
 
+    // Fetch and apply dynamic translation overrides
+    translationService.getBundle().then((res) => {
+      if (res && res.bundle) {
+        applyTranslationOverrides(res.bundle);
+      }
+    }).catch(() => {});
+
     // Initial load and periodic polling for admin updates & notifications
     useSystemStore.getState().pollSystemUpdates().catch(() => {});
+
 
     if (localStorage.getItem('velox_token')) {
       syncProfile().catch(() => {});

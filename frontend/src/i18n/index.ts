@@ -35,4 +35,20 @@ if (typeof document !== 'undefined') {
   document.documentElement.lang = 'vi';
 }
 
+export const applyTranslationOverrides = (bundle: {
+  vi?: Record<string, unknown>;
+  en?: Record<string, unknown>;
+  zh?: Record<string, unknown>;
+  ja?: Record<string, unknown>;
+  ko?: Record<string, unknown>;
+}) => {
+  if (!bundle) return;
+  for (const [lang, translations] of Object.entries(bundle)) {
+    if (translations && typeof translations === 'object' && Object.keys(translations).length > 0) {
+      i18n.addResourceBundle(lang, 'translation', translations, true, true);
+    }
+  }
+};
+
 export default i18n;
+
