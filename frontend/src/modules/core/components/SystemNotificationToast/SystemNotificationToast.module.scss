@@ -1,0 +1,208 @@
+.toastWrapper {
+  position: fixed;
+  top: 76px;
+  right: 24px;
+  z-index: 10000;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 20px 40px -15px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(56, 189, 248, 0.2);
+  overflow: hidden;
+  cursor: pointer;
+  animation: slideInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 24px 48px -15px rgba(0, 0, 0, 0.8),
+      0 0 35px rgba(56, 189, 248, 0.3);
+  }
+
+  &.danger {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.7),
+      0 0 30px rgba(239, 68, 68, 0.3);
+  }
+
+  &.warning {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.7),
+      0 0 30px rgba(245, 158, 11, 0.3);
+  }
+
+  &.success {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.7),
+      0 0 30px rgba(16, 185, 129, 0.3);
+  }
+}
+
+.toastBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px 14px 18px;
+}
+
+.iconWrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .iconDanger {
+    color: #ef4444;
+    animation: ringShake 1.2s infinite;
+  }
+  .iconWarning {
+    color: #f59e0b;
+    animation: ringShake 1.5s infinite;
+  }
+  .iconSuccess {
+    color: #10b981;
+  }
+  .iconInfo {
+    color: #38bdf8;
+    animation: ringShake 1.8s infinite;
+  }
+}
+
+.pulseRing {
+  position: absolute;
+  inset: -3px;
+  border-radius: 15px;
+  border: 1px solid currentColor;
+  opacity: 0.4;
+  animation: pulseZoom 2s infinite ease-out;
+}
+
+.textContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.toastHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.sourceTag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.toastTime {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.toastTitle {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.35;
+}
+
+.toastMessage {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.progressBar {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
+  animation: progressDrain 7s linear forwards;
+}
+
+.danger .progressBar {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+}
+.warning .progressBar {
+  background: linear-gradient(90deg, #f59e0b, #eab308);
+}
+.success .progressBar {
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ringShake {
+  0%, 100% { transform: rotate(0); }
+  10%, 30% { transform: rotate(-10deg); }
+  20%, 40% { transform: rotate(10deg); }
+  50% { transform: rotate(0); }
+}
+
+@keyframes pulseZoom {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+@keyframes progressDrain {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@media (max-width: 640px) {
+  .toastWrapper {
+    top: 68px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}

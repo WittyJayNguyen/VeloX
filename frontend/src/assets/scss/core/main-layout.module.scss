@@ -942,6 +942,22 @@ $font-body: 'Barlow', sans-serif;
     color: #fff;
     background: #141b2e;
   }
+
+  &.bellRinging svg {
+    animation: gentleBellRing 2.8s infinite ease-in-out;
+    transform-origin: top center;
+    color: #38bdf8;
+  }
+}
+
+@keyframes gentleBellRing {
+  0%, 100% { transform: rotate(0); }
+  4% { transform: rotate(16deg); }
+  8% { transform: rotate(-14deg); }
+  12% { transform: rotate(10deg); }
+  16% { transform: rotate(-6deg); }
+  20% { transform: rotate(2deg); }
+  24% { transform: rotate(0); }
 }
 
 .bellBadge {

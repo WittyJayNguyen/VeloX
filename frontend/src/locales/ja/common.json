@@ -631,6 +631,10 @@
   },
   "notifications": {
     "mark_all_read": "すべて既読にする",
-    "empty": "通知はありません"
+    "empty": "通知はありません",
+    "from_system": "システム通知",
+    "just_now": "たった今",
+    "sound_test": "通知音テスト",
+    "broadcast_success": "全ユーザーへの通知とチャイム送信が完了しました！"
   }
 }

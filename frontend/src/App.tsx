@@ -2,6 +2,7 @@ import { Suspense, useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { useSystemStore } from '@modules/core/states/systemStore';
+import { soundEffects } from '@modules/core/lib/soundEffects';
 import router from './routes/router';
 import './i18n';
 import './assets/scss/global.scss';
@@ -12,19 +13,27 @@ const App = () => {
 
   useEffect(() => {
     hydrate();
-    useSystemStore.getState().fetchPublicSettings().catch(() => {});
+
+    // Prepare audio context for notification chimes
+    soundEffects.initUnlockListener();
+
+    // Initial load and periodic polling for admin updates & notifications
+    useSystemStore.getState().pollSystemUpdates().catch(() => {});
+
     if (localStorage.getItem('velox_token')) {
       syncProfile().catch(() => {});
     }
 
-    // Background heartbeat to verify user status in real-time (kicks out locked users immediately)
+    // Heartbeat + real-time notification polling interval (10 seconds)
     const interval = setInterval(() => {
+      useSystemStore.getState().pollSystemUpdates().catch(() => {});
       if (localStorage.getItem('velox_token')) {
         syncProfile().catch(() => {});
       }
-    }, 15000);
+    }, 10000);
 
     const onFocus = () => {
+      useSystemStore.getState().pollSystemUpdates().catch(() => {});
       if (localStorage.getItem('velox_token')) {
         syncProfile().catch(() => {});
       }
