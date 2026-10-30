@@ -35,6 +35,10 @@ import {
   HiOutlinePhoto,
   HiOutlineSparkles,
   HiOutlineLanguage,
+  HiOutlineViewColumns,
+  HiOutlineRectangleStack,
+  HiOutlineChatBubbleBottomCenterText,
+  HiOutlineMegaphone,
 } from 'react-icons/hi2';
 
 import { RiOpenaiFill } from 'react-icons/ri';
@@ -113,6 +117,20 @@ const navSections: NavSection[] = [
       { path: '/admin/user-audits', icon: HiOutlineClipboardDocumentList, key: 'user_audits', badge: 'IAM' },
       { path: '/admin/credit-audits', icon: HiOutlineBanknotes, key: 'credit_audits', badge: 'Ledger' },
       { path: '/admin/ip-abuse', icon: HiOutlineGlobeAlt, key: 'ip_abuse', badge: 'Shield' },
+    ],
+  },
+  {
+    headerKey: 'admin.nav_group.landing',
+    defaultHeader: 'QUẢN LÝ LANDING PAGE',
+    items: [
+      { path: '/admin/landing/sections', icon: HiOutlineViewColumns, key: 'landing_sections', badge: 'Bố Cục', badgeKey: 'admin.badge.layout' },
+      { path: '/admin/landing/hero', icon: HiOutlineSparkles, key: 'landing_hero' },
+      { path: '/admin/landing/features', icon: HiOutlineRectangleStack, key: 'landing_features' },
+      { path: '/admin/landing/models', icon: HiOutlineCpuChip, key: 'landing_models' },
+      { path: '/admin/landing/developer', icon: HiOutlineCommandLine, key: 'landing_developer' },
+      { path: '/admin/landing/pricing', icon: HiOutlineCreditCard, key: 'landing_pricing' },
+      { path: '/admin/landing/testimonials', icon: HiOutlineChatBubbleBottomCenterText, key: 'landing_testimonials' },
+      { path: '/admin/landing/cta', icon: HiOutlineMegaphone, key: 'landing_cta' },
     ],
   },
   {

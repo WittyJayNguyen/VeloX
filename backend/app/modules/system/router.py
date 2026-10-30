@@ -3,6 +3,7 @@ System Settings, Brand Customization & Notifications Router
 """
 import os
 import uuid
+import json
 import base64
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -15,7 +16,7 @@ from sqlalchemy import select, desc, or_, func
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.modules.users.models import User
-from app.modules.system.models import SystemSetting, SystemNotification, SystemTranslation
+from app.modules.system.models import SystemSetting, SystemNotification, SystemTranslation, LandingSection
 from app.modules.billing.models import PaymentTransaction, CreditPackage
 from app.modules.logs.models import ApiCallLog, MediaGenerationLog
 from app.modules.pools.models import ServicePool, ProviderCredential
@@ -983,4 +984,405 @@ async def get_system_dashboard(
             "year": year,
         }
     }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LANDING PAGE MANAGEMENT (SECTIONS, HERO, FEATURES, PRICING, TESTIMONIALS, CTA)
+# ══════════════════════════════════════════════════════════════════════════════
+
+DEFAULT_LANDING_SECTIONS = [
+    {
+        "id": "hero",
+        "section_key": "hero",
+        "title": "Hero Banner & Visual Showcase",
+        "order": 1,
+        "is_active": True,
+        "content": json.dumps({
+            "badge": "CỔNG KẾT NỐI AI GATEWAY THẾ HỆ MỚI",
+            "heading_gradient": "Hơn 156+ AI Model Đỉnh Cao Thế Giới",
+            "heading_sub": "Hội Tụ Tại Một Cổng Kết Nối Duy Nhất",
+            "description": "Truy cập không giới hạn GPT-4o, Claude 3.5 Sonnet, Midjourney, FLUX, Kling và Luma AI. Tối ưu chi phí tới 80% với bộ nhớ đệm Context Caching và thanh toán linh hoạt qua VietQR.",
+            "cta_primary_text": "Khám Phá AI Studio",
+            "cta_primary_link": "/studio",
+            "cta_secondary_text": "Dành Cho Lập Trình Viên",
+            "cta_secondary_link": "/docs",
+            "stat_models": "156+",
+            "stat_models_desc": "Mô Hình AI Cao Cấp",
+            "stat_latency": "99.98%",
+            "stat_latency_desc": "Uptime & Băng Thông VIP",
+            "stat_savings": "80%",
+            "stat_savings_desc": "Tiết Kiệm Với Prompt Cache",
+            "video_poster": "/velox_pro_poster.jpg"
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "partners",
+        "section_key": "partners",
+        "title": "Đối Tác Công Nghệ Hàng Đầu",
+        "order": 2,
+        "is_active": True,
+        "content": json.dumps({
+            "title": "Tích Hợp Sẵn Cùng Các Đơn Vị Phát Triển AI Hàng Đầu",
+            "partners": [
+                {"name": "OpenAI", "badge": "Official"},
+                {"name": "Anthropic", "badge": "Claude 3.5"},
+                {"name": "Google DeepMind", "badge": "Gemini 1.5 Pro"},
+                {"name": "ByteDance", "badge": "Seedance 2.5"},
+                {"name": "Midjourney", "badge": "v6.1 Photo"},
+                {"name": "Meta AI", "badge": "Llama 3.3"}
+            ]
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "features",
+        "section_key": "features",
+        "title": "Tính Năng & Kiến Trúc Cốt Lõi",
+        "order": 3,
+        "is_active": True,
+        "content": json.dumps({
+            "tag": "KIẾN TRÚC VƯỢT TRỘI",
+            "heading": "Hệ Thống Hạ Tầng AI Chuẩn Doanh Nghiệp",
+            "sub_desc": "Xây dựng trên nền tảng Gateway chịu tải hàng triệu request mỗi phút với độ trễ thấp nhất thị trường.",
+            "cards": [
+                {
+                    "id": "studio",
+                    "icon": "HiOutlinePhoto",
+                    "title": "Multi-Modal AI Studio Trực Quan",
+                    "desc": "Tạo ảnh siêu thực, dựng video điện ảnh và chuyển đổi văn bản thành giọng nói trên một không gian làm việc đồng nhất.",
+                    "tags": ["Midjourney 6.1 & FLUX", "Kling 1.5 & Luma", "Render 4K Siêu Nét"]
+                },
+                {
+                    "id": "router",
+                    "icon": "HiOutlineCpuChip",
+                    "title": "Multi-Provider Router & Load Balancing",
+                    "desc": "Bộ định tuyến thông minh tự động phân bổ luồng yêu cầu đến máy chủ có độ trễ thấp nhất và chi phí tối ưu nhất.",
+                    "tags": ["Độ Trễ Cực Thấp", "Hàng Đợi Ưu Tiên VIP", "Phân Bổ Tải Thông Minh"]
+                },
+                {
+                    "id": "gateway",
+                    "icon": "HiOutlineBolt",
+                    "title": "Smart Pool Gateway & Prompt Cache",
+                    "desc": "Hệ thống tự động xoay vòng API Key dự phòng khi NCC gặp sự cố, tự giải mã Cloudflare Captcha và kích hoạt bộ nhớ đệm Context Caching giúp tiết kiệm tới 80% chi phí.",
+                    "tags": ["Zero Downtime Failover", "Giảm 80% Phí Cache", "Bảo Mật Chuẩn Doanh Nghiệp"]
+                }
+            ]
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "models",
+        "section_key": "models",
+        "title": "Danh Mục Mô Hình Tiêu Biểu",
+        "order": 4,
+        "is_active": True,
+        "content": json.dumps({
+            "tag": "DANH MỤC TIÊU BIỂU",
+            "heading": "Khám Phá Các Mô Hình Hàng Đầu",
+            "sub_desc": "Bảng giá niêm yết minh bạch theo số lượng Credit thực tế bị trừ. Không phí phát sinh hay duy trì ẩn.",
+            "view_all_text": "Xem Toàn Bộ 100+ Model Trên VeloX",
+            "categories": ["ALL", "CHAT", "IMAGE", "VIDEO"]
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "developer",
+        "section_key": "developer",
+        "title": "Tích Hợp Developer & SDK",
+        "order": 5,
+        "is_active": True,
+        "content": json.dumps({
+            "tag": "DÀNH CHO LẬP TRÌNH VIÊN",
+            "heading": "Tích Hợp Trong 30 Giây Với Chuẩn OpenAI",
+            "sub_desc": "Chỉ cần thay đổi baseURL và truyền API Key của VeloX, bạn có thể gọi toàn bộ mô hình Claude, DeepSeek, Gemini, Midjourney mà không phải sửa logic xử lý kết quả.",
+            "base_url": "https://velox.nexoratech.com.vn/v1",
+            "checkpoints": [
+                "Base URL chuẩn quốc tế: https://velox.nexoratech.com.vn/v1",
+                "Hỗ trợ cả 2 header: Authorization: Bearer và x-api-key",
+                "Cấu hình 1-click cho các ứng dụng client phổ biến:"
+            ],
+            "clients": ["Cursor IDE", "Cline (VS Code)", "NextChat", "Cherry Studio", "LibreChat"],
+            "cta_text": "Xem Tài Liệu Tích Hợp Kỹ Thuật",
+            "cta_link": "/docs"
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "pricing",
+        "section_key": "pricing",
+        "title": "Bảng Giá Gói Hội Viên & Nạp Credit",
+        "order": 6,
+        "is_active": True,
+        "content": json.dumps({
+            "tag": "BẢNG GIÁ & HỘI VIÊN",
+            "heading_subscription": "Gói Hội Viên Tháng Tiết Kiệm",
+            "heading_topup": "Nạp Bao Nhiêu, Dùng Bấy Nhiêu",
+            "sub_desc_subscription": "Đầy đủ đặc quyền hội viên, mở khóa 156+ mô hình AI đỉnh cao thế giới và băng thông ưu tiên cao nhất.",
+            "sub_desc_topup": "Không bị bó buộc hợp đồng cố định. Tín dụng sử dụng vĩnh viễn không hết hạn, nạp tự động qua VietQR trong 3 giây.",
+            "compare_text": "Xem chi tiết so sánh tính năng & hạn ngạch toàn diện tại Trang Quản Lý Gói",
+            "compare_link": "/subscription",
+            "faq": [
+                {"q": "Credit được tính như thế nào?", "a": "Mỗi tác vụ tạo ảnh, video hoặc gọi API sẽ tiêu hao một lượng Credit cụ thể được công khai minh bạch."},
+                {"q": "Gói nạp thêm có bị hết hạn không?", "a": "Hoàn toàn không. Credit trong các gói nạp Pay-as-you-go được bảo lưu vĩnh viễn trong tài khoản của bạn."},
+                {"q": "Thanh toán có tự động kích hoạt ngay không?", "a": "Có! Hệ thống tích hợp VietQR tự động cộng Credit và kích hoạt gói chỉ sau 3 giây từ khi chuyển khoản."}
+            ]
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "testimonials",
+        "section_key": "testimonials",
+        "title": "Đánh Giá & Nhận Xét Của Khách Hàng",
+        "order": 7,
+        "is_active": True,
+        "content": json.dumps({
+            "tag": "KHÁCH HÀNG & ĐỐI TÁC",
+            "heading": "Hơn 12,000+ Nhà Sáng Tạo & Doanh Nghiệp Tin Dùng",
+            "sub_desc": "Lắng nghe những chia sẻ từ các Content Creator, Developer và Agency đang sử dụng VeloX mỗi ngày.",
+            "reviews": [
+                {
+                    "name": "Hoàng Nam",
+                    "role": "Lead Prompt Engineer",
+                    "company": "Creative Media Hub",
+                    "rating": 5,
+                    "text": "VeloX giúp studio của chúng tôi tiết kiệm hơn 60% chi phí AI mỗi tháng. Việc có thể gọi cả FLUX, Midjourney và Kling trên một API duy nhất là một cuộc cách mạng!",
+                    "avatar": "HN"
+                },
+                {
+                    "name": "Thùy Linh",
+                    "role": "Founder & Marketing Director",
+                    "company": "Nova Growth Agency",
+                    "rating": 5,
+                    "text": "Tốc độ phản hồi cực nhanh, nạp tiền qua QR 3 giây là có credit ngay. Giao diện Studio trực quan giúp team content của mình tạo video quảng cáo trong vài phút.",
+                    "avatar": "TL"
+                },
+                {
+                    "name": "Minh Trí",
+                    "role": "Fullstack Developer",
+                    "company": "SaaS Builder",
+                    "rating": 5,
+                    "text": "Cực kỳ ấn tượng với Gateway tương thích 100% chuẩn OpenAI. Mình chỉ cần đổi baseURL trên Cursor IDE là dùng được Claude 3.5 Sonnet mà không sợ bị chặn thẻ quốc tế.",
+                    "avatar": "MT"
+                }
+            ]
+        }, ensure_ascii=False)
+    },
+    {
+        "id": "cta_banner",
+        "section_key": "cta_banner",
+        "title": "CTA Kêu Gọi Hành Động (Cuối Trang)",
+        "order": 8,
+        "is_active": True,
+        "content": json.dumps({
+            "tag": "TRẢI NGHIỆM MIỄN PHÍ HÔM NAY",
+            "title": "Sẵn Sàng Tăng Tốc Cùng VeloX AI Gateway?",
+            "subtitle": "Tạo tài khoản ngay bây giờ để nhận tín dụng trải nghiệm toàn bộ các mô hình AI đỉnh cao thế giới trong một giao diện duy nhất.",
+            "btn_primary_text": "Bắt Đầu Sáng Tạo Ngay",
+            "btn_primary_link": "/studio",
+            "btn_secondary_text": "Đăng Ký Tài Khoản Mới",
+            "btn_secondary_link": "/register"
+        }, ensure_ascii=False)
+    }
+]
+
+
+async def seed_default_landing_sections(db: AsyncSession):
+    """Seed standard landing sections if table is empty."""
+    res = await db.execute(select(LandingSection))
+    existing = res.scalars().all()
+    if not existing:
+        for s in DEFAULT_LANDING_SECTIONS:
+            sec = LandingSection(
+                id=s["id"],
+                section_key=s["section_key"],
+                title=s["title"],
+                order=s["order"],
+                is_active=s["is_active"],
+                content=s["content"]
+            )
+            db.add(sec)
+        await db.commit()
+
+
+class ReorderLandingItem(BaseModel):
+    id: str
+    order: int
+
+
+class UpdateLandingSectionRequest(BaseModel):
+    title: Optional[str] = None
+    is_active: Optional[bool] = None
+    order: Optional[int] = None
+    content: Optional[Dict[str, Any]] = None
+
+
+class CreateLandingSectionRequest(BaseModel):
+    section_key: str
+    title: str
+    order: Optional[int] = 99
+    is_active: Optional[bool] = True
+    content: Optional[Dict[str, Any]] = None
+
+
+def parse_section_content(sec: LandingSection) -> Dict[str, Any]:
+    c = {}
+    if sec.content:
+        try:
+            c = json.loads(sec.content)
+        except Exception:
+            c = {"raw": sec.content}
+    return {
+        "id": sec.id,
+        "section_key": sec.section_key,
+        "title": sec.title,
+        "order": sec.order,
+        "is_active": sec.is_active,
+        "content": c,
+        "created_at": sec.created_at,
+        "updated_at": sec.updated_at,
+    }
+
+
+@router.get("/landing")
+async def get_public_landing_sections(db: AsyncSession = Depends(get_db)):
+    """Public endpoint: Get active landing page sections sorted by order."""
+    await seed_default_landing_sections(db)
+    res = await db.execute(
+        select(LandingSection)
+        .where(LandingSection.is_active == True)
+        .order_by(LandingSection.order.asc())
+    )
+    sections = res.scalars().all()
+    return [parse_section_content(s) for s in sections]
+
+
+@router.get("/landing/admin")
+async def get_admin_landing_sections(
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Admin endpoint: Get all landing sections (active and inactive) sorted by order."""
+    await seed_default_landing_sections(db)
+    res = await db.execute(
+        select(LandingSection).order_by(LandingSection.order.asc())
+    )
+    sections = res.scalars().all()
+    return [parse_section_content(s) for s in sections]
+
+
+@router.put("/landing/admin/reorder")
+async def reorder_landing_sections(
+    payload: List[ReorderLandingItem],
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Admin endpoint: Update display orders of landing sections."""
+    for item in payload:
+        res = await db.execute(select(LandingSection).where(LandingSection.id == item.id))
+        sec = res.scalar_one_or_none()
+        if sec:
+            sec.order = item.order
+            sec.updated_at = datetime.utcnow()
+    await db.commit()
+    return {"status": "success", "message": "Đã cập nhật thứ tự các section thành công"}
+
+
+@router.post("/landing/admin/sections")
+async def create_landing_section(
+    payload: CreateLandingSectionRequest,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Admin endpoint: Create a new custom landing section."""
+    existing = await db.execute(select(LandingSection).where(LandingSection.section_key == payload.section_key))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Mã section_key đã tồn tại. Vui lòng chọn mã khác.")
+
+    sec_id = f"custom_{uuid.uuid4().hex[:8]}"
+    content_str = json.dumps(payload.content or {}, ensure_ascii=False)
+    sec = LandingSection(
+        id=sec_id,
+        section_key=payload.section_key,
+        title=payload.title,
+        order=payload.order or 99,
+        is_active=payload.is_active if payload.is_active is not None else True,
+        content=content_str,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.add(sec)
+    await db.commit()
+    await db.refresh(sec)
+    return parse_section_content(sec)
+
+
+@router.put("/landing/admin/sections/{section_id}")
+async def update_landing_section(
+    section_id: str,
+    payload: UpdateLandingSectionRequest,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Admin endpoint: Update an existing landing section."""
+    res = await db.execute(
+        select(LandingSection).where(or_(LandingSection.id == section_id, LandingSection.section_key == section_id))
+    )
+    sec = res.scalar_one_or_none()
+    if not sec:
+        raise HTTPException(status_code=404, detail="Section không tồn tại")
+
+    if payload.title is not None:
+        sec.title = payload.title
+    if payload.is_active is not None:
+        sec.is_active = payload.is_active
+    if payload.order is not None:
+        sec.order = payload.order
+    if payload.content is not None:
+        sec.content = json.dumps(payload.content, ensure_ascii=False)
+    sec.updated_at = datetime.utcnow()
+
+    await db.commit()
+    await db.refresh(sec)
+    return parse_section_content(sec)
+
+
+@router.delete("/landing/admin/sections/{section_id}")
+async def delete_landing_section(
+    section_id: str,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Admin endpoint: Delete a landing section."""
+    res = await db.execute(
+        select(LandingSection).where(or_(LandingSection.id == section_id, LandingSection.section_key == section_id))
+    )
+    sec = res.scalar_one_or_none()
+    if not sec:
+        raise HTTPException(status_code=404, detail="Section không tồn tại")
+
+    await db.delete(sec)
+    await db.commit()
+    return {"status": "success", "message": f"Đã xóa section '{sec.title}' thành công"}
+
+
+@router.post("/landing/admin/reset")
+async def reset_landing_sections(
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Admin endpoint: Reset all landing sections to default templates."""
+    res = await db.execute(select(LandingSection))
+    existing = res.scalars().all()
+    for s in existing:
+        await db.delete(s)
+    await db.commit()
+
+    for s in DEFAULT_LANDING_SECTIONS:
+        sec = LandingSection(
+            id=s["id"],
+            section_key=s["section_key"],
+            title=s["title"],
+            order=s["order"],
+            is_active=s["is_active"],
+            content=s["content"]
+        )
+        db.add(sec)
+    await db.commit()
+    return {"status": "success", "message": "Đã khôi phục toàn bộ Landing Page về giao diện mẫu mặc định"}
+
 

@@ -16,6 +16,16 @@ const NotificationsPage = lazy(() => import('@modules/admin/pages/NotificationsP
 const SettingsPage = lazy(() => import('@modules/admin/pages/SettingsPage'));
 const TranslationsPage = lazy(() => import('@modules/admin/pages/TranslationsPage'));
 
+// Quản Lý Landing Page (Trang Chủ)
+const LandingSectionsPage = lazy(() => import('@modules/admin/pages/landing/LandingSectionsPage'));
+const LandingHeroPage = lazy(() => import('@modules/admin/pages/landing/LandingHeroPage'));
+const LandingFeaturesPage = lazy(() => import('@modules/admin/pages/landing/LandingFeaturesPage'));
+const LandingModelsPage = lazy(() => import('@modules/admin/pages/landing/LandingModelsPage'));
+const LandingDeveloperPage = lazy(() => import('@modules/admin/pages/landing/LandingDeveloperPage'));
+const LandingPricingPage = lazy(() => import('@modules/admin/pages/landing/LandingPricingPage'));
+const LandingTestimonialsPage = lazy(() => import('@modules/admin/pages/landing/LandingTestimonialsPage'));
+const LandingCtaPage = lazy(() => import('@modules/admin/pages/landing/LandingCtaPage'));
+
 // Vận Hành & Sáng Tạo
 const ModelsPage = lazy(() => import('@modules/models/pages/ModelsPage'));
 const ModelPricingPage = lazy(() => import('@modules/models/pages/ModelPricingPage'));
@@ -156,6 +166,17 @@ const router = createBrowserRouter([
           { path: '/admin/notifications', element: <NotificationsPage /> },
           { path: '/admin/translations', element: <TranslationsPage /> },
           { path: '/admin/settings', element: <SettingsPage /> },
+
+          // Quản Lý Landing Page (Trang Chủ)
+          { path: '/admin/landing', element: <Navigate to="/admin/landing/sections" replace /> },
+          { path: '/admin/landing/sections', element: <LandingSectionsPage /> },
+          { path: '/admin/landing/hero', element: <LandingHeroPage /> },
+          { path: '/admin/landing/features', element: <LandingFeaturesPage /> },
+          { path: '/admin/landing/models', element: <LandingModelsPage /> },
+          { path: '/admin/landing/developer', element: <LandingDeveloperPage /> },
+          { path: '/admin/landing/pricing', element: <LandingPricingPage /> },
+          { path: '/admin/landing/testimonials', element: <LandingTestimonialsPage /> },
+          { path: '/admin/landing/cta', element: <LandingCtaPage /> },
         ],
       },
 
