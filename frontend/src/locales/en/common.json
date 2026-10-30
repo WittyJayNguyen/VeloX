@@ -144,6 +144,7 @@
       "accounting": "ACCOUNTING & AUDIT",
       "billing": "WALLET & BILLING",
       "users": "IAM & SECURITY",
+      "landing": "LANDING PAGE BUILDER",
       "settings": "SETTINGS & UTILITIES"
     },
     "sidebar": {
@@ -183,6 +184,14 @@
       "notifications": "Notifications",
       "translations": "Multilingual Manager",
       "creative_vault": "Prompt & Media Vault",
+      "landing_sections": "Layout & Order",
+      "landing_hero": "Hero Banner Block",
+      "landing_features": "Features Block",
+      "landing_models": "Models Showcase Block",
+      "landing_developer": "Developer & SDK Block",
+      "landing_pricing": "Pricing & FAQ Block",
+      "landing_testimonials": "Partners & Testimonials",
+      "landing_cta": "CTA Banner Block",
       "settings": "Settings"
     },
     "badge": {
@@ -192,7 +201,8 @@
       "inventory": "Inventory",
       "expense": "Expense",
       "cashflow": "Cashflow",
-      "languages": "5 Languages"
+      "languages": "5 Languages",
+      "layout": "Layout"
     },
     "audit": {
       "iam_title": "IAM & Security Audit Log",

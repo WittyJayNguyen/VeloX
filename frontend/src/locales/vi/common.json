@@ -144,6 +144,7 @@
       "accounting": "KẾ TOÁN & KIỂM TOÁN TÀI SẢN",
       "billing": "VÍ & THANH TOÁN",
       "users": "NGƯỜI DÙNG & BẢO MẬT",
+      "landing": "QUẢN LÝ LANDING PAGE",
       "settings": "CÀI ĐẶT & TIỆN ÍCH"
     },
     "sidebar": {
@@ -183,6 +184,14 @@
       "notifications": "Thông Báo",
       "translations": "Quản Lý Đa Ngôn Ngữ",
       "creative_vault": "Kho Prompt & Tác Phẩm",
+      "landing_sections": "Bố Cục & Sắp Xếp",
+      "landing_hero": "Khối Hero Banner",
+      "landing_features": "Khối Tính Năng",
+      "landing_models": "Khối Tuyển Tập Model",
+      "landing_developer": "Khối Developer & SDK",
+      "landing_pricing": "Khối Bảng Giá & FAQ",
+      "landing_testimonials": "Khối Đối Tác & Đánh Giá",
+      "landing_cta": "Khối CTA Banner",
       "settings": "Cài Đặt"
     },
     "badge": {
@@ -192,7 +201,8 @@
       "inventory": "Kiểm Kê",
       "expense": "Phiếu Chi",
       "cashflow": "Dòng Tiền",
-      "languages": "5 Ngôn Ngữ"
+      "languages": "5 Ngôn Ngữ",
+      "layout": "Bố Cục"
     },
     "audit": {
       "iam_title": "Nhật Ký Kiểm Toán IAM & Bảo Mật",

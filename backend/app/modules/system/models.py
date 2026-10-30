@@ -3,7 +3,7 @@ System Settings & Notifications Models
 """
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Text, Boolean, DateTime
+from sqlalchemy import Column, String, Text, Boolean, DateTime, Integer
 from app.common.base_model import Base
 
 
@@ -57,4 +57,18 @@ class SystemTranslation(Base):
     ja = Column(Text, nullable=True)
     ko = Column(Text, nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class LandingSection(Base):
+    __tablename__ = "landing_sections"
+
+    id = Column(String(64), primary_key=True)
+    section_key = Column(String(64), nullable=False, unique=True, index=True)
+    title = Column(String(255), nullable=False)
+    order = Column(Integer, nullable=False, default=1)
+    is_active = Column(Boolean, nullable=False, default=True)
+    content = Column(Text, nullable=True)  # JSON-encoded payload
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
 

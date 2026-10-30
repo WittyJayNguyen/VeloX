@@ -18,6 +18,7 @@ import {
 import { RiOpenaiFill, RiSparklingFill, RiPlayFill } from 'react-icons/ri';
 import { useAuthStore } from '@modules/auth/states/authStore';
 import { billingService, type CreditPackageDto } from '@modules/billing/services/billingService';
+import { landingService, type LandingSection } from '@modules/admin/services/landingService';
 import TopupModal from '@modules/core/components/TopupModal/TopupModal';
 import styles from '@assets/scss/home/home.module.scss';
 
@@ -472,6 +473,7 @@ const HomePage = () => {
   const [pricingTab, setPricingTab] = useState<'SUBSCRIPTION' | 'TOPUP'>('SUBSCRIPTION');
   const [topupOpen, setTopupOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>();
+  const [landingSections, setLandingSections] = useState<LandingSection[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -486,6 +488,16 @@ const HomePage = () => {
         }
       })
       .catch(() => {});
+
+    landingService
+      .getPublicLandingSections()
+      .then((data) => {
+        if (isMounted && data && data.length > 0) {
+          setLandingSections(data);
+        }
+      })
+      .catch(() => {});
+
     return () => {
       isMounted = false;
     };
@@ -574,12 +586,38 @@ const response = await client.chat.completions.create({
 });
 console.log(response.choices[0].message.content);`;
 
+  // ── Dynamic Sections Content Resolution ──
+  const getSection = (key: string) => landingSections.find((s) => s.section_key === key);
+  const getSectionOrder = (key: string, defaultOrder: number) => {
+    const sec = getSection(key);
+    return sec ? sec.order : defaultOrder;
+  };
+  const isSectionActive = (key: string) => {
+    const sec = getSection(key);
+    return sec ? sec.is_active : true;
+  };
+
+  const heroContent = getSection('hero')?.content;
+  const partnersContent = getSection('partners')?.content;
+  const featuresContent = getSection('features')?.content;
+  const modelsContent = getSection('models')?.content;
+  const devContent = getSection('developer')?.content;
+  const pricingContent = getSection('pricing')?.content;
+  const testimonialsContent = getSection('testimonials')?.content;
+  const ctaContent = getSection('cta_banner')?.content;
+
   return (
     <div className={styles.homePage}>
       {/* ══════════════════════════════════════════════════════════════
           1. HERO SECTION (RICH SAAS GLOW & DYNAMIC EFFECTS)
       ══════════════════════════════════════════════════════════════ */}
-      <section className={styles.heroSection}>
+      <section
+        className={styles.heroSection}
+        style={{
+          order: getSectionOrder('hero', 10),
+          display: isSectionActive('hero') ? undefined : 'none',
+        }}
+      >
         {/* Ambient Glows, Aurora Waves & Cyber Grid Background */}
         <div className={styles.heroBgWrapper}>
           <div className={styles.auroraGlow} />
@@ -603,65 +641,64 @@ console.log(response.choices[0].message.content);`;
               <span className={styles.badgePulseDot} />
               <RiSparklingFill size={15} color="#ff6b35" className={styles.badgeSparkle} />
               <span className={styles.badgeText}>
-                {t('hero.badge', 'Nền Tảng AI Gateway & Studio Thế Hệ Mới')}
+                {heroContent?.badge_text || t('hero.badge', 'Nền Tảng AI Gateway & Studio Thế Hệ Mới')}
               </span>
               <span className={styles.badgeArrow}>✨</span>
             </div>
 
             <h1 className={styles.heroHeadline}>
-              <span>{t('hero.title_1', 'Cổng Điều Phối AI')}</span>
+              <span>{heroContent?.headline_prefix || t('hero.title_1', 'Cổng Điều Phối AI')}</span>
               <br />
               <span className={styles.highlightOrange}>
-                {t('hero.title_highlight', 'Đa Nền Tảng VeloX')}
+                {heroContent?.headline_highlight || t('hero.title_highlight', 'Đa Nền Tảng VeloX')}
               </span>
+              {heroContent?.headline_suffix && (
+                <>
+                  <br />
+                  <span style={{ fontSize: '0.85em', color: '#f1f5f9' }}>{heroContent.headline_suffix}</span>
+                </>
+              )}
             </h1>
 
             <p className={styles.heroSubtitle}>
-              Kết nối hơn <strong style={{ color: '#ffffff', fontWeight: 700 }}>156+ mô hình AI</strong> từ OpenAI, Claude, Gemini, Midjourney, Runway với chi phí tối ưu nhất. <span style={{ color: '#38bdf8', fontWeight: 600 }}>Một API Key duy nhất cho tất cả</span>.
+              {heroContent?.description || (
+                <>
+                  Kết nối hơn <strong style={{ color: '#ffffff', fontWeight: 700 }}>156+ mô hình AI</strong> từ OpenAI, Claude, Gemini, Midjourney, Runway với chi phí tối ưu nhất. <span style={{ color: '#38bdf8', fontWeight: 600 }}>Một API Key duy nhất cho tất cả</span>.
+                </>
+              )}
             </p>
 
             <div className={styles.heroCtas}>
-              <Link to="/studio" className={styles.btnPrimary}>
+              <Link to={heroContent?.primary_cta_link || '/studio'} className={styles.btnPrimary}>
                 <RiOpenaiFill size={19} />
-                <span>Khám Phá Studio Sáng Tạo</span>
+                <span>{heroContent?.primary_cta_text || 'Khám Phá Studio Sáng Tạo'}</span>
                 <HiOutlineArrowRight size={16} />
               </Link>
-              <Link to="/docs" className={styles.btnSecondary}>
+              <Link to={heroContent?.secondary_cta_link || '/docs'} className={styles.btnSecondary}>
                 <HiOutlineCodeBracket size={18} />
-                <span>{t('hero.cta_docs', 'Xem Tài Liệu API')}</span>
+                <span>{heroContent?.secondary_cta_text || t('hero.cta_docs', 'Xem Tài Liệu API')}</span>
               </Link>
             </div>
 
             {/* Key Trust Stats (Rich Glassmorphism Cards) */}
             <div className={styles.heroStats}>
-              <div className={styles.statCard}>
-                <div className={styles.statCardHeader}>
-                  <HiOutlineCpuChip size={18} color="#38bdf8" />
-                  <div className={styles.statNumber}>156+</div>
+              {(Array.isArray(heroContent?.stats) && heroContent.stats.length > 0 ? heroContent.stats : [
+                { label: t('stats.models', 'Mô Hình AI'), value: '156+' },
+                { label: t('stats.uptime', 'Uptime Sẵn Sàng'), value: '99.9%' },
+                { label: 'Tiết Kiệm Cache', value: '80%' },
+                { label: 'Độ Trễ Phản Hồi', value: '< 180ms' },
+              ]).map((st: any, idx: number) => (
+                <div key={idx} className={styles.statCard}>
+                  <div className={styles.statCardHeader}>
+                    {idx === 0 && <HiOutlineCpuChip size={18} color="#38bdf8" />}
+                    {idx === 1 && <HiOutlineShieldCheck size={18} color="#10b981" />}
+                    {idx === 2 && <HiOutlineBolt size={18} color="#f59e0b" />}
+                    {idx >= 3 && <RiSparklingFill size={17} color="#c084fc" />}
+                    <div className={styles.statNumber}>{st.value}</div>
+                  </div>
+                  <div className={styles.statLabel}>{st.label}</div>
                 </div>
-                <div className={styles.statLabel}>{t('stats.models', 'Mô Hình AI')}</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statCardHeader}>
-                  <HiOutlineShieldCheck size={18} color="#10b981" />
-                  <div className={styles.statNumber}>99.9%</div>
-                </div>
-                <div className={styles.statLabel}>{t('stats.uptime', 'Uptime Sẵn Sàng')}</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statCardHeader}>
-                  <HiOutlineBolt size={18} color="#f59e0b" />
-                  <div className={styles.statNumber}>80%</div>
-                </div>
-                <div className={styles.statLabel}>Tiết Kiệm Cache</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statCardHeader}>
-                  <RiSparklingFill size={17} color="#c084fc" />
-                  <div className={styles.statNumber}>&lt; 180ms</div>
-                </div>
-                <div className={styles.statLabel}>Độ Trễ Phản Hồi</div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -792,12 +829,18 @@ console.log(response.choices[0].message.content);`;
       {/* ══════════════════════════════════════════════════════════════
           2. PROVIDERS & FOUNDATIONAL MODELS RIBBON (1 ROW INFINITE MARQUEE)
       ══════════════════════════════════════════════════════════════ */}
-      <section className={styles.providersSection}>
+      <section
+        className={styles.providersSection}
+        style={{
+          order: getSectionOrder('partners', 20),
+          display: isSectionActive('partners') ? undefined : 'none',
+        }}
+      >
         <div className={styles.providersContainer}>
           <div className={styles.providersHeaderRow}>
             <div className={styles.providersLabel}>
               <span className={styles.livePulseDot} />
-              {t('hero.providers_label', 'Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu')}
+              {partnersContent?.caption || t('hero.providers_label', 'Hỗ Trợ Hơn 100+ Mô Hình AI Từ Các Nền Tảng Hàng Đầu')}
             </div>
             <span className={styles.tickerHint}>Cuộn tự động • Rê chuột để tạm dừng</span>
           </div>
@@ -830,17 +873,25 @@ console.log(response.choices[0].message.content);`;
       {/* ══════════════════════════════════════════════════════════════
           3. CORE CAPABILITIES (4 PILLARS)
       ══════════════════════════════════════════════════════════════ */}
-      <section id="features" className={styles.featuresSection}>
+      <section
+        id="features"
+        className={styles.featuresSection}
+        style={{
+          order: getSectionOrder('features', 30),
+          display: isSectionActive('features') ? undefined : 'none',
+        }}
+      >
         <div className={styles.sectionHeaderCenter}>
           <span className={styles.tagBadge}>
             <HiOutlineSparkles size={14} />
-            <span>NĂNG LỰC TOÀN DIỆN</span>
+            <span>{featuresContent?.badge || 'NĂNG LỰC TOÀN DIỆN'}</span>
           </span>
           <h2 className={styles.sectionHeading}>
-            {t('features.title', 'Tại Sao Chọn VeloX AI Gateway?')}
+            {featuresContent?.title || t('features.title', 'Tại Sao Chọn VeloX AI Gateway?')}
           </h2>
           <p className={styles.sectionSubDesc}>
-            Hạ tầng Gateway trung gian thông minh kết hợp với Creative Studio đa thể thức, giúp cá nhân và doanh nghiệp tối đa hóa năng suất với chi phí thấp nhất.
+            {featuresContent?.subtitle ||
+              'Hạ tầng Gateway trung gian thông minh kết hợp với Creative Studio đa thể thức, giúp cá nhân và doanh nghiệp tối đa hóa năng suất với chi phí thấp nhất.'}
           </p>
         </div>
 
@@ -914,16 +965,24 @@ console.log(response.choices[0].message.content);`;
       {/* ══════════════════════════════════════════════════════════════
           4. CURATED TOP MODELS SHOWCASE
       ══════════════════════════════════════════════════════════════ */}
-      <section id="models" className={styles.modelsSection}>
+      <section
+        id="models"
+        className={styles.modelsSection}
+        style={{
+          order: getSectionOrder('models', 40),
+          display: isSectionActive('models') ? undefined : 'none',
+        }}
+      >
         <div className={styles.modelsContainer}>
           <div className={styles.sectionHeaderCenter}>
             <span className={styles.tagBadge}>
               <HiOutlineCpuChip size={14} />
-              <span>DANH MỤC TIÊU BIỂU</span>
+              <span>{modelsContent?.badge || 'DANH MỤC TIÊU BIỂU'}</span>
             </span>
-            <h2 className={styles.sectionHeading}>Khám Phá Các Mô Hình Hàng Đầu</h2>
+            <h2 className={styles.sectionHeading}>{modelsContent?.title || 'Khám Phá Các Mô Hình Hàng Đầu'}</h2>
             <p className={styles.sectionSubDesc}>
-              Bảng giá niêm yết minh bạch theo số lượng Credit thực tế bị trừ. Không phí phát sinh hay duy trì ẩn.
+              {modelsContent?.subtitle ||
+                'Bảng giá niêm yết minh bạch theo số lượng Credit thực tế bị trừ. Không phí phát sinh hay duy trì ẩn.'}
             </p>
           </div>
 
@@ -981,9 +1040,9 @@ console.log(response.choices[0].message.content);`;
           </div>
 
           <div className={styles.viewAllModelsWrap}>
-            <Link to="/models" className={styles.btnSecondary}>
+            <Link to={modelsContent?.view_all_link || '/models'} className={styles.btnSecondary}>
               <HiOutlineCommandLine size={17} />
-              <span>Xem Toàn Bộ 100+ Model Trên VeloX</span>
+              <span>{modelsContent?.view_all_text || 'Xem Toàn Bộ 100+ Model Trên VeloX'}</span>
               <HiOutlineArrowRight size={14} />
             </Link>
           </div>
@@ -993,19 +1052,29 @@ console.log(response.choices[0].message.content);`;
       {/* ══════════════════════════════════════════════════════════════
           5. DEVELOPER INTEGRATION QUICK-START
       ══════════════════════════════════════════════════════════════ */}
-      <section className={styles.devSection}>
+      <section
+        className={styles.devSection}
+        style={{
+          order: getSectionOrder('developer', 50),
+          display: isSectionActive('developer') ? undefined : 'none',
+        }}
+      >
         <div className={styles.devGrid}>
           {/* Left: Explanations */}
           <div className={styles.devInfoCol}>
             <span className={styles.tagBadge}>
               <HiOutlineCodeBracket size={14} />
-              <span>DÀNH CHO LẬP TRÌNH VIÊN</span>
+              <span>{devContent?.badge || 'DÀNH CHO LẬP TRÌNH VIÊN'}</span>
             </span>
             <h2 className={styles.sectionHeading}>
-              Tích Hợp Trong 30 Giây Với Chuẩn OpenAI
+              {devContent?.title || 'Tích Hợp Trong 30 Giây Với Chuẩn OpenAI'}
             </h2>
             <p className={styles.sectionSubDesc} style={{ margin: '1rem 0 0 0' }}>
-              Chỉ cần thay đổi <code>baseURL</code> và truyền <code>API Key</code> của VeloX, bạn có thể gọi toàn bộ mô hình Claude, DeepSeek, Gemini, Midjourney mà không phải sửa logic xử lý kết quả.
+              {devContent?.subtitle || (
+                <>
+                  Chỉ cần thay đổi <code>baseURL</code> và truyền <code>API Key</code> của VeloX, bạn có thể gọi toàn bộ mô hình Claude, DeepSeek, Gemini, Midjourney mà không phải sửa logic xử lý kết quả.
+                </>
+              )}
             </p>
 
             <ul className={styles.devCheckList}>
@@ -1099,19 +1168,26 @@ console.log(response.choices[0].message.content);`;
       {/* ══════════════════════════════════════════════════════════════
           6. TRANSPARENT PRICING CARDS (DYNAMIC FROM DATABASE)
       ══════════════════════════════════════════════════════════════ */}
-      <section id="pricing" className={styles.pricingSection}>
+      <section
+        id="pricing"
+        className={styles.pricingSection}
+        style={{
+          order: getSectionOrder('pricing', 60),
+          display: isSectionActive('pricing') ? undefined : 'none',
+        }}
+      >
         <div className={styles.sectionHeaderCenter}>
           <span className={styles.tagBadge}>
             <HiOutlineSparkles size={14} />
-            <span>{t('landing.pricing_tag', 'BẢNG GIÁ & HỘI VIÊN')}</span>
+            <span>{pricingContent?.badge || t('landing.pricing_tag', 'BẢNG GIÁ & HỘI VIÊN')}</span>
           </span>
           <h2 className={styles.sectionHeading}>
-            {pricingTab === 'SUBSCRIPTION'
+            {pricingContent?.title || (pricingTab === 'SUBSCRIPTION'
               ? 'Gói Hội Viên Tháng Tiết Kiệm'
-              : 'Nạp Bao Nhiêu, Dùng Bấy Nhiêu'}
+              : 'Nạp Bao Nhiêu, Dùng Bấy Nhiêu')}
           </h2>
           <p className={styles.sectionSubDesc}>
-            {pricingTab === 'SUBSCRIPTION'
+            {pricingContent?.subtitle || (pricingTab === 'SUBSCRIPTION'
               ? t(
                   'landing.sub_heading_sub',
                   'Đầy đủ đặc quyền hội viên, mở khóa 156+ mô hình AI đỉnh cao thế giới và băng thông ưu tiên cao nhất.'
@@ -1119,7 +1195,7 @@ console.log(response.choices[0].message.content);`;
               : t(
                   'landing.sub_heading_topup',
                   'Không bị bó buộc hợp đồng cố định. Tín dụng sử dụng vĩnh viễn không hết hạn, nạp tự động qua VietQR trong 3 giây.'
-                )}
+                ))}
           </p>
         </div>
 
@@ -1270,35 +1346,167 @@ console.log(response.choices[0].message.content);`;
             <HiOutlineArrowRight size={15} />
           </Link>
         </div>
+
+        {/* FAQ List from Admin */}
+        {Array.isArray(pricingContent?.faq) && pricingContent.faq.length > 0 && (
+          <div style={{ marginTop: '3.5rem', maxWidth: '800px', margin: '3.5rem auto 0' }}>
+            <h3 style={{ textAlign: 'center', fontSize: '1.4rem', color: '#f8fafc', marginBottom: '1.5rem' }}>
+              Câu Hỏi Thường Gặp (FAQ)
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {pricingContent.faq.map((item: any, idx: number) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '0.75rem',
+                    padding: '1.1rem 1.35rem',
+                  }}
+                >
+                  <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '0.95rem', marginBottom: '0.4rem' }}>
+                    ❓ {item.q}
+                  </div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.875rem', lineHeight: 1.6 }}>
+                    {item.a}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          7. FINAL ACTION CTA BANNER
+          7. CUSTOMER TESTIMONIALS & REVIEWS
       ══════════════════════════════════════════════════════════════ */}
-      <section className={styles.ctaBannerSection}>
+      <section
+        id="testimonials"
+        className={styles.testimonialsSection}
+        style={{
+          order: getSectionOrder('testimonials', 70),
+          display: isSectionActive('testimonials') ? undefined : 'none',
+        }}
+      >
+        <div className={styles.sectionHeaderCenter}>
+          <span className={styles.tagBadge}>
+            <HiOutlineSparkles size={14} />
+            <span>{testimonialsContent?.badge || 'ĐÁNH GIÁ KHÁCH HÀNG'}</span>
+          </span>
+          <h2 className={styles.sectionHeading}>
+            {testimonialsContent?.title || 'Được Tin Dùng Bởi Các Chuyên Gia & Doanh Nghiệp'}
+          </h2>
+          <p className={styles.sectionSubDesc}>
+            {testimonialsContent?.subtitle ||
+              'Xem cảm nhận chân thực từ các lập trình viên, designer và doanh nghiệp đang tăng tốc sản phẩm cùng VeloX.'}
+          </p>
+        </div>
+
+        <div className={styles.testimonialsGrid}>
+          {(Array.isArray(testimonialsContent?.reviews) && testimonialsContent.reviews.length > 0
+            ? testimonialsContent.reviews
+            : [
+                {
+                  name: 'Trần Minh Hoàng',
+                  role: 'CTO @ AI Flow Studio',
+                  avatar:
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+                  quote:
+                    'Chuyển sang VeloX AI Gateway giúp chúng tôi cắt giảm 70% chi phí server AI, tốc độ phản hồi cực nhanh và không bao giờ bị nghẽn API.',
+                  rating: 5,
+                },
+                {
+                  name: 'Lê Thuỳ Dung',
+                  role: 'Lead Visual Designer @ K-Agency',
+                  avatar:
+                    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
+                  quote:
+                    'Creative Studio trên VeloX tập hợp toàn bộ FLUX, Kling và Midjourney trong một nơi. Thao tác siêu mượt và xuất video 4K cực kỳ ấn tượng!',
+                  rating: 5,
+                },
+                {
+                  name: 'Đặng Tuấn Anh',
+                  role: 'Fullstack AI Engineer @ NextGen',
+                  avatar:
+                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+                  quote:
+                    '100% tương thích OpenAI SDK. Chỉ mất 1 dòng đổi baseURL là xong toàn bộ pipeline cho Cursor và Cline, quá tuyệt vời!',
+                  rating: 5,
+                },
+              ]
+          ).map((rev: any, idx: number) => (
+            <div key={idx} className={styles.testimonialCard}>
+              <div className={styles.testimonialQuote}>"{rev.quote}"</div>
+              <div className={styles.testimonialAuthorRow}>
+                <img src={rev.avatar} alt={rev.name} className={styles.authorAvatar} />
+                <div className={styles.authorInfo}>
+                  <span className={styles.authorName}>{rev.name}</span>
+                  <span className={styles.authorRole}>{rev.role}</span>
+                </div>
+                <div className={styles.authorRating}>{'★'.repeat(rev.rating || 5)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          8. FINAL ACTION CTA BANNER
+      ══════════════════════════════════════════════════════════════ */}
+      <section
+        className={styles.ctaBannerSection}
+        style={{
+          order: getSectionOrder('cta_banner', 80),
+          display: isSectionActive('cta_banner') ? undefined : 'none',
+        }}
+      >
         <div className={styles.ctaBannerCard}>
           <div className={styles.tagBadge} style={{ margin: '0 auto 1.5rem' }}>
             <HiOutlineSparkles size={14} />
-            <span>TRẢI NGHIỆM MIỄN PHÍ HÔM NAY</span>
+            <span>{ctaContent?.badge || 'TRẢI NGHIỆM MIỄN PHÍ HÔM NAY'}</span>
           </div>
           <h2 className={styles.ctaTitle}>
-            Sẵn Sàng Tăng Tốc Cùng VeloX AI Gateway?
+            {ctaContent?.title || 'Sẵn Sàng Tăng Tốc Cùng VeloX AI Gateway?'}
           </h2>
           <p className={styles.ctaSubtitle}>
-            Tạo tài khoản ngay bây giờ để nhận tín dụng trải nghiệm toàn bộ các mô hình AI đỉnh cao thế giới trong một giao diện duy nhất.
+            {ctaContent?.subtitle ||
+              'Tạo tài khoản ngay bây giờ để nhận tín dụng trải nghiệm toàn bộ các mô hình AI đỉnh cao thế giới trong một giao diện duy nhất.'}
           </p>
           <div className={styles.ctaButtonsRow}>
-            <Link to="/studio" className={styles.btnPrimary}>
+            <Link to={ctaContent?.primary_cta_link || '/studio'} className={styles.btnPrimary}>
               <RiOpenaiFill size={18} />
-              <span>Bắt Đầu Sáng Tạo Ngay</span>
+              <span>{ctaContent?.primary_cta_text || 'Bắt Đầu Sáng Tạo Ngay'}</span>
               <HiOutlineArrowRight size={16} />
             </Link>
-            <Link to="/register" className={styles.btnSecondary}>
-              <span>Đăng Ký Tài Khoản Mới</span>
+            <Link to={ctaContent?.secondary_cta_link || '/register'} className={styles.btnSecondary}>
+              <span>{ctaContent?.secondary_cta_text || 'Đăng Ký Tài Khoản Mới'}</span>
             </Link>
           </div>
+          {ctaContent?.guarantee_text && (
+            <div style={{ marginTop: '1.25rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+              {ctaContent.guarantee_text}
+            </div>
+          )}
         </div>
       </section>
+
+      {/* Custom Sections from Admin */}
+      {landingSections
+        .filter((s) => s.section_key.startsWith('custom') && s.is_active)
+        .map((sec) => (
+          <section
+            key={sec.id}
+            className={styles.customSection}
+            style={{ order: sec.order }}
+          >
+            <div className={styles.customCard}>
+              <h2 className={styles.sectionHeading}>{sec.title}</h2>
+              <p className={styles.sectionSubDesc} style={{ margin: '1rem auto' }}>
+                {sec.content?.body || sec.content?.headline || ''}
+              </p>
+            </div>
+          </section>
+        ))}
 
       {/* Topup Modal Directly on HomePage */}
       <TopupModal

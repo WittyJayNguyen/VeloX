@@ -112,7 +112,7 @@ async def lifespan(app: FastAPI):
         from app.modules.users.router import seed_defaults
         from app.modules.models_catalog.seed import seed_default_models
         from app.modules.billing.seed import seed_default_packages
-        from app.modules.system.router import seed_default_translations
+        from app.modules.system.router import seed_default_translations, seed_default_landing_sections
         async with async_session() as db:
             await seed_defaults(db)
             await seed_gateway_data(db)
@@ -120,7 +120,8 @@ async def lifespan(app: FastAPI):
             await seed_default_packages(db)
             await get_or_create_system_setting(db)
             await seed_default_translations(db)
-        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, Credit Packages, System Settings, and Multilingual Translations verified")
+            await seed_default_landing_sections(db)
+        print("[DB] Default roles, Super Admin, Gateway data, Models Catalog, Credit Packages, System Settings, Multilingual Translations and Landing Sections verified")
     except Exception as e:
         print(f"[WARN] Database initialization warning: {e}")
 

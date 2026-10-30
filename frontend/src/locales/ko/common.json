@@ -139,6 +139,7 @@
       "accounting": "회계 & 자산 감사",
       "billing": "지갑 & 결제",
       "users": "사용자 & 보안",
+      "landing": "랜딩 페이지 & 홈 관리",
       "settings": "설정 & 유틸리티"
     },
     "sidebar": {
@@ -176,6 +177,14 @@
       "notifications": "알림 관리",
       "translations": "다국어 관리",
       "creative_vault": "프롬프트 및 작품 보관소",
+      "landing_sections": "레이아웃 & 순서 배치",
+      "landing_hero": "Hero 배너 블록",
+      "landing_features": "핵심 기능 블록",
+      "landing_models": "주요 모델 쇼케이스",
+      "landing_developer": "개발자 & SDK 블록",
+      "landing_pricing": "요금제 & FAQ 블록",
+      "landing_testimonials": "파트너 & 고객 리뷰",
+      "landing_cta": "CTA 배너 블록",
       "settings": "설정"
     },
     "badge": {
@@ -185,7 +194,8 @@
       "inventory": "재고 실사",
       "expense": "지출 결의",
       "cashflow": "현금 흐름",
-      "languages": "5개 언어"
+      "languages": "5개 언어",
+      "layout": "배치"
     },
     "audit": {
       "iam_title": "IAM 및 보안 감사 로그",

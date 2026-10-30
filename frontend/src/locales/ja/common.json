@@ -144,6 +144,7 @@
       "accounting": "会計 & 資産監査",
       "billing": "ウォレット & 決済",
       "users": "ユーザー & セキュリティ",
+      "landing": "LP & ホームページ管理",
       "settings": "設定 & ユーティリティ"
     },
     "sidebar": {
@@ -181,6 +182,14 @@
       "notifications": "通知管理",
       "translations": "多言語管理",
       "creative_vault": "プロンプト＆作品保管庫",
+      "landing_sections": "レイアウト & 並び替え",
+      "landing_hero": "Hero バナーブロック",
+      "landing_features": "機能一覧ブロック",
+      "landing_models": "注目モデルブロック",
+      "landing_developer": "開発者 & SDK ブロック",
+      "landing_pricing": "料金 & FAQ ブロック",
+      "landing_testimonials": "パートナー & ユーザーの声",
+      "landing_cta": "CTA バナーブロック",
       "settings": "設定"
     },
     "badge": {
@@ -190,7 +199,8 @@
       "inventory": "棚卸し",
       "expense": "出金伝票",
       "cashflow": "キャッシュフロー",
-      "languages": "5言語"
+      "languages": "5言語",
+      "layout": "配置"
     },
     "audit": {
       "iam_title": "IAM & セキュリティ監査ログ",

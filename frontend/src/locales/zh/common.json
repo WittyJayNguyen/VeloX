@@ -139,6 +139,7 @@
       "accounting": "财务与资产审计",
       "billing": "钱包与支付",
       "users": "用户与安全",
+      "landing": "落地页与首页管理",
       "settings": "系统设置"
     },
     "sidebar": {
@@ -176,6 +177,14 @@
       "notifications": "通知中心",
       "translations": "多语言管理",
       "creative_vault": "提示词与作品库",
+      "landing_sections": "页面布局与排序",
+      "landing_hero": "Hero 头部横幅",
+      "landing_features": "核心特色功能",
+      "landing_models": "精选模型展示",
+      "landing_developer": "开发者与 SDK",
+      "landing_pricing": "价格与常见问题",
+      "landing_testimonials": "合作伙伴与评价",
+      "landing_cta": "行动召唤横幅",
       "settings": "系统设置"
     },
     "badge": {
@@ -185,7 +194,8 @@
       "inventory": "盘点",
       "expense": "支出",
       "cashflow": "现金流",
-      "languages": "5国语言"
+      "languages": "5国语言",
+      "layout": "布局"
     },
     "audit": {
       "iam_title": "IAM 与安全审计日志",
