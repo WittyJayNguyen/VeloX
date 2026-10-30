@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -505,6 +506,19 @@ export const StudioPage: React.FC = () => {
   const [isInspireMenuOpen, setIsInspireMenuOpen] = useState<boolean>(false);
   const [isSpeechRecording, setIsSpeechRecording] = useState<boolean>(false);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
+
+  // Mobile Viewport Detection (<= 768px renders Bottom Sheet Portals)
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Media Slots for Image / Video
   const [refImage, setRefImage] = useState<string | null>(null);
@@ -1957,42 +1971,100 @@ export const StudioPage: React.FC = () => {
                 </button>
 
                 {isInspireMenuOpen && (
-                  <div className={`${styles.customPopoverMenu} ${styles.popoverRight}`}>
-                    <div className={styles.paramGroupTitle}>{t('studio.inspire_title', 'Gợi ý Prompt Sáng Tạo')}</div>
-                    {/* Quick Random Fill */}
-                    <button
-                      type="button"
-                      className={styles.popoverItem}
-                      style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '4px', color: '#ff6b35', fontWeight: 700 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const list = inspirationPrompts[activeTab] || inspirationPrompts.image || [];
-                        const randomP = list[Math.floor(Math.random() * list.length)];
-                        setPrompt(randomP);
-                        setIsInspireMenuOpen(false);
-                        promptTextareaRef.current?.focus();
-                      }}
-                    >
-                      <span>🎲 {t('studio.random_prompt', 'Điền ngẫu nhiên 1 prompt mẫu')}</span>
-                    </button>
-                    {(inspirationPrompts[activeTab] || inspirationPrompts.image || []).map((p, idx) => (
+                  !isMobile ? (
+                    <div className={`${styles.customPopoverMenu} ${styles.popoverRight}`} onClick={(e) => e.stopPropagation()}>
+                      <div className={styles.paramGroupTitle}>{t('studio.inspire_title', 'Gợi ý Prompt Sáng Tạo')}</div>
+                      {/* Quick Random Fill */}
                       <button
-                        key={idx}
                         type="button"
                         className={styles.popoverItem}
+                        style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '4px', color: '#ff6b35', fontWeight: 700 }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPrompt(p);
+                          const list = inspirationPrompts[activeTab] || inspirationPrompts.image || [];
+                          const randomP = list[Math.floor(Math.random() * list.length)];
+                          setPrompt(randomP);
                           setIsInspireMenuOpen(false);
                           promptTextareaRef.current?.focus();
                         }}
                       >
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
-                          {p}
-                        </span>
+                        <span>🎲 {t('studio.random_prompt', 'Điền ngẫu nhiên 1 prompt mẫu')}</span>
                       </button>
-                    ))}
-                  </div>
+                      {(inspirationPrompts[activeTab] || inspirationPrompts.image || []).map((p, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={styles.popoverItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPrompt(p);
+                            setIsInspireMenuOpen(false);
+                            promptTextareaRef.current?.focus();
+                          }}
+                        >
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
+                            {p}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    createPortal(
+                      <div className={styles.mobileSheetBackdrop} onClick={() => setIsInspireMenuOpen(false)}>
+                        <div className={styles.mobileSheetContent} onClick={(e) => e.stopPropagation()}>
+                          <div className={styles.mobileSheetHeader}>
+                            <div className={styles.mobileSheetGrabber} />
+                            <h4 className={styles.mobileSheetTitle}>
+                              {t('studio.inspire_title', 'Gợi Ý Prompt Sáng Tạo')}
+                            </h4>
+                            <button
+                              type="button"
+                              className={styles.mobileSheetCloseBtn}
+                              onClick={() => setIsInspireMenuOpen(false)}
+                            >
+                              <HiOutlineXMark size={18} />
+                            </button>
+                          </div>
+                          <div className={styles.mobileSheetBody}>
+                            <button
+                              type="button"
+                              className={styles.popoverItem}
+                              style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '4px', color: '#ff6b35', fontWeight: 700, padding: '12px 10px' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const list = inspirationPrompts[activeTab] || inspirationPrompts.image || [];
+                                const randomP = list[Math.floor(Math.random() * list.length)];
+                                setPrompt(randomP);
+                                setIsInspireMenuOpen(false);
+                                promptTextareaRef.current?.focus();
+                              }}
+                            >
+                              <span>🎲 {t('studio.random_prompt', 'Điền ngẫu nhiên 1 prompt mẫu')}</span>
+                            </button>
+                            {(inspirationPrompts[activeTab] || inspirationPrompts.image || []).map((p, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                className={styles.popoverItem}
+                                style={{ padding: '10px' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPrompt(p);
+                                  setIsInspireMenuOpen(false);
+                                  promptTextareaRef.current?.focus();
+                                }}
+                              >
+                                <span style={{ whiteSpace: 'normal', lineHeight: 1.4 }}>
+                                  {p}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>,
+                      document.body
+                    )
+                  )
                 )}
               </div>
             </div>
@@ -2172,30 +2244,77 @@ export const StudioPage: React.FC = () => {
                   </button>
 
                   {isPresetsMenuOpen && (
-                    <div className={styles.presetsPopoverMenu} onClick={(e) => e.stopPropagation()}>
-                      {(presetGroups[activeTab] || []).map((group, gIdx) => (
-                        <div key={gIdx} className={styles.presetGroup}>
-                          <div className={styles.presetGroupTitle}>{group.groupName}</div>
-                          {group.items.map((item, iIdx) => (
-                            <button
-                              key={iIdx}
-                              type="button"
-                              className={styles.presetItemBtn}
-                              onClick={() => {
-                                setPrompt(item.prompt);
-                                if (item.ratio) setAspectRatio(item.ratio);
-                                if (item.duration && activeTab === 'video') setVideoDuration(item.duration);
-                                setIsPresetsMenuOpen(false);
-                                setToastMsg(`${t('studio.presets_applied', 'Đã áp dụng mẫu')}: "${item.title}"`);
-                                setTimeout(() => setToastMsg(null), 2500);
-                              }}
-                            >
-                              {item.title}
-                            </button>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
+                    !isMobile ? (
+                      <div className={styles.presetsPopoverMenu} onClick={(e) => e.stopPropagation()}>
+                        {(presetGroups[activeTab] || []).map((group, gIdx) => (
+                          <div key={gIdx} className={styles.presetGroup}>
+                            <div className={styles.presetGroupTitle}>{group.groupName}</div>
+                            {group.items.map((item, iIdx) => (
+                              <button
+                                key={iIdx}
+                                type="button"
+                                className={styles.presetItemBtn}
+                                onClick={() => {
+                                  setPrompt(item.prompt);
+                                  if (item.ratio) setAspectRatio(item.ratio);
+                                  if (item.duration && activeTab === 'video') setVideoDuration(item.duration);
+                                  setIsPresetsMenuOpen(false);
+                                  setToastMsg(`${t('studio.presets_applied', 'Đã áp dụng mẫu')}: "${item.title}"`);
+                                  setTimeout(() => setToastMsg(null), 2500);
+                                }}
+                              >
+                                {item.title}
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      createPortal(
+                        <div className={styles.mobileSheetBackdrop} onClick={() => setIsPresetsMenuOpen(false)}>
+                          <div className={styles.mobileSheetContent} onClick={(e) => e.stopPropagation()}>
+                            <div className={styles.mobileSheetHeader}>
+                              <div className={styles.mobileSheetGrabber} />
+                              <h4 className={styles.mobileSheetTitle}>
+                                {t('studio.presets_title', 'Thư Viện Phong Cách & Mẫu')}
+                              </h4>
+                              <button
+                                type="button"
+                                className={styles.mobileSheetCloseBtn}
+                                onClick={() => setIsPresetsMenuOpen(false)}
+                              >
+                                <HiOutlineXMark size={18} />
+                              </button>
+                            </div>
+                            <div className={styles.mobileSheetBody}>
+                              {(presetGroups[activeTab] || []).map((group, gIdx) => (
+                                <div key={gIdx} className={styles.presetGroup}>
+                                  <div className={styles.presetGroupTitle}>{group.groupName}</div>
+                                  {group.items.map((item, iIdx) => (
+                                    <button
+                                      key={iIdx}
+                                      type="button"
+                                      className={styles.presetItemBtn}
+                                      onClick={() => {
+                                        setPrompt(item.prompt);
+                                        if (item.ratio) setAspectRatio(item.ratio);
+                                        if (item.duration && activeTab === 'video') setVideoDuration(item.duration);
+                                        setIsPresetsMenuOpen(false);
+                                        setToastMsg(`${t('studio.presets_applied', 'Đã áp dụng mẫu')}: "${item.title}"`);
+                                        setTimeout(() => setToastMsg(null), 2500);
+                                      }}
+                                    >
+                                      {item.title}
+                                    </button>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>,
+                        document.body
+                      )
+                    )
                   )}
                 </div>
 
@@ -2219,42 +2338,100 @@ export const StudioPage: React.FC = () => {
                   </button>
 
                   {isModelMenuOpen && (
-                    <div className={styles.customPopoverMenu}>
-                      <div className={styles.paramGroupTitle}>
-                        {t('studio.models_count', 'Mô hình')} {activeTab === 'image' ? t('studio.tab_image', 'Ảnh') : activeTab === 'video' ? t('studio.tab_video', 'Video') : t('studio.tab_audio', 'Âm thanh')} ({availableModels.length})
-                      </div>
-                      {availableModels.map((m) => {
-                        const isSelected = selectedModelCode === m.model_code;
-                        return (
-                          <button
-                            key={m.id || m.model_code}
-                            type="button"
-                            className={`${styles.popoverItem} ${isSelected ? styles.popoverActive : ''}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedModelCode(m.model_code);
-                              setIsModelMenuOpen(false);
-                            }}
-                          >
-                            <div>
-                              <div style={{ fontWeight: 600 }}>{cleanModelDisplayName(m.name)}</div>
-                              <div style={{ fontSize: '0.68rem', color: '#71717a' }}>{m.provider}</div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              {m.category === 'VIDEO' && getModelDurationBadge(m) && (
-                                <span className={styles.itemDurationBadge}>
-                                  ⏱ {getModelDurationBadge(m)}
+                    !isMobile ? (
+                      <div className={styles.customPopoverMenu} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.paramGroupTitle}>
+                          {t('studio.models_count', 'Mô hình')} {activeTab === 'image' ? t('studio.tab_image', 'Ảnh') : activeTab === 'video' ? t('studio.tab_video', 'Video') : t('studio.tab_audio', 'Âm thanh')} ({availableModels.length})
+                        </div>
+                        {availableModels.map((m) => {
+                          const isSelected = selectedModelCode === m.model_code;
+                          return (
+                            <button
+                              key={m.id || m.model_code}
+                              type="button"
+                              className={`${styles.popoverItem} ${isSelected ? styles.popoverActive : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedModelCode(m.model_code);
+                                setIsModelMenuOpen(false);
+                              }}
+                            >
+                              <div>
+                                <div style={{ fontWeight: 600 }}>{cleanModelDisplayName(m.name)}</div>
+                                <div style={{ fontSize: '0.68rem', color: '#71717a' }}>{m.provider}</div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                {m.category === 'VIDEO' && getModelDurationBadge(m) && (
+                                  <span className={styles.itemDurationBadge}>
+                                    ⏱ {getModelDurationBadge(m)}
+                                  </span>
+                                )}
+                                <span className={styles.itemCreditBadge}>
+                                  {m.selling_credit_price} cr
                                 </span>
-                              )}
-                              <span className={styles.itemCreditBadge}>
-                                {m.selling_credit_price} cr
-                              </span>
-                              {isSelected && <HiOutlineCheck size={14} color="#ff6b35" />}
+                                {isSelected && <HiOutlineCheck size={14} color="#ff6b35" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      createPortal(
+                        <div className={styles.mobileSheetBackdrop} onClick={() => setIsModelMenuOpen(false)}>
+                          <div className={styles.mobileSheetContent} onClick={(e) => e.stopPropagation()}>
+                            <div className={styles.mobileSheetHeader}>
+                              <div className={styles.mobileSheetGrabber} />
+                              <h4 className={styles.mobileSheetTitle}>
+                                {t('studio.select_model', 'Chọn Mô Hình AI')} ({availableModels.length})
+                              </h4>
+                              <button
+                                type="button"
+                                className={styles.mobileSheetCloseBtn}
+                                onClick={() => setIsModelMenuOpen(false)}
+                              >
+                                <HiOutlineXMark size={18} />
+                              </button>
                             </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                            <div className={styles.mobileSheetBody}>
+                              {availableModels.map((m) => {
+                                const isSelected = selectedModelCode === m.model_code;
+                                return (
+                                  <button
+                                    key={m.id || m.model_code}
+                                    type="button"
+                                    className={`${styles.mobileModelItem} ${isSelected ? styles.mobileModelItemActive : ''}`}
+                                    onClick={() => {
+                                      setSelectedModelCode(m.model_code);
+                                      setIsModelMenuOpen(false);
+                                    }}
+                                  >
+                                    <div className={styles.modelItemLeft}>
+                                      <span className={styles.modelSparkle}>✦</span>
+                                      <div>
+                                        <div className={styles.modelItemName}>{cleanModelDisplayName(m.name)}</div>
+                                        <div className={styles.modelItemProvider}>{m.provider} · {m.category}</div>
+                                      </div>
+                                    </div>
+                                    <div className={styles.modelItemRight}>
+                                      {m.category === 'VIDEO' && getModelDurationBadge(m) && (
+                                        <span className={styles.itemDurationBadge}>
+                                          ⏱ {getModelDurationBadge(m)}
+                                        </span>
+                                      )}
+                                      <span className={styles.itemCreditBadge}>
+                                        {m.selling_credit_price} cr
+                                      </span>
+                                      {isSelected && <HiOutlineCheck size={16} color="#ff6b35" />}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>,
+                        document.body
+                      )
+                    )
                   )}
                 </div>
 
@@ -2289,125 +2466,273 @@ export const StudioPage: React.FC = () => {
                   </button>
 
                   {isParamsMenuOpen && (
-                    <div className={styles.customPopoverMenu}>
-
-                      {activeTab === 'image' && (
-                        <>
-                          <div className={styles.paramGroupTitle}>{t('studio.resolution', 'Độ phân giải')}</div>
-                          <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.resolutions || ['1K', '2K', '4K']).map((res) => (
-                              <button
-                                key={res}
-                                type="button"
-                                className={`${styles.paramChip} ${resolution === res ? styles.paramActive : ''}`}
-                                onClick={() => setResolution(res)}
-                              >
-                                {res}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
-                          <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.aspectRatios || ['Auto', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
-                              <button
-                                key={ratio}
-                                type="button"
-                                className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
-                                onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
-                              >
-                                {translateParamOption(ratio, t)}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className={styles.paramGroupTitle}>{t('studio.render_quality', 'Chất lượng Render')}</div>
-                          <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.qualities || ['Standard', 'High', 'Ultra']).map((q) => (
-                              <button
-                                key={q}
-                                type="button"
-                                className={`${styles.paramChip} ${sanitizeParamQuality(quality) === sanitizeParamQuality(q) ? styles.paramActive : ''}`}
-                                onClick={() => setQuality(sanitizeParamQuality(q))}
-                              >
-                                {translateParamOption(q, t)}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-
-                      {activeTab === 'video' && (
-                        <>
-                          <div className={styles.paramGroupTitle}>{t('studio.video_resolution', 'Độ phân giải video')}</div>
-                          <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.resolutions || ['720p', '1080p', '4K']).map((res) => (
-                              <button
-                                key={res}
-                                type="button"
-                                className={`${styles.paramChip} ${videoResolution === res ? styles.paramActive : ''}`}
-                                onClick={() => setVideoResolution(res)}
-                              >
-                                {res}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
-                          <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.aspectRatios || ['Auto', '16:9', '9:16']).map((ratio) => (
-                              <button
-                                key={ratio}
-                                type="button"
-                                className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
-                                onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
-                              >
-                                {translateParamOption(ratio, t)}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className={styles.paramGroupTitle}>
-                            {t('studio.video_duration', 'Thời lượng video')} ({cleanModelDisplayName(currentModel?.name || '')})
-                          </div>
-                          <div className={styles.paramOptionsGrid}>
-                            {(activeModelConfig.durations || ['5s', '10s']).map((dur) => {
-                              const durCredits = calculateVideoCreditCost(baseModelPrice, dur);
-                              return (
+                    !isMobile ? (
+                      <div className={`${styles.customPopoverMenu} ${styles.popoverRight}`} onClick={(e) => e.stopPropagation()}>
+                        {activeTab === 'image' && (
+                          <>
+                            <div className={styles.paramGroupTitle}>{t('studio.resolution', 'Độ phân giải')}</div>
+                            <div className={styles.paramOptionsGrid}>
+                              {(activeModelConfig.resolutions || ['1K', '2K', '4K']).map((res) => (
                                 <button
-                                  key={dur}
+                                  key={res}
                                   type="button"
-                                  className={`${styles.paramChip} ${videoDuration === dur ? styles.paramActive : ''}`}
-                                  onClick={() => setVideoDuration(dur)}
+                                  className={`${styles.paramChip} ${resolution === res ? styles.paramActive : ''}`}
+                                  onClick={() => setResolution(res)}
                                 >
-                                  {dur} <span style={{ opacity: 0.8, fontSize: '0.68rem', marginLeft: '3px', color: '#2dd4bf' }}>({durCredits} cr)</span>
+                                  {res}
                                 </button>
-                              );
-                            })}
-                          </div>
-                        </>
-                      )}
+                              ))}
+                            </div>
 
-                      {activeTab === 'audio' && (
-                        <>
-                          <div className={styles.paramGroupTitle}>{t('studio.audio_voice_title', 'Ngôn ngữ & Giọng đọc')}</div>
-                          {['English · American', 'English · British', 'Tiếng Việt · Hà Nội', 'Tiếng Việt · Sài Gòn'].map((voice) => (
-                            <button
-                              key={voice}
-                              type="button"
-                              className={`${styles.popoverItem} ${audioVoice === voice ? styles.popoverActive : ''}`}
-                              onClick={() => {
-                                setAudioVoice(voice);
-                                setIsParamsMenuOpen(false);
-                              }}
-                            >
-                              <span>{voice}</span>
-                              {audioVoice === voice && <HiOutlineCheck size={14} color="#ff6b35" />}
-                            </button>
-                          ))}
-                        </>
-                      )}
-                    </div>
+                            <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
+                            <div className={styles.paramOptionsGrid}>
+                              {(activeModelConfig.aspectRatios || ['Auto', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
+                                <button
+                                  key={ratio}
+                                  type="button"
+                                  className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
+                                  onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
+                                >
+                                  {translateParamOption(ratio, t)}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className={styles.paramGroupTitle}>{t('studio.render_quality', 'Chất lượng Render')}</div>
+                            <div className={styles.paramOptionsGrid}>
+                              {(activeModelConfig.qualities || ['Standard', 'High', 'Ultra']).map((q) => (
+                                <button
+                                  key={q}
+                                  type="button"
+                                  className={`${styles.paramChip} ${sanitizeParamQuality(quality) === sanitizeParamQuality(q) ? styles.paramActive : ''}`}
+                                  onClick={() => setQuality(sanitizeParamQuality(q))}
+                                >
+                                  {translateParamOption(q, t)}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {activeTab === 'video' && (
+                          <>
+                            <div className={styles.paramGroupTitle}>{t('studio.video_resolution', 'Độ phân giải video')}</div>
+                            <div className={styles.paramOptionsGrid}>
+                              {(activeModelConfig.resolutions || ['720p', '1080p', '4K']).map((res) => (
+                                <button
+                                  key={res}
+                                  type="button"
+                                  className={`${styles.paramChip} ${videoResolution === res ? styles.paramActive : ''}`}
+                                  onClick={() => setVideoResolution(res)}
+                                >
+                                  {res}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
+                            <div className={styles.paramOptionsGrid}>
+                              {(activeModelConfig.aspectRatios || ['Auto', '16:9', '9:16']).map((ratio) => (
+                                <button
+                                  key={ratio}
+                                  type="button"
+                                  className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
+                                  onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
+                                >
+                                  {translateParamOption(ratio, t)}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className={styles.paramGroupTitle}>
+                              {t('studio.video_duration', 'Thời lượng video')} ({cleanModelDisplayName(currentModel?.name || '')})
+                            </div>
+                            <div className={styles.paramOptionsGrid}>
+                              {(activeModelConfig.durations || ['5s', '10s']).map((dur) => {
+                                const durCredits = calculateVideoCreditCost(baseModelPrice, dur);
+                                return (
+                                  <button
+                                    key={dur}
+                                    type="button"
+                                    className={`${styles.paramChip} ${videoDuration === dur ? styles.paramActive : ''}`}
+                                    onClick={() => setVideoDuration(dur)}
+                                  >
+                                    {dur} <span style={{ opacity: 0.8, fontSize: '0.68rem', marginLeft: '3px', color: '#2dd4bf' }}>({durCredits} cr)</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        )}
+
+                        {activeTab === 'audio' && (
+                          <>
+                            <div className={styles.paramGroupTitle}>{t('studio.audio_voice_title', 'Ngôn ngữ & Giọng đọc')}</div>
+                            {['English · American', 'English · British', 'Tiếng Việt · Hà Nội', 'Tiếng Việt · Sài Gòn'].map((voice) => (
+                              <button
+                                key={voice}
+                                type="button"
+                                className={`${styles.popoverItem} ${audioVoice === voice ? styles.popoverActive : ''}`}
+                                onClick={() => {
+                                  setAudioVoice(voice);
+                                  setIsParamsMenuOpen(false);
+                                }}
+                              >
+                                <span>{voice}</span>
+                                {audioVoice === voice && <HiOutlineCheck size={14} color="#ff6b35" />}
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      createPortal(
+                        <div className={styles.mobileSheetBackdrop} onClick={() => setIsParamsMenuOpen(false)}>
+                          <div className={styles.mobileSheetContent} onClick={(e) => e.stopPropagation()}>
+                            <div className={styles.mobileSheetHeader}>
+                              <div className={styles.mobileSheetGrabber} />
+                              <h4 className={styles.mobileSheetTitle}>
+                                {t('studio.params_config', 'Cấu Hình Thông Số')}
+                              </h4>
+                              <button
+                                type="button"
+                                className={styles.mobileSheetCloseBtn}
+                                onClick={() => setIsParamsMenuOpen(false)}
+                              >
+                                <HiOutlineXMark size={18} />
+                              </button>
+                            </div>
+                            <div className={styles.mobileSheetBody}>
+                              {activeTab === 'image' && (
+                                <>
+                                  <div className={styles.paramGroupTitle}>{t('studio.resolution', 'Độ phân giải')}</div>
+                                  <div className={styles.paramOptionsGrid}>
+                                    {(activeModelConfig.resolutions || ['1K', '2K', '4K']).map((res) => (
+                                      <button
+                                        key={res}
+                                        type="button"
+                                        className={`${styles.paramChip} ${resolution === res ? styles.paramActive : ''}`}
+                                        onClick={() => setResolution(res)}
+                                      >
+                                        {res}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
+                                  <div className={styles.paramOptionsGrid}>
+                                    {(activeModelConfig.aspectRatios || ['Auto', '1:1', '16:9', '9:16', '4:3', '21:9']).map((ratio) => (
+                                      <button
+                                        key={ratio}
+                                        type="button"
+                                        className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
+                                        onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
+                                      >
+                                        {translateParamOption(ratio, t)}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className={styles.paramGroupTitle}>{t('studio.render_quality', 'Chất lượng Render')}</div>
+                                  <div className={styles.paramOptionsGrid}>
+                                    {(activeModelConfig.qualities || ['Standard', 'High', 'Ultra']).map((q) => (
+                                      <button
+                                        key={q}
+                                        type="button"
+                                        className={`${styles.paramChip} ${sanitizeParamQuality(quality) === sanitizeParamQuality(q) ? styles.paramActive : ''}`}
+                                        onClick={() => setQuality(sanitizeParamQuality(q))}
+                                      >
+                                        {translateParamOption(q, t)}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+
+                              {activeTab === 'video' && (
+                                <>
+                                  <div className={styles.paramGroupTitle}>{t('studio.video_resolution', 'Độ phân giải video')}</div>
+                                  <div className={styles.paramOptionsGrid}>
+                                    {(activeModelConfig.resolutions || ['720p', '1080p', '4K']).map((res) => (
+                                      <button
+                                        key={res}
+                                        type="button"
+                                        className={`${styles.paramChip} ${videoResolution === res ? styles.paramActive : ''}`}
+                                        onClick={() => setVideoResolution(res)}
+                                      >
+                                        {res}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className={styles.paramGroupTitle}>{t('studio.aspect_ratio', 'Tỉ lệ khung hình')}</div>
+                                  <div className={styles.paramOptionsGrid}>
+                                    {(activeModelConfig.aspectRatios || ['Auto', '16:9', '9:16']).map((ratio) => (
+                                      <button
+                                        key={ratio}
+                                        type="button"
+                                        className={`${styles.paramChip} ${sanitizeParamRatio(aspectRatio) === sanitizeParamRatio(ratio) ? styles.paramActive : ''}`}
+                                        onClick={() => setAspectRatio(sanitizeParamRatio(ratio))}
+                                      >
+                                        {translateParamOption(ratio, t)}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <div className={styles.paramGroupTitle}>
+                                    {t('studio.video_duration', 'Thời lượng video')} ({cleanModelDisplayName(currentModel?.name || '')})
+                                  </div>
+                                  <div className={styles.paramOptionsGrid}>
+                                    {(activeModelConfig.durations || ['5s', '10s']).map((dur) => {
+                                      const durCredits = calculateVideoCreditCost(baseModelPrice, dur);
+                                      return (
+                                        <button
+                                          key={dur}
+                                          type="button"
+                                          className={`${styles.paramChip} ${videoDuration === dur ? styles.paramActive : ''}`}
+                                          onClick={() => setVideoDuration(dur)}
+                                        >
+                                          {dur} <span style={{ opacity: 0.8, fontSize: '0.68rem', marginLeft: '3px', color: '#2dd4bf' }}>({durCredits} cr)</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </>
+                              )}
+
+                              {activeTab === 'audio' && (
+                                <>
+                                  <div className={styles.paramGroupTitle}>{t('studio.audio_voice_title', 'Ngôn ngữ & Giọng đọc')}</div>
+                                  {['English · American', 'English · British', 'Tiếng Việt · Hà Nội', 'Tiếng Việt · Sài Gòn'].map((voice) => (
+                                    <button
+                                      key={voice}
+                                      type="button"
+                                      className={`${styles.popoverItem} ${audioVoice === voice ? styles.popoverActive : ''}`}
+                                      onClick={() => {
+                                        setAudioVoice(voice);
+                                        setIsParamsMenuOpen(false);
+                                      }}
+                                    >
+                                      <span>{voice}</span>
+                                      {audioVoice === voice && <HiOutlineCheck size={14} color="#ff6b35" />}
+                                    </button>
+                                  ))}
+                                </>
+                              )}
+
+                              <button
+                                type="button"
+                                className={styles.mobileDoneBtn}
+                                onClick={() => setIsParamsMenuOpen(false)}
+                              >
+                                {t('common.done', 'Hoàn tất')}
+                              </button>
+                            </div>
+                          </div>
+                        </div>,
+                        document.body
+                      )
+                    )
                   )}
                 </div>
 
